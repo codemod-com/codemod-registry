@@ -1,4 +1,4 @@
-/**
+/*
 TODO: check the license with Raja (what about the TS changes)
 
 The MIT License (MIT)
@@ -22,7 +22,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
- */
+*/
 
 import type { FileInfo, API, Options, Transform } from 'jscodeshift';
 
