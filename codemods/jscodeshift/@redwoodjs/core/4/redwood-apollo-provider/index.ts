@@ -34,6 +34,8 @@ function transform(
 	const j = api.jscodeshift;
 	const root = j(file.source);
 
+    let dirtyFlag = false;
+
 	root.find(j.JSXElement, {
 		openingElement: { name: { name: 'RedwoodProvider' } },
 	}).forEach((path) => {
@@ -43,59 +45,72 @@ function transform(
 				: false,
 		).length;
 
-		if (!hasChild) {
-			const newComp = j.jsxElement(
-				j.jsxOpeningElement(j.jsxIdentifier('AuthProvider'), [], false),
-				j.jsxClosingElement(j.jsxIdentifier('AuthProvider')),
-				path.value.children,
-				// false
-			);
+        if (hasChild) {
+            return;
+        }
 
-			path.value.children = [
-				j.jsxText('\n  '),
-				newComp,
-				j.jsxText('\n  '),
-			];
+        const newComp = j.jsxElement(
+            j.jsxOpeningElement(j.jsxIdentifier('AuthProvider'), [], false),
+            j.jsxClosingElement(j.jsxIdentifier('AuthProvider')),
+            path.value.children,
+            // false
+        );
 
-			root.find(j.JSXElement, {
-				openingElement: { name: { name: 'RedwoodApolloProvider' } },
-			}).forEach((path) => {
-				const useAuthAttr = j.jsxAttribute(
-					j.jsxIdentifier('useAuth'),
-					j.jsxExpressionContainer(j.identifier('useAuth')),
-				);
+        path.value.children = [
+            j.jsxText('\n  '),
+            newComp,
+            j.jsxText('\n  '),
+        ];
 
-				path.value.openingElement.attributes?.push(useAuthAttr);
-			});
+        root.find(j.JSXElement, {
+            openingElement: { name: { name: 'RedwoodApolloProvider' } },
+        }).forEach((path) => {
+            const useAuthAttr = j.jsxAttribute(
+                j.jsxIdentifier('useAuth'),
+                j.jsxExpressionContainer(j.identifier('useAuth')),
+            );
 
-			const authImport = root.find(j.ImportDeclaration, {
-				source: { value: './auth' },
-			});
+            const { attributes } = path.value.openingElement;
 
-			const hasAuthImport = authImport.length > 0;
+            if (attributes) {
+                attributes.push(useAuthAttr);
 
-			if (!hasAuthImport) {
-				const importDecl = j.importDeclaration(
-					[
-						j.importSpecifier(
-							j.identifier('AuthProvider'),
-							j.identifier('AuthProvider'),
-						),
-						j.importSpecifier(
-							j.identifier('useAuth'),
-							j.identifier('useAuth'),
-						),
-					],
-					j.stringLiteral('./auth'),
-				);
-				let body = root.get().value.program.body;
-				body.unshift(importDecl);
-			}
-		}
+                dirtyFlag = true;
+            }
+        });
+
+        const authImport = root.find(j.ImportDeclaration, {
+            source: { value: './auth' },
+        });
+
+        if (authImport.length > 0) {
+            return;
+        }
+
+        const importDecl = j.importDeclaration(
+            [
+                j.importSpecifier(
+                    j.identifier('AuthProvider'),
+                    j.identifier('AuthProvider'),
+                ),
+                j.importSpecifier(
+                    j.identifier('useAuth'),
+                    j.identifier('useAuth'),
+                ),
+            ],
+            j.stringLiteral('./auth'),
+        );
+        
+        const body = root.get().value.program.body;
+        body.unshift(importDecl);
+
+        dirtyFlag = true;
 	});
 
 	// return root.toSource({ quote: 'single', tabWidth: 2 });
     return root.toSource(options);
 }
+
+transform satisfies Transform;
 
 export default transform;
