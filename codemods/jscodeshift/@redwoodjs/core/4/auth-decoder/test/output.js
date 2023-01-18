@@ -33,14 +33,14 @@ import { db } from 'src/lib/db';
 import { logger } from 'src/lib/logger';
 
 export const handler = createGraphQLHandler({
-  authDecoder: authDecoder,
-  loggerConfig: { logger, options: {} },
-  directives,
-  sdls,
-  services,
+	authDecoder: authDecoder,
+	loggerConfig: { logger, options: {} },
+	directives,
+	sdls,
+	services,
 
-  onException: () => {
-    // Disconnect from your database with an unhandled exception.
-    db.$disconnect();
-  }
+	onException: () => {
+		// Disconnect from your database with an unhandled exception.
+		db.$disconnect();
+	},
 });

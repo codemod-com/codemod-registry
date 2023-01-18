@@ -6,43 +6,39 @@ import transform from '..';
 import assert from 'node:assert/strict';
 
 describe('@redwoodjs/core v4 auth-decoder', function () {
-    it('should add auth-decoder', async function () {
-        const input = await readFile(
-            join(__dirname, 'input.js'),
-            { encoding: 'utf8' }
-        );
+	it('should add auth-decoder', async function () {
+		const input = await readFile(join(__dirname, 'input.js'), {
+			encoding: 'utf8',
+		});
 
-        const output = await readFile(
-            join(__dirname, 'output.js'),
-            { encoding: 'utf8' }
-        );
+		const output = await readFile(join(__dirname, 'output.js'), {
+			encoding: 'utf8',
+		});
 
-        const fileInfo: FileInfo = {
+		const fileInfo: FileInfo = {
 			path: 'index.js',
 			source: input,
 		};
 
-        const buildApi = (parser: string): API => ({
-            j: jscodeshift.withParser(parser),
-            jscodeshift: jscodeshift.withParser(parser),
-            stats: () => {
-                console.error(
-                    'The stats function was called, which is not supported on purpose',
-                );
-            },
-            report: () => {
-                console.error(
-                    'The report function was called, which is not supported on purpose',
-                );
-            },
-        });
+		const buildApi = (parser: string): API => ({
+			j: jscodeshift.withParser(parser),
+			jscodeshift: jscodeshift.withParser(parser),
+			stats: () => {
+				console.error(
+					'The stats function was called, which is not supported on purpose',
+				);
+			},
+			report: () => {
+				console.error(
+					'The report function was called, which is not supported on purpose',
+				);
+			},
+		});
 
-        const actualOutput = transform(
-            fileInfo,
-            buildApi('js'),
-            { quote: 'single' },
-        );
+		const actualOutput = transform(fileInfo, buildApi('js'), {
+			quote: 'single',
+		});
 
-        assert.deepEqual(actualOutput, output);
-    }) 
+		assert.deepEqual(actualOutput, output);
+	});
 });
