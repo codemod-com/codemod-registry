@@ -1,0 +1,13 @@
+{
+    "schemaVersion": "1.0.0",
+    "name": "@redwoodjs/core/4/redwood-apollo-provider",
+    "engine": "jscodeshift",
+    "extensions": [
+        "js*",
+        "ts*"
+    ],
+    "dependencyVersionGreaterThan": [
+        "@redwoodjs/core",
+        "3.0.0"
+    ]
+}
