@@ -24,5 +24,5 @@ THE SOFTWARE.
 */
 
 const Routes = () => {
-  return <Router useAuth={useAuth}>{/* ... */}</Router>;
+	return <Router useAuth={useAuth}>{/* ... */}</Router>;
 };

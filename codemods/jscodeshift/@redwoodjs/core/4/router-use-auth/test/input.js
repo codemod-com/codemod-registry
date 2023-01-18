@@ -23,5 +23,5 @@ THE SOFTWARE.
 */
 
 const Routes = () => {
-    return <Router>{/* ... */}</Router>;
+	return <Router>{/* ... */}</Router>;
 };
