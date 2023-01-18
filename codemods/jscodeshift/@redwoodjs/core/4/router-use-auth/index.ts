@@ -37,67 +37,40 @@ function transform(
 	let dirtyFlag = false;
 
 	root.find(j.JSXElement, {
-		openingElement: { name: { name: 'RedwoodProvider' } },
+		openingElement: { name: { name: 'Router' } },
 	}).forEach((path) => {
-		const hasChild = path.value.children?.filter((c) =>
-			'openingElement' in c && 'name' in c.openingElement.name
-				? c.openingElement.name.name === 'AuthProvider'
-				: false,
+		const attrs = path.value.openingElement.attributes;
+
+		if (!attrs) {
+			return;
+		}
+
+		const useAuthAttr = attrs.filter((a) =>
+			'name' in a ? a.name.name === 'useAuth' : false,
 		).length;
 
-		if (hasChild) {
+		if (useAuthAttr) {
 			return;
 		}
 
-		const newComp = j.jsxElement(
-			j.jsxOpeningElement(j.jsxIdentifier('AuthProvider'), [], false),
-			j.jsxClosingElement(j.jsxIdentifier('AuthProvider')),
-			path.value.children,
-			// false
-		);
-
-		path.value.children = [j.jsxText('\n  '), newComp, j.jsxText('\n  ')];
-
-		root.find(j.JSXElement, {
-			openingElement: { name: { name: 'RedwoodApolloProvider' } },
-		}).forEach((path) => {
-			const useAuthAttr = j.jsxAttribute(
+		attrs.push(
+			j.jsxAttribute(
 				j.jsxIdentifier('useAuth'),
 				j.jsxExpressionContainer(j.identifier('useAuth')),
-			);
-
-			const { attributes } = path.value.openingElement;
-
-			if (attributes) {
-				attributes.push(useAuthAttr);
-
-				dirtyFlag = true;
-			}
-		});
-
-		const authImport = root.find(j.ImportDeclaration, {
-			source: { value: './auth' },
-		});
-
-		if (authImport.length > 0) {
-			return;
-		}
+			),
+		);
 
 		const importDecl = j.importDeclaration(
 			[
-				j.importSpecifier(
-					j.identifier('AuthProvider'),
-					j.identifier('AuthProvider'),
-				),
 				j.importSpecifier(
 					j.identifier('useAuth'),
 					j.identifier('useAuth'),
 				),
 			],
-			j.stringLiteral('./auth'),
+			j.stringLiteral('src/auth'),
 		);
 
-		const body = root.get().value.program.body;
+		let body = root.get().value.program.body;
 		body.unshift(importDecl);
 
 		dirtyFlag = true;
