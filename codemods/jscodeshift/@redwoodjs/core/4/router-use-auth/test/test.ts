@@ -6,7 +6,7 @@ import transform from '..';
 import assert from 'node:assert/strict';
 
 describe('@redwoodjs/core v4 router-use-auth', function () {
-	it('should add use-auth', async function () {
+	it('should add useAuth', async function () {
 		const input = await readFile(join(__dirname, 'input.js'), {
 			encoding: 'utf8',
 		});

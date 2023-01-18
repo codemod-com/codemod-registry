@@ -6,7 +6,7 @@ import transform from '..';
 import assert from 'node:assert/strict';
 
 describe('@redwoodjs/core v4 auth-decoder', function () {
-	it('should add auth-decoder', async function () {
+	it('should add authDecoder', async function () {
 		const input = await readFile(join(__dirname, 'input.js'), {
 			encoding: 'utf8',
 		});
