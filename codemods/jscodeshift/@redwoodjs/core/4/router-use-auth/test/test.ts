@@ -5,8 +5,8 @@ import { join } from 'node:path';
 import transform from '..';
 import assert from 'node:assert/strict';
 
-describe('@redwoodjs/core v4 redwood-apollo-provider', function () {
-	it('should add AuthProvider and useAuth', async function () {
+describe('@redwoodjs/core v4 router-use-auth', function () {
+	it('should add use-auth', async function () {
 		const input = await readFile(join(__dirname, 'input.js'), {
 			encoding: 'utf8',
 		});
