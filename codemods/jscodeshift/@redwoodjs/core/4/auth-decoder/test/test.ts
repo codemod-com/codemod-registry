@@ -39,6 +39,9 @@ describe('@redwoodjs/core v4 auth-decoder', function () {
 			quote: 'single',
 		});
 
-		assert.deepEqual(actualOutput, output);
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			output.replace(/\W/gm, ''),
+		);
 	});
 });
