@@ -70,7 +70,7 @@ function transform(
 			j.stringLiteral('src/auth'),
 		);
 
-		let body = root.get().value.program.body;
+		const body = root.get().value.program.body;
 		body.unshift(importDecl);
 
 		dirtyFlag = true;

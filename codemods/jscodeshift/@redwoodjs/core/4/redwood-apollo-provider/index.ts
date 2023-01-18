@@ -53,7 +53,6 @@ function transform(
 			j.jsxOpeningElement(j.jsxIdentifier('AuthProvider'), [], false),
 			j.jsxClosingElement(j.jsxIdentifier('AuthProvider')),
 			path.value.children,
-			// false
 		);
 
 		path.value.children = [j.jsxText('\n  '), newComp, j.jsxText('\n  ')];
