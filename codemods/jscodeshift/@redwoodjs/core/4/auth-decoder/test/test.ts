@@ -3,6 +3,7 @@ import jscodeshift from 'jscodeshift';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import transform from '..';
+import { assert } from 'chai';
 
 describe('@redwoodjs/core v4 auth-decoder', function () {
     it('should add auth-decoder', async function () {
@@ -36,10 +37,12 @@ describe('@redwoodjs/core v4 auth-decoder', function () {
             },
         });
 
-        transform(
+        const actualOutput = transform(
             fileInfo,
             buildApi('tsx'),
             {},
-        )
+        );
+
+        assert.deepEqual(actualOutput, output);
     }) 
 });
