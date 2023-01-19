@@ -6,7 +6,7 @@
 		"js*",
 		"ts*"
 	],
-	"dependencyVersionLowerhan": [
+	"dependencyVersionLowerThan": [
 		"@redwoodjs/core",
 		"4.0.0"
 	]
