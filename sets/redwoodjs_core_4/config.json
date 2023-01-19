@@ -1,0 +1,14 @@
+{
+    "schemaVersion": "1.0.0",
+    "name": "@redwoodjs_core_4",
+    "engine": "jscodeshift",
+    "codemods": [
+        "jscodeshift/@redwoodjs/core/4/auth-decoder",
+        "jscodeshift/@redwoodjs/core/4/redwood-apollo-provider",
+        "jscodeshift/@redwoodjs/core/4/router-use-auth"
+    ],
+    "dependencyVersionGreaterThan": [
+        "@redwoodjs/core",
+        "3.0.0"
+    ]
+}
