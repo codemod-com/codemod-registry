@@ -119,6 +119,8 @@ function transform(
 				[],
 				j.callExpression(j.identifier('navigate'), [j.literal(1)]),
 			);
+
+			dirtyFlag = true;
 		});
 
 	if (!dirtyFlag) {
