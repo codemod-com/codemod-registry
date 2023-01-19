@@ -1,3 +1,6 @@
+const history = createHashHistory();
+import createHashHistory from 'history/createHashHistory';
+
 /*
 The MIT License (MIT)
 
@@ -22,8 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-const history = createHashHistory();
-import createHashHistory from 'history/createHashHistory';
 import { Router, hashHistory } from 'react-router';
 
 const MyApp = () => (
