@@ -37,7 +37,7 @@ function transform(
 
 	const root = j(file.source);
 
-	let dirtyFlag = true;
+	let dirtyFlag = false;
 
 	// Rename useHistory import to useNavigate
 	root.find(j.ImportDeclaration)
