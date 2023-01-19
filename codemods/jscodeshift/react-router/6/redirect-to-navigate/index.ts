@@ -34,50 +34,39 @@ function transform(
 	options: Options,
 ): string | undefined {
 	const j = api.jscodeshift;
+
 	const root = j(file.source);
 
 	let dirtyFlag = false;
 
-	root.find(j.CallExpression, {
-		callee: { name: 'createGraphQLHandler' },
+	root.find(j.JSXElement, {
+		openingElement: {
+			name: { name: 'Redirect' },
+		},
 	}).forEach((path) => {
-		const arg = path.value.arguments[0];
+		const openEl = path.value.openingElement;
 
-		if (!arg || !('properties' in arg)) {
-			return;
+		if ('name' in openEl.name) {
+			openEl.name.name = 'Navigate';
 		}
 
-		const hasProp = arg.properties.filter((property) =>
-			'key' in property && 'name' in property.key
-				? property.key.name === 'authDecoder'
-				: false,
-		).length;
+		const isPush =
+			openEl.attributes?.filter((a) =>
+				'name' in a ? a.name.name === 'push' : false,
+			).length ?? 0 > 0;
 
-		if (hasProp) {
-			return;
+		if (!isPush) {
+			if (openEl.attributes) {
+				openEl.attributes.push(
+					j.jsxAttribute(j.jsxIdentifier('replace')),
+				);
+			}
+		} else {
+			openEl.attributes =
+				openEl.attributes?.filter((a) =>
+					'name' in a ? a.name.name !== 'push' : false,
+				) ?? [];
 		}
-
-		dirtyFlag = true;
-
-		arg.properties.unshift(
-			j.objectProperty(
-				j.identifier('authDecoder'),
-				j.identifier('authDecoder'),
-			),
-		);
-
-		const importDecl = j.importDeclaration(
-			[
-				j.importSpecifier(
-					j.identifier('authDecoder'),
-					j.identifier('authDecoder'),
-				),
-			],
-			j.stringLiteral('@redwoodjs/auth-auth0-api'),
-		);
-
-		const body = root.get().value.program.body;
-		body.unshift(importDecl);
 	});
 
 	if (!dirtyFlag) {

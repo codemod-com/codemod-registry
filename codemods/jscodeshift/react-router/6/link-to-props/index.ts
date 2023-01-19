@@ -34,50 +34,66 @@ function transform(
 	options: Options,
 ): string | undefined {
 	const j = api.jscodeshift;
+
 	const root = j(file.source);
 
 	let dirtyFlag = false;
 
-	root.find(j.CallExpression, {
-		callee: { name: 'createGraphQLHandler' },
+	root.find(j.JSXElement, {
+		openingElement: {
+			name: { name: 'Link' },
+		},
 	}).forEach((path) => {
-		const arg = path.value.arguments[0];
+		const props = path.value.openingElement.attributes ?? [];
 
-		if (!arg || !('properties' in arg)) {
-			return;
-		}
+		props
+			.filter((prop) =>
+				'name' in prop ? prop.name.name === 'to' : false,
+			)
+			.forEach((prop) => {
+				const values =
+					'value' in prop &&
+					prop.value &&
+					'expression' in prop.value &&
+					'properties' in prop.value.expression
+						? prop.value.expression.properties
+						: [];
 
-		const hasProp = arg.properties.filter((property) =>
-			'key' in property && 'name' in property.key
-				? property.key.name === 'authDecoder'
-				: false,
-		).length;
+				values.forEach((v) => {
+					if (
+						'key' in v &&
+						'name' in v.key &&
+						v.key.name === 'pathname' &&
+						'value' in prop &&
+						'value' in v &&
+						'value' in v.value &&
+						v.value.value
+					) {
+						prop.value = j.literal(v.value.value);
 
-		if (hasProp) {
-			return;
-		}
+						dirtyFlag = true;
+					}
 
-		dirtyFlag = true;
+					if (
+						'key' in v &&
+						'name' in v.key &&
+						v.key.name === 'state'
+					) {
+						const newProp = j.jsxAttribute(
+							j.jsxIdentifier(v.key.name),
+							j.jsxExpressionContainer(j.identifier('state')),
+						);
 
-		arg.properties.unshift(
-			j.objectProperty(
-				j.identifier('authDecoder'),
-				j.identifier('authDecoder'),
-			),
-		);
+						if (path.value.openingElement.attributes) {
+							path.value.openingElement.attributes.push(newProp);
+						} else {
+							path.value.openingElement.attributes = [newProp];
+						}
 
-		const importDecl = j.importDeclaration(
-			[
-				j.importSpecifier(
-					j.identifier('authDecoder'),
-					j.identifier('authDecoder'),
-				),
-			],
-			j.stringLiteral('@redwoodjs/auth-auth0-api'),
-		);
-
-		const body = root.get().value.program.body;
-		body.unshift(importDecl);
+						dirtyFlag = true;
+					}
+				});
+			});
 	});
 
 	if (!dirtyFlag) {

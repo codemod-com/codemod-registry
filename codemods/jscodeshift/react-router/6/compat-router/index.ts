@@ -34,55 +34,36 @@ function transform(
 	options: Options,
 ): string | undefined {
 	const j = api.jscodeshift;
+
 	const root = j(file.source);
 
-	let dirtyFlag = false;
+	const isCompatRouteImportFound = root.find(j.ImportDeclaration, {
+		source: { value: 'react-router-dom-v5-compat' },
+	}).length;
 
-	root.find(j.CallExpression, {
-		callee: { name: 'createGraphQLHandler' },
-	}).forEach((path) => {
-		const arg = path.value.arguments[0];
-
-		if (!arg || !('properties' in arg)) {
-			return;
-		}
-
-		const hasProp = arg.properties.filter((property) =>
-			'key' in property && 'name' in property.key
-				? property.key.name === 'authDecoder'
-				: false,
-		).length;
-
-		if (hasProp) {
-			return;
-		}
-
-		dirtyFlag = true;
-
-		arg.properties.unshift(
-			j.objectProperty(
-				j.identifier('authDecoder'),
-				j.identifier('authDecoder'),
-			),
-		);
-
-		const importDecl = j.importDeclaration(
-			[
-				j.importSpecifier(
-					j.identifier('authDecoder'),
-					j.identifier('authDecoder'),
-				),
-			],
-			j.stringLiteral('@redwoodjs/auth-auth0-api'),
-		);
-
-		const body = root.get().value.program.body;
-		body.unshift(importDecl);
-	});
-
-	if (!dirtyFlag) {
+	if (isCompatRouteImportFound) {
 		return undefined;
 	}
+
+	const computedImport = j.importDeclaration(
+		[j.importSpecifier(j.identifier('CompatRouter'))],
+		j.literal('react-router-dom-v5-compat'),
+	);
+
+	const body = root.get().value.program.body;
+	body.unshift(computedImport);
+
+	root.find(j.JSXElement, {
+		openingElement: { name: { name: 'BrowserRouter' } },
+	}).forEach((path) => {
+		const children = path.value.children;
+		const newEl = j.jsxElement(
+			j.jsxOpeningElement(j.jsxIdentifier('CompatRouter'), [], false),
+			j.jsxClosingElement(j.jsxIdentifier('CompatRouter')),
+			children,
+		);
+		path.value.children = [j.jsxText('\n  '), newEl, j.jsxText('\n')];
+	});
 
 	return root.toSource(options);
 }

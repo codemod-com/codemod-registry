@@ -34,53 +34,50 @@ function transform(
 	options: Options,
 ): string | undefined {
 	const j = api.jscodeshift;
+
 	const root = j(file.source);
 
 	let dirtyFlag = false;
 
-	root.find(j.CallExpression, {
-		callee: { name: 'createGraphQLHandler' },
+	root.find(j.JSXElement, {
+		openingElement: { name: { name: 'Router' } },
 	}).forEach((path) => {
-		const arg = path.value.arguments[0];
+		const attrs = path.value.openingElement.attributes;
 
-		if (!arg || !('properties' in arg)) {
-			return;
+		const hasHistoryAttr =
+			attrs?.filter((a) =>
+				'name' in a ? a.name.name === 'history' : false,
+			).length ?? 0 > 0;
+
+		if (attrs && hasHistoryAttr) {
+			if ('name' in path.value.openingElement.name) {
+				path.value.openingElement.name.name = 'HashRouter';
+			}
+
+			if (
+				path.value.closingElement &&
+				'name' in path.value.closingElement.name
+			) {
+				path.value.closingElement.name.name = 'HashRouter';
+			}
+
+			path.value.openingElement.attributes = attrs.filter((a) =>
+				'name' in a ? a.name.name !== 'history' : false,
+			);
 		}
 
-		const hasProp = arg.properties.filter((property) =>
-			'key' in property && 'name' in property.key
-				? property.key.name === 'authDecoder'
-				: false,
-		).length;
-
-		if (hasProp) {
-			return;
-		}
-
-		dirtyFlag = true;
-
-		arg.properties.unshift(
-			j.objectProperty(
-				j.identifier('authDecoder'),
-				j.identifier('authDecoder'),
-			),
-		);
-
-		const importDecl = j.importDeclaration(
-			[
-				j.importSpecifier(
-					j.identifier('authDecoder'),
-					j.identifier('authDecoder'),
-				),
-			],
-			j.stringLiteral('@redwoodjs/auth-auth0-api'),
+		const computedImport = j.importDeclaration(
+			[j.importSpecifier(j.identifier('HashRouter'))],
+			j.literal('react-router-dom'),
 		);
 
 		const body = root.get().value.program.body;
-		body.unshift(importDecl);
+		body.unshift(computedImport);
+
+		dirtyFlag = true;
 	});
 
-	if (!dirtyFlag) {
+	if (dirtyFlag) {
 		return undefined;
 	}
 

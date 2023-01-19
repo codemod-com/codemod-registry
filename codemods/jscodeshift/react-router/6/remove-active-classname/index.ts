@@ -26,7 +26,14 @@ THE SOFTWARE.
 Changes to the original file: added TypeScript, dirty flag, nullability checks
 */
 
-import type { FileInfo, API, Options, Transform } from 'jscodeshift';
+import type {
+	FileInfo,
+	API,
+	Options,
+	Transform,
+	ASTPath,
+	JSXElement,
+} from 'jscodeshift';
 
 function transform(
 	file: FileInfo,
@@ -34,50 +41,76 @@ function transform(
 	options: Options,
 ): string | undefined {
 	const j = api.jscodeshift;
+
 	const root = j(file.source);
 
 	let dirtyFlag = false;
 
-	root.find(j.CallExpression, {
-		callee: { name: 'createGraphQLHandler' },
-	}).forEach((path) => {
-		const arg = path.value.arguments[0];
+	root.findJSXElements('NavLink').forEach((path) => {
+		const attrs = path.value.openingElement.attributes;
 
-		if (!arg || !('properties' in arg)) {
+		if (!attrs) {
 			return;
 		}
 
-		const hasProp = arg.properties.filter((property) =>
-			'key' in property && 'name' in property.key
-				? property.key.name === 'authDecoder'
-				: false,
-		).length;
+		const [classNameAttr] = attrs.filter((a) =>
+			'name' in a ? a.name.name === 'className' : false,
+		);
 
-		if (hasProp) {
+		if (
+			!classNameAttr ||
+			!('value' in classNameAttr) ||
+			!classNameAttr.value ||
+			!('value' in classNameAttr.value) ||
+			!classNameAttr.value.value
+		) {
 			return;
 		}
 
-		dirtyFlag = true;
+		const [activeClassNameAttr] = attrs.filter((a) =>
+			'name' in a ? a.name.name === 'activeClassName' : false,
+		);
 
-		arg.properties.unshift(
-			j.objectProperty(
-				j.identifier('authDecoder'),
-				j.identifier('authDecoder'),
+		if (
+			!activeClassNameAttr ||
+			!('value' in activeClassNameAttr) ||
+			!activeClassNameAttr.value ||
+			!('value' in activeClassNameAttr.value)
+		) {
+			return;
+		}
+
+		const idx = attrs.findIndex((a) =>
+			'name' in a ? a.name.name === 'activeClassName' : false,
+		);
+
+		// remove activeclass name
+		attrs.splice(idx, 1);
+
+		const propertyNode = j.property(
+			'init',
+			j.literal('isActive'),
+			j.identifier('isActive'),
+		);
+
+		const arrFuncBody = j.binaryExpression(
+			'+',
+			j.literal(classNameAttr.value.value),
+			j.conditionalExpression(
+				j.identifier('isActive'),
+				j.literal(` ${activeClassNameAttr.value.value}`),
+				j.literal(''),
 			),
 		);
 
-		const importDecl = j.importDeclaration(
-			[
-				j.importSpecifier(
-					j.identifier('authDecoder'),
-					j.identifier('authDecoder'),
-				),
-			],
-			j.stringLiteral('@redwoodjs/auth-auth0-api'),
+		classNameAttr.value = j.jsxExpressionContainer(
+			j.arrowFunctionExpression(
+				[j.objectPattern([propertyNode])],
+				arrFuncBody,
+			),
 		);
 
-		const body = root.get().value.program.body;
-		body.unshift(importDecl);
+		dirtyFlag = true;
 	});
 
 	if (!dirtyFlag) {

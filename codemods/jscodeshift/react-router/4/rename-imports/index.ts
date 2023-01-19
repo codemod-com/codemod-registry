@@ -34,50 +34,17 @@ function transform(
 	options: Options,
 ): string | undefined {
 	const j = api.jscodeshift;
+
 	const root = j(file.source);
 
 	let dirtyFlag = false;
 
-	root.find(j.CallExpression, {
-		callee: { name: 'createGraphQLHandler' },
+	root.find(j.ImportDeclaration, {
+		source: { value: 'react-router' },
 	}).forEach((path) => {
-		const arg = path.value.arguments[0];
-
-		if (!arg || !('properties' in arg)) {
-			return;
-		}
-
-		const hasProp = arg.properties.filter((property) =>
-			'key' in property && 'name' in property.key
-				? property.key.name === 'authDecoder'
-				: false,
-		).length;
-
-		if (hasProp) {
-			return;
-		}
+		path.value.source.value = 'react-router-dom';
 
 		dirtyFlag = true;
-
-		arg.properties.unshift(
-			j.objectProperty(
-				j.identifier('authDecoder'),
-				j.identifier('authDecoder'),
-			),
-		);
-
-		const importDecl = j.importDeclaration(
-			[
-				j.importSpecifier(
-					j.identifier('authDecoder'),
-					j.identifier('authDecoder'),
-				),
-			],
-			j.stringLiteral('@redwoodjs/auth-auth0-api'),
-		);
-
-		const body = root.get().value.program.body;
-		body.unshift(importDecl);
 	});
 
 	if (!dirtyFlag) {

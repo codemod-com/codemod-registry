@@ -34,50 +34,55 @@ function transform(
 	options: Options,
 ): string | undefined {
 	const j = api.jscodeshift;
+
 	const root = j(file.source);
 
 	let dirtyFlag = false;
 
 	root.find(j.CallExpression, {
-		callee: { name: 'createGraphQLHandler' },
+		callee: { name: 'matchPath' },
 	}).forEach((path) => {
-		const arg = path.value.arguments[0];
+		const args = path.value.arguments;
 
-		if (!arg || !('properties' in arg)) {
-			return;
+		if (args[0] && args[1] && 'properties' in args[1]) {
+			const [exact] = args[1].properties.filter((p) =>
+				'key' in p && 'name' in p.key ? p.key.name === 'exact' : false,
+			);
+
+			if (
+				exact &&
+				'key' in exact &&
+				'name' in exact.key &&
+				'value' in exact &&
+				'value' in exact.value
+			) {
+				exact.key.name = 'caseSensitive';
+				exact.value.value = false;
+			}
+
+			const [strict] = args[1].properties.filter((p) =>
+				'key' in p && 'name' in p.key ? p.key.name === 'strict' : false,
+			);
+
+			if (
+				strict &&
+				'key' in strict &&
+				'name' in strict.key &&
+				'value' in strict &&
+				'value' in strict.value
+			) {
+				strict.key.name = 'end';
+				strict.value.value = true;
+			}
+
+			// reset args
+			path.value.arguments = [];
+			// swap arg positions
+			path.value.arguments[0] = args[1];
+			path.value.arguments[1] = args[0];
+
+			dirtyFlag = true;
 		}
-
-		const hasProp = arg.properties.filter((property) =>
-			'key' in property && 'name' in property.key
-				? property.key.name === 'authDecoder'
-				: false,
-		).length;
-
-		if (hasProp) {
-			return;
-		}
-
-		dirtyFlag = true;
-
-		arg.properties.unshift(
-			j.objectProperty(
-				j.identifier('authDecoder'),
-				j.identifier('authDecoder'),
-			),
-		);
-
-		const importDecl = j.importDeclaration(
-			[
-				j.importSpecifier(
-					j.identifier('authDecoder'),
-					j.identifier('authDecoder'),
-				),
-			],
-			j.stringLiteral('@redwoodjs/auth-auth0-api'),
-		);
-
-		const body = root.get().value.program.body;
-		body.unshift(importDecl);
 	});
 
 	if (!dirtyFlag) {

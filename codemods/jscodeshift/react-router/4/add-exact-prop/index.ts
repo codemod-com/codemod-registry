@@ -38,46 +38,26 @@ function transform(
 
 	let dirtyFlag = false;
 
-	root.find(j.CallExpression, {
-		callee: { name: 'createGraphQLHandler' },
+	root.find(j.JSXElement, {
+		openingElement: { name: { name: 'Route' } },
 	}).forEach((path) => {
-		const arg = path.value.arguments[0];
+		const attrs = path.value.openingElement.attributes;
 
-		if (!arg || !('properties' in arg)) {
+		if (!attrs) {
 			return;
 		}
 
-		const hasProp = arg.properties.filter((property) =>
-			'key' in property && 'name' in property.key
-				? property.key.name === 'authDecoder'
-				: false,
-		).length;
+		const hasExactAttr =
+			attrs.filter((a) => ('name' in a ? a.name.name === 'exact' : false))
+				.length > 0;
 
-		if (hasProp) {
+		if (hasExactAttr) {
 			return;
 		}
+
+		attrs.unshift(j.jsxAttribute(j.jsxIdentifier('exact'), null));
 
 		dirtyFlag = true;
-
-		arg.properties.unshift(
-			j.objectProperty(
-				j.identifier('authDecoder'),
-				j.identifier('authDecoder'),
-			),
-		);
-
-		const importDecl = j.importDeclaration(
-			[
-				j.importSpecifier(
-					j.identifier('authDecoder'),
-					j.identifier('authDecoder'),
-				),
-			],
-			j.stringLiteral('@redwoodjs/auth-auth0-api'),
-		);
-
-		const body = root.get().value.program.body;
-		body.unshift(importDecl);
 	});
 
 	if (!dirtyFlag) {
