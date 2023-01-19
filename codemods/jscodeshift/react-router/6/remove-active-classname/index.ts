@@ -26,7 +26,14 @@ THE SOFTWARE.
 Changes to the original file: added TypeScript, dirty flag, nullability checks
 */
 
-import type { FileInfo, API, Options, Transform } from 'jscodeshift';
+import type {
+	FileInfo,
+	API,
+	Options,
+	Transform,
+	ASTPath,
+	JSXElement,
+} from 'jscodeshift';
 
 function transform(
 	file: FileInfo,
@@ -39,121 +46,72 @@ function transform(
 
 	let dirtyFlag = false;
 
-	const hasAttributes = (attributeFilter) => {
-		const attributeNames = Object.keys(attributeFilter);
-		return function filter(path) {
-			if (!j.JSXElement.check(path.value)) {
-				return false;
-			}
-			const elementAttributes = Object.create(null);
-			path.value.openingElement.attributes.forEach(function (attr) {
-				if (
-					!j.JSXAttribute.check(attr) ||
-					!(attr.name.name in attributeFilter)
-				) {
-					return;
-				}
-				elementAttributes[attr.name.name] = attr;
-			});
+	root.findJSXElements('NavLink').forEach((path) => {
+		const attrs = path.value.openingElement.attributes;
 
-			return attributeNames.every(function (name) {
-				if (!(name in elementAttributes)) {
-					return false;
-				}
+		if (!attrs) {
+			return;
+		}
 
-				const value = elementAttributes[name].value;
-				const expected = attributeFilter[name];
+		const [classNameAttr] = attrs.filter((a) =>
+			'name' in a ? a.name.name === 'className' : false,
+		);
 
-				// Only when value is truthy access it's properties
-				const actual = !value
-					? value
-					: j.Literal.check(value)
-					? value.value
-					: value.expression;
+		if (
+			!classNameAttr ||
+			!('value' in classNameAttr) ||
+			!classNameAttr.value ||
+			!('value' in classNameAttr.value) ||
+			!classNameAttr.value.value
+		) {
+			return;
+		}
 
-				if (typeof expected === 'function') {
-					return expected(actual);
-				}
+		const [activeClassNameAttr] = attrs.filter((a) =>
+			'name' in a ? a.name.name === 'activeClassName' : false,
+		);
 
-				// Literal attribute values are always strings
-				return String(expected) === actual;
-			});
-		};
-	};
+		if (
+			!activeClassNameAttr ||
+			!('value' in activeClassNameAttr) ||
+			!activeClassNameAttr.value ||
+			!('value' in activeClassNameAttr.value)
+		) {
+			return;
+		}
 
-	root.findJSXElements('NavLink')
-		.filter(
-			hasAttributes({
-				className: () => true,
-				activeClassName: () => true,
-			}),
-		)
-		.forEach((path) => {
-			const attrs = path.value.openingElement.attributes;
+		const idx = attrs.findIndex((a) =>
+			'name' in a ? a.name.name === 'activeClassName' : false,
+		);
 
-			if (!attrs) {
-				return;
-			}
+		// remove activeclass name
+		attrs.splice(idx, 1);
 
-			const [classNameAttr] = attrs.filter((a) =>
-				'name' in a ? a.name.name === 'className' : false,
-			);
+		const propertyNode = j.property(
+			'init',
+			j.literal('isActive'),
+			j.identifier('isActive'),
+		);
 
-			if (
-				!classNameAttr ||
-				!('value' in classNameAttr) ||
-				!classNameAttr.value ||
-				!('value' in classNameAttr.value) ||
-				!classNameAttr.value.value
-			) {
-				return;
-			}
-
-			const [activeClassNameAttr] = attrs.filter((a) =>
-				'name' in a ? a.name.name === 'activeClassName' : false,
-			);
-
-			if (
-				!activeClassNameAttr ||
-				!('value' in activeClassNameAttr) ||
-				!activeClassNameAttr.value ||
-				!('value' in activeClassNameAttr.value)
-			) {
-				return;
-			}
-
-			const idx = attrs.findIndex((a) =>
-				'name' in a ? a.name.name === 'activeClassName' : false,
-			);
-
-			// remove activeclass name
-			attrs.splice(idx, 1);
-
-			const propertyNode = j.property(
-				'init',
-				j.literal('isActive'),
+		const arrFuncBody = j.binaryExpression(
+			'+',
+			j.literal(classNameAttr.value.value),
+			j.conditionalExpression(
 				j.identifier('isActive'),
-			);
+				j.literal(` ${activeClassNameAttr.value.value}`),
+				j.literal(''),
+			),
+		);
 
-			const arrFuncBody = j.binaryExpression(
-				'+',
-				j.literal(classNameAttr.value.value),
-				j.conditionalExpression(
-					j.identifier('isActive'),
-					j.literal(` ${activeClassNameAttr.value.value}`),
-					j.literal(''),
-				),
-			);
+		classNameAttr.value = j.jsxExpressionContainer(
+			j.arrowFunctionExpression(
+				[j.objectPattern([propertyNode])],
+				arrFuncBody,
+			),
+		);
 
-			classNameAttr.value = j.jsxExpressionContainer(
-				j.arrowFunctionExpression(
-					[j.objectPattern([propertyNode])],
-					arrFuncBody,
-				),
-			);
-
-			dirtyFlag = true;
-		});
+		dirtyFlag = true;
+	});
 
 	if (!dirtyFlag) {
 		return undefined;
