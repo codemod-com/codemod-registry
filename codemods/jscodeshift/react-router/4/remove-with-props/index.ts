@@ -41,14 +41,22 @@ function transform(
 		init: { callee: { name: 'withProps' } },
 	}).forEach((path) => {
 		const hocName = 'name' in path.value.id ? path.value.id.name : null;
-		// const hocProps = path.value.init?.arguments[1].properties;
 
 		const arg =
 			path.value.init && 'arguments' in path.value.init
 				? path.value.init.arguments[1]
 				: null;
 
-		const hocProps = arg && 'properties' in arg ? arg.properties : [];
+		const hocProps =
+			arg && 'properties' in arg
+				? arg.properties
+						.map((h) =>
+							'key' in h && 'name' in h.key ? h.key.name : null,
+						)
+						.filter(
+							(name): name is string => typeof name === 'string',
+						)
+				: [];
 
 		if (!hocName) {
 			return;
@@ -73,14 +81,18 @@ function transform(
 				);
 			})
 			.forEach((c) => {
-				const [compAttr] = c.value.openingElement.attributes.filter(
-					(a) => a.name.name === 'component',
-				);
-				compAttr.name.name = 'render';
+				const [compAttr] =
+					c.value.openingElement.attributes?.filter((a) =>
+						'name' in a ? a.name.name === 'component' : false,
+					) ?? [];
+
+				if (!compAttr || !('name' in compAttr)) {
+					return;
+				}
 
 				const newProps = hocProps.map((h) => {
 					return j.jsxAttribute(
-						j.jsxIdentifier(h.key.name),
+						j.jsxIdentifier(h),
 						j.jsxExpressionContainer(j.identifier('title')),
 					);
 				});
@@ -96,8 +108,9 @@ function transform(
 					),
 					null,
 					[],
-					// false,
 				);
+
+				compAttr.name.name = 'render';
 
 				compAttr.value = j.jsxExpressionContainer(
 					j.arrowFunctionExpression(
