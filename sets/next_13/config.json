@@ -1,0 +1,14 @@
+{
+    "schemaVersion": "1.0.0",
+    "name": "next_13",
+    "engine": "jscodeshift",
+    "codemods": [
+        "jscodeshift/next/13/new-image-experimental",
+        "jscodeshift/next/13/new-link",
+        "jscodeshift/next/13/next-image-to-legacy-image"
+    ],
+    "dependencyVersionLowerThan": [
+        "next",
+        "13.0.0"
+    ]
+}

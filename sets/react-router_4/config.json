@@ -1,0 +1,18 @@
+{
+    "schemaVersion": "1.0.0",
+    "name": "react-router_4",
+    "engine": "jscodeshift",
+    "codemods": [
+        "jscodeshift/react-router/4/add-exact-prop",
+        "jscodeshift/react-router/4/create-hash-history",
+        "jscodeshift/react-router/4/hash-router",
+        "jscodeshift/react-router/4/index-route",
+        "jscodeshift/react-router/4/remove-with-props",
+        "jscodeshift/react-router/4/rename-imports",
+        "jscodeshift/react-router/4/wrap-with-switch"
+    ],
+    "dependencyVersionLowerThan": [
+        "react-router",
+        "4.0.0"
+    ]
+}
