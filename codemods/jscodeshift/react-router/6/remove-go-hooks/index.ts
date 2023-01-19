@@ -74,28 +74,46 @@ function transform(
 			dirtyFlag = true;
 		}
 
-		const prop = j.objectProperty(
-			j.identifier('navigate'),
-			j.identifier('navigate'),
-		);
-		path.value.id.properties = [prop];
+		if ('properties' in path.value.id) {
+			const prop = j.objectProperty(
+				j.identifier('navigate'),
+				j.identifier('navigate'),
+			);
+			path.value.id.properties = [prop];
+
+			dirtyFlag = true;
+		}
 	});
 
 	root.find(j.CallExpression, { callee: { name: 'go' } }).forEach((path) => {
-		path.value.callee.name = 'navigate';
+		if ('name' in path.value.callee) {
+			path.value.callee.name = 'navigate';
+
+			dirtyFlag = true;
+		}
 	});
 
 	root.find(j.JSXExpressionContainer)
-		.filter((path) => path.value.expression.name === 'goBack')
+		.filter((path) =>
+			'name' in path.value.expression
+				? path.value.expression.name === 'goBack'
+				: false,
+		)
 		.forEach((path) => {
 			path.value.expression = j.arrowFunctionExpression(
 				[],
 				j.callExpression(j.identifier('navigate'), [j.literal(-1)]),
 			);
+
+			dirtyFlag = true;
 		});
 
 	root.find(j.JSXExpressionContainer)
-		.filter((path) => path.value.expression.name === 'goForward')
+		.filter((path) =>
+			'name' in path.value.expression
+				? path.value.expression.name === 'goForward'
+				: false,
+		)
 		.forEach((path) => {
 			path.value.expression = j.arrowFunctionExpression(
 				[],
