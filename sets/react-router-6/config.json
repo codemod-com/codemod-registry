@@ -1,0 +1,28 @@
+{
+    "schemaVersion": "1.0.0",
+    "name": "react-router_6",
+    "engine": "jscodeshift",
+    "codemods": [
+        "jscodeshift/react-router/6/compat-route",
+        "jscodeshift/react-router/6/match-path-arguments",
+        "jscodeshift/react-router/6/remove-active-classname",
+        "jscodeshift/react-router/6/remove-go-hooks",
+        "jscodeshift/react-router/6/static-router-imports",
+        "jscodeshift/react-router/6/use-params",
+        "jscodeshift/react-router/6/compat-router",
+        "jscodeshift/react-router/6/navlink-exact-end",
+        "jscodeshift/react-router/6/remove-active-style",
+        "jscodeshift/react-router/6/remove-redirect-inside-switch",
+        "jscodeshift/react-router/6/use-location",
+        "jscodeshift/react-router/6/use-route-match",
+        "jscodeshift/react-router/6/link-to-props",
+        "jscodeshift/react-router/6/redirect-to-navigate",
+        "jscodeshift/react-router/6/remove-compat-router",
+        "jscodeshift/react-router/6/rename-compat-imports",
+        "jscodeshift/react-router/6/use-navigate"
+    ],
+    "dependencyVersionLowerThan": [
+        "react-router",
+        "6.0.0"
+    ]
+}
