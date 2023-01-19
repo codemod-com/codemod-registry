@@ -37,6 +37,8 @@ function transform(
 
 	const root = j(file.source);
 
+	let dirtyFlag = false;
+
 	root.find(j.VariableDeclarator, {
 		init: { callee: { name: 'withProps' } },
 	}).forEach((path) => {
@@ -122,7 +124,13 @@ function transform(
 			});
 
 		j(path.parentPath.parentPath).remove();
+
+		dirtyFlag = true;
 	});
+
+	if (!dirtyFlag) {
+		return undefined;
+	}
 
 	return root.toSource(options);
 }
