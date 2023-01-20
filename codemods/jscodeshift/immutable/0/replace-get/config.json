@@ -1,6 +1,6 @@
 {
     "schemaVersion": "1.0.0",
-    "name": "immutable/0/add-deprecation-comment",
+    "name": "immutable/0/replace-get",
     "engine": "jscodeshift",
     "extensions": [
         "js*",
