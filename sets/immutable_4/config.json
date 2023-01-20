@@ -1,0 +1,12 @@
+{
+    "schemaVersion": "1.0.0",
+    "name": "immutable_4",
+    "codemods": [
+        "jscodeshift/immutable/4/map-to-array",
+        "jscodeshift/immutable/4/rename-to-seq"
+    ],
+    "dependencyVersionLowerThan": [
+        "immutable",
+        "4.0.0"
+    ]
+}
