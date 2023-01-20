@@ -1,7 +1,6 @@
 {
     "schemaVersion": "1.0.0",
     "name": "react-router_4",
-    "engine": "jscodeshift",
     "codemods": [
         "jscodeshift/react-router/4/add-exact-prop",
         "jscodeshift/react-router/4/create-hash-history",

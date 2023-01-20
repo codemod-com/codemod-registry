@@ -1,7 +1,6 @@
 {
     "schemaVersion": "1.0.0",
     "name": "react-router_6",
-    "engine": "jscodeshift",
     "codemods": [
         "jscodeshift/react-router/6/compat-route",
         "jscodeshift/react-router/6/match-path-arguments",
