@@ -1,6 +1,6 @@
 {
 	"schemaVersion": "1.0.0",
-	"name": "@redwoodjs/core/4/redwood-apollo-provider",
+	"name": "redwoodjs/core/4/router-use-auth",
 	"engine": "jscodeshift",
 	"extensions": [
 		"js*",
