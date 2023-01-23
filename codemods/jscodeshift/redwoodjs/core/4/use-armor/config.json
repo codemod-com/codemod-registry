@@ -1,0 +1,13 @@
+{
+    "schemaVersion": "1.0.0",
+    "name": "redwoodjs/core/4/use-armor",
+    "engine": "jscodeshift",
+    "extensions": [
+        "js*",
+        "ts*"
+    ],
+    "dependencyVersionLowerThan": [
+        "@redwoodjs/core",
+        "4.0.0"
+    ]
+}
