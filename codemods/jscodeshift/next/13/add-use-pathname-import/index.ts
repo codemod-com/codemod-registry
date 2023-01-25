@@ -8,23 +8,15 @@ export default function transformer(
 	const j = api.jscodeshift;
 	const root = j(file.source);
 
-	let dirtyFlag = false;
+	const size = root
+		.find(j.CallExpression, {
+			callee: {
+				name: 'usePathname',
+			},
+		})
+		.size();
 
-	root.find(j.VariableDeclarator, {
-		id: { name: 'pathname' },
-		init: {
-			property: { name: 'pathname' },
-		},
-	}).replaceWith(() => {
-		dirtyFlag = true;
-
-		return j.variableDeclarator(
-			j.identifier('pathname'),
-			j.callExpression(j.identifier('usePathname'), []),
-		);
-	});
-
-	if (!dirtyFlag) {
+	if (!size) {
 		return null;
 	}
 
