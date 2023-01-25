@@ -23,7 +23,7 @@ THE SOFTWARE.
 */
 
 /*
-Changes to the original file: add any typings in places where the compiler complained
+Changes to the original file: add the options parameter
 */
 
 module.exports = function transformer(file, api, options) {
