@@ -1,5 +1,20 @@
 import { API, FileInfo, ObjectPattern, Options, Transform } from 'jscodeshift';
 
+const buildProxy = <T extends object>(obj: T) => {
+	let dirtyFlag = false;
+
+	const proxy = new Proxy(obj, {
+		get(target, prop, receiver) {
+			if (prop === 'replace' || prop === 'insertAfter') {
+				dirtyFlag = true;
+			}
+			return Reflect.get(target, prop, receiver);
+		},
+	});
+
+	return [proxy, () => dirtyFlag] as const;
+};
+
 export default function transformer(
 	file: FileInfo,
 	api: API,
@@ -15,7 +30,10 @@ export default function transformer(
 
 		j(variableDeclaration)
 			.find(j.ObjectPattern)
-			.forEach((objectPattern) => {
+			.forEach((objectPatternPath) => {
+				const [objectPattern, getDirtyFlag] =
+					buildProxy(objectPatternPath);
+
 				let keyName: string | null = null;
 				const properties: ObjectPattern['properties'] = [];
 
