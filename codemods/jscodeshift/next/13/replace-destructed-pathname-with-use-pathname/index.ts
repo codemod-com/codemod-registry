@@ -8,33 +8,44 @@ export default function transformer(
 	const j = api.jscodeshift;
 	const root = j(file.source);
 
-	let keyName: string | null = null;
+	let variableDeclarationDirtyFlag = false;
 
-	root.find(j.ObjectPattern).forEach((objectPattern) => {
-		const properties: ObjectPattern['properties'] = [];
+	root.find(j.VariableDeclaration).forEach((variableDeclaration) => {
+		let dirtyFlag = false;
 
-		objectPattern.value.properties.forEach((property) => {
-			if (property.type === 'Property') {
-				const { key, value } = property;
+		j(variableDeclaration)
+			.find(j.ObjectPattern)
+			.forEach((objectPattern) => {
+				let keyName: string | null = null;
+				const properties: ObjectPattern['properties'] = [];
 
-				if (
-					key.type === 'Identifier' &&
-					value.type === 'Identifier' &&
-					value.name === 'pathname'
-				) {
-					keyName = key.name;
+				objectPattern.value.properties.forEach((property) => {
+					if (property.type === 'Property') {
+						const { key, value } = property;
 
-					return;
+						if (
+							key.type === 'Identifier' &&
+							value.type === 'Identifier' &&
+							value.name === 'pathname'
+						) {
+							keyName = key.name;
+
+							return;
+						}
+					}
+
+					properties.push(property);
+				});
+
+				if (keyName) {
+					objectPattern.replace(j.objectPattern(properties));
+
+					dirtyFlag = true;
 				}
-			}
+			});
 
-			properties.push(property);
-		});
-
-		if (keyName) {
-			objectPattern.replace(j.objectPattern(properties));
-
-			objectPattern.parent?.parent?.insertAfter(
+		if (dirtyFlag) {
+			variableDeclaration.insertAfter(
 				j.variableDeclaration('const', [
 					j.variableDeclarator(
 						j.identifier('pathname'),
@@ -42,10 +53,12 @@ export default function transformer(
 					),
 				]),
 			);
+
+			variableDeclarationDirtyFlag = true;
 		}
 	});
 
-	if (!keyName) {
+	if (!variableDeclarationDirtyFlag) {
 		return undefined;
 	}
 
