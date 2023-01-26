@@ -9,7 +9,6 @@ export default function transformer(
 	const root = j(file.source);
 
 	let keyName: string | null = null;
-	let objectPatternStart: Position | null = null;
 
 	root.find(j.ObjectPattern).forEach((objectPattern) => {
 		const properties: ObjectPattern['properties'] = [];
@@ -33,21 +32,9 @@ export default function transformer(
 		});
 
 		if (keyName) {
-			objectPatternStart = objectPattern.value.loc?.start ?? null;
-
 			objectPattern.replace(j.objectPattern(properties));
-		}
-	});
 
-	if (!keyName) {
-		return undefined;
-	}
-
-	root.find(j.VariableDeclaration).forEach((variableDeclaration) => {
-		const start = variableDeclaration.value.loc?.start;
-
-		if (objectPatternStart && start && objectPatternStart)
-			variableDeclaration.insertAfter(
+			objectPattern.parent?.parent?.insertAfter(
 				j.variableDeclaration('const', [
 					j.variableDeclarator(
 						j.identifier('pathname'),
@@ -55,7 +42,12 @@ export default function transformer(
 					),
 				]),
 			);
+		}
 	});
+
+	if (!keyName) {
+		return undefined;
+	}
 
 	return root.toSource();
 }
