@@ -20,6 +20,9 @@ const buildProxy = <T extends object>(obj: T, onDirty: () => void) => {
 
 type DirtyFlag = 'variableDeclaration' | 'propertyPath';
 
+const PATHNAME = 'pathname';
+const USE_PATHNAME = 'usePathname';
+
 export default function transformer(
 	file: FileInfo,
 	api: API,
@@ -58,7 +61,7 @@ export default function transformer(
 						if (
 							key.type === 'Identifier' &&
 							value.type === 'Identifier' &&
-							key.name === 'pathname'
+							key.name === PATHNAME
 						) {
 							valueName = value.name;
 
@@ -72,7 +75,7 @@ export default function transformer(
 				j.variableDeclaration('const', [
 					j.variableDeclarator(
 						j.identifier(valueName),
-						j.callExpression(j.identifier('usePathname'), []),
+						j.callExpression(j.identifier(USE_PATHNAME), []),
 					),
 				]),
 			);

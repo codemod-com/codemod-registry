@@ -8,6 +8,23 @@ export default function transformer(
 	const j = api.jscodeshift;
 	const root = j(file.source);
 
+	const importDeclarations = root.find(j.ImportDeclaration, {
+		type: 'ImportDeclaration',
+		specifiers: [
+			{
+				type: 'ImportSpecifier',
+				imported: {
+					type: 'Identifier',
+					name: 'usePathname',
+				},
+			},
+		],
+	});
+
+	if (importDeclarations.size()) {
+		return undefined;
+	}
+
 	const size = root
 		.find(j.CallExpression, {
 			callee: {
@@ -17,7 +34,7 @@ export default function transformer(
 		.size();
 
 	if (!size) {
-		return null;
+		return undefined;
 	}
 
 	const importDeclaration = j.importDeclaration(
@@ -30,8 +47,9 @@ export default function transformer(
 		j.stringLiteral('next/navigation'),
 	);
 
-	const body = root.get().value.program.body;
-	body.unshift(importDeclaration);
+	root.find(j.Program).forEach((program) => {
+		program.value.body.unshift(importDeclaration);
+	});
 
 	return root.toSource();
 }
