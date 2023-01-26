@@ -3,7 +3,7 @@ import { API, FileInfo, Options, Transform } from 'jscodeshift';
 const buildProxy = <T extends object>(obj: T, onDirty: () => void) => {
 	let dirtyFlag = false;
 
-	const proxy = new Proxy(obj, {
+	return new Proxy(obj, {
 		get(target, prop, receiver) {
 			if (prop === 'replace' || prop === 'insertAfter') {
 				if (!dirtyFlag) {
@@ -14,8 +14,6 @@ const buildProxy = <T extends object>(obj: T, onDirty: () => void) => {
 			return Reflect.get(target, prop, receiver);
 		},
 	});
-
-	return proxy;
 };
 
 type DirtyFlag = 'variableDeclaration' | 'propertyPath';
