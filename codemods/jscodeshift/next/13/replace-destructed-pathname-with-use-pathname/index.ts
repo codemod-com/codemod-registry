@@ -34,8 +34,6 @@ export default function transformer(
 	const j = api.jscodeshift;
 	const root = j(file.source);
 
-	let variableDeclarationDirtyFlag = false;
-
 	root.find(j.VariableDeclaration).forEach((variableDeclarationPath) => {
 		const variableDeclaration = buildProxy(
 			variableDeclarationPath,
@@ -85,12 +83,10 @@ export default function transformer(
 					),
 				]),
 			);
-
-			variableDeclarationDirtyFlag = true;
 		}
 	});
 
-	if (!variableDeclarationDirtyFlag) {
+	if (!dirtyFlags.has('variableDeclaration')) {
 		return undefined;
 	}
 
