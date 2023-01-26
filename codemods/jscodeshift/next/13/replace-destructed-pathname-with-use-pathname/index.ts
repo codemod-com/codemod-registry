@@ -1,4 +1,4 @@
-import { API, FileInfo, ObjectPattern, Options, Position } from 'jscodeshift';
+import { API, FileInfo, ObjectPattern, Options, Transform } from 'jscodeshift';
 
 export default function transformer(
 	file: FileInfo,
@@ -51,3 +51,5 @@ export default function transformer(
 
 	return root.toSource();
 }
+
+transformer satisfies Transform;

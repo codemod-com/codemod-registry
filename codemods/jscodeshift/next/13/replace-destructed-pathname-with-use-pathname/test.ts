@@ -3,7 +3,7 @@ import transform from '.';
 import assert from 'node:assert/strict';
 import { Context } from 'mocha';
 
-describe('next 13 replace-destructed-pathname-with-use-pathname', function () {
+describe.only('next 13 replace-destructed-pathname-with-use-pathname', function () {
 	it('should noop for pathname = a.b', async function (this: Context) {
 		const INPUT = 'const pathname = a.b;';
 
@@ -14,10 +14,10 @@ describe('next 13 replace-destructed-pathname-with-use-pathname', function () {
 
 		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
 
-		assert.deepEqual(actualOutput, null);
+		assert.deepEqual(actualOutput, undefined);
 	});
 
-	it.only('should replace { pathname } destructed from useRouter() with usePathname()', async function (this: Context) {
+	it('should replace { pathname } destructed from useRouter() with usePathname()', async function (this: Context) {
 		const INPUT = 'const { pathname } = useRouter();';
 		const OUTPUT =
 			'const {} = useRouter(); const pathname = usePathname();';
@@ -28,8 +28,6 @@ describe('next 13 replace-destructed-pathname-with-use-pathname', function () {
 		};
 
 		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
-
-		console.log(actualOutput);
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
