@@ -1,4 +1,4 @@
-import { API, FileInfo, ObjectPattern, Options, Transform } from 'jscodeshift';
+import { API, FileInfo, Options, Transform } from 'jscodeshift';
 
 const buildProxy = <T extends object>(obj: T, onDirty: () => void) => {
 	let dirtyFlag = false;
@@ -18,7 +18,7 @@ const buildProxy = <T extends object>(obj: T, onDirty: () => void) => {
 	return proxy;
 };
 
-type DirtyFlag = 'objectPattern' | 'variableDeclaration';
+type DirtyFlag = 'variableDeclaration' | 'propertyPath';
 
 export default function transformer(
 	file: FileInfo,
@@ -40,45 +40,38 @@ export default function transformer(
 			buildOnDirty('variableDeclaration'),
 		);
 
+		let valueName: string | null = null;
+
 		j(variableDeclaration)
 			.find(j.ObjectPattern)
 			.forEach((objectPatternPath) => {
-				const objectPattern = buildProxy(
-					objectPatternPath,
-					buildOnDirty('objectPattern'),
-				);
+				j(objectPatternPath)
+					.find(j.Property)
+					.forEach((propertyPath) => {
+						const propertyPathProxy = buildProxy(
+							propertyPath,
+							buildOnDirty('propertyPath'),
+						);
 
-				let keyName: string | null = null;
-				const properties: ObjectPattern['properties'] = [];
-
-				objectPattern.value.properties.forEach((property) => {
-					if (property.type === 'Property') {
-						const { key, value } = property;
+						const { key, value } = propertyPathProxy.value;
 
 						if (
 							key.type === 'Identifier' &&
 							value.type === 'Identifier' &&
-							value.name === 'pathname'
+							key.name === 'pathname'
 						) {
-							keyName = key.name;
+							valueName = value.name;
 
-							return;
+							propertyPathProxy.replace();
 						}
-					}
-
-					properties.push(property);
-				});
-
-				if (keyName) {
-					objectPattern.replace(j.objectPattern(properties));
-				}
+					});
 			});
 
-		if (dirtyFlags.has('objectPattern')) {
+		if (dirtyFlags.has('propertyPath') && valueName) {
 			variableDeclaration.insertAfter(
 				j.variableDeclaration('const', [
 					j.variableDeclarator(
-						j.identifier('pathname'),
+						j.identifier(valueName),
 						j.callExpression(j.identifier('usePathname'), []),
 					),
 				]),

@@ -51,4 +51,21 @@ describe.only('next 13 replace-destructed-pathname-with-use-pathname', function 
 			OUTPUT.replace(/\W/gm, ''),
 		);
 	});
+
+	it('should replace { pathname: p } destructed from router with const p = usePathname()', async function (this: Context) {
+		const INPUT = 'const { pathname: p } = router';
+		const OUTPUT = 'const {} = router; const p = usePathname();';
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
+
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
 });
