@@ -4,7 +4,10 @@
     "codemods": [
         "jscodeshift/next/13/new-image-experimental",
         "jscodeshift/next/13/new-link",
-        "jscodeshift/next/13/next-image-to-legacy-image"
+        "jscodeshift/next/13/next-image-to-legacy-image",
+        "jscodeshift/next/13/replace-destructed-pathname-with-use-pathname",
+        "jscodeshift/next/13/replace-destructed-use-reouter-pathname-with-use-pathname",
+        "jscodeshift/next/13/add-use-pathname-import"
     ],
     "dependencyVersionLowerThan": [
         "next",
