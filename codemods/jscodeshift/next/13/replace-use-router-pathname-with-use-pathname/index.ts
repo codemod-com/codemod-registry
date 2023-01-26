@@ -1,4 +1,4 @@
-import { API, FileInfo, Options } from 'jscodeshift';
+import { API, FileInfo, Options, Transform } from 'jscodeshift';
 
 export default function transformer(
 	file: FileInfo,
@@ -11,9 +11,16 @@ export default function transformer(
 	let dirtyFlag = false;
 
 	root.find(j.VariableDeclarator, {
-		id: { name: 'pathname' },
+		id: {
+			type: 'Identifier',
+			name: 'pathname',
+		},
 		init: {
-			property: { name: 'pathname' },
+			type: 'MemberExpression',
+			property: {
+				type: 'Identifier',
+				name: 'pathname',
+			},
 		},
 	}).replaceWith(() => {
 		dirtyFlag = true;
@@ -25,8 +32,10 @@ export default function transformer(
 	});
 
 	if (!dirtyFlag) {
-		return null;
+		return undefined;
 	}
 
 	return root.toSource();
 }
+
+transformer satisfies Transform;

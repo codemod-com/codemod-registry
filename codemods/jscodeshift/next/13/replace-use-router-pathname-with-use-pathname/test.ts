@@ -3,7 +3,7 @@ import transform from '.';
 import assert from 'node:assert/strict';
 import { Context } from 'mocha';
 
-describe('next 13 replace-use-router-pathname-with-use-pathname', function () {
+describe.only('next 13 replace-use-router-pathname-with-use-pathname', function () {
 	it('should noop for pathname = a.b', async function (this: Context) {
 		const INPUT = 'const pathname = a.b;';
 
@@ -14,7 +14,7 @@ describe('next 13 replace-use-router-pathname-with-use-pathname', function () {
 
 		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
 
-		assert.deepEqual(actualOutput, null);
+		assert.deepEqual(actualOutput, undefined);
 	});
 
 	it('should replace useRouter().pathname with usePathname()', async function (this: Context) {
