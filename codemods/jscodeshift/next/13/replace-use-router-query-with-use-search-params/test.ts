@@ -44,6 +44,8 @@ describe.only('next 13 replace-use-router-query-with-use-search-params', functio
 
 		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
 
+		console.log(actualOutput);
+
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),

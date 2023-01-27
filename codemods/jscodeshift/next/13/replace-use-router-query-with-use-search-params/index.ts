@@ -30,6 +30,36 @@ export default function transformer(
 		return undefined;
 	}
 
+	root.find(j.BlockStatement).forEach((blockStatementPath) => {
+		j(blockStatementPath)
+			.find(j.VariableDeclarator, {
+				init: {
+					type: 'CallExpression',
+					callee: {
+						type: 'Identifier',
+						name: 'useRouter',
+					},
+				},
+			})
+			.forEach((variableDeclaratorPath) => {
+				j(variableDeclaratorPath)
+					.find(j.ObjectPattern)
+					.replaceWith((objectPatternPath) => {
+						const properties =
+							objectPatternPath.node.properties.filter(
+								(property) =>
+									!(
+										property.type === 'Property' &&
+										property.key.type === 'Identifier' &&
+										property.key.name === 'query'
+									),
+							);
+
+						return j.objectPattern(properties);
+					});
+			});
+	});
+
 	const importDeclaration = j.importDeclaration(
 		[
 			j.importSpecifier(
