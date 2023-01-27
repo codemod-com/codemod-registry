@@ -1,5 +1,7 @@
 import {
 	BindingElement,
+	Block,
+	ImportDeclaration,
 	ImportSpecifier,
 	ObjectBindingPattern,
 	Project,
@@ -13,20 +15,37 @@ export default function transformer(sourceFileText: string): string {
 
 	const sourceFile = project.createSourceFile('index.ts', sourceFileText);
 
-	const variableDeclarations = new Set<VariableDeclaration>();
-	const importSpecifiers: ImportSpecifier[] = [];
-	const objectBindingPatterns = new Set<ObjectBindingPattern>();
+	/** IMPORTS **/
+	const importStructures = new Set<[ImportDeclaration, ImportSpecifier]>();
 
-	sourceFile.getImportDeclarations().forEach((declaration) => {
-		declaration
-			.getImportClause()
-			?.getNamedImports()
-			.forEach((importSpecifier) => {
-				if (importSpecifier.getName() === 'useRouter') {
-					importSpecifiers.push(importSpecifier);
-				}
-			});
+	sourceFile.getImportDeclarations().forEach((importDeclaration) => {
+		importDeclaration.getNamedImports().forEach((importSpecifier) => {
+			if (importSpecifier.getName() === 'useRouter') {
+				importStructures.add([importDeclaration, importSpecifier]);
+			}
+		});
 	});
+
+	importStructures.forEach(([importDeclaration, importSpecifier]) => {
+		if (importDeclaration.getNamedImports().length === 1) {
+			importDeclaration.remove();
+		} else {
+			importSpecifier.remove();
+		}
+	});
+
+	sourceFile.addImportDeclaration({
+		moduleSpecifier: 'next/navigation',
+		namedImports: [
+			{
+				name: 'useSearchParams',
+			},
+		],
+	});
+
+	const blocks = new Set<Block>();
+
+	const objectBindingPatterns = new Set<ObjectBindingPattern>();
 
 	sourceFile
 		.getDescendantsOfKind(SyntaxKind.CallExpression)
@@ -58,26 +77,37 @@ export default function transformer(sourceFileText: string): string {
 							if (bindingElement.getName() === 'query') {
 								objectBindingPatterns.add(objectBindingPattern);
 
-								variableDeclarations.add(variableDeclaration);
+								const block =
+									variableDeclaration.getFirstAncestorByKind(
+										SyntaxKind.Block,
+									);
+
+								if (block) {
+									blocks.add(block);
+								}
 							}
 						});
 				});
 		});
 
 	// removal
-	importSpecifiers.forEach((importSpecifier) => importSpecifier.remove());
+
 	objectBindingPatterns.forEach((bindingElement) =>
 		bindingElement.transform(() => factory.createObjectBindingPattern([])),
 	);
 
 	// add
-	sourceFile.addImportDeclaration({
-		moduleSpecifier: 'next/navigation',
-		namedImports: [
-			{
-				name: 'useSearchParams',
-			},
-		],
+
+	blocks.forEach((block) => {
+		block.addVariableStatement({
+			// TODO const vs let
+			declarations: [
+				{
+					name: 'query',
+					initializer: 'useSearchParams()',
+				},
+			],
+		});
 	});
 
 	return sourceFile.getText();

@@ -27,6 +27,8 @@ describe.only('next 13 replace-use-router-query-with-use-search-params', functio
 
 		console.log(INPUT);
 
+		console.log('----------------------');
+
 		console.log(actualOutput);
 
 		// assert.deepEqual(
