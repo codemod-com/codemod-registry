@@ -7,6 +7,7 @@ import {
 	Project,
 	SyntaxKind,
 	VariableDeclaration,
+	VariableDeclarationKind,
 } from 'ts-morph';
 import { factory } from 'typescript';
 
@@ -118,7 +119,7 @@ export default function transformer(sourceFileText: string): string {
 
 		blocks.forEach((block) => {
 			block.addVariableStatement({
-				// TODO const vs let
+				declarationKind: VariableDeclarationKind.Const,
 				declarations: [
 					{
 						name: 'query',
@@ -131,8 +132,9 @@ export default function transformer(sourceFileText: string): string {
 
 	/** specific nodes stemming from query */
 	{
-		const bindingElements = new Set<BindingElement>();
-		const blocks = new Set<Block>();
+		const structures = new Set<
+			[Block | undefined, BindingElement, string]
+		>();
 
 		sourceFile
 			.getDescendantsOfKind(SyntaxKind.VariableDeclaration)
@@ -148,18 +150,32 @@ export default function transformer(sourceFileText: string): string {
 				variableDeclaration
 					.getDescendantsOfKind(SyntaxKind.BindingElement)
 					.forEach((bindingElement) => {
-						bindingElements.add(bindingElement);
-
 						const block =
 							variableDeclaration.getFirstAncestorByKind(
 								SyntaxKind.Block,
 							);
 
-						if (block) {
-							blocks.add(block);
-						}
+						structures.add([
+							block,
+							bindingElement,
+							bindingElement.getName(),
+						]);
 					});
 			});
+
+		structures.forEach(([block, bindingElement, name]) => {
+			bindingElement.replaceWithText('');
+
+			block?.addVariableStatement({
+				declarationKind: VariableDeclarationKind.Const,
+				declarations: [
+					{
+						name,
+						initializer: 'query.get("a")',
+					},
+				],
+			});
+		});
 	}
 
 	return sourceFile.getText();
