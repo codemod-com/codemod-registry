@@ -22,7 +22,7 @@ function Component() {
 }
 `;
 
-describe('next 13 replace-use-router-query-with-use-search-params', function () {
+describe.only('next 13 replace-use-router-query-with-use-search-params', function () {
 	it('should replace INPUT with OUTPUT', async function (this: Context) {
 		const fileInfo: FileInfo = {
 			path: 'index.js',
