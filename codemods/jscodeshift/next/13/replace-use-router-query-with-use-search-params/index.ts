@@ -4,6 +4,7 @@ import {
 	ObjectBindingPattern,
 	Project,
 	SyntaxKind,
+	VariableDeclaration,
 } from 'ts-morph';
 import { factory } from 'typescript';
 
@@ -12,6 +13,7 @@ export default function transformer(sourceFileText: string): string {
 
 	const sourceFile = project.createSourceFile('index.ts', sourceFileText);
 
+	const variableDeclarations = new Set<VariableDeclaration>();
 	const importSpecifiers: ImportSpecifier[] = [];
 	const objectBindingPatterns = new Set<ObjectBindingPattern>();
 
@@ -55,6 +57,8 @@ export default function transformer(sourceFileText: string): string {
 						.forEach((bindingElement) => {
 							if (bindingElement.getName() === 'query') {
 								objectBindingPatterns.add(objectBindingPattern);
+
+								variableDeclarations.add(variableDeclaration);
 							}
 						});
 				});
@@ -65,6 +69,16 @@ export default function transformer(sourceFileText: string): string {
 	objectBindingPatterns.forEach((bindingElement) =>
 		bindingElement.transform(() => factory.createObjectBindingPattern([])),
 	);
+
+	// add
+	sourceFile.addImportDeclaration({
+		moduleSpecifier: 'next/navigation',
+		namedImports: [
+			{
+				name: 'useSearchParams',
+			},
+		],
+	});
 
 	return sourceFile.getText();
 }
