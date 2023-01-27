@@ -1,20 +1,45 @@
-import { API, FileInfo, Options, Transform } from 'jscodeshift';
+import { ImportSpecifier, Project, SyntaxKind } from 'ts-morph';
 
-export default function transformer(
-	file: FileInfo,
-	api: API,
-	options: Options,
-) {
-	const j = api.jscodeshift;
-	const root = j(file.source);
+export default function transformer(sourceFileText: string): string {
+	const project = new Project();
 
-	let dirtyFlag = false;
+	const sourceFile = project.createSourceFile('index.ts', sourceFileText);
 
-	if (!dirtyFlag) {
-		return undefined;
-	}
+	const importSpecifiers: ImportSpecifier[] = [];
 
-	return root.toSource();
+	sourceFile.getImportDeclarations().forEach((declaration) => {
+		declaration
+			.getImportClause()
+			?.getNamedImports()
+			.forEach((importSpecifier) => {
+				if (importSpecifier.getName() === 'useRouter') {
+					importSpecifiers.push(importSpecifier);
+				}
+			});
+	});
+
+	sourceFile
+		.getDescendantsOfKind(SyntaxKind.CallExpression)
+		.forEach((callExpression) => {
+			const expression = callExpression.getExpression();
+
+			if (
+				expression.isKind(SyntaxKind.Identifier) &&
+				expression.getText() === 'useRouter'
+			) {
+				console.log('HERE');
+
+				const variableDeclaration = callExpression.getParentIfKind(
+					SyntaxKind.VariableDeclaration,
+				);
+
+				if 
+			}
+		});
+
+	// removal
+
+	importSpecifiers.forEach((importSpecifier) => importSpecifier.remove());
+
+	return sourceFile.getText();
 }
-
-transformer satisfies Transform;
