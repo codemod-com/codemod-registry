@@ -168,16 +168,6 @@ export default function transformer(
 				],
 			});
 		});
-
-		variableDeclarations.forEach((variableDeclaration) => {
-			if (
-				variableDeclaration.getDescendantsOfKind(
-					SyntaxKind.BindingElement,
-				).length === 0
-			) {
-				variableDeclaration.remove();
-			}
-		});
 	}
 
 	return sourceFile.getText();
