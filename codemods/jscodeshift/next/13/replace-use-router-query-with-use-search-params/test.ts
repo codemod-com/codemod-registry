@@ -23,7 +23,7 @@ function Component() {
 }
 `;
 
-describe.only('next 13 replace-use-router-query-with-use-search-params', function () {
+describe('next 13 replace-use-router-query-with-use-search-params', function () {
 	it('should noop', async function (this: Context) {
 		const actualOutput = transform('const x = y;');
 
