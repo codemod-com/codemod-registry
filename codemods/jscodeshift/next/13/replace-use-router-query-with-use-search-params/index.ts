@@ -163,7 +163,7 @@ export default function transformer(
 				declarations: [
 					{
 						name,
-						initializer: 'query.get("a")',
+						initializer: `query.get("${name}")`,
 					},
 				],
 			});

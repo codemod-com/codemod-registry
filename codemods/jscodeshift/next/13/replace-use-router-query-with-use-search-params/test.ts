@@ -7,7 +7,7 @@ const INPUT = `import { useRouter } from 'next/router';
 
 function Component() {
     const { query } = useRouter();
-    const { a } = query;
+    const { a, b, c } = query;
 }`;
 
 const OUTPUT = `
@@ -18,6 +18,8 @@ function Component() {
 	const { } = useRouter();
     const query = useSearchParams();
     const a = query.get('a');
+	const b = query.get('b');
+	const c = query.get('c');
 }
 `;
 
