@@ -10,30 +10,39 @@ export default function transformer(
 
 	let dirtyFlag = false;
 
-	root.find(j.VariableDeclarator, {
-		id: {
-			type: 'Identifier',
-			name: 'pathname',
-		},
-		init: {
-			type: 'MemberExpression',
-			property: {
-				type: 'Identifier',
-				name: 'pathname',
+	const hasImportDeclarations = root
+		.find(j.ImportDeclaration, {
+			specifiers: [
+				{
+					imported: {
+						type: 'Identifier',
+						name: 'useRouter',
+					},
+				},
+			],
+			source: {
+				value: 'next/router',
 			},
-		},
-	}).replaceWith(() => {
-		dirtyFlag = true;
+		})
+		.size();
 
-		return j.variableDeclarator(
-			j.identifier('pathname'),
-			j.callExpression(j.identifier('usePathname'), []),
-		);
-	});
-
-	if (!dirtyFlag) {
+	if (!hasImportDeclarations) {
 		return undefined;
 	}
+
+	const importDeclaration = j.importDeclaration(
+		[
+			j.importSpecifier(
+				j.identifier('useSearchParams'),
+				j.identifier('useSearchParams'),
+			),
+		],
+		j.stringLiteral('next/navigation'),
+	);
+
+	root.find(j.Program).forEach((program) => {
+		program.value.body.unshift(importDeclaration);
+	});
 
 	return root.toSource();
 }
