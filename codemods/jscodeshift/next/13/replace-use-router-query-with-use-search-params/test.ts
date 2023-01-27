@@ -1,4 +1,4 @@
-import transform from '.';
+import transform from './index.backup';
 import assert from 'node:assert/strict';
 import { Context } from 'mocha';
 
