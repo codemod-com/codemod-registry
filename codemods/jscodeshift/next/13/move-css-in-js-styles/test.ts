@@ -28,7 +28,7 @@ export default () => (
 )
 `;
 
-describe.only('next 13 move-css-in-js-styles', function () {
+describe('next 13 move-css-in-js-styles', function () {
 	it('should remove the style component, add an import and a class name', async function (this: Context) {
 		const fileInfo: FileInfo = {
 			path: 'index.js',

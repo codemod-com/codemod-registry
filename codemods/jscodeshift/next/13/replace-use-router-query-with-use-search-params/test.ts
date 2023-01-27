@@ -1,6 +1,7 @@
-import transform from './index.backup';
+import transform from '.';
 import assert from 'node:assert/strict';
 import { Context } from 'mocha';
+import { FileInfo } from 'jscodeshift';
 
 // the best case (with no substitutions)
 const INPUT = `import { useRouter } from 'next/router';
@@ -23,15 +24,25 @@ function Component() {
 }
 `;
 
-describe('next 13 replace-use-router-query-with-use-search-params', function () {
+describe.only('next 13 replace-use-router-query-with-use-search-params', function () {
 	it('should noop', async function (this: Context) {
-		const actualOutput = transform('const x = y;');
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: 'const x = y;',
+		};
+
+		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
 
 		assert.deepEqual(actualOutput, undefined);
 	});
 
 	it('should replace INPUT with OUTPUT', async function (this: Context) {
-		const actualOutput = transform(INPUT);
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
