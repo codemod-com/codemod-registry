@@ -16,7 +16,6 @@ import { useSearchParams } from 'next/navigation';
 
 function Component() {
 	const { } = useRouter();
-	const { } = query;
     const query = useSearchParams();
     const a = query.get('a');
 }

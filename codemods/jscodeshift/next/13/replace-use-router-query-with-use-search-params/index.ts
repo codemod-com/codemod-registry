@@ -1,8 +1,6 @@
 import {
 	BindingElement,
 	Block,
-	ImportDeclaration,
-	ImportSpecifier,
 	ObjectBindingPattern,
 	Project,
 	SyntaxKind,
@@ -19,28 +17,30 @@ export default function transformer(
 	const sourceFile = project.createSourceFile('index.ts', sourceFileText);
 
 	/** IMPORTS **/
-	let hasUseRouterImportSpecifier = false;
+	{
+		let hasUseRouterImportSpecifier = false;
 
-	sourceFile.getImportDeclarations().forEach((importDeclaration) => {
-		importDeclaration.getNamedImports().forEach((importSpecifier) => {
-			if (importSpecifier.getName() === 'useRouter') {
-				hasUseRouterImportSpecifier = true;
-			}
+		sourceFile.getImportDeclarations().forEach((importDeclaration) => {
+			importDeclaration.getNamedImports().forEach((importSpecifier) => {
+				if (importSpecifier.getName() === 'useRouter') {
+					hasUseRouterImportSpecifier = true;
+				}
+			});
 		});
-	});
 
-	if (!hasUseRouterImportSpecifier) {
-		return undefined;
+		if (!hasUseRouterImportSpecifier) {
+			return undefined;
+		}
+
+		sourceFile.addImportDeclaration({
+			moduleSpecifier: 'next/navigation',
+			namedImports: [
+				{
+					name: 'useSearchParams',
+				},
+			],
+		});
 	}
-
-	sourceFile.addImportDeclaration({
-		moduleSpecifier: 'next/navigation',
-		namedImports: [
-			{
-				name: 'useSearchParams',
-			},
-		],
-	});
 
 	/** useRouter usages */
 	{
@@ -167,6 +167,10 @@ export default function transformer(
 					},
 				],
 			});
+		});
+
+		variableDeclarations.forEach((variableDeclaration) => {
+			variableDeclaration.remove();
 		});
 	}
 
