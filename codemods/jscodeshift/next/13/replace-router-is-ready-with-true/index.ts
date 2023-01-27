@@ -46,9 +46,7 @@ export default function transformer(
 	/** blocks */
 
 	root.find(j.BlockStatement).forEach((blockStatementPath) => {
-		console.log('ABCD');
-
-		let values: string[] = [];
+		const names: string[] = [];
 
 		j(blockStatementPath)
 			.find(j.VariableDeclarator, {
@@ -61,13 +59,9 @@ export default function transformer(
 				},
 			})
 			.forEach((variableDeclaratorPath) => {
-				console.log('AAAA');
-
 				j(variableDeclaratorPath)
 					.find(j.ObjectPattern)
 					.forEach((objectPatternPath) => {
-						console.log('BBBB');
-
 						j(objectPatternPath)
 							.find(j.Property)
 							.forEach((propertyPath) => {
@@ -78,7 +72,7 @@ export default function transformer(
 									value.type === 'Identifier' &&
 									key.name === 'isReady'
 								) {
-									values.push(value.name);
+									names.push(value.name);
 
 									propertyPath.replace();
 									dirtyFlag = true;
@@ -86,6 +80,12 @@ export default function transformer(
 							});
 					});
 			});
+
+		for (const name of names) {
+			root.find(j.Identifier, { name }).replaceWith(
+				j.booleanLiteral(true),
+			);
+		}
 	});
 
 	if (!dirtyFlag) {

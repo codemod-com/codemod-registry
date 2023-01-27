@@ -3,7 +3,7 @@ import transform from '.';
 import assert from 'node:assert/strict';
 import { Context } from 'mocha';
 
-describe.only('next 13 replace router-is-ready-with-true', function () {
+describe('next 13 replace router-is-ready-with-true', function () {
 	it('should noop for pathname = a.b', async function (this: Context) {
 		const INPUT = 'const pathname = a.b;';
 
