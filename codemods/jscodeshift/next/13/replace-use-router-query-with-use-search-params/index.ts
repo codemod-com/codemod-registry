@@ -60,6 +60,72 @@ export default function transformer(
 			});
 	});
 
+	root.find(j.VariableDeclaration).forEach((variableDeclarationPath) => {
+		let hasQuery = false;
+		let names: string[] = [];
+
+		variableDeclarationPath.node.declarations =
+			variableDeclarationPath.node.declarations.filter((declaration) => {
+				if (declaration.type !== 'VariableDeclarator') {
+					return true;
+				}
+
+				if (declaration.init?.type !== 'Identifier') {
+					return true;
+				}
+
+				if (declaration.init.name === 'query') {
+					hasQuery = true; // not clean fp
+
+					if (declaration.id.type === 'ObjectPattern') {
+						declaration.id.properties.forEach((property) => {
+							if (
+								property.type === 'Property' &&
+								property.key.type === 'Identifier'
+							) {
+								names.push(property.key.name);
+							}
+						});
+					}
+
+					return false;
+				}
+			});
+
+		if (!hasQuery) {
+			return;
+		}
+
+		if (variableDeclarationPath.node.declarations.length === 0) {
+			variableDeclarationPath.replace();
+		}
+
+		for (const name of names.reverse()) {
+			variableDeclarationPath.insertAfter(
+				j.variableDeclaration('const', [
+					j.variableDeclarator(
+						j.identifier(name),
+						j.memberExpression(
+							j.identifier('query'),
+							j.callExpression(j.identifier('get'), [
+								j.identifier(`"${name}"`),
+							]),
+						),
+					),
+				]),
+			);
+		}
+
+		variableDeclarationPath.insertAfter(
+			j.variableDeclaration('const', [
+				j.variableDeclarator(
+					j.identifier('query'),
+					j.callExpression(j.identifier('useSearchParams'), []),
+				),
+			]),
+		);
+	});
+
 	const importDeclaration = j.importDeclaration(
 		[
 			j.importSpecifier(
