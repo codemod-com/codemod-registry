@@ -11,29 +11,27 @@ import {
 } from 'ts-morph';
 import { factory } from 'typescript';
 
-export default function transformer(sourceFileText: string): string {
+export default function transformer(
+	sourceFileText: string,
+): string | undefined {
 	const project = new Project();
 
 	const sourceFile = project.createSourceFile('index.ts', sourceFileText);
 
 	/** IMPORTS **/
-	const importStructures = new Set<[ImportDeclaration, ImportSpecifier]>();
+	let hasUseRouterImportSpecifier = false;
 
 	sourceFile.getImportDeclarations().forEach((importDeclaration) => {
 		importDeclaration.getNamedImports().forEach((importSpecifier) => {
 			if (importSpecifier.getName() === 'useRouter') {
-				importStructures.add([importDeclaration, importSpecifier]);
+				hasUseRouterImportSpecifier = true;
 			}
 		});
 	});
 
-	importStructures.forEach(([importDeclaration, importSpecifier]) => {
-		if (importDeclaration.getNamedImports().length === 1) {
-			importDeclaration.remove();
-		} else {
-			importSpecifier.remove();
-		}
-	});
+	if (!hasUseRouterImportSpecifier) {
+		return undefined;
+	}
 
 	sourceFile.addImportDeclaration({
 		moduleSpecifier: 'next/navigation',
@@ -106,16 +104,6 @@ export default function transformer(sourceFileText: string): string {
 				factory.createObjectBindingPattern([]),
 			),
 		);
-
-		variableDeclarations.forEach((variableDeclaration) => {
-			if (
-				variableDeclaration.getDescendantsOfKind(
-					SyntaxKind.BindingElement,
-				).length === 0
-			) {
-				variableDeclaration.remove();
-			}
-		});
 
 		blocks.forEach((block) => {
 			block.addVariableStatement({

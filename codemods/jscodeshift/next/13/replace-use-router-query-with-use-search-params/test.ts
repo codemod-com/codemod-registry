@@ -11,15 +11,23 @@ function Component() {
 }`;
 
 const OUTPUT = `
+import { useRouter } from 'next/router';
 import { useSearchParams } from 'next/navigation';
 
 function Component() {
+	const { } = useRouter();
     const query = useSearchParams();
     const a = query.get('a');
 }
 `;
 
 describe.only('next 13 replace-use-router-query-with-use-search-params', function () {
+	it('should noop', async function (this: Context) {
+		const actualOutput = transform('const x = y;');
+
+		assert.deepEqual(actualOutput, undefined);
+	});
+
 	it('should replace INPUT with OUTPUT', async function (this: Context) {
 		const actualOutput = transform(INPUT);
 
