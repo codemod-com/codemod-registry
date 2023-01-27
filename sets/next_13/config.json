@@ -2,14 +2,14 @@
     "schemaVersion": "1.0.0",
     "name": "next_13",
     "codemods": [
+        "jscodeshift/next/13/add-use-pathname-import",
+        "jscodeshift/next/13/move-css-in-js-styles",
         "jscodeshift/next/13/new-image-experimental",
         "jscodeshift/next/13/new-link",
         "jscodeshift/next/13/next-image-to-legacy-image",
         "jscodeshift/next/13/replace-destructed-pathname-with-use-pathname",
-        "jscodeshift/next/13/replace-destructed-use-router-pathname-with-use-pathname",
-        "jscodeshift/next/13/add-use-pathname-import",
-        "jscodeshift/next/13/move-css-in-js-styles",
         "jscodeshift/next/13/replace-router-is-ready-with-true",
+        "jscodeshift/next/13/replace-use-router-pathname-with-use-pathname",
         "jscodeshift/next/13/replace-use-router-query-with-use-search-params"
     ],
     "dependencyVersionLowerThan": [
