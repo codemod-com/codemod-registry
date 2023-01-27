@@ -136,6 +136,8 @@ export default function transformer(sourceFileText: string): string {
 			[Block | undefined, BindingElement, string]
 		>();
 
+		const variableDeclarations = new Set<VariableDeclaration>();
+
 		sourceFile
 			.getDescendantsOfKind(SyntaxKind.VariableDeclaration)
 			.forEach((variableDeclaration) => {
@@ -160,6 +162,8 @@ export default function transformer(sourceFileText: string): string {
 							bindingElement,
 							bindingElement.getName(),
 						]);
+
+						variableDeclarations.add(variableDeclaration);
 					});
 			});
 
@@ -175,6 +179,16 @@ export default function transformer(sourceFileText: string): string {
 					},
 				],
 			});
+		});
+
+		variableDeclarations.forEach((variableDeclaration) => {
+			if (
+				variableDeclaration.getDescendantsOfKind(
+					SyntaxKind.BindingElement,
+				).length === 0
+			) {
+				variableDeclaration.remove();
+			}
 		});
 	}
 
