@@ -1,0 +1,13 @@
+{
+    "schemaVersion": "1.0.0",
+    "name": "next/13/move-css-in-js-styles",
+    "engine": "jscodeshift",
+    "extensions": [
+        "js*",
+        "ts*"
+    ],
+    "dependencyVersionLowerThan": [
+        "next",
+        "13.0.0"
+    ]
+}
