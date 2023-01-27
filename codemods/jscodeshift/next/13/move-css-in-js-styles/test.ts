@@ -37,8 +37,6 @@ describe.only('next 13 move-css-in-js-styles', function () {
 
 		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
 
-		// console.log(actualOutput);
-
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),
