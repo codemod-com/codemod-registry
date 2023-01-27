@@ -12,8 +12,8 @@ function Component() {
 }`;
 
 const OUTPUT = `
-import { useRouter } from 'next/router';
 import { useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/router';
 
 function Component() {
 	const { } = useRouter();
@@ -24,7 +24,7 @@ function Component() {
 }
 `;
 
-describe.only('next 13 replace-use-router-query-with-use-search-params', function () {
+describe('next 13 replace-use-router-query-with-use-search-params', function () {
 	it('should noop', async function (this: Context) {
 		const fileInfo: FileInfo = {
 			path: 'index.js',
@@ -43,8 +43,6 @@ describe.only('next 13 replace-use-router-query-with-use-search-params', functio
 		};
 
 		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
-
-		console.log(actualOutput);
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
