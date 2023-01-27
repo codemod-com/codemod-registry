@@ -44,7 +44,7 @@ export default function transformer(sourceFileText: string): string {
 	});
 
 	const blocks = new Set<Block>();
-
+	const variableDeclarations = new Set<VariableDeclaration>();
 	const objectBindingPatterns = new Set<ObjectBindingPattern>();
 
 	sourceFile
@@ -77,6 +77,8 @@ export default function transformer(sourceFileText: string): string {
 							if (bindingElement.getName() === 'query') {
 								objectBindingPatterns.add(objectBindingPattern);
 
+								variableDeclarations.add(variableDeclaration);
+
 								const block =
 									variableDeclaration.getFirstAncestorByKind(
 										SyntaxKind.Block,
@@ -95,6 +97,15 @@ export default function transformer(sourceFileText: string): string {
 	objectBindingPatterns.forEach((bindingElement) =>
 		bindingElement.transform(() => factory.createObjectBindingPattern([])),
 	);
+
+	variableDeclarations.forEach((variableDeclaration) => {
+		if (
+			variableDeclaration.getDescendantsOfKind(SyntaxKind.BindingElement)
+				.length === 0
+		) {
+			variableDeclaration.remove();
+		}
+	});
 
 	// add
 

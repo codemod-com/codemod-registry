@@ -6,18 +6,18 @@ import { Context } from 'mocha';
 const INPUT = `import { useRouter } from 'next/router';
 
 function Component() {
-	const { query } = useRouter();
+    const { query } = useRouter();
 
-	const { a } = query;
+    const { a } = query;
 }`;
 
 const OUTPUT = `
 import { useSearchParams } from 'next/navigation';
 
 function Component() {
-	const query = useSearchParams();
+    const query = useSearchParams();
 
-	const a = query.get('a');
+    const a = query.get('a');
 }
 `;
 
