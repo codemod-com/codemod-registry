@@ -43,83 +43,124 @@ export default function transformer(sourceFileText: string): string {
 		],
 	});
 
-	const blocks = new Set<Block>();
-	const variableDeclarations = new Set<VariableDeclaration>();
-	const objectBindingPatterns = new Set<ObjectBindingPattern>();
+	/** useRouter usages */
+	{
+		const blocks = new Set<Block>();
+		const variableDeclarations = new Set<VariableDeclaration>();
+		const objectBindingPatterns = new Set<ObjectBindingPattern>();
 
-	sourceFile
-		.getDescendantsOfKind(SyntaxKind.CallExpression)
-		.forEach((callExpression) => {
-			const expression = callExpression.getExpression();
+		sourceFile
+			.getDescendantsOfKind(SyntaxKind.CallExpression)
+			.forEach((callExpression) => {
+				const expression = callExpression.getExpression();
 
-			if (!expression.isKind(SyntaxKind.Identifier)) {
-				return;
-			}
+				if (!expression.isKind(SyntaxKind.Identifier)) {
+					return;
+				}
 
-			if (expression.getText() !== 'useRouter') {
-				return;
-			}
+				if (expression.getText() !== 'useRouter') {
+					return;
+				}
 
-			const variableDeclaration = callExpression.getParentIfKind(
-				SyntaxKind.VariableDeclaration,
-			);
+				const variableDeclaration = callExpression.getParentIfKind(
+					SyntaxKind.VariableDeclaration,
+				);
 
-			if (!variableDeclaration) {
-				return;
-			}
+				if (!variableDeclaration) {
+					return;
+				}
 
-			variableDeclaration
-				.getDescendantsOfKind(SyntaxKind.ObjectBindingPattern)
-				.forEach((objectBindingPattern) => {
-					objectBindingPattern
-						.getElements()
-						.forEach((bindingElement) => {
-							if (bindingElement.getName() === 'query') {
-								objectBindingPatterns.add(objectBindingPattern);
-
-								variableDeclarations.add(variableDeclaration);
-
-								const block =
-									variableDeclaration.getFirstAncestorByKind(
-										SyntaxKind.Block,
+				variableDeclaration
+					.getDescendantsOfKind(SyntaxKind.ObjectBindingPattern)
+					.forEach((objectBindingPattern) => {
+						objectBindingPattern
+							.getElements()
+							.forEach((bindingElement) => {
+								if (bindingElement.getName() === 'query') {
+									objectBindingPatterns.add(
+										objectBindingPattern,
 									);
 
-								if (block) {
-									blocks.add(block);
+									variableDeclarations.add(
+										variableDeclaration,
+									);
+
+									const block =
+										variableDeclaration.getFirstAncestorByKind(
+											SyntaxKind.Block,
+										);
+
+									if (block) {
+										blocks.add(block);
+									}
 								}
-							}
-						});
-				});
+							});
+					});
+			});
+
+		// removal
+
+		objectBindingPatterns.forEach((bindingElement) =>
+			bindingElement.transform(() =>
+				factory.createObjectBindingPattern([]),
+			),
+		);
+
+		variableDeclarations.forEach((variableDeclaration) => {
+			if (
+				variableDeclaration.getDescendantsOfKind(
+					SyntaxKind.BindingElement,
+				).length === 0
+			) {
+				variableDeclaration.remove();
+			}
 		});
 
-	// removal
-
-	objectBindingPatterns.forEach((bindingElement) =>
-		bindingElement.transform(() => factory.createObjectBindingPattern([])),
-	);
-
-	variableDeclarations.forEach((variableDeclaration) => {
-		if (
-			variableDeclaration.getDescendantsOfKind(SyntaxKind.BindingElement)
-				.length === 0
-		) {
-			variableDeclaration.remove();
-		}
-	});
-
-	// add
-
-	blocks.forEach((block) => {
-		block.addVariableStatement({
-			// TODO const vs let
-			declarations: [
-				{
-					name: 'query',
-					initializer: 'useSearchParams()',
-				},
-			],
+		blocks.forEach((block) => {
+			block.addVariableStatement({
+				// TODO const vs let
+				declarations: [
+					{
+						name: 'query',
+						initializer: 'useSearchParams()',
+					},
+				],
+			});
 		});
-	});
+	}
+
+	/** specific nodes stemming from query */
+	{
+		const bindingElements = new Set<BindingElement>();
+		const blocks = new Set<Block>();
+
+		sourceFile
+			.getDescendantsOfKind(SyntaxKind.VariableDeclaration)
+			.forEach((variableDeclaration) => {
+				const initializer = variableDeclaration.getInitializerIfKind(
+					SyntaxKind.Identifier,
+				);
+
+				if (!initializer || initializer.getText() !== 'query') {
+					return;
+				}
+
+				variableDeclaration
+					.getDescendantsOfKind(SyntaxKind.BindingElement)
+					.forEach((bindingElement) => {
+						bindingElements.add(bindingElement);
+
+						const block =
+							variableDeclaration.getFirstAncestorByKind(
+								SyntaxKind.Block,
+							);
+
+						if (block) {
+							blocks.add(block);
+						}
+					});
+			});
+	}
 
 	return sourceFile.getText();
 }
