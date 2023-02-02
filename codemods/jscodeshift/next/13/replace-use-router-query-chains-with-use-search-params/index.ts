@@ -90,6 +90,75 @@ export default function transformer(
 						[j.literal(memberExpressionPath.node.property.name)],
 					);
 				});
+
+			j(blockStatementPath)
+				.find(j.ObjectExpression, {
+					properties: [
+						{
+							type: 'SpreadElement',
+							argument: {
+								type: 'MemberExpression',
+								object: {
+									type: 'Identifier',
+									name: routerName,
+								},
+								computed: false,
+								property: {
+									type: 'Identifier',
+									name: 'query',
+								},
+							},
+						},
+					],
+				})
+				.forEach((objectExpressionPath) => {
+					console.log(objectExpressionPath);
+
+					j(objectExpressionPath)
+						.find(j.MemberExpression, {
+							object: {
+								type: 'Identifier',
+								name: routerName,
+							},
+							computed: false,
+							property: {
+								type: 'Identifier',
+								name: 'query',
+							},
+						})
+						.replaceWith(() => {
+							return j.callExpression(
+								j.memberExpression(
+									j.identifier('query'),
+									j.identifier('entries'),
+									false,
+								),
+								[],
+							);
+						});
+
+					// objectExpressionPath.node.properties =
+					// 	objectExpressionPath.node.properties.filter(
+					// 		(property) => {
+					// 			if (property.type !== 'SpreadElement') {
+					// 				return true;
+					// 			}
+
+					// 			if (
+					// 				property.argument.type !==
+					// 				'MemberExpression'
+					// 			) {
+					// 				return true;
+					// 			}
+
+					// 			if (
+					// 				(property.argument.object.type =
+					// 					'Identifier')
+					// 			) {
+					// 			}
+					// 		},
+					// 	);
+				});
 		}
 
 		blockStatementPath.node.body.unshift(

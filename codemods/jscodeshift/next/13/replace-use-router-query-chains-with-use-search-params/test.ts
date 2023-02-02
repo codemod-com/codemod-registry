@@ -10,6 +10,8 @@ function Component() {
     const router = useRouter();
     
     const x = router.query.a;
+
+	const z = { ...router.query, b: 1 }
 }`;
 
 const OUTPUT = `
@@ -21,6 +23,8 @@ function Component() {
 	const router = useRouter();
     
     const x = query.get('a');
+
+	const z = { ...query.entries(), b: 1}
 }
 `;
 
