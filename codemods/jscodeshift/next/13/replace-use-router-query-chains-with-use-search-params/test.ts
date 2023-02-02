@@ -17,8 +17,8 @@ import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/router';
 
 function Component() {
-	const { } = useRouter();
-    const query = useSearchParams();
+	const query = useSearchParams();
+	const router = useRouter();
     
     const x = query.get('a');
 }
@@ -46,9 +46,9 @@ describe.only('next 13 replace-use-router-query-chains-with-use-search-params', 
 
 		console.log('A', actualOutput);
 
-		// assert.deepEqual(
-		// 	actualOutput?.replace(/\W/gm, ''),
-		// 	OUTPUT.replace(/\W/gm, ''),
-		// );
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
 	});
 });

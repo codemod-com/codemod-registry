@@ -87,11 +87,33 @@ export default function transformer(
 							j.identifier('get'),
 							false,
 						),
-						[j.literal('a')],
-						// [memberExpressionPath.node.property.name],
+						[j.literal(memberExpressionPath.node.property.name)],
 					);
 				});
 		}
+
+		blockStatementPath.node.body.unshift(
+			j.variableDeclaration('const', [
+				j.variableDeclarator(
+					j.identifier('query'),
+					j.callExpression(j.identifier('useSearchParams'), []),
+				),
+			]),
+		);
+	});
+
+	const importDeclaration = j.importDeclaration(
+		[
+			j.importSpecifier(
+				j.identifier('useSearchParams'),
+				j.identifier('useSearchParams'),
+			),
+		],
+		j.stringLiteral('next/navigation'),
+	);
+
+	root.find(j.Program).forEach((program) => {
+		program.value.body.unshift(importDeclaration);
 	});
 
 	return root.toSource();
