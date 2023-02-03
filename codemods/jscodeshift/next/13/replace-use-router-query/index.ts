@@ -191,7 +191,10 @@ export const transformAddUseSearchParamsImport: IntuitaTransform = (
 	});
 };
 
-export const transform2: IntuitaTransform = (j, root): Collection<any> => {
+export const transformAddSearchParamsVariableDeclarator: IntuitaTransform = (
+	j,
+	root,
+): Collection<any> => {
 	return root;
 };
 
@@ -202,7 +205,7 @@ export default function transformer(
 ) {
 	const transforms: IntuitaTransform[] = [
 		transformAddUseSearchParamsImport,
-		transform2,
+		transformAddSearchParamsVariableDeclarator,
 	];
 
 	const j = api.jscodeshift;

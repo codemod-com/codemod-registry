@@ -29,7 +29,7 @@ function Component() {
 `;
 
 describe.only('next 13 replace-use-router-query', function () {
-	it('should add useSearchParams import because of a router.query', async function (this: Context) {
+	it('should add useSearchParams import because of "router.query"', async function (this: Context) {
 		const { jscodeshift } = this.buildApi('tsx');
 
 		const root = jscodeshift(`
@@ -59,7 +59,7 @@ describe.only('next 13 replace-use-router-query', function () {
 		);
 	});
 
-	it('should add useSearchParams import because of a useRouter().query', async function (this: Context) {
+	it('should add useSearchParams import because of "useRouter().query"', async function (this: Context) {
 		const { jscodeshift } = this.buildApi('tsx');
 
 		const root = jscodeshift(`
@@ -85,7 +85,7 @@ describe.only('next 13 replace-use-router-query', function () {
 		);
 	});
 
-	it('should add useSearchParams import because of a const { query } = useRouter();', async function (this: Context) {
+	it('should add useSearchParams import because of "const { query } = useRouter()"', async function (this: Context) {
 		const { jscodeshift } = this.buildApi('tsx');
 
 		const root = jscodeshift(`
@@ -105,6 +105,32 @@ describe.only('next 13 replace-use-router-query', function () {
 			import { useRouter } from 'next/router';
 
 			function Component() {
+				const { query } = useRouter();
+			}
+			`.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should add searchParams variable declarator because of "useRouter()"', async function (this: Context) {
+		const { jscodeshift } = this.buildApi('tsx');
+
+		const root = jscodeshift(`
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				const { query } = useRouter();
+			}
+		`);
+
+		transformAddUseSearchParamsImport(jscodeshift, root);
+
+		assert.deepEqual(
+			root?.toSource().replace(/\W/gm, '') ?? '',
+			`
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				const searchParams = useSearchParams();
 				const { query } = useRouter();
 			}
 			`.replace(/\W/gm, ''),
