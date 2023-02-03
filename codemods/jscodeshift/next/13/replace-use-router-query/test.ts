@@ -28,7 +28,7 @@ function Component() {
 }
 `;
 
-describe.only('next 13 replace-use-router-query-chains-with-use-search-params', function () {
+describe.only('next 13 replace-use-router-query', function () {
 	it('should noop', async function (this: Context) {
 		const fileInfo: FileInfo = {
 			path: 'index.js',
