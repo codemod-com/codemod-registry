@@ -2,6 +2,7 @@ import transform, {
 	transformAddSearchParamsVariableDeclarator,
 	transformAddUseSearchParamsImport,
 	transformReplaceRouterQueryWithSearchParams,
+	transformReplaceSearchParamsXWithSearchParamsGetX,
 	transformTripleDotReplaceRouterQueryWithSearchParams,
 	transformUseRouterQueryWithUseSearchParams,
 } from '.';
@@ -201,6 +202,35 @@ describe.only('next 13 replace-use-router-query', function () {
 		);
 	});
 
+	it('should replace "searchParams.a" with "searchParams.get("a")"', async function (this: Context) {
+		const { jscodeshift } = this.buildApi('tsx');
+
+		const root = jscodeshift(`
+			import { useSearchParams } from 'next/navigation';
+
+			function Component() {
+				const searchParams = useSearchParams();
+
+				const a = searchParams.a;
+			}
+		`);
+
+		transformReplaceSearchParamsXWithSearchParamsGetX(jscodeshift, root);
+
+		assert.deepEqual(
+			root?.toSource().replace(/\W/gm, '') ?? '',
+			`
+			import { useSearchParams } from 'next/navigation';
+
+			function Component() {
+				const searchParams = useSearchParams();
+
+				const a = searchParams.get('a');
+			}
+			`.replace(/\W/gm, ''),
+		);
+	});
+
 	it('should replace INPUT with OUTPUT', async function (this: Context) {
 		const INPUT = `
 			import { useRouter } from 'next/router';
@@ -224,7 +254,7 @@ describe.only('next 13 replace-use-router-query', function () {
 				
 				const x = searchParams.get('a');
 
-				const z = { ...query.entries(), b: 1}
+				const z = { ...searchParams.entries(), b: 1}
 			}
 		`;
 

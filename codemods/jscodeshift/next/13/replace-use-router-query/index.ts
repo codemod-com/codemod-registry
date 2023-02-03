@@ -65,18 +65,30 @@ const findMemberExpressionsWithCallExpression =
 	};
 
 const findMemberExpressions =
-	(objectName: string, propertyName: string) =>
+	(objectName: string, propertyName: string | undefined) =>
 	(j: JSCodeshift, root: Collection<any>): Collection<MemberExpression> => {
-		return root.find(j.MemberExpression, {
+		type FilterType = Parameters<
+			typeof root.find<MemberExpression>
+		>[1] & {};
+
+		const filter: FilterType = {
 			object: {
-				type: 'Identifier',
+				type: 'Identifier' as const,
 				name: objectName,
 			},
 			property: {
-				type: 'Identifier',
-				name: propertyName,
+				type: 'Identifier' as const,
 			},
-		});
+		};
+
+		if (propertyName) {
+			filter.property = {
+				type: 'Identifier' as const,
+				name: propertyName,
+			};
+		}
+
+		return root.find(j.MemberExpression, filter);
 	};
 
 const findVariableDeclaratorWithObjectPatternAndCallExpression =
@@ -362,6 +374,50 @@ export const transformUseRouterQueryWithUseSearchParams: IntuitaTransform = (
 	).replaceWith(() => j.callExpression(j.identifier('useSearchParams'), []));
 };
 
+export const transformReplaceSearchParamsXWithSearchParamsGetX: IntuitaTransform =
+	(j, root): void => {
+		const importDeclarations = findImportDeclarations(
+			'useSearchParams',
+			'next/navigation',
+		)(j, root);
+
+		if (importDeclarations.size() === 0) {
+			return;
+		}
+
+		const variableNames: string[] = [];
+
+		findVariableDeclaratorWithCallExpression('useSearchParams')(
+			j,
+			root,
+		).forEach((variableDeclaratorPath) => {
+			const { id } = variableDeclaratorPath.node;
+
+			if (id.type !== 'Identifier') {
+				return;
+			}
+
+			variableNames.push(id.name);
+		});
+
+		for (const variableName of variableNames) {
+			findMemberExpressions(variableName, undefined)(j, root).replaceWith(
+				(memberExpressionPath) => {
+					memberExpressionPath.node.property.type;
+
+					return j.callExpression(
+						j.memberExpression(
+							j.identifier('searchParams'),
+							j.identifier('get'),
+							false,
+						),
+						[memberExpressionPath.node.property],
+					);
+				},
+			);
+		}
+	};
+
 export default function transformer(
 	file: FileInfo,
 	api: API,
@@ -373,6 +429,7 @@ export default function transformer(
 		transformTripleDotReplaceRouterQueryWithSearchParams,
 		transformReplaceRouterQueryWithSearchParams,
 		transformUseRouterQueryWithUseSearchParams,
+		transformReplaceSearchParamsXWithSearchParamsGetX,
 	];
 
 	const j = api.jscodeshift;
