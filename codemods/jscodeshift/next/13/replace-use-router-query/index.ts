@@ -8,6 +8,7 @@ import {
 	VariableDeclarator,
 	MemberExpression,
 	CallExpression,
+	SpreadElement,
 } from 'jscodeshift';
 
 type IntuitaTransform = (j: API['jscodeshift'], root: Collection<any>) => void;
@@ -111,6 +112,24 @@ const findCallExpressions =
 			callee: {
 				type: 'Identifier',
 				name: calleeName,
+			},
+		});
+	};
+
+const findSpreadElements =
+	(argumentObjectName: string, argumentPropertyQuery: string) =>
+	(j: JSCodeshift, root: Collection<any>): Collection<SpreadElement> => {
+		return root.find(j.SpreadElement, {
+			argument: {
+				type: 'MemberExpression',
+				object: {
+					type: 'Identifier',
+					name: argumentObjectName,
+				},
+				property: {
+					type: 'Identifier',
+					name: argumentPropertyQuery,
+				},
 			},
 		});
 	};
@@ -234,6 +253,57 @@ export const transformAddSearchParamsVariableDeclarator: IntuitaTransform = (
 	});
 };
 
+export const transformTripleDotReplaceRouterQueryWithSearchParams: IntuitaTransform =
+	(j, root): void => {
+		const importDeclarations = findImportDeclarations(
+			'useRouter',
+			'next/router',
+		)(j, root);
+
+		if (importDeclarations.size() === 0) {
+			return;
+		}
+
+		root.find(j.BlockStatement).forEach((blockStatementPath) => {
+			const blockStatement = j(blockStatementPath);
+
+			const routerNames: string[] = [];
+
+			findVariableDeclaratorWithCallExpression('useRouter')(
+				j,
+				blockStatement,
+			).forEach((variableDeclaratorPath) => {
+				const { id } = variableDeclaratorPath.node;
+
+				if (!id || id.type !== 'Identifier') {
+					return;
+				}
+
+				routerNames.push(id.name);
+			});
+
+			for (const routerName of routerNames) {
+				findSpreadElements(routerName, 'query')(
+					j,
+					blockStatement,
+				).replaceWith((spreadElement) => {
+					console.log(spreadElement.node);
+
+					return j.spreadElement(
+						j.callExpression(
+							j.memberExpression(
+								j.identifier('searchParams'),
+								j.identifier('entries'),
+								false,
+							),
+							[],
+						),
+					);
+				});
+			}
+		});
+	};
+
 export const transformReplaceRouterQueryWithSearchParams: IntuitaTransform = (
 	j,
 	root,
@@ -301,6 +371,7 @@ export default function transformer(
 	const transforms: IntuitaTransform[] = [
 		transformAddUseSearchParamsImport,
 		transformAddSearchParamsVariableDeclarator,
+		transformTripleDotReplaceRouterQueryWithSearchParams,
 		transformReplaceRouterQueryWithSearchParams,
 		transformUseRouterQueryWithUseSearchParams,
 	];

@@ -8,31 +8,6 @@ import assert from 'node:assert/strict';
 import { Context } from 'mocha';
 import { FileInfo } from 'jscodeshift';
 
-// the best case (with no substitutions)
-const INPUT = `import { useRouter } from 'next/router';
-
-function Component() {
-    const router = useRouter();
-    
-    const x = router.query.a;
-
-	const z = { ...router.query, b: 1 }
-}`;
-
-const OUTPUT = `
-import { useSearchParams } from 'next/navigation';
-import { useRouter } from 'next/router';
-
-function Component() {
-	const query = useSearchParams();
-	const router = useRouter();
-    
-    const x = query.get('a');
-
-	const z = { ...query.entries(), b: 1}
-}
-`;
-
 describe.only('next 13 replace-use-router-query', function () {
 	it('should add useSearchParams import because of "router.query"', async function (this: Context) {
 		const { jscodeshift } = this.buildApi('tsx');
@@ -142,6 +117,37 @@ describe.only('next 13 replace-use-router-query', function () {
 		);
 	});
 
+	it.only('should replace "...?.query" with "...searchParams.entries()."', async function (this: Context) {
+		const { jscodeshift } = this.buildApi('tsx');
+
+		const root = jscodeshift(`
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				const r = useRouter();
+
+				const shallowCopiedQuery = { ...r.query }
+			}
+		`);
+
+		transformReplaceRouterQueryWithSearchParams(jscodeshift, root);
+
+		console.log(root.toSource());
+
+		assert.deepEqual(
+			root?.toSource().replace(/\W/gm, '') ?? '',
+			`
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				const r = useRouter();
+
+				const shallowCopiedQuery = { ...searchParams.entries() }
+			}
+			`.replace(/\W/gm, ''),
+		);
+	});
+
 	it('should replace "?.query" with "searchParams"', async function (this: Context) {
 		const { jscodeshift } = this.buildApi('tsx');
 
@@ -197,6 +203,32 @@ describe.only('next 13 replace-use-router-query', function () {
 	});
 
 	it('should replace INPUT with OUTPUT', async function (this: Context) {
+		const INPUT = `
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				const router = useRouter();
+				
+				const x = router.query.a;
+
+				const z = { ...router.query, b: 1 }
+			}
+		`;
+
+		const OUTPUT = `
+			import { useSearchParams } from 'next/navigation';
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				const searchParams = useSearchParams();
+				const router = useRouter();
+				
+				const x = searchParams.get('a');
+
+				const z = { ...query.entries(), b: 1}
+			}
+		`;
+
 		const fileInfo: FileInfo = {
 			path: 'index.js',
 			source: INPUT,
