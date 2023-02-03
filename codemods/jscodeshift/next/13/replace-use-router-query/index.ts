@@ -403,7 +403,14 @@ export const transformReplaceSearchParamsXWithSearchParamsGetX: IntuitaTransform
 		for (const variableName of variableNames) {
 			findMemberExpressions(variableName, undefined)(j, root).replaceWith(
 				(memberExpressionPath) => {
-					memberExpressionPath.node.property.type;
+					const { property } = memberExpressionPath.node;
+
+					if (
+						property.type !== 'Identifier' ||
+						property.name === 'entries'
+					) {
+						return memberExpressionPath.node;
+					}
 
 					return j.callExpression(
 						j.memberExpression(
