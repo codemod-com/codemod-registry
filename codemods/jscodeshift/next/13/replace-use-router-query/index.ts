@@ -64,6 +64,24 @@ const findMemberExpressionsWithCallExpression =
 		});
 	};
 
+const findCallExpressionsWithMemberExpression =
+	(calleeObjectName: string, calleePropertyName: string) =>
+	(j: JSCodeshift, root: Collection<any>): Collection<CallExpression> => {
+		return root.find(j.CallExpression, {
+			callee: {
+				type: 'MemberExpression',
+				object: {
+					type: 'Identifier',
+					name: 'searchParams',
+				},
+				property: {
+					type: 'Identifier',
+					name: 'get',
+				},
+			},
+		});
+	};
+
 const findMemberExpressions =
 	(objectName: string, propertyName: string | undefined) =>
 	(j: JSCodeshift, root: Collection<any>): Collection<MemberExpression> => {
@@ -425,6 +443,94 @@ export const transformReplaceSearchParamsXWithSearchParamsGetX: IntuitaTransform
 		}
 	};
 
+export const transformReplaceUseMemoSecondArgumentWithSearchParams: IntuitaTransform =
+	(j, root): void => {
+		const importDeclarations = findImportDeclarations(
+			'useSearchParams',
+			'next/navigation',
+		)(j, root);
+
+		if (importDeclarations.size() === 0) {
+			return;
+		}
+
+		root.find(j.BlockStatement).forEach((blockStatementPath) => {
+			const blockStatement = j(blockStatementPath);
+
+			const variableNames: string[] = [];
+
+			findVariableDeclaratorWithCallExpression('useSearchParams')(
+				j,
+				blockStatement,
+			).forEach((variableDeclaratorPath) => {
+				const { id } = variableDeclaratorPath.node;
+
+				if (id.type !== 'Identifier') {
+					return;
+				}
+
+				variableNames.push(id.name);
+			});
+
+			const hadSearchParamsGetsPerCall: boolean[] = [];
+
+			findCallExpressions('useMemo')(j, blockStatement).forEach(
+				(callExpressionPath, i) => {
+					const { arguments: args } = callExpressionPath.value;
+
+					if (!args[1]) {
+						return;
+					}
+
+					const dependencyArguments = j(args[1]);
+
+					let hadSearchParamsGets = false;
+
+					for (const variableName of variableNames) {
+						findCallExpressionsWithMemberExpression(
+							variableName,
+							'get',
+						)(j, dependencyArguments)
+							.forEach(() => {
+								hadSearchParamsGets = true;
+							})
+							.remove();
+					}
+
+					hadSearchParamsGetsPerCall[i] = hadSearchParamsGets;
+				},
+			);
+
+			console.log(hadSearchParamsGetsPerCall);
+
+			findCallExpressions('useMemo')(j, blockStatement)
+				.filter((_, i) => {
+					return hadSearchParamsGetsPerCall[i] ?? false;
+				})
+				.replaceWith((callExpression) => {
+					const { arguments: arg } = callExpression.node;
+
+					if (
+						!arg[0] ||
+						!arg[1] ||
+						arg[1].type !== 'ArrayExpression'
+					) {
+						return callExpression.node;
+					}
+
+					return j.callExpression(callExpression.node.callee, [
+						arg[0],
+						j.arrayExpression([
+							...variableNames.map((variableName) =>
+								j.identifier(variableName),
+							),
+							...arg[1].elements,
+						]),
+					]);
+				});
+		});
+	};
+
 export default function transformer(
 	file: FileInfo,
 	api: API,
@@ -437,6 +543,7 @@ export default function transformer(
 		transformReplaceRouterQueryWithSearchParams,
 		transformUseRouterQueryWithUseSearchParams,
 		transformReplaceSearchParamsXWithSearchParamsGetX,
+		transformReplaceUseMemoSecondArgumentWithSearchParams,
 	];
 
 	const j = api.jscodeshift;

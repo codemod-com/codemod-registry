@@ -270,4 +270,50 @@ describe.only('next 13 replace-use-router-query', function () {
 			OUTPUT.replace(/\W/gm, ''),
 		);
 	});
+
+	it.only('should replace INPUT with OUTPUT', async function (this: Context) {
+		const INPUT = `
+			import { useRouter } from 'next/router';
+
+			const a = 1;
+
+			function Component() {
+				const router = useRouter();
+
+				const nextA = useMemo(
+					() => (router.query.a ? null : router.query.b),
+					[router.query.a, router.query.b, c],
+				) ?? a;
+			}
+		`;
+
+		const OUTPUT = `
+			import { useSearchParams } from 'next/navigation';
+			import { useRouter } from 'next/router';
+
+			const a = 1;
+
+			function Component() {
+				const searchParams = useSearchParams()
+				const router = useRouter();
+
+				const nextA = useMemo(
+					() => (searchParams.get('a') ? null : searchParams.get('b')),
+					[searchParams, c],
+				) ?? a;
+			}
+		`;
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
 });
