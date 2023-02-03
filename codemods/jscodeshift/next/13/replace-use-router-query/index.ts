@@ -115,18 +115,19 @@ export const transformAddUseSearchParamsImport: IntuitaTransform = (
 				'query',
 			)(j, blockStatement).size();
 
-			const memberExpressionWithCallExpressionSize =
-				findMemberExpressionWithCallExpression(routerName, 'query')(
-					j,
-					blockStatement,
-				).size();
-
-			if (
-				memberExpressionSize + memberExpressionWithCallExpressionSize >
-				0
-			) {
+			if (memberExpressionSize > 0) {
 				hasQueries = true;
 			}
+		}
+
+		const memberExpressionWithCallExpressionSize =
+			findMemberExpressionWithCallExpression('useRouter', 'query')(
+				j,
+				blockStatement,
+			).size();
+
+		if (memberExpressionWithCallExpressionSize > 0) {
+			hasQueries = true;
 		}
 	});
 
