@@ -196,19 +196,19 @@ describe.only('next 13 replace-use-router-query', function () {
 		);
 	});
 
-	// it('should replace INPUT with OUTPUT', async function (this: Context) {
-	// 	const fileInfo: FileInfo = {
-	// 		path: 'index.js',
-	// 		source: INPUT,
-	// 	};
+	it('should replace INPUT with OUTPUT', async function (this: Context) {
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
 
-	// 	const actualOutput = transform(fileInfo, this.buildApi('js'), {});
+		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
 
-	// 	console.log('A', actualOutput);
+		console.log('A', actualOutput);
 
-	// 	assert.deepEqual(
-	// 		actualOutput?.replace(/\W/gm, ''),
-	// 		OUTPUT.replace(/\W/gm, ''),
-	// 	);
-	// });
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
 });

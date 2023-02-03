@@ -269,7 +269,7 @@ export const transformReplaceRouterQueryWithSearchParams: IntuitaTransform = (
 			findMemberExpressions(routerName, 'query')(
 				j,
 				blockStatement,
-			).replaceWith(() => j.literal('searchParams'));
+			).replaceWith(() => j.identifier('searchParams'));
 		}
 	});
 };
@@ -290,7 +290,7 @@ export const transformUseRouterQueryWithUseSearchParams: IntuitaTransform = (
 	findMemberExpressionsWithCallExpression('useRouter', 'query')(
 		j,
 		root,
-	).replaceWith(() => j.callExpression(j.literal('useSearchParams'), []));
+	).replaceWith(() => j.callExpression(j.identifier('useSearchParams'), []));
 };
 
 export default function transformer(
