@@ -10,6 +10,7 @@
         "jscodeshift/next/13/replace-destructed-pathname-with-use-pathname",
         "jscodeshift/next/13/replace-router-is-ready-with-true",
         "jscodeshift/next/13/replace-use-router-pathname-with-use-pathname",
+        "jscodeshift/next/13/replace-use-router-query",
         "jscodeshift/next/13/replace-use-router-query-with-use-search-params"
     ],
     "dependencyVersionLowerThan": [
