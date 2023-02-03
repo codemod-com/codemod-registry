@@ -9,6 +9,7 @@ import {
 	MemberExpression,
 	CallExpression,
 	SpreadElement,
+	ObjectExpression,
 } from 'jscodeshift';
 
 type IntuitaTransform = (j: API['jscodeshift'], root: Collection<any>) => void;
@@ -286,9 +287,7 @@ export const transformTripleDotReplaceRouterQueryWithSearchParams: IntuitaTransf
 				findSpreadElements(routerName, 'query')(
 					j,
 					blockStatement,
-				).replaceWith((spreadElement) => {
-					console.log(spreadElement.node);
-
+				).replaceWith(() => {
 					return j.spreadElement(
 						j.callExpression(
 							j.memberExpression(

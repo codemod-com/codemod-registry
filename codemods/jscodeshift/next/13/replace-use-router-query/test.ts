@@ -2,6 +2,7 @@ import transform, {
 	transformAddSearchParamsVariableDeclarator,
 	transformAddUseSearchParamsImport,
 	transformReplaceRouterQueryWithSearchParams,
+	transformTripleDotReplaceRouterQueryWithSearchParams,
 	transformUseRouterQueryWithUseSearchParams,
 } from '.';
 import assert from 'node:assert/strict';
@@ -117,7 +118,7 @@ describe.only('next 13 replace-use-router-query', function () {
 		);
 	});
 
-	it.only('should replace "...?.query" with "...searchParams.entries()."', async function (this: Context) {
+	it('should replace "...?.query" with "...searchParams.entries()."', async function (this: Context) {
 		const { jscodeshift } = this.buildApi('tsx');
 
 		const root = jscodeshift(`
@@ -130,9 +131,7 @@ describe.only('next 13 replace-use-router-query', function () {
 			}
 		`);
 
-		transformReplaceRouterQueryWithSearchParams(jscodeshift, root);
-
-		console.log(root.toSource());
+		transformTripleDotReplaceRouterQueryWithSearchParams(jscodeshift, root);
 
 		assert.deepEqual(
 			root?.toSource().replace(/\W/gm, '') ?? '',
