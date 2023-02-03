@@ -5,6 +5,8 @@ type IntuitaTransform = (
 	root: Collection<any>,
 ) => Collection<any>;
 
+const hasImportDeclarations = (root: Collection<any>) => {};
+
 export const transformAddUseSearchParamsImport: IntuitaTransform = (
 	j: API['jscodeshift'],
 	root: Collection<any>,
@@ -72,6 +74,20 @@ export const transformAddUseSearchParamsImport: IntuitaTransform = (
 		}
 
 		// check query
+	});
+
+	const importDeclaration = j.importDeclaration(
+		[
+			j.importSpecifier(
+				j.identifier('useSearchParams'),
+				j.identifier('useSearchParams'),
+			),
+		],
+		j.stringLiteral('next/navigation'),
+	);
+
+	root.find(j.Program).forEach((program) => {
+		program.value.body.unshift(importDeclaration);
 	});
 
 	return root;

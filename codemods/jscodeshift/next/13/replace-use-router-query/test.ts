@@ -49,7 +49,7 @@ describe.only('next 13 replace-use-router-query', function () {
 			function Component() {
 				const router = useRouter();
 
-				const query = router.query;
+				const x = router.query.a;
 			}
 		`);
 
