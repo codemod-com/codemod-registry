@@ -30,6 +30,20 @@ const findImportDeclarations =
 		});
 	};
 
+const findVariableDeclaratorWithCallExpression =
+	(calleeName: string) =>
+	(j: JSCodeshift, root: Collection<any>): Collection<any> => {
+		return root.find(j.VariableDeclarator, {
+			init: {
+				type: 'CallExpression',
+				callee: {
+					type: 'Identifier',
+					name: calleeName,
+				},
+			},
+		});
+	};
+
 export const transformAddUseSearchParamsImport: IntuitaTransform = (
 	j: API['jscodeshift'],
 	root: Collection<any>,
@@ -46,25 +60,20 @@ export const transformAddUseSearchParamsImport: IntuitaTransform = (
 	root.find(j.BlockStatement).forEach((blockStatementPath) => {
 		const routerNames: string[] = [];
 
-		j(blockStatementPath)
-			.find(j.VariableDeclarator, {
-				init: {
-					type: 'CallExpression',
-					callee: {
-						type: 'Identifier',
-						name: 'useRouter',
-					},
-				},
-			})
-			.forEach((variableDeclaratorPath) => {
-				const { id } = variableDeclaratorPath.node;
+		const blockStatement = j(blockStatementPath);
 
-				if (id.type !== 'Identifier') {
-					return;
-				}
+		findVariableDeclaratorWithCallExpression('useRouter')(
+			j,
+			blockStatement,
+		).forEach((variableDeclaratorPath) => {
+			const { id } = variableDeclaratorPath.node;
 
-				routerNames.push(id.name);
-			});
+			if (id.type !== 'Identifier') {
+				return;
+			}
+
+			routerNames.push(id.name);
+		});
 
 		if (routerNames.length === 0) {
 			return;
