@@ -43,6 +43,24 @@ const findVariableDeclaratorWithCallExpression =
 		});
 	};
 
+const findMemberExpressionWithCallExpression =
+	(objectCalleeName: string, propertyName: string) =>
+	(j: JSCodeshift, root: Collection<any>): Collection<MemberExpression> => {
+		return root.find(j.MemberExpression, {
+			object: {
+				type: 'CallExpression',
+				callee: {
+					type: 'Identifier',
+					name: objectCalleeName,
+				},
+			},
+			property: {
+				type: 'Identifier',
+				name: propertyName,
+			},
+		});
+	};
+
 const findMemberExpressions =
 	(objectName: string, propertyName: string) =>
 	(j: JSCodeshift, root: Collection<any>): Collection<MemberExpression> => {
@@ -91,22 +109,25 @@ export const transformAddUseSearchParamsImport: IntuitaTransform = (
 			routerNames.push(id.name);
 		});
 
-		if (routerNames.length === 0) {
-			return;
-		}
-
 		for (const routerName of routerNames) {
-			const size = findMemberExpressions(routerName, 'query')(
-				j,
-				blockStatement,
-			).size();
+			const memberExpressionSize = findMemberExpressions(
+				routerName,
+				'query',
+			)(j, blockStatement).size();
 
-			if (size > 0) {
+			const memberExpressionWithCallExpressionSize =
+				findMemberExpressionWithCallExpression(routerName, 'query')(
+					j,
+					blockStatement,
+				).size();
+
+			if (
+				memberExpressionSize + memberExpressionWithCallExpressionSize >
+				0
+			) {
 				hasQueries = true;
 			}
 		}
-
-		// check query
 	});
 
 	if (!hasQueries) {

@@ -29,18 +29,7 @@ function Component() {
 `;
 
 describe.only('next 13 replace-use-router-query', function () {
-	// it('should noop', async function (this: Context) {
-	// 	const fileInfo: FileInfo = {
-	// 		path: 'index.js',
-	// 		source: 'const x = y;',
-	// 	};
-
-	// 	const actualOutput = transform(fileInfo, this.buildApi('js'), {});
-
-	// 	assert.deepEqual(actualOutput, undefined);
-	// });
-
-	it.only('should add useSearchParams import', async function (this: Context) {
+	it('should add useSearchParams import because of a router.query', async function (this: Context) {
 		const { jscodeshift } = this.buildApi('tsx');
 
 		const root = jscodeshift(`
@@ -70,19 +59,45 @@ describe.only('next 13 replace-use-router-query', function () {
 		);
 	});
 
-	it('should replace INPUT with OUTPUT', async function (this: Context) {
-		const fileInfo: FileInfo = {
-			path: 'index.js',
-			source: INPUT,
-		};
+	it('should add useSearchParams import because of a router.query', async function (this: Context) {
+		const { jscodeshift } = this.buildApi('tsx');
 
-		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
+		const root = jscodeshift(`
+			import { useRouter } from 'next/router';
 
-		console.log('A', actualOutput);
+			function Component() {
+				const a = useRouter().query.a;
+			}
+		`);
+
+		transformAddUseSearchParamsImport(jscodeshift, root);
 
 		assert.deepEqual(
-			actualOutput?.replace(/\W/gm, ''),
-			OUTPUT.replace(/\W/gm, ''),
+			root?.toSource().replace(/\W/gm, '') ?? '',
+			`
+			import { useSearchParams } from 'next/navigation';
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				const a = useRouter().query.a;
+			}
+			`.replace(/\W/gm, ''),
 		);
 	});
+
+	// it('should replace INPUT with OUTPUT', async function (this: Context) {
+	// 	const fileInfo: FileInfo = {
+	// 		path: 'index.js',
+	// 		source: INPUT,
+	// 	};
+
+	// 	const actualOutput = transform(fileInfo, this.buildApi('js'), {});
+
+	// 	console.log('A', actualOutput);
+
+	// 	assert.deepEqual(
+	// 		actualOutput?.replace(/\W/gm, ''),
+	// 		OUTPUT.replace(/\W/gm, ''),
+	// 	);
+	// });
 });
