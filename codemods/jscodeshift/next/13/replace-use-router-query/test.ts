@@ -43,7 +43,7 @@ describe.only('next 13 replace-use-router-query', function () {
 	it.only('should add useSearchParams import', async function (this: Context) {
 		const { jscodeshift } = this.buildApi('tsx');
 
-		const oldRoot = jscodeshift(`
+		const root = jscodeshift(`
 			import { useRouter } from 'next/router';
 
 			function Component() {
@@ -53,10 +53,10 @@ describe.only('next 13 replace-use-router-query', function () {
 			}
 		`);
 
-		const newRoot = transformAddUseSearchParamsImport(jscodeshift, oldRoot);
+		transformAddUseSearchParamsImport(jscodeshift, root);
 
 		assert.deepEqual(
-			newRoot?.toSource().replace(/\W/gm, '') ?? '',
+			root?.toSource().replace(/\W/gm, '') ?? '',
 			`
 			import { useSearchParams } from 'next/navigation';
 			import { useRouter } from 'next/router';

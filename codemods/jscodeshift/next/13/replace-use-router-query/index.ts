@@ -9,10 +9,7 @@ import {
 	MemberExpression,
 } from 'jscodeshift';
 
-type IntuitaTransform = (
-	j: API['jscodeshift'],
-	root: Collection<any>,
-) => Collection<any>;
+type IntuitaTransform = (j: API['jscodeshift'], root: Collection<any>) => void;
 
 const findImportDeclarations =
 	(importedName: string, sourceValue: string) =>
@@ -64,15 +61,17 @@ const findMemberExpressions =
 export const transformAddUseSearchParamsImport: IntuitaTransform = (
 	j: API['jscodeshift'],
 	root: Collection<any>,
-): Collection<any> => {
+): void => {
 	const importDeclarations = findImportDeclarations(
 		'useRouter',
 		'next/router',
 	)(j, root);
 
 	if (importDeclarations.size() === 0) {
-		return root;
+		return;
 	}
+
+	let hasQueries = false;
 
 	root.find(j.BlockStatement).forEach((blockStatementPath) => {
 		const routerNames: string[] = [];
@@ -101,10 +100,18 @@ export const transformAddUseSearchParamsImport: IntuitaTransform = (
 				j,
 				blockStatement,
 			).size();
+
+			if (size > 0) {
+				hasQueries = true;
+			}
 		}
 
 		// check query
 	});
+
+	if (!hasQueries) {
+		return;
+	}
 
 	const importDeclaration = j.importDeclaration(
 		[
@@ -119,8 +126,6 @@ export const transformAddUseSearchParamsImport: IntuitaTransform = (
 	root.find(j.Program).forEach((program) => {
 		program.value.body.unshift(importDeclaration);
 	});
-
-	return root;
 };
 
 export const transform2: IntuitaTransform = (j, root): Collection<any> => {
@@ -138,10 +143,10 @@ export default function transformer(
 	];
 
 	const j = api.jscodeshift;
-	let root = j(file.source);
+	const root = j(file.source);
 
 	for (const intuitaTransform of transforms) {
-		root = intuitaTransform(j, root);
+		intuitaTransform(j, root);
 	}
 
 	return root.toSource();
