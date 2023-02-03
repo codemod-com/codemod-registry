@@ -10,7 +10,7 @@ import assert from 'node:assert/strict';
 import { Context } from 'mocha';
 import { FileInfo } from 'jscodeshift';
 
-describe.only('next 13 replace-use-router-query', function () {
+describe('next 13 replace-use-router-query', function () {
 	it('should add useSearchParams import because of "router.query"', async function (this: Context) {
 		const { jscodeshift } = this.buildApi('tsx');
 

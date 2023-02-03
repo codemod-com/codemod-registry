@@ -9,7 +9,6 @@ import {
 	MemberExpression,
 	CallExpression,
 	SpreadElement,
-	ObjectExpression,
 } from 'jscodeshift';
 
 type IntuitaTransform = (j: API['jscodeshift'], root: Collection<any>) => void;
@@ -72,11 +71,11 @@ const findCallExpressionsWithMemberExpression =
 				type: 'MemberExpression',
 				object: {
 					type: 'Identifier',
-					name: 'searchParams',
+					name: calleeObjectName,
 				},
 				property: {
 					type: 'Identifier',
-					name: 'get',
+					name: calleePropertyName,
 				},
 			},
 		});
