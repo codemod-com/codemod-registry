@@ -7,6 +7,7 @@ import {
 	ImportDeclaration,
 	VariableDeclarator,
 	MemberExpression,
+	CallExpression,
 } from 'jscodeshift';
 
 type IntuitaTransform = (j: API['jscodeshift'], root: Collection<any>) => void;
@@ -103,6 +104,17 @@ const findVariableDeclaratorWithObjectPatternAndCallExpression =
 		});
 	};
 
+const findCallExpressions =
+	(calleeName: string) =>
+	(j: JSCodeshift, root: Collection<any>): Collection<CallExpression> => {
+		return root.find(j.CallExpression, {
+			callee: {
+				type: 'Identifier',
+				name: calleeName,
+			},
+		});
+	};
+
 export const transformAddUseSearchParamsImport: IntuitaTransform = (
 	j: API['jscodeshift'],
 	root: Collection<any>,
@@ -194,8 +206,32 @@ export const transformAddUseSearchParamsImport: IntuitaTransform = (
 export const transformAddSearchParamsVariableDeclarator: IntuitaTransform = (
 	j,
 	root,
-): Collection<any> => {
-	return root;
+): void => {
+	const importDeclarations = findImportDeclarations(
+		'useRouter',
+		'next/router',
+	)(j, root);
+
+	if (importDeclarations.size() === 0) {
+		return;
+	}
+
+	root.find(j.BlockStatement).forEach((blockStatementPath) => {
+		const blockStatement = j(blockStatementPath);
+
+		if (findCallExpressions('useRouter')(j, blockStatement).size() === 0) {
+			return;
+		}
+
+		blockStatementPath.node.body.unshift(
+			j.variableDeclaration('const', [
+				j.variableDeclarator(
+					j.identifier('searchParams'),
+					j.callExpression(j.identifier('useSearchParams'), []),
+				),
+			]),
+		);
+	});
 };
 
 export default function transformer(

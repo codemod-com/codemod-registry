@@ -1,4 +1,7 @@
-import transform, { transformAddUseSearchParamsImport } from '.';
+import transform, {
+	transformAddSearchParamsVariableDeclarator,
+	transformAddUseSearchParamsImport,
+} from '.';
 import assert from 'node:assert/strict';
 import { Context } from 'mocha';
 import { FileInfo } from 'jscodeshift';
@@ -122,7 +125,7 @@ describe.only('next 13 replace-use-router-query', function () {
 			}
 		`);
 
-		transformAddUseSearchParamsImport(jscodeshift, root);
+		transformAddSearchParamsVariableDeclarator(jscodeshift, root);
 
 		assert.deepEqual(
 			root?.toSource().replace(/\W/gm, '') ?? '',
