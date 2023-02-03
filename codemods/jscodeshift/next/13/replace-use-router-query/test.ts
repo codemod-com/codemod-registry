@@ -1,6 +1,7 @@
 import transform, {
 	transformAddSearchParamsVariableDeclarator,
 	transformAddUseSearchParamsImport,
+	transformReplaceRouterQueryWithSearchParams,
 } from '.';
 import assert from 'node:assert/strict';
 import { Context } from 'mocha';
@@ -135,6 +136,35 @@ describe.only('next 13 replace-use-router-query', function () {
 			function Component() {
 				const searchParams = useSearchParams();
 				const { query } = useRouter();
+			}
+			`.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should replace "?.query" with "searchParams"', async function (this: Context) {
+		const { jscodeshift } = this.buildApi('tsx');
+
+		const root = jscodeshift(`
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				const r = useRouter();
+
+				const a = r.query.a;
+			}
+		`);
+
+		transformReplaceRouterQueryWithSearchParams(jscodeshift, root);
+
+		assert.deepEqual(
+			root?.toSource().replace(/\W/gm, '') ?? '',
+			`
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				const r = useRouter();
+
+				const a = searchParams.a;
 			}
 			`.replace(/\W/gm, ''),
 		);

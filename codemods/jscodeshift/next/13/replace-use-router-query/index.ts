@@ -234,6 +234,46 @@ export const transformAddSearchParamsVariableDeclarator: IntuitaTransform = (
 	});
 };
 
+export const transformReplaceRouterQueryWithSearchParams: IntuitaTransform = (
+	j,
+	root,
+): void => {
+	const importDeclarations = findImportDeclarations(
+		'useRouter',
+		'next/router',
+	)(j, root);
+
+	if (importDeclarations.size() === 0) {
+		return;
+	}
+
+	root.find(j.BlockStatement).forEach((blockStatementPath) => {
+		const blockStatement = j(blockStatementPath);
+
+		const routerNames: string[] = [];
+
+		findVariableDeclaratorWithCallExpression('useRouter')(
+			j,
+			blockStatement,
+		).forEach((variableDeclaratorPath) => {
+			const { id } = variableDeclaratorPath.node;
+
+			if (!id || id.type !== 'Identifier') {
+				return;
+			}
+
+			routerNames.push(id.name);
+		});
+
+		for (const routerName of routerNames) {
+			findMemberExpressions(routerName, 'query')(
+				j,
+				blockStatement,
+			).replaceWith((memberExpressionPath) => j.literal('searchParams'));
+		}
+	});
+};
+
 export default function transformer(
 	file: FileInfo,
 	api: API,
