@@ -501,8 +501,6 @@ export const transformReplaceUseMemoSecondArgumentWithSearchParams: IntuitaTrans
 				},
 			);
 
-			console.log(hadSearchParamsGetsPerCall);
-
 			findCallExpressions('useMemo')(j, blockStatement)
 				.filter((_, i) => {
 					return hadSearchParamsGetsPerCall[i] ?? false;

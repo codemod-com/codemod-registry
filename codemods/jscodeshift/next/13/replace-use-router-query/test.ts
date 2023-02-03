@@ -271,7 +271,7 @@ describe.only('next 13 replace-use-router-query', function () {
 		);
 	});
 
-	it.only('should replace INPUT with OUTPUT', async function (this: Context) {
+	it('should replace INPUT with OUTPUT (2)', async function (this: Context) {
 		const INPUT = `
 			import { useRouter } from 'next/router';
 
