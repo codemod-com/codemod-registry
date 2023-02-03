@@ -170,6 +170,32 @@ describe.only('next 13 replace-use-router-query', function () {
 		);
 	});
 
+	it('should replace "useRouter().query" with "useSearchParams()"', async function (this: Context) {
+		const { jscodeshift } = this.buildApi('tsx');
+
+		const root = jscodeshift(`
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				const a = useRouter().query.a;
+			}
+		`);
+
+		transformReplaceRouterQueryWithSearchParams(jscodeshift, root);
+
+		assert.deepEqual(
+			root?.toSource().replace(/\W/gm, '') ?? '',
+			`
+			import { useSearchParams } from 'next/navigation';
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				const a = useRouter().query.a;
+			}
+			`.replace(/\W/gm, ''),
+		);
+	});
+
 	// it('should replace INPUT with OUTPUT', async function (this: Context) {
 	// 	const fileInfo: FileInfo = {
 	// 		path: 'index.js',
