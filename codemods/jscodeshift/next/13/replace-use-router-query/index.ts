@@ -5,6 +5,8 @@ import {
 	Options,
 	JSCodeshift,
 	ImportDeclaration,
+	VariableDeclarator,
+	MemberExpression,
 } from 'jscodeshift';
 
 type IntuitaTransform = (
@@ -32,7 +34,7 @@ const findImportDeclarations =
 
 const findVariableDeclaratorWithCallExpression =
 	(calleeName: string) =>
-	(j: JSCodeshift, root: Collection<any>): Collection<any> => {
+	(j: JSCodeshift, root: Collection<any>): Collection<VariableDeclarator> => {
 		return root.find(j.VariableDeclarator, {
 			init: {
 				type: 'CallExpression',
@@ -40,6 +42,21 @@ const findVariableDeclaratorWithCallExpression =
 					type: 'Identifier',
 					name: calleeName,
 				},
+			},
+		});
+	};
+
+const findMemberExpressions =
+	(objectName: string, propertyName: string) =>
+	(j: JSCodeshift, root: Collection<any>): Collection<MemberExpression> => {
+		return root.find(j.MemberExpression, {
+			object: {
+				type: 'Identifier',
+				name: objectName,
+			},
+			property: {
+				type: 'Identifier',
+				name: propertyName,
 			},
 		});
 	};
@@ -80,18 +97,10 @@ export const transformAddUseSearchParamsImport: IntuitaTransform = (
 		}
 
 		for (const routerName of routerNames) {
-			const size = j(blockStatementPath)
-				.find(j.MemberExpression, {
-					object: {
-						type: 'Identifier',
-						name: routerName,
-					},
-					property: {
-						type: 'Identifier',
-						name: 'query',
-					},
-				})
-				.size();
+			const size = findMemberExpressions(routerName, 'query')(
+				j,
+				blockStatement,
+			).size();
 		}
 
 		// check query
