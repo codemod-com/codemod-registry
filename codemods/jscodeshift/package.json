@@ -21,7 +21,6 @@
 		"typescript": "^4.9.4"
 	},
 	"dependencies": {
-		"next": "^13.1.6",
 		"ts-morph": "^17.0.1"
 	}
 }
