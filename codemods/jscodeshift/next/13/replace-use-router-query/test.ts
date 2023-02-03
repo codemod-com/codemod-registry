@@ -2,6 +2,7 @@ import transform, {
 	transformAddSearchParamsVariableDeclarator,
 	transformAddUseSearchParamsImport,
 	transformReplaceRouterQueryWithSearchParams,
+	transformUseRouterQueryWithUseSearchParams,
 } from '.';
 import assert from 'node:assert/strict';
 import { Context } from 'mocha';
@@ -181,16 +182,15 @@ describe.only('next 13 replace-use-router-query', function () {
 			}
 		`);
 
-		transformReplaceRouterQueryWithSearchParams(jscodeshift, root);
+		transformUseRouterQueryWithUseSearchParams(jscodeshift, root);
 
 		assert.deepEqual(
 			root?.toSource().replace(/\W/gm, '') ?? '',
 			`
-			import { useSearchParams } from 'next/navigation';
 			import { useRouter } from 'next/router';
 
 			function Component() {
-				const a = useRouter().query.a;
+				const a = useSearchParams().a;
 			}
 			`.replace(/\W/gm, ''),
 		);

@@ -44,7 +44,7 @@ const findVariableDeclaratorWithCallExpression =
 		});
 	};
 
-const findMemberExpressionWithCallExpression =
+const findMemberExpressionsWithCallExpression =
 	(objectCalleeName: string, propertyName: string) =>
 	(j: JSCodeshift, root: Collection<any>): Collection<MemberExpression> => {
 		return root.find(j.MemberExpression, {
@@ -163,7 +163,7 @@ export const transformAddUseSearchParamsImport: IntuitaTransform = (
 
 		// 2
 		if (
-			findMemberExpressionWithCallExpression('useRouter', 'query')(
+			findMemberExpressionsWithCallExpression('useRouter', 'query')(
 				j,
 				blockStatement,
 			).size() > 0
@@ -269,9 +269,52 @@ export const transformReplaceRouterQueryWithSearchParams: IntuitaTransform = (
 			findMemberExpressions(routerName, 'query')(
 				j,
 				blockStatement,
-			).replaceWith((memberExpressionPath) => j.literal('searchParams'));
+			).replaceWith(() => j.literal('searchParams'));
 		}
 	});
+};
+
+export const transformUseRouterQueryWithUseSearchParams: IntuitaTransform = (
+	j,
+	root,
+): void => {
+	const importDeclarations = findImportDeclarations(
+		'useRouter',
+		'next/router',
+	)(j, root);
+
+	if (importDeclarations.size() === 0) {
+		return;
+	}
+
+	findMemberExpressionsWithCallExpression('useRouter', 'query')(
+		j,
+		root,
+	).replaceWith(() => j.callExpression(j.literal('useSearchParams'), []));
+
+	// root.find(j.BlockStatement).forEach((blockStatementPath) => {
+	// 	const blockStatement = j(blockStatementPath);
+
+	// 	// findVariableDeclaratorWithCallExpression('useRouter')(
+	// 	// 	j,
+	// 	// 	blockStatement,
+	// 	// ).forEach((variableDeclaratorPath) => {
+	// 	// 	const { id } = variableDeclaratorPath.node;
+
+	// 	// 	if (!id || id.type !== 'Identifier') {
+	// 	// 		return;
+	// 	// 	}
+
+	// 	// 	routerNames.push(id.name);
+	// 	// });
+
+	// 	// for (const routerName of routerNames) {
+	// 	// 	findMemberExpressions(routerName, 'query')(
+	// 	// 		j,
+	// 	// 		blockStatement,
+	// 	// 	).replaceWith(() => j.literal('searchParams'));
+	// 	// }
+	// });
 };
 
 export default function transformer(
