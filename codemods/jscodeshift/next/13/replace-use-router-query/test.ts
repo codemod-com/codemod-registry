@@ -1,4 +1,4 @@
-import transform from '.';
+import transform, { transformAddUseSearchParamsImport } from '.';
 import assert from 'node:assert/strict';
 import { Context } from 'mocha';
 import { FileInfo } from 'jscodeshift';
@@ -29,15 +29,45 @@ function Component() {
 `;
 
 describe.only('next 13 replace-use-router-query', function () {
-	it('should noop', async function (this: Context) {
-		const fileInfo: FileInfo = {
-			path: 'index.js',
-			source: 'const x = y;',
-		};
+	// it('should noop', async function (this: Context) {
+	// 	const fileInfo: FileInfo = {
+	// 		path: 'index.js',
+	// 		source: 'const x = y;',
+	// 	};
 
-		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
+	// 	const actualOutput = transform(fileInfo, this.buildApi('js'), {});
 
-		assert.deepEqual(actualOutput, undefined);
+	// 	assert.deepEqual(actualOutput, undefined);
+	// });
+
+	it.only('should add useSearchParams import', async function (this: Context) {
+		const { jscodeshift } = this.buildApi('tsx');
+
+		const oldRoot = jscodeshift(`
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				const router = useRouter();
+
+				const query = router.query;
+			}
+		`);
+
+		const newRoot = transformAddUseSearchParamsImport(jscodeshift, oldRoot);
+
+		assert.deepEqual(
+			newRoot?.toSource().replace(/\W/gm, '') ?? '',
+			`
+			import { useSearchParams } from 'next/navigation';
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				const router = useRouter();
+
+				const x = router.query.a;
+			}
+			`.replace(/\W/gm, ''),
+		);
 	});
 
 	it('should replace INPUT with OUTPUT', async function (this: Context) {
