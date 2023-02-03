@@ -1,18 +1,21 @@
-import { API, Collection, FileInfo, Options } from 'jscodeshift';
+import {
+	API,
+	Collection,
+	FileInfo,
+	Options,
+	JSCodeshift,
+	ImportDeclaration,
+} from 'jscodeshift';
 
 type IntuitaTransform = (
 	j: API['jscodeshift'],
 	root: Collection<any>,
 ) => Collection<any>;
 
-const hasImportDeclarations = (root: Collection<any>) => {};
-
-export const transformAddUseSearchParamsImport: IntuitaTransform = (
-	j: API['jscodeshift'],
-	root: Collection<any>,
-): Collection<any> => {
-	const hasImportDeclarations = root
-		.find(j.ImportDeclaration, {
+const findImportDeclarations =
+	(importedName: string, sourceValue: string) =>
+	(j: JSCodeshift, root: Collection<any>): Collection<ImportDeclaration> => {
+		return root.find(j.ImportDeclaration, {
 			specifiers: [
 				{
 					imported: {
@@ -24,8 +27,19 @@ export const transformAddUseSearchParamsImport: IntuitaTransform = (
 			source: {
 				value: 'next/router',
 			},
-		})
-		.size();
+		});
+	};
+
+export const transformAddUseSearchParamsImport: IntuitaTransform = (
+	j: API['jscodeshift'],
+	root: Collection<any>,
+): Collection<any> => {
+	const importDeclarations = findImportDeclarations(
+		'useRouter',
+		'next/router',
+	)(j, root);
+
+	const hasImportDeclarations = importDeclarations.size();
 
 	if (!hasImportDeclarations) {
 		return root;
