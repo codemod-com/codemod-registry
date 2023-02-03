@@ -59,7 +59,7 @@ describe.only('next 13 replace-use-router-query', function () {
 		);
 	});
 
-	it('should add useSearchParams import because of a router.query', async function (this: Context) {
+	it('should add useSearchParams import because of a useRouter().query', async function (this: Context) {
 		const { jscodeshift } = this.buildApi('tsx');
 
 		const root = jscodeshift(`
