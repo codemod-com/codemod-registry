@@ -119,11 +119,10 @@ export const transformAddUseSearchParamsImport: IntuitaTransform = (
 	let hasQueries = false;
 
 	root.find(j.BlockStatement).forEach((blockStatementPath) => {
-		const routerNames: string[] = [];
-
 		const blockStatement = j(blockStatementPath);
 
 		// 1
+		const routerNames: string[] = [];
 
 		findVariableDeclaratorWithCallExpression('useRouter')(
 			j,
@@ -139,38 +138,35 @@ export const transformAddUseSearchParamsImport: IntuitaTransform = (
 		});
 
 		for (const routerName of routerNames) {
-			const memberExpressionSize = findMemberExpressions(
-				routerName,
-				'query',
-			)(j, blockStatement).size();
-
-			if (memberExpressionSize > 0) {
+			if (
+				findMemberExpressions(routerName, 'query')(
+					j,
+					blockStatement,
+				).size() > 0
+			) {
 				hasQueries = true;
 				return;
 			}
 		}
 
 		// 2
-
-		const memberExpressionWithCallExpressionSize =
+		if (
 			findMemberExpressionWithCallExpression('useRouter', 'query')(
 				j,
 				blockStatement,
-			).size();
-
-		if (memberExpressionWithCallExpressionSize > 0) {
+			).size() > 0
+		) {
 			hasQueries = true;
 			return;
 		}
 
 		// 3
-
-		const vdSize = findVariableDeclaratorWithObjectPatternAndCallExpression(
-			'query',
-			'useRouter',
-		)(j, root).size();
-
-		if (vdSize > 0) {
+		if (
+			findVariableDeclaratorWithObjectPatternAndCallExpression(
+				'query',
+				'useRouter',
+			)(j, root).size() > 0
+		) {
 			hasQueries = true;
 			return;
 		}
