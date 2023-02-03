@@ -291,30 +291,6 @@ export const transformUseRouterQueryWithUseSearchParams: IntuitaTransform = (
 		j,
 		root,
 	).replaceWith(() => j.callExpression(j.literal('useSearchParams'), []));
-
-	// root.find(j.BlockStatement).forEach((blockStatementPath) => {
-	// 	const blockStatement = j(blockStatementPath);
-
-	// 	// findVariableDeclaratorWithCallExpression('useRouter')(
-	// 	// 	j,
-	// 	// 	blockStatement,
-	// 	// ).forEach((variableDeclaratorPath) => {
-	// 	// 	const { id } = variableDeclaratorPath.node;
-
-	// 	// 	if (!id || id.type !== 'Identifier') {
-	// 	// 		return;
-	// 	// 	}
-
-	// 	// 	routerNames.push(id.name);
-	// 	// });
-
-	// 	// for (const routerName of routerNames) {
-	// 	// 	findMemberExpressions(routerName, 'query')(
-	// 	// 		j,
-	// 	// 		blockStatement,
-	// 	// 	).replaceWith(() => j.literal('searchParams'));
-	// 	// }
-	// });
 };
 
 export default function transformer(
@@ -325,6 +301,8 @@ export default function transformer(
 	const transforms: IntuitaTransform[] = [
 		transformAddUseSearchParamsImport,
 		transformAddSearchParamsVariableDeclarator,
+		transformReplaceRouterQueryWithSearchParams,
+		transformUseRouterQueryWithUseSearchParams,
 	];
 
 	const j = api.jscodeshift;
