@@ -20,12 +20,12 @@ const findImportDeclarations =
 				{
 					imported: {
 						type: 'Identifier',
-						name: 'useRouter',
+						name: importedName,
 					},
 				},
 			],
 			source: {
-				value: 'next/router',
+				value: sourceValue,
 			},
 		});
 	};
@@ -39,9 +39,7 @@ export const transformAddUseSearchParamsImport: IntuitaTransform = (
 		'next/router',
 	)(j, root);
 
-	const hasImportDeclarations = importDeclarations.size();
-
-	if (!hasImportDeclarations) {
+	if (importDeclarations.size() === 0) {
 		return root;
 	}
 
