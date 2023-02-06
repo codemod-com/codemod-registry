@@ -32,10 +32,10 @@ export default () => (
 const STYLE_FILE =
 	'\n         p {\n          color: red;\n         }\n        ';
 
-describe.only('next 13 move-css-in-js-styles', function () {
+describe('next 13 move-css-in-js-styles', function () {
 	it('should remove the style component, add an import and a class name', async function (this: Context) {
 		const fileInfo: FileInfo = {
-			path: 'index.js',
+			path: '/opt/repository/pages/index.js',
 			source: INPUT,
 		};
 
@@ -52,10 +52,12 @@ describe.only('next 13 move-css-in-js-styles', function () {
 			OUTPUT.replace(/\W/gm, ''),
 		);
 
-		assert.equal(spy.createFile.calledOnce, true);
-
-		console.log(spy.createFile.getCalls());
-
-		assert.deepEqual(spy.createFile.calledOnceWith('a', STYLE_FILE), true);
+		assert.deepEqual(
+			spy.createFile.calledOnceWith(
+				'/opt/repository/pages/index.module.css',
+				STYLE_FILE,
+			),
+			true,
+		);
 	});
 });

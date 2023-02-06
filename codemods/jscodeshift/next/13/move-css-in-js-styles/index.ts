@@ -1,4 +1,5 @@
 import { API, FileInfo, Options, Transform } from 'jscodeshift';
+import { join, parse } from 'node:path';
 
 export default function transformer(
 	file: FileInfo,
@@ -55,7 +56,16 @@ export default function transformer(
 		jsxElementPath.replace();
 
 		if ('createFile' in options) {
-			options.createFile('a', cssSource);
+			const { root, dir, base, ext } = parse(file.path);
+
+			const name = `${base.slice(
+				0,
+				base.length - ext.length,
+			)}.module.css`;
+
+			const newPath = join(root, dir, name);
+
+			options.createFile(newPath, cssSource);
 		}
 
 		dirtyFlag = true;
