@@ -1,0 +1,9 @@
+{
+    "schemaVersion": "1.0.0",
+    "name": "next/13/pages-to-app",
+    "engine": "filemod-engine",
+    "dependencyVersionLowerThan": [
+        "next",
+        "13.0.0"
+    ]
+}
