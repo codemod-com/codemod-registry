@@ -29,7 +29,8 @@ export default () => (
 )
 `;
 
-const STYLE_FILE = '\n p {\n  color: red;\n }\n';
+const STYLE_FILE =
+	'\n         p {\n          color: red;\n         }\n        ';
 
 describe.only('next 13 move-css-in-js-styles', function () {
 	it('should remove the style component, add an import and a class name', async function (this: Context) {
@@ -55,6 +56,6 @@ describe.only('next 13 move-css-in-js-styles', function () {
 
 		console.log(spy.createFile.getCalls());
 
-		assert.deepEqual(spy.createFile.calledOnceWith('x', STYLE_FILE), true);
+		assert.deepEqual(spy.createFile.calledOnceWith('a', STYLE_FILE), true);
 	});
 });

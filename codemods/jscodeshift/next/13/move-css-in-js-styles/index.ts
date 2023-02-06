@@ -39,10 +39,18 @@ export default function transformer(
 			),
 		);
 
-		const cssSource = j(jsxElementPath.value.children ?? [])
-			.toSource()
-			.replace('{`', '')
-			.replace('`}', '');
+		// const cssSource = j(jsxElementPath.value.children ?? [])
+		// 	.toSource()
+		// 	.replace('{`', '')
+		// 	.replace('`}', '');
+
+		let cssSource: string = '';
+
+		j(jsxElementPath)
+			.find(j.TemplateElement)
+			.forEach((x) => {
+				cssSource += x.value.value.raw;
+			});
 
 		jsxElementPath.replace();
 
