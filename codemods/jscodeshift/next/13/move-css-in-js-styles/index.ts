@@ -1,4 +1,4 @@
-import { API, ASTPath, FileInfo, Options, Transform } from 'jscodeshift';
+import { API, FileInfo, Options, Transform } from 'jscodeshift';
 
 export default function transformer(
 	file: FileInfo,
@@ -6,6 +6,7 @@ export default function transformer(
 	options: Options,
 ) {
 	const j = api.jscodeshift;
+
 	const root = j(file.source);
 
 	let dirtyFlag = false;
@@ -17,16 +18,16 @@ export default function transformer(
 			name: { type: 'JSXIdentifier', name: 'style' },
 		},
 	}).forEach((jsxElementPath) => {
-		const x: typeof jsxElementPath = jsxElementPath.parentPath; // todo how to ensure the correct types?
+		const parentPath: typeof jsxElementPath = jsxElementPath.parentPath; // todo how to ensure the correct types?
 
-		if (x?.node?.type !== 'JSXElement') {
+		if (parentPath?.node?.type !== 'JSXElement') {
 			return;
 		}
 
-		x.node.openingElement.attributes =
-			x.node.openingElement.attributes ?? [];
+		parentPath.node.openingElement.attributes =
+			parentPath.node.openingElement.attributes ?? [];
 
-		x.node.openingElement.attributes.push(
+		parentPath.node.openingElement.attributes.push(
 			j.jsxAttribute(
 				j.jsxIdentifier('className'),
 				j.jsxExpressionContainer(
@@ -38,7 +39,16 @@ export default function transformer(
 			),
 		);
 
+		const cssSource = j(jsxElementPath.value.children ?? [])
+			.toSource()
+			.replace('{`', '')
+			.replace('`}', '');
+
 		jsxElementPath.replace();
+
+		if ('createFile' in options) {
+			options.createFile('a', cssSource);
+		}
 
 		dirtyFlag = true;
 	});
