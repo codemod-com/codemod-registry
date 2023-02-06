@@ -1,0 +1,11 @@
+{
+    "schemaVersion": "1.0.0",
+    "name": "next_13_composite",
+    "codemods": [
+        "composites/next/13/composite"
+    ],
+    "dependencyVersionLowerThan": [
+        "next",
+        "13.0.0"
+    ]
+}
