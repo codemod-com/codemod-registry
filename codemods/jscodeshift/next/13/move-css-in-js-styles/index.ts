@@ -12,6 +12,8 @@ export default function transformer(
 
 	let dirtyFlag = false;
 
+	const newCssFileNames: string[] = [];
+
 	root.find(j.JSXElement, {
 		type: 'JSXElement',
 		openingElement: {
@@ -66,6 +68,8 @@ export default function transformer(
 			const newPath = join(root, dir, name);
 
 			options.createFile(newPath, cssSource);
+
+			newCssFileNames.push(name);
 		}
 
 		dirtyFlag = true;
@@ -75,13 +79,17 @@ export default function transformer(
 		return undefined;
 	}
 
-	const importDeclaration = j.importDeclaration(
-		[j.importSpecifier(j.identifier('styles'), j.identifier('styles'))],
-		j.stringLiteral('index.module.css'),
+	const importDeclarations = newCssFileNames.map((name) =>
+		j.importDeclaration(
+			[j.importSpecifier(j.identifier('styles'), j.identifier('styles'))],
+			j.stringLiteral(name),
+		),
 	);
 
 	root.find(j.Program).forEach((program) => {
-		program.value.body.unshift(importDeclaration);
+		for (const importDeclaration of importDeclarations) {
+			program.value.body.unshift(importDeclaration);
+		}
 	});
 
 	return root.toSource();
