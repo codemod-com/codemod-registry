@@ -35,7 +35,7 @@ export default function transformer(
 				j.jsxIdentifier('className'),
 				j.jsxExpressionContainer(
 					j.memberExpression(
-						j.literal('styles'),
+						j.identifier('styles'),
 						j.literal('wrapper'),
 					),
 				),
@@ -81,7 +81,7 @@ export default function transformer(
 
 	const importDeclarations = newCssFileNames.map((name) =>
 		j.importDeclaration(
-			[j.importSpecifier(j.identifier('styles'), j.identifier('styles'))],
+			[j.importDefaultSpecifier(j.identifier('styles'))],
 			j.stringLiteral(name),
 		),
 	);
