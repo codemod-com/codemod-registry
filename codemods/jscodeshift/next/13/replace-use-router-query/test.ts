@@ -1,6 +1,7 @@
 import transform, {
 	transformAddSearchParamsVariableDeclarator,
 	transformAddUseSearchParamsImport,
+	transformRemoveEmptyUseRouterDestructuring,
 	transformRemoveQueryFromDestructuredUseRouterCall,
 	transformReplaceQueryWithSearchParams,
 	transformReplaceRouterQueryWithSearchParams,
@@ -362,6 +363,33 @@ describe.only('next 13 replace-use-router-query', function () {
 
 			function Component() {
 				const { } = useRouter();
+			}
+		`;
+
+		assert.deepEqual(
+			root?.toSource().replace(/\W/gm, '') ?? '',
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should remove empty useRouter destructuring', async function (this: Context) {
+		const { jscodeshift } = this.buildApi('tsx');
+
+		const root = jscodeshift(`
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				const { } = useRouter();
+			}
+		`);
+
+		transformRemoveEmptyUseRouterDestructuring(jscodeshift, root);
+
+		const OUTPUT = `
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				
 			}
 		`;
 

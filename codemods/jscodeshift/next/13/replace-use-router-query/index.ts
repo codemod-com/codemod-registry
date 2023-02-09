@@ -111,18 +111,18 @@ const findMemberExpressions =
 const findVariableDeclaratorWithObjectPatternAndCallExpression =
 	(idPropertiesKeyName: string, initCalleeName: string) =>
 	(j: JSCodeshift, root: Collection<any>): Collection<VariableDeclarator> => {
+		const property = {
+			type: 'ObjectProperty' as const,
+			key: {
+				type: 'Identifier' as const,
+				name: idPropertiesKeyName,
+			},
+		};
+
 		return root.find(j.VariableDeclarator, {
 			id: {
 				type: 'ObjectPattern',
-				properties: [
-					{
-						type: 'ObjectProperty',
-						key: {
-							type: 'Identifier',
-							name: idPropertiesKeyName,
-						},
-					},
-				],
+				properties: [property],
 			},
 			init: {
 				type: 'CallExpression',
@@ -583,6 +583,21 @@ export const transformReplaceQueryWithSearchParams: IntuitaTransform = (
 	});
 };
 
+export const transformRemoveEmptyUseRouterDestructuring: IntuitaTransform = (
+	j,
+	root,
+): void => {
+	const importDeclarations = findImportDeclarations(
+		'useRouter',
+		'next/router',
+	)(j, root);
+
+	if (importDeclarations.size() === 0) {
+		console.log('A');
+		return;
+	}
+};
+
 export default function transformer(
 	file: FileInfo,
 	api: API,
@@ -596,8 +611,9 @@ export default function transformer(
 		transformUseRouterQueryWithUseSearchParams,
 		transformReplaceSearchParamsXWithSearchParamsGetX,
 		transformReplaceUseMemoSecondArgumentWithSearchParams,
-		transformReplaceQueryWithSearchParams,
 		transformRemoveQueryFromDestructuredUseRouterCall,
+		transformReplaceQueryWithSearchParams,
+		transformRemoveEmptyUseRouterDestructuring,
 	];
 
 	const j = api.jscodeshift;
