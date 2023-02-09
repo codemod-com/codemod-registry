@@ -400,22 +400,80 @@ export const replaceUseRouterQueryWithUseSearchParams: IntuitaTransform = (
 	).replaceWith(() => j.callExpression(j.identifier('useSearchParams'), []));
 };
 
-export const transformReplaceSearchParamsXWithSearchParamsGetX: IntuitaTransform =
-	(j, root): void => {
-		const importDeclarations = findImportDeclarations(
-			'useSearchParams',
-			'next/navigation',
-		)(j, root);
+export const replaceSearchParamsXWithSearchParamsGetX: IntuitaTransform = (
+	j,
+	root,
+): void => {
+	const importDeclarations = findImportDeclarations(
+		'useSearchParams',
+		'next/navigation',
+	)(j, root);
 
-		if (importDeclarations.size() === 0) {
+	if (importDeclarations.size() === 0) {
+		return;
+	}
+
+	const variableNames: string[] = [];
+
+	findVariableDeclaratorWithCallExpression('useSearchParams')(
+		j,
+		root,
+	).forEach((variableDeclaratorPath) => {
+		const { id } = variableDeclaratorPath.node;
+
+		if (id.type !== 'Identifier') {
 			return;
 		}
+
+		variableNames.push(id.name);
+	});
+
+	for (const variableName of variableNames) {
+		findMemberExpressions(variableName, undefined)(j, root).replaceWith(
+			(memberExpressionPath) => {
+				const { property } = memberExpressionPath.node;
+
+				if (
+					property.type !== 'Identifier' ||
+					property.name === 'entries'
+				) {
+					return memberExpressionPath.node;
+				}
+
+				return j.callExpression(
+					j.memberExpression(
+						j.identifier('searchParams'),
+						j.identifier('get'),
+						false,
+					),
+					[memberExpressionPath.node.property],
+				);
+			},
+		);
+	}
+};
+
+export const replaceUseMemoSecondArgumentWithSearchParams: IntuitaTransform = (
+	j,
+	root,
+): void => {
+	const importDeclarations = findImportDeclarations(
+		'useSearchParams',
+		'next/navigation',
+	)(j, root);
+
+	if (importDeclarations.size() === 0) {
+		return;
+	}
+
+	root.find(j.BlockStatement).forEach((blockStatementPath) => {
+		const blockStatement = j(blockStatementPath);
 
 		const variableNames: string[] = [];
 
 		findVariableDeclaratorWithCallExpression('useSearchParams')(
 			j,
-			root,
+			blockStatement,
 		).forEach((variableDeclaratorPath) => {
 			const { id } = variableDeclaratorPath.node;
 
@@ -426,150 +484,94 @@ export const transformReplaceSearchParamsXWithSearchParamsGetX: IntuitaTransform
 			variableNames.push(id.name);
 		});
 
-		for (const variableName of variableNames) {
-			findMemberExpressions(variableName, undefined)(j, root).replaceWith(
-				(memberExpressionPath) => {
-					const { property } = memberExpressionPath.node;
+		const hadSearchParamsGetsPerCall: boolean[] = [];
 
-					if (
-						property.type !== 'Identifier' ||
-						property.name === 'entries'
-					) {
-						return memberExpressionPath.node;
-					}
+		findCallExpressions('useMemo')(j, blockStatement).forEach(
+			(callExpressionPath, i) => {
+				const { arguments: args } = callExpressionPath.value;
 
-					return j.callExpression(
-						j.memberExpression(
-							j.identifier('searchParams'),
-							j.identifier('get'),
-							false,
-						),
-						[memberExpressionPath.node.property],
-					);
-				},
-			);
-		}
-	};
-
-export const transformReplaceUseMemoSecondArgumentWithSearchParams: IntuitaTransform =
-	(j, root): void => {
-		const importDeclarations = findImportDeclarations(
-			'useSearchParams',
-			'next/navigation',
-		)(j, root);
-
-		if (importDeclarations.size() === 0) {
-			return;
-		}
-
-		root.find(j.BlockStatement).forEach((blockStatementPath) => {
-			const blockStatement = j(blockStatementPath);
-
-			const variableNames: string[] = [];
-
-			findVariableDeclaratorWithCallExpression('useSearchParams')(
-				j,
-				blockStatement,
-			).forEach((variableDeclaratorPath) => {
-				const { id } = variableDeclaratorPath.node;
-
-				if (id.type !== 'Identifier') {
+				if (!args[1]) {
 					return;
 				}
 
-				variableNames.push(id.name);
+				const dependencyArguments = j(args[1]);
+
+				let hadSearchParamsGets = false;
+
+				for (const variableName of variableNames) {
+					findCallExpressionsWithMemberExpression(
+						variableName,
+						'get',
+					)(j, dependencyArguments)
+						.forEach(() => {
+							hadSearchParamsGets = true;
+						})
+						.remove();
+				}
+
+				hadSearchParamsGetsPerCall[i] = hadSearchParamsGets;
+			},
+		);
+
+		findCallExpressions('useMemo')(j, blockStatement)
+			.filter((_, i) => {
+				return hadSearchParamsGetsPerCall[i] ?? false;
+			})
+			.replaceWith((callExpression) => {
+				const { arguments: arg } = callExpression.node;
+
+				if (!arg[0] || !arg[1] || arg[1].type !== 'ArrayExpression') {
+					return callExpression.node;
+				}
+
+				return j.callExpression(callExpression.node.callee, [
+					arg[0],
+					j.arrayExpression([
+						...variableNames.map((variableName) =>
+							j.identifier(variableName),
+						),
+						...arg[1].elements,
+					]),
+				]);
 			});
+	});
+};
 
-			const hadSearchParamsGetsPerCall: boolean[] = [];
+export const removeQueryFromDestructuredUseRouterCall: IntuitaTransform = (
+	j,
+	root,
+): void => {
+	const importDeclarations = findImportDeclarations(
+		'useRouter',
+		'next/router',
+	)(j, root);
 
-			findCallExpressions('useMemo')(j, blockStatement).forEach(
-				(callExpressionPath, i) => {
-					const { arguments: args } = callExpressionPath.value;
+	if (importDeclarations.size() === 0) {
+		return;
+	}
 
-					if (!args[1]) {
-						return;
-					}
+	root.find(j.BlockStatement).forEach((blockStatementPath) => {
+		const blockStatement = j(blockStatementPath);
 
-					const dependencyArguments = j(args[1]);
-
-					let hadSearchParamsGets = false;
-
-					for (const variableName of variableNames) {
-						findCallExpressionsWithMemberExpression(
-							variableName,
-							'get',
-						)(j, dependencyArguments)
-							.forEach(() => {
-								hadSearchParamsGets = true;
-							})
-							.remove();
-					}
-
-					hadSearchParamsGetsPerCall[i] = hadSearchParamsGets;
-				},
-			);
-
-			findCallExpressions('useMemo')(j, blockStatement)
-				.filter((_, i) => {
-					return hadSearchParamsGetsPerCall[i] ?? false;
-				})
-				.replaceWith((callExpression) => {
-					const { arguments: arg } = callExpression.node;
-
-					if (
-						!arg[0] ||
-						!arg[1] ||
-						arg[1].type !== 'ArrayExpression'
-					) {
-						return callExpression.node;
-					}
-
-					return j.callExpression(callExpression.node.callee, [
-						arg[0],
-						j.arrayExpression([
-							...variableNames.map((variableName) =>
-								j.identifier(variableName),
-							),
-							...arg[1].elements,
-						]),
-					]);
-				});
-		});
-	};
-
-export const transformRemoveQueryFromDestructuredUseRouterCall: IntuitaTransform =
-	(j, root): void => {
-		const importDeclarations = findImportDeclarations(
+		findVariableDeclaratorWithObjectPatternAndCallExpression(
+			'query',
 			'useRouter',
-			'next/router',
-		)(j, root);
+		)(j, blockStatement).forEach((variableDeclaratorPath) => {
+			const variableDeclarator = variableDeclaratorPath.value;
 
-		if (importDeclarations.size() === 0) {
-			return;
-		}
-
-		root.find(j.BlockStatement).forEach((blockStatementPath) => {
-			const blockStatement = j(blockStatementPath);
-
-			findVariableDeclaratorWithObjectPatternAndCallExpression(
-				'query',
-				'useRouter',
-			)(j, blockStatement).forEach((variableDeclaratorPath) => {
-				const variableDeclarator = variableDeclaratorPath.value;
-
-				j(variableDeclarator)
-					.find(j.ObjectProperty, {
-						value: {
-							type: 'Identifier',
-							name: 'query',
-						},
-					})
-					.remove();
-			});
+			j(variableDeclarator)
+				.find(j.ObjectProperty, {
+					value: {
+						type: 'Identifier',
+						name: 'query',
+					},
+				})
+				.remove();
 		});
-	};
+	});
+};
 
-export const transformReplaceQueryWithSearchParams: IntuitaTransform = (
+export const replaceQueryWithSearchParams: IntuitaTransform = (
 	j,
 	root,
 ): void => {
@@ -591,10 +593,7 @@ export const transformReplaceQueryWithSearchParams: IntuitaTransform = (
 	});
 };
 
-export const transformRemoveEmptyDestructuring: IntuitaTransform = (
-	j,
-	root,
-): void => {
+export const removeEmptyDestructuring: IntuitaTransform = (j, root): void => {
 	root.find(j.BlockStatement).forEach((blockStatementPath) => {
 		const blockStatement = j(blockStatementPath);
 
@@ -641,7 +640,7 @@ export const removeUnusedUseRouterImportSpecifier: IntuitaTransformBuilder<{
 			.remove();
 	};
 
-export const transformRemoveUnusedUseRouterImportDeclaration: IntuitaTransformBuilder<{
+export const removeUnusedUseRouterImportDeclaration: IntuitaTransformBuilder<{
 	importDeclarationSourceValue: string;
 }> =
 	({ importDeclarationSourceValue }) =>
@@ -657,7 +656,7 @@ export const transformRemoveUnusedUseRouterImportDeclaration: IntuitaTransformBu
 			.remove();
 	};
 
-export const transformReplaceObjectPatternFromSearchParamsWithGetters: IntuitaTransform =
+export const replaceObjectPatternFromSearchParamsWithGetters: IntuitaTransform =
 	(j, root): void => {
 		root.find(j.BlockStatement).forEach((blockStatementPath) => {
 			const blockStatement = j(blockStatementPath);
@@ -730,19 +729,19 @@ export default function transformer(
 		replaceTripleDotRouterQueryWithSearchParams,
 		replaceRouterQueryWithSearchParams,
 		replaceUseRouterQueryWithUseSearchParams,
-		transformReplaceSearchParamsXWithSearchParamsGetX,
-		transformReplaceUseMemoSecondArgumentWithSearchParams,
-		transformRemoveQueryFromDestructuredUseRouterCall,
-		transformReplaceQueryWithSearchParams,
-		transformRemoveEmptyDestructuring,
+		replaceSearchParamsXWithSearchParamsGetX,
+		replaceUseMemoSecondArgumentWithSearchParams,
+		removeQueryFromDestructuredUseRouterCall,
+		replaceQueryWithSearchParams,
+		removeEmptyDestructuring,
 		removeUnusedUseRouterImportSpecifier({
 			importSpecifierImportedName: 'useRouter',
 		}),
-		transformRemoveUnusedUseRouterImportDeclaration({
+		removeUnusedUseRouterImportDeclaration({
 			importDeclarationSourceValue: 'next/router',
 		}),
-		transformReplaceObjectPatternFromSearchParamsWithGetters,
-		transformRemoveEmptyDestructuring,
+		replaceObjectPatternFromSearchParamsWithGetters,
+		removeEmptyDestructuring,
 	];
 
 	const j = api.jscodeshift;
