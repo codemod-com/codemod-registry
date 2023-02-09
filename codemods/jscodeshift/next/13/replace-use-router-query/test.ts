@@ -1,15 +1,15 @@
 import transform, {
-	transformAddSearchParamsVariableDeclarator,
-	transformAddUseSearchParamsImport,
+	addSearchParamsVariableDeclarator,
+	addUseSearchParamsImport,
 	transformRemoveEmptyDestructuring,
 	transformRemoveQueryFromDestructuredUseRouterCall,
 	transformRemoveUnusedUseRouterImportDeclaration,
 	removeUnusedUseRouterImportSpecifier,
 	transformReplaceQueryWithSearchParams,
-	transformReplaceRouterQueryWithSearchParams,
+	replaceRouterQueryWithSearchParams,
 	transformReplaceSearchParamsXWithSearchParamsGetX,
-	transformTripleDotReplaceRouterQueryWithSearchParams,
-	transformUseRouterQueryWithUseSearchParams,
+	replaceTripleDotRouterQueryWithSearchParams,
+	replaceUseRouterQueryWithUseSearchParams,
 } from '.';
 import assert from 'node:assert/strict';
 import { Context } from 'mocha';
@@ -29,7 +29,7 @@ describe.only('next 13 replace-use-router-query', function () {
 			}
 		`);
 
-		transformAddUseSearchParamsImport(jscodeshift, root);
+		addUseSearchParamsImport(jscodeshift, root);
 
 		assert.deepEqual(
 			root?.toSource().replace(/\W/gm, '') ?? '',
@@ -57,7 +57,7 @@ describe.only('next 13 replace-use-router-query', function () {
 			}
 		`);
 
-		transformAddUseSearchParamsImport(jscodeshift, root);
+		addUseSearchParamsImport(jscodeshift, root);
 
 		assert.deepEqual(
 			root?.toSource().replace(/\W/gm, '') ?? '',
@@ -83,7 +83,7 @@ describe.only('next 13 replace-use-router-query', function () {
 			}
 		`);
 
-		transformAddUseSearchParamsImport(jscodeshift, root);
+		addUseSearchParamsImport(jscodeshift, root);
 
 		assert.deepEqual(
 			root?.toSource().replace(/\W/gm, '') ?? '',
@@ -109,7 +109,7 @@ describe.only('next 13 replace-use-router-query', function () {
 			}
 		`);
 
-		transformAddSearchParamsVariableDeclarator(jscodeshift, root);
+		addSearchParamsVariableDeclarator(jscodeshift, root);
 
 		assert.deepEqual(
 			root?.toSource().replace(/\W/gm, '') ?? '',
@@ -137,7 +137,7 @@ describe.only('next 13 replace-use-router-query', function () {
 			}
 		`);
 
-		transformTripleDotReplaceRouterQueryWithSearchParams(jscodeshift, root);
+		replaceTripleDotRouterQueryWithSearchParams(jscodeshift, root);
 
 		assert.deepEqual(
 			root?.toSource().replace(/\W/gm, '') ?? '',
@@ -166,7 +166,7 @@ describe.only('next 13 replace-use-router-query', function () {
 			}
 		`);
 
-		transformReplaceRouterQueryWithSearchParams(jscodeshift, root);
+		replaceRouterQueryWithSearchParams(jscodeshift, root);
 
 		assert.deepEqual(
 			root?.toSource().replace(/\W/gm, '') ?? '',
@@ -193,7 +193,7 @@ describe.only('next 13 replace-use-router-query', function () {
 			}
 		`);
 
-		transformUseRouterQueryWithUseSearchParams(jscodeshift, root);
+		replaceUseRouterQueryWithUseSearchParams(jscodeshift, root);
 
 		assert.deepEqual(
 			root?.toSource().replace(/\W/gm, '') ?? '',
