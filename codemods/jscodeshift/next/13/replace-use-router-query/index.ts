@@ -109,20 +109,24 @@ const findMemberExpressions =
 	};
 
 const findVariableDeclaratorWithObjectPatternAndCallExpression =
-	(idPropertiesKeyName: string, initCalleeName: string) =>
+	(idPropertiesKeyName: string | null, initCalleeName: string) =>
 	(j: JSCodeshift, root: Collection<any>): Collection<VariableDeclarator> => {
-		const property = {
-			type: 'ObjectProperty' as const,
-			key: {
-				type: 'Identifier' as const,
-				name: idPropertiesKeyName,
-			},
-		};
+		const property = idPropertiesKeyName
+			? {
+					type: 'ObjectProperty' as const,
+					key: {
+						type: 'Identifier' as const,
+						name: idPropertiesKeyName,
+					},
+			  }
+			: undefined;
+
+		const properties = property ? [property] : [];
 
 		return root.find(j.VariableDeclarator, {
 			id: {
 				type: 'ObjectPattern',
-				properties: [property],
+				properties,
 			},
 			init: {
 				type: 'CallExpression',
