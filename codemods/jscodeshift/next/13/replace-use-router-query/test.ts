@@ -2,6 +2,7 @@ import transform, {
 	transformAddSearchParamsVariableDeclarator,
 	transformAddUseSearchParamsImport,
 	transformRemoveQueryFromDestructuredUseRouterCall,
+	transformReplaceQueryWithSearchParams,
 	transformReplaceRouterQueryWithSearchParams,
 	transformReplaceSearchParamsXWithSearchParamsGetX,
 	transformTripleDotReplaceRouterQueryWithSearchParams,
@@ -329,7 +330,7 @@ describe.only('next 13 replace-use-router-query', function () {
 			}
 		`);
 
-		transformUseRouterQueryWithUseSearchParams(jscodeshift, root);
+		transformReplaceQueryWithSearchParams(jscodeshift, root);
 
 		assert.deepEqual(
 			root?.toSource().replace(/\W/gm, '') ?? '',

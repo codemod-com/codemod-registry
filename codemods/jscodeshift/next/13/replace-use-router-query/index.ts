@@ -570,6 +570,7 @@ export const transformReplaceQueryWithSearchParams: IntuitaTransform = (
 	)(j, root);
 
 	if (importDeclarations.size() === 0) {
+		console.log('A');
 		return;
 	}
 
@@ -578,9 +579,7 @@ export const transformReplaceQueryWithSearchParams: IntuitaTransform = (
 
 		blockStatement
 			.find(j.Identifier, { name: 'query' })
-			.forEach((identifierPath) => {
-				identifierPath.name = 'searchParams';
-			});
+			.replaceWith(() => j.identifier('searchParams'));
 	});
 };
 
