@@ -650,6 +650,68 @@ export const transformRemoveUnusedUseRouterImportDeclaration: IntuitaTransform =
 			.remove();
 	};
 
+export const transformReplaceObjectPatternFromSearchParamsWithGetters: IntuitaTransform =
+	(j, root): void => {
+		root.find(j.BlockStatement).forEach((blockStatementPath) => {
+			const blockStatement = j(blockStatementPath);
+
+			const keyValues: [string, string][] = [];
+
+			blockStatement
+				.find(j.VariableDeclarator, {
+					id: {
+						type: 'ObjectPattern',
+					},
+					init: {
+						type: 'Identifier',
+						name: 'searchParams',
+					},
+				})
+				.forEach((variableDeclaratorPath) => {
+					j(variableDeclaratorPath)
+						.find(j.ObjectProperty, {
+							key: {
+								type: 'Identifier',
+							},
+							value: {
+								type: 'Identifier',
+							},
+						})
+						.forEach((objectPropertyPath) => {
+							const { key, value } = objectPropertyPath.value;
+
+							if (
+								key.type !== 'Identifier' ||
+								value.type !== 'Identifier'
+							) {
+								return;
+							}
+
+							keyValues.push([key.name, value.name]);
+						})
+						.remove();
+				});
+
+			for (const [key, value] of keyValues) {
+				blockStatementPath.value.body.push(
+					j.variableDeclaration('const', [
+						j.variableDeclarator(
+							j.identifier(key),
+							j.callExpression(
+								j.memberExpression(
+									j.identifier('searchParams'),
+									j.identifier('get'),
+									false,
+								),
+								[j.stringLiteral(value)],
+							),
+						),
+					]),
+				);
+			}
+		});
+	};
+
 export default function transformer(
 	file: FileInfo,
 	api: API,
@@ -668,6 +730,7 @@ export default function transformer(
 		transformRemoveEmptyUseRouterDestructuring,
 		transformRemoveUnusedUseRouterImportSpecifier,
 		transformRemoveUnusedUseRouterImportDeclaration,
+		transformReplaceObjectPatternFromSearchParamsWithGetters,
 	];
 
 	const j = api.jscodeshift;
