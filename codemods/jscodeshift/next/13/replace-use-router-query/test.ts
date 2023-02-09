@@ -385,7 +385,10 @@ describe.only('next 13 replace-use-router-query', function () {
 			}
 		`);
 
-		transformRemoveEmptyUseRouterDestructuring(jscodeshift, root);
+		transformRemoveEmptyUseRouterDestructuring('useRouter')(
+			jscodeshift,
+			root,
+		);
 
 		const OUTPUT = `
 			import { useRouter } from 'next/router';

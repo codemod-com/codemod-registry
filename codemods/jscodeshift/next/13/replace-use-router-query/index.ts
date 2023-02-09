@@ -586,38 +586,29 @@ export const transformReplaceQueryWithSearchParams: IntuitaTransform = (
 	});
 };
 
-export const transformRemoveEmptyUseRouterDestructuring: IntuitaTransform = (
-	j,
-	root,
-): void => {
-	const importDeclarations = findImportDeclarations(
-		'useRouter',
-		'next/router',
-	)(j, root);
+export const transformRemoveEmptyUseRouterDestructuring =
+	(initCalleeName: string): IntuitaTransform =>
+	(j, root): void => {
+		root.find(j.BlockStatement).forEach((blockStatementPath) => {
+			const blockStatement = j(blockStatementPath);
 
-	if (importDeclarations.size() === 0) {
-		return;
-	}
+			findVariableDeclaratorWithObjectPatternAndCallExpression(
+				null,
+				initCalleeName,
+			)(j, blockStatement)
+				.filter((variableDeclaratorPath) => {
+					const variableDeclarator = variableDeclaratorPath.value;
 
-	root.find(j.BlockStatement).forEach((blockStatementPath) => {
-		const blockStatement = j(blockStatementPath);
+					const { id } = variableDeclarator;
 
-		findVariableDeclaratorWithObjectPatternAndCallExpression(
-			null,
-			'useRouter',
-		)(j, blockStatement)
-			.filter((variableDeclaratorPath) => {
-				const variableDeclarator = variableDeclaratorPath.value;
-
-				const { id } = variableDeclarator;
-
-				return (
-					id.type === 'ObjectPattern' && id.properties.length === 0
-				);
-			})
-			.remove();
-	});
-};
+					return (
+						id.type === 'ObjectPattern' &&
+						id.properties.length === 0
+					);
+				})
+				.remove();
+		});
+	};
 
 export const transformRemoveUnusedUseRouterImportSpecifier: IntuitaTransform = (
 	j,
@@ -727,7 +718,7 @@ export default function transformer(
 		transformReplaceUseMemoSecondArgumentWithSearchParams,
 		transformRemoveQueryFromDestructuredUseRouterCall,
 		transformReplaceQueryWithSearchParams,
-		transformRemoveEmptyUseRouterDestructuring,
+		transformRemoveEmptyUseRouterDestructuring('useRouter'),
 		transformRemoveUnusedUseRouterImportSpecifier,
 		transformRemoveUnusedUseRouterImportDeclaration,
 		transformReplaceObjectPatternFromSearchParamsWithGetters,
