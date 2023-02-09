@@ -528,6 +528,38 @@ export const transformReplaceUseMemoSecondArgumentWithSearchParams: IntuitaTrans
 		});
 	};
 
+export const transformRemoveQueryFromDestructuredUseRouterCall: IntuitaTransform =
+	(j, root): void => {
+		const importDeclarations = findImportDeclarations(
+			'useRouter',
+			'next/router',
+		)(j, root);
+
+		if (importDeclarations.size() === 0) {
+			return;
+		}
+
+		root.find(j.BlockStatement).forEach((blockStatementPath) => {
+			const blockStatement = j(blockStatementPath);
+
+			findVariableDeclaratorWithObjectPatternAndCallExpression(
+				'query',
+				'useRouter',
+			)(j, blockStatement).forEach((variableDeclaratorPath) => {
+				const variableDeclarator = variableDeclaratorPath.value;
+
+				j(variableDeclarator)
+					.find(j.ObjectProperty, {
+						value: {
+							type: 'Identifier',
+							name: 'query',
+						},
+					})
+					.remove();
+			});
+		});
+	};
+
 export default function transformer(
 	file: FileInfo,
 	api: API,
@@ -541,6 +573,7 @@ export default function transformer(
 		transformUseRouterQueryWithUseSearchParams,
 		transformReplaceSearchParamsXWithSearchParamsGetX,
 		transformReplaceUseMemoSecondArgumentWithSearchParams,
+		transformRemoveQueryFromDestructuredUseRouterCall,
 	];
 
 	const j = api.jscodeshift;

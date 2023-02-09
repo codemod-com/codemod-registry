@@ -1,6 +1,7 @@
 import transform, {
 	transformAddSearchParamsVariableDeclarator,
 	transformAddUseSearchParamsImport,
+	transformRemoveQueryFromDestructuredUseRouterCall,
 	transformReplaceRouterQueryWithSearchParams,
 	transformReplaceSearchParamsXWithSearchParamsGetX,
 	transformTripleDotReplaceRouterQueryWithSearchParams,
@@ -10,7 +11,7 @@ import assert from 'node:assert/strict';
 import { Context } from 'mocha';
 import { FileInfo } from 'jscodeshift';
 
-describe('next 13 replace-use-router-query', function () {
+describe.only('next 13 replace-use-router-query', function () {
 	it('should add useSearchParams import because of "router.query"', async function (this: Context) {
 		const { jscodeshift } = this.buildApi('tsx');
 
@@ -310,6 +311,71 @@ describe('next 13 replace-use-router-query', function () {
 		};
 
 		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should delete query from destructured useRouter call', async function (this: Context) {
+		const { jscodeshift } = this.buildApi('tsx');
+
+		const root = jscodeshift(`
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				const { query } = useRouter();
+			}
+		`);
+
+		transformRemoveQueryFromDestructuredUseRouterCall(jscodeshift, root);
+
+		const OUTPUT = `
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				const { } = useRouter();
+			}
+		`;
+
+		assert.deepEqual(
+			root?.toSource().replace(/\W/gm, '') ?? '',
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should replace INPUT with OUTPUT (3)', async function (this: Context) {
+		const INPUT = `
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				const { query } = useRouter();
+				const { a, b, c } = query;
+			}
+		`;
+
+		const OUTPUT = `
+			import { useSearchParams } from 'next/navigation';
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				const { } = useRouter();
+				const searchParams = useSearchParams();
+				const a = searchParams.get('a');
+				const b = searchParams.get('b');
+				const c = searchParams.get('c');
+			}
+		`;
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+
+		console.log(actualOutput);
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
