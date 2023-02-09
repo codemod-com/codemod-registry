@@ -12,6 +12,9 @@ import {
 } from 'jscodeshift';
 
 type IntuitaTransform = (j: API['jscodeshift'], root: Collection<any>) => void;
+type IntuitaTransformBuilder<T> = (
+	options: T,
+) => (j: API['jscodeshift'], root: Collection<any>) => void;
 
 const findImportDeclarations =
 	(importedName: string, sourceValue: string) =>
@@ -612,25 +615,29 @@ export const transformRemoveEmptyDestructuring: IntuitaTransform = (
 	});
 };
 
-export const transformRemoveUnusedUseRouterImportSpecifier: IntuitaTransform = (
-	j,
-	root,
-): void => {
-	root.find(j.ImportSpecifier, { imported: { name: 'useRouter' } })
-		.filter((importSpecifierPath) => {
-			const importSpecifier = importSpecifierPath.value;
-
-			const hasLocal = Boolean(importSpecifier.local);
-
-			const name =
-				importSpecifier.local?.name ?? importSpecifier.imported.name;
-
-			const size = root.find(j.Identifier, { name }).size();
-
-			return size === Number(hasLocal) + 1;
+export const removeUnusedUseRouterImportSpecifier: IntuitaTransformBuilder<{
+	importSpecifierImportedName: string;
+}> =
+	({ importSpecifierImportedName }) =>
+	(j, root): void => {
+		root.find(j.ImportSpecifier, {
+			imported: { name: importSpecifierImportedName },
 		})
-		.remove();
-};
+			.filter((importSpecifierPath) => {
+				const importSpecifier = importSpecifierPath.value;
+
+				const hasLocal = Boolean(importSpecifier.local);
+
+				const name =
+					importSpecifier.local?.name ??
+					importSpecifier.imported.name;
+
+				const size = root.find(j.Identifier, { name }).size();
+
+				return size === Number(hasLocal) + 1;
+			})
+			.remove();
+	};
 
 export const transformRemoveUnusedUseRouterImportDeclaration: IntuitaTransform =
 	(j, root): void => {
@@ -721,7 +728,9 @@ export default function transformer(
 		transformRemoveQueryFromDestructuredUseRouterCall,
 		transformReplaceQueryWithSearchParams,
 		transformRemoveEmptyDestructuring,
-		transformRemoveUnusedUseRouterImportSpecifier,
+		removeUnusedUseRouterImportSpecifier({
+			importSpecifierImportedName: 'useRouter',
+		}),
 		transformRemoveUnusedUseRouterImportDeclaration,
 		transformReplaceObjectPatternFromSearchParamsWithGetters,
 		transformRemoveEmptyDestructuring,

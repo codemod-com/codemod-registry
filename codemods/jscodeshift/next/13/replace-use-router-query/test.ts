@@ -4,7 +4,7 @@ import transform, {
 	transformRemoveEmptyDestructuring,
 	transformRemoveQueryFromDestructuredUseRouterCall,
 	transformRemoveUnusedUseRouterImportDeclaration,
-	transformRemoveUnusedUseRouterImportSpecifier,
+	removeUnusedUseRouterImportSpecifier,
 	transformReplaceQueryWithSearchParams,
 	transformReplaceRouterQueryWithSearchParams,
 	transformReplaceSearchParamsXWithSearchParamsGetX,
@@ -412,7 +412,9 @@ describe.only('next 13 replace-use-router-query', function () {
 			}
 		`);
 
-		transformRemoveUnusedUseRouterImportSpecifier(jscodeshift, root);
+		removeUnusedUseRouterImportSpecifier({
+			importSpecifierImportedName: 'useRouter',
+		})(jscodeshift, root);
 
 		const OUTPUT = `
 			import 'next/router';
