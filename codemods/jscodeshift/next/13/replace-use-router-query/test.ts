@@ -441,7 +441,9 @@ describe.only('next 13 replace-use-router-query', function () {
 			}
 		`);
 
-		transformRemoveUnusedUseRouterImportDeclaration(jscodeshift, root);
+		transformRemoveUnusedUseRouterImportDeclaration({
+			importDeclarationSourceValue: 'next/router',
+		})(jscodeshift, root);
 
 		const OUTPUT = `
 			function Component() {

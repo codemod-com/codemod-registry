@@ -639,9 +639,14 @@ export const removeUnusedUseRouterImportSpecifier: IntuitaTransformBuilder<{
 			.remove();
 	};
 
-export const transformRemoveUnusedUseRouterImportDeclaration: IntuitaTransform =
+export const transformRemoveUnusedUseRouterImportDeclaration: IntuitaTransformBuilder<{
+	importDeclarationSourceValue: string;
+}> =
+	({ importDeclarationSourceValue }) =>
 	(j, root): void => {
-		root.find(j.ImportDeclaration, { source: { value: 'next/router' } })
+		root.find(j.ImportDeclaration, {
+			source: { value: importDeclarationSourceValue },
+		})
 			.filter((importDeclarationPath) => {
 				const importDeclaration = importDeclarationPath.value;
 
@@ -731,7 +736,9 @@ export default function transformer(
 		removeUnusedUseRouterImportSpecifier({
 			importSpecifierImportedName: 'useRouter',
 		}),
-		transformRemoveUnusedUseRouterImportDeclaration,
+		transformRemoveUnusedUseRouterImportDeclaration({
+			importDeclarationSourceValue: 'next/router',
+		}),
 		transformReplaceObjectPatternFromSearchParamsWithGetters,
 		transformRemoveEmptyDestructuring,
 	];
