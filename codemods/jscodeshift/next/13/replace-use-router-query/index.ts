@@ -574,7 +574,6 @@ export const transformReplaceQueryWithSearchParams: IntuitaTransform = (
 	)(j, root);
 
 	if (importDeclarations.size() === 0) {
-		console.log('A');
 		return;
 	}
 
@@ -597,7 +596,6 @@ export const transformRemoveEmptyUseRouterDestructuring: IntuitaTransform = (
 	)(j, root);
 
 	if (importDeclarations.size() === 0) {
-		console.log('A');
 		return;
 	}
 
@@ -607,19 +605,17 @@ export const transformRemoveEmptyUseRouterDestructuring: IntuitaTransform = (
 		findVariableDeclaratorWithObjectPatternAndCallExpression(
 			null,
 			'useRouter',
-		)(j, blockStatement).forEach((variableDeclaratorPath) => {
-			const variableDeclarator = variableDeclaratorPath.value;
+		)(j, blockStatement)
+			.filter((variableDeclaratorPath) => {
+				const variableDeclarator = variableDeclaratorPath.value;
 
-			const { id } = variableDeclarator;
+				const { id } = variableDeclarator;
 
-			if (id.type !== 'ObjectPattern') {
-				return;
-			}
-
-			if (id.properties.length === 0) {
-				variableDeclaratorPath.replace();
-			}
-		});
+				return (
+					id.type === 'ObjectPattern' && id.properties.length === 0
+				);
+			})
+			.remove();
 	});
 };
 
