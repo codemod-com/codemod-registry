@@ -1,10 +1,15 @@
 import transform, {
-	transformAddSearchParamsVariableDeclarator,
-	transformAddUseSearchParamsImport,
-	transformReplaceRouterQueryWithSearchParams,
-	transformReplaceSearchParamsXWithSearchParamsGetX,
-	transformTripleDotReplaceRouterQueryWithSearchParams,
-	transformUseRouterQueryWithUseSearchParams,
+	addSearchParamsVariableDeclarator,
+	addUseSearchParamsImport,
+	removeEmptyDestructuring,
+	removeQueryFromDestructuredUseRouterCall,
+	removeUnusedUseRouterImportDeclaration,
+	removeUnusedUseRouterImportSpecifier,
+	replaceQueryWithSearchParams,
+	replaceRouterQueryWithSearchParams,
+	replaceSearchParamsXWithSearchParamsGetX,
+	replaceTripleDotRouterQueryWithSearchParams,
+	replaceUseRouterQueryWithUseSearchParams,
 } from '.';
 import assert from 'node:assert/strict';
 import { Context } from 'mocha';
@@ -24,7 +29,7 @@ describe('next 13 replace-use-router-query', function () {
 			}
 		`);
 
-		transformAddUseSearchParamsImport(jscodeshift, root);
+		addUseSearchParamsImport(jscodeshift, root);
 
 		assert.deepEqual(
 			root?.toSource().replace(/\W/gm, '') ?? '',
@@ -52,7 +57,7 @@ describe('next 13 replace-use-router-query', function () {
 			}
 		`);
 
-		transformAddUseSearchParamsImport(jscodeshift, root);
+		addUseSearchParamsImport(jscodeshift, root);
 
 		assert.deepEqual(
 			root?.toSource().replace(/\W/gm, '') ?? '',
@@ -78,7 +83,7 @@ describe('next 13 replace-use-router-query', function () {
 			}
 		`);
 
-		transformAddUseSearchParamsImport(jscodeshift, root);
+		addUseSearchParamsImport(jscodeshift, root);
 
 		assert.deepEqual(
 			root?.toSource().replace(/\W/gm, '') ?? '',
@@ -104,7 +109,7 @@ describe('next 13 replace-use-router-query', function () {
 			}
 		`);
 
-		transformAddSearchParamsVariableDeclarator(jscodeshift, root);
+		addSearchParamsVariableDeclarator(jscodeshift, root);
 
 		assert.deepEqual(
 			root?.toSource().replace(/\W/gm, '') ?? '',
@@ -132,7 +137,7 @@ describe('next 13 replace-use-router-query', function () {
 			}
 		`);
 
-		transformTripleDotReplaceRouterQueryWithSearchParams(jscodeshift, root);
+		replaceTripleDotRouterQueryWithSearchParams(jscodeshift, root);
 
 		assert.deepEqual(
 			root?.toSource().replace(/\W/gm, '') ?? '',
@@ -161,7 +166,7 @@ describe('next 13 replace-use-router-query', function () {
 			}
 		`);
 
-		transformReplaceRouterQueryWithSearchParams(jscodeshift, root);
+		replaceRouterQueryWithSearchParams(jscodeshift, root);
 
 		assert.deepEqual(
 			root?.toSource().replace(/\W/gm, '') ?? '',
@@ -188,7 +193,7 @@ describe('next 13 replace-use-router-query', function () {
 			}
 		`);
 
-		transformUseRouterQueryWithUseSearchParams(jscodeshift, root);
+		replaceUseRouterQueryWithUseSearchParams(jscodeshift, root);
 
 		assert.deepEqual(
 			root?.toSource().replace(/\W/gm, '') ?? '',
@@ -215,7 +220,7 @@ describe('next 13 replace-use-router-query', function () {
 			}
 		`);
 
-		transformReplaceSearchParamsXWithSearchParamsGetX(jscodeshift, root);
+		replaceSearchParamsXWithSearchParamsGetX(jscodeshift, root);
 
 		assert.deepEqual(
 			root?.toSource().replace(/\W/gm, '') ?? '',
@@ -301,6 +306,175 @@ describe('next 13 replace-use-router-query', function () {
 					() => (searchParams.get('a') ? null : searchParams.get('b')),
 					[searchParams, c],
 				) ?? a;
+			}
+		`;
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should replace "query" with "searchParams"', async function (this: Context) {
+		const { jscodeshift } = this.buildApi('tsx');
+
+		const root = jscodeshift(`
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				const { a, b, c } = query;
+			}
+		`);
+
+		replaceQueryWithSearchParams(jscodeshift, root);
+
+		assert.deepEqual(
+			root?.toSource().replace(/\W/gm, '') ?? '',
+			`
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				const { a, b, c } = searchParams;
+			}
+			`.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should delete query from destructured useRouter call', async function (this: Context) {
+		const { jscodeshift } = this.buildApi('tsx');
+
+		const root = jscodeshift(`
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				const { query } = useRouter();
+			}
+		`);
+
+		removeQueryFromDestructuredUseRouterCall(jscodeshift, root);
+
+		const OUTPUT = `
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				const { } = useRouter();
+			}
+		`;
+
+		assert.deepEqual(
+			root?.toSource().replace(/\W/gm, '') ?? '',
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should delete empty useRouter destructuring', async function (this: Context) {
+		const { jscodeshift } = this.buildApi('tsx');
+
+		const root = jscodeshift(`
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				const { } = useRouter();
+			}
+		`);
+
+		removeEmptyDestructuring(jscodeshift, root);
+
+		const OUTPUT = `
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				
+			}
+		`;
+
+		assert.deepEqual(
+			root?.toSource().replace(/\W/gm, '') ?? '',
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should remove unused useRouter import specifiers', async function (this: Context) {
+		const { jscodeshift } = this.buildApi('tsx');
+
+		const root = jscodeshift(`
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				
+			}
+		`);
+
+		removeUnusedUseRouterImportSpecifier({
+			importSpecifierImportedName: 'useRouter',
+		})(jscodeshift, root);
+
+		const OUTPUT = `
+			import 'next/router';
+
+			function Component() {
+					
+			}
+		`;
+
+		assert.deepEqual(
+			root?.toSource().replace(/\W/gm, '') ?? '',
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should remove unused useRouter import declarations', async function (this: Context) {
+		const { jscodeshift } = this.buildApi('tsx');
+
+		const root = jscodeshift(`
+			import 'next/router';
+
+			function Component() {
+				
+			}
+		`);
+
+		removeUnusedUseRouterImportDeclaration({
+			importDeclarationSourceValue: 'next/router',
+		})(jscodeshift, root);
+
+		const OUTPUT = `
+			function Component() {
+					
+			}
+		`;
+
+		assert.deepEqual(
+			root?.toSource().replace(/\W/gm, '') ?? '',
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should replace INPUT with OUTPUT (3)', async function (this: Context) {
+		const INPUT = `
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				const { query } = useRouter();
+				const { a, b, c } = query;
+			}
+		`;
+
+		const OUTPUT = `
+			import { useSearchParams } from 'next/navigation';
+
+			function Component() {
+				const searchParams = useSearchParams();
+				const a = searchParams.get('a');
+				const b = searchParams.get('b');
+				const c = searchParams.get('c');
 			}
 		`;
 
