@@ -3,6 +3,7 @@ import transform, {
 	transformAddUseSearchParamsImport,
 	transformRemoveEmptyUseRouterDestructuring,
 	transformRemoveQueryFromDestructuredUseRouterCall,
+	transformRemoveUnusedUseRouterImportSpecifier,
 	transformReplaceQueryWithSearchParams,
 	transformReplaceRouterQueryWithSearchParams,
 	transformReplaceSearchParamsXWithSearchParamsGetX,
@@ -372,7 +373,7 @@ describe.only('next 13 replace-use-router-query', function () {
 		);
 	});
 
-	it.only('should remove empty useRouter destructuring', async function (this: Context) {
+	it('should delete empty useRouter destructuring', async function (this: Context) {
 		const { jscodeshift } = this.buildApi('tsx');
 
 		const root = jscodeshift(`
@@ -399,6 +400,33 @@ describe.only('next 13 replace-use-router-query', function () {
 		);
 	});
 
+	it('should remove unused useRouter import declarations', async function (this: Context) {
+		const { jscodeshift } = this.buildApi('tsx');
+
+		const root = jscodeshift(`
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				
+			}
+		`);
+
+		transformRemoveUnusedUseRouterImportSpecifier(jscodeshift, root);
+
+		const OUTPUT = `
+			import 'next/router';
+
+			function Component() {
+					
+			}
+		`;
+
+		assert.deepEqual(
+			root?.toSource().replace(/\W/gm, '') ?? '',
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+
 	it('should replace INPUT with OUTPUT (3)', async function (this: Context) {
 		const INPUT = `
 			import { useRouter } from 'next/router';
@@ -411,10 +439,9 @@ describe.only('next 13 replace-use-router-query', function () {
 
 		const OUTPUT = `
 			import { useSearchParams } from 'next/navigation';
-			import { useRouter } from 'next/router';
+			import 'next/router';
 
 			function Component() {
-				const { } = useRouter();
 				const searchParams = useSearchParams();
 				const a = searchParams.get('a');
 				const b = searchParams.get('b');

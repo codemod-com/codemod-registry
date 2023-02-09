@@ -619,6 +619,26 @@ export const transformRemoveEmptyUseRouterDestructuring: IntuitaTransform = (
 	});
 };
 
+export const transformRemoveUnusedUseRouterImportSpecifier: IntuitaTransform = (
+	j,
+	root,
+): void => {
+	root.find(j.ImportSpecifier, { imported: { name: 'useRouter' } })
+		.filter((importSpecifierPath) => {
+			const importSpecifier = importSpecifierPath.value;
+
+			const hasLocal = Boolean(importSpecifier.local);
+
+			const name =
+				importSpecifier.local?.name ?? importSpecifier.imported.name;
+
+			const size = root.find(j.Identifier, { name }).size();
+
+			return size === Number(hasLocal) + 1;
+		})
+		.remove();
+};
+
 export default function transformer(
 	file: FileInfo,
 	api: API,
@@ -635,6 +655,7 @@ export default function transformer(
 		transformRemoveQueryFromDestructuredUseRouterCall,
 		transformReplaceQueryWithSearchParams,
 		transformRemoveEmptyUseRouterDestructuring,
+		transformRemoveUnusedUseRouterImportSpecifier,
 	];
 
 	const j = api.jscodeshift;
