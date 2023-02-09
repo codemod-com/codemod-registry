@@ -318,6 +318,31 @@ describe.only('next 13 replace-use-router-query', function () {
 		);
 	});
 
+	it('should replace "query" with "searchParams"', async function (this: Context) {
+		const { jscodeshift } = this.buildApi('tsx');
+
+		const root = jscodeshift(`
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				const { a, b, c } = query;
+			}
+		`);
+
+		transformUseRouterQueryWithUseSearchParams(jscodeshift, root);
+
+		assert.deepEqual(
+			root?.toSource().replace(/\W/gm, '') ?? '',
+			`
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				const { a, b, c } = searchParams;
+			}
+			`.replace(/\W/gm, ''),
+		);
+	});
+
 	it('should delete query from destructured useRouter call', async function (this: Context) {
 		const { jscodeshift } = this.buildApi('tsx');
 
