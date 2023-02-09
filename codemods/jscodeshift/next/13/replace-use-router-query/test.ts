@@ -372,7 +372,7 @@ describe.only('next 13 replace-use-router-query', function () {
 		);
 	});
 
-	it('should remove empty useRouter destructuring', async function (this: Context) {
+	it.only('should remove empty useRouter destructuring', async function (this: Context) {
 		const { jscodeshift } = this.buildApi('tsx');
 
 		const root = jscodeshift(`

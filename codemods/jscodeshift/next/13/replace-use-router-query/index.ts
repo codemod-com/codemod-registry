@@ -600,6 +600,27 @@ export const transformRemoveEmptyUseRouterDestructuring: IntuitaTransform = (
 		console.log('A');
 		return;
 	}
+
+	root.find(j.BlockStatement).forEach((blockStatementPath) => {
+		const blockStatement = j(blockStatementPath);
+
+		findVariableDeclaratorWithObjectPatternAndCallExpression(
+			null,
+			'useRouter',
+		)(j, blockStatement).forEach((variableDeclaratorPath) => {
+			const variableDeclarator = variableDeclaratorPath.value;
+
+			const { id } = variableDeclarator;
+
+			if (id.type !== 'ObjectPattern') {
+				return;
+			}
+
+			if (id.properties.length === 0) {
+				variableDeclaratorPath.replace();
+			}
+		});
+	});
 };
 
 export default function transformer(
