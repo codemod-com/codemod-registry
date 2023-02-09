@@ -586,29 +586,31 @@ export const transformReplaceQueryWithSearchParams: IntuitaTransform = (
 	});
 };
 
-export const transformRemoveEmptyUseRouterDestructuring =
-	(initCalleeName: string): IntuitaTransform =>
-	(j, root): void => {
-		root.find(j.BlockStatement).forEach((blockStatementPath) => {
-			const blockStatement = j(blockStatementPath);
+export const transformRemoveEmptyDestructuring: IntuitaTransform = (
+	j,
+	root,
+): void => {
+	root.find(j.BlockStatement).forEach((blockStatementPath) => {
+		const blockStatement = j(blockStatementPath);
 
-			findVariableDeclaratorWithObjectPatternAndCallExpression(
-				null,
-				initCalleeName,
-			)(j, blockStatement)
-				.filter((variableDeclaratorPath) => {
-					const variableDeclarator = variableDeclaratorPath.value;
+		blockStatement
+			.find(j.VariableDeclarator, {
+				id: {
+					type: 'ObjectPattern',
+				},
+			})
+			.filter((variableDeclaratorPath) => {
+				const variableDeclarator = variableDeclaratorPath.value;
 
-					const { id } = variableDeclarator;
+				const { id } = variableDeclarator;
 
-					return (
-						id.type === 'ObjectPattern' &&
-						id.properties.length === 0
-					);
-				})
-				.remove();
-		});
-	};
+				return (
+					id.type === 'ObjectPattern' && id.properties.length === 0
+				);
+			})
+			.remove();
+	});
+};
 
 export const transformRemoveUnusedUseRouterImportSpecifier: IntuitaTransform = (
 	j,
@@ -718,10 +720,11 @@ export default function transformer(
 		transformReplaceUseMemoSecondArgumentWithSearchParams,
 		transformRemoveQueryFromDestructuredUseRouterCall,
 		transformReplaceQueryWithSearchParams,
-		transformRemoveEmptyUseRouterDestructuring('useRouter'),
+		transformRemoveEmptyDestructuring,
 		transformRemoveUnusedUseRouterImportSpecifier,
 		transformRemoveUnusedUseRouterImportDeclaration,
 		transformReplaceObjectPatternFromSearchParamsWithGetters,
+		transformRemoveEmptyDestructuring,
 	];
 
 	const j = api.jscodeshift;

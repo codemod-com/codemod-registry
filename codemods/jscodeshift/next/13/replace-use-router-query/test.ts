@@ -1,7 +1,7 @@
 import transform, {
 	transformAddSearchParamsVariableDeclarator,
 	transformAddUseSearchParamsImport,
-	transformRemoveEmptyUseRouterDestructuring,
+	transformRemoveEmptyDestructuring,
 	transformRemoveQueryFromDestructuredUseRouterCall,
 	transformRemoveUnusedUseRouterImportDeclaration,
 	transformRemoveUnusedUseRouterImportSpecifier,
@@ -385,10 +385,7 @@ describe.only('next 13 replace-use-router-query', function () {
 			}
 		`);
 
-		transformRemoveEmptyUseRouterDestructuring('useRouter')(
-			jscodeshift,
-			root,
-		);
+		transformRemoveEmptyDestructuring(jscodeshift, root);
 
 		const OUTPUT = `
 			import { useRouter } from 'next/router';
@@ -483,8 +480,6 @@ describe.only('next 13 replace-use-router-query', function () {
 		};
 
 		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
-
-		console.log(actualOutput);
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
