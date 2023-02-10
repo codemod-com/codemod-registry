@@ -515,6 +515,8 @@ describe('next 13 replace-use-router-query', function () {
 
 		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
 
+		console.log(actualOutput);
+
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),

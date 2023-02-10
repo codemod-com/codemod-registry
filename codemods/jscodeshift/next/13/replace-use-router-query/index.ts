@@ -290,6 +290,30 @@ export const addSearchParamsVariableDeclarator: IntuitaTransform = (
 	});
 };
 
+export const replaceUseRouterPathnameWithUsePathname: IntuitaTransform = (
+	j,
+	root,
+): void => {
+	root.find(j.VariableDeclarator, {
+		id: {
+			type: 'Identifier',
+			name: 'pathname',
+		},
+		init: {
+			type: 'MemberExpression',
+			property: {
+				type: 'Identifier',
+				name: 'pathname',
+			},
+		},
+	}).replaceWith(() => {
+		return j.variableDeclarator(
+			j.identifier('pathname'),
+			j.callExpression(j.identifier('usePathname'), []),
+		);
+	});
+};
+
 export const replaceTripleDotRouterQueryWithSearchParams: IntuitaTransform = (
 	j,
 	root,
@@ -727,6 +751,7 @@ export default function transformer(
 		addUseSearchParamsImport,
 		addSearchParamsVariableDeclarator,
 		replaceTripleDotRouterQueryWithSearchParams,
+		replaceUseRouterPathnameWithUsePathname,
 		replaceRouterQueryWithSearchParams,
 		replaceUseRouterQueryWithUseSearchParams,
 		replaceSearchParamsXWithSearchParamsGetX,
