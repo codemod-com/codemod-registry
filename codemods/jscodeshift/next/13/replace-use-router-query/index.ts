@@ -752,10 +752,10 @@ export default function transformer(
 		removeQueryFromDestructuredUseRouterCall,
 		replaceQueryWithSearchParams,
 		removeEmptyDestructuring,
-		removeUnusedImportSpecifier,
-		removeUnusedImportDeclaration,
 		replaceObjectPatternFromSearchParamsWithGetters,
 		removeEmptyDestructuring,
+		removeUnusedImportSpecifier,
+		removeUnusedImportDeclaration,
 	];
 
 	const j = api.jscodeshift;
