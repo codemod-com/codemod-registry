@@ -812,6 +812,84 @@ export const replaceDestructedPathnameWithUsePathname: IntuitaTransform = (
 	});
 };
 
+export const replaceRouterIsReadyWithTrue: IntuitaTransform = (
+	j,
+	root,
+): void => {
+	root.find(j.MemberExpression, {
+		object: {
+			type: 'Identifier',
+			name: 'router',
+		},
+		property: {
+			type: 'Identifier',
+			name: 'isReady',
+		},
+	}).replaceWith(() => {
+		return j.booleanLiteral(true);
+	});
+
+	root.find(j.MemberExpression, {
+		object: {
+			type: 'CallExpression',
+			callee: {
+				type: 'Identifier',
+				name: 'useRouter',
+			},
+		},
+		property: {
+			type: 'Identifier',
+			name: 'isReady',
+		},
+	}).replaceWith(() => {
+		return j.booleanLiteral(true);
+	});
+
+	/** blocks */
+
+	root.find(j.BlockStatement).forEach((blockStatementPath) => {
+		const names: string[] = [];
+
+		j(blockStatementPath)
+			.find(j.VariableDeclarator, {
+				init: {
+					type: 'CallExpression',
+					callee: {
+						type: 'Identifier',
+						name: 'useRouter',
+					},
+				},
+			})
+			.forEach((variableDeclaratorPath) => {
+				j(variableDeclaratorPath)
+					.find(j.ObjectPattern)
+					.forEach((objectPatternPath) => {
+						j(objectPatternPath)
+							.find(j.Property)
+							.forEach((propertyPath) => {
+								const { key, value } = propertyPath.node;
+
+								if (
+									key.type === 'Identifier' &&
+									value.type === 'Identifier' &&
+									key.name === 'isReady'
+								) {
+									names.push(value.name);
+
+									propertyPath.replace();
+								}
+							});
+					});
+			});
+
+		for (const name of names) {
+			root.find(j.Identifier, { name }).replaceWith(
+				j.booleanLiteral(true),
+			);
+		}
+	});
+};
+
 export default function transformer(
 	file: FileInfo,
 	api: API,
@@ -831,6 +909,7 @@ export default function transformer(
 		removeEmptyDestructuring,
 		replaceObjectPatternFromSearchParamsWithGetters,
 		replaceDestructedPathnameWithUsePathname,
+		replaceRouterIsReadyWithTrue,
 		removeEmptyDestructuring,
 		removeUnusedImportSpecifier,
 		removeUnusedImportDeclaration,

@@ -585,4 +585,57 @@ describe('next 13 replace-use-router-query', function () {
 			OUTPUT.replace(/\W/gm, ''),
 		);
 	});
+
+	it('should replace router.isReady with true', async function (this: Context) {
+		const INPUT = 'router.isReady';
+		const OUTPUT = 'true';
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
+
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should replace useRouter().isReady with true', async function (this: Context) {
+		const INPUT = 'useRouter().isReady';
+		const OUTPUT = 'true';
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
+
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+
+	xit('should remove { isReady } and replace usages with true', async function (this: Context) {
+		const INPUT =
+			'function X() { const { isReady } = useRouter(); const x = isReady; }';
+		const OUTPUT =
+			'function X() { const { } = useRouter(); const x = true; }';
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
+
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
 });
