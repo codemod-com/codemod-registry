@@ -3,8 +3,8 @@ import transform, {
 	addUseSearchParamsImport,
 	removeEmptyDestructuring,
 	removeQueryFromDestructuredUseRouterCall,
-	removeUnusedUseRouterImportDeclaration,
-	removeUnusedUseRouterImportSpecifier,
+	removeUnusedImportDeclaration,
+	removeUnusedImportSpecifier,
 	replaceQueryWithSearchParams,
 	replaceRouterQueryWithSearchParams,
 	replaceSearchParamsXWithSearchParamsGetX,
@@ -412,7 +412,7 @@ describe('next 13 replace-use-router-query', function () {
 			}
 		`);
 
-		removeUnusedUseRouterImportSpecifier(jscodeshift, root);
+		removeUnusedImportSpecifier(jscodeshift, root);
 
 		const OUTPUT = `
 			import 'next/router';
@@ -439,9 +439,7 @@ describe('next 13 replace-use-router-query', function () {
 			}
 		`);
 
-		removeUnusedUseRouterImportDeclaration({
-			importDeclarationSourceValue: 'next/router',
-		})(jscodeshift, root);
+		removeUnusedImportDeclaration(jscodeshift, root);
 
 		const OUTPUT = `
 			function Component() {
@@ -512,8 +510,6 @@ describe('next 13 replace-use-router-query', function () {
 		};
 
 		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
-
-		console.log(actualOutput);
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),

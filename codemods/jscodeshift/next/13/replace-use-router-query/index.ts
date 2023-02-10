@@ -640,7 +640,7 @@ export const removeEmptyDestructuring: IntuitaTransform = (j, root): void => {
 	});
 };
 
-export const removeUnusedUseRouterImportSpecifier: IntuitaTransform = (
+export const removeUnusedImportSpecifier: IntuitaTransform = (
 	j,
 	root,
 ): void => {
@@ -660,21 +660,18 @@ export const removeUnusedUseRouterImportSpecifier: IntuitaTransform = (
 		.remove();
 };
 
-export const removeUnusedUseRouterImportDeclaration: IntuitaTransformBuilder<{
-	importDeclarationSourceValue: string;
-}> =
-	({ importDeclarationSourceValue }) =>
-	(j, root): void => {
-		root.find(j.ImportDeclaration, {
-			source: { value: importDeclarationSourceValue },
-		})
-			.filter((importDeclarationPath) => {
-				const importDeclaration = importDeclarationPath.value;
+export const removeUnusedImportDeclaration: IntuitaTransform = (
+	j,
+	root,
+): void => {
+	root.find(j.ImportDeclaration)
+		.filter((importDeclarationPath) => {
+			const importDeclaration = importDeclarationPath.value;
 
-				return (importDeclaration.specifiers?.length ?? 0) === 0;
-			})
-			.remove();
-	};
+			return (importDeclaration.specifiers?.length ?? 0) === 0;
+		})
+		.remove();
+};
 
 export const replaceObjectPatternFromSearchParamsWithGetters: IntuitaTransform =
 	(j, root): void => {
@@ -755,10 +752,8 @@ export default function transformer(
 		removeQueryFromDestructuredUseRouterCall,
 		replaceQueryWithSearchParams,
 		removeEmptyDestructuring,
-		removeUnusedUseRouterImportSpecifier,
-		removeUnusedUseRouterImportDeclaration({
-			importDeclarationSourceValue: 'next/router',
-		}),
+		removeUnusedImportSpecifier,
+		removeUnusedImportDeclaration,
 		replaceObjectPatternFromSearchParamsWithGetters,
 		removeEmptyDestructuring,
 	];
