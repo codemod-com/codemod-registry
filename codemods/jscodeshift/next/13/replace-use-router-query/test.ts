@@ -552,7 +552,7 @@ describe('next 13 replace-use-router-query', function () {
 		);
 	});
 
-	xit('should replace { pathname } destructed from router with usePathname()', async function (this: Context) {
+	it('should replace { pathname } destructed from router with usePathname()', async function (this: Context) {
 		const INPUT = 'const { pathname } = router';
 		const OUTPUT = 'const {} = router; const pathname = usePathname();';
 
@@ -569,7 +569,7 @@ describe('next 13 replace-use-router-query', function () {
 		);
 	});
 
-	xit('should replace { pathname: p } destructed from router with const p = usePathname()', async function (this: Context) {
+	it('should replace { pathname: p } destructed from router with const p = usePathname()', async function (this: Context) {
 		const INPUT = 'const { pathname: p } = router';
 		const OUTPUT = 'const {} = router; const p = usePathname();';
 
