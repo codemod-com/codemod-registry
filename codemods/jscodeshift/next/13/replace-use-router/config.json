@@ -1,6 +1,6 @@
 {
     "schemaVersion": "1.0.0",
-    "name": "next/13/replace-use-router-pathname-with-use-pathname",
+    "name": "next/13/replace-use-router",
     "engine": "jscodeshift",
     "extensions": [
         "js*",

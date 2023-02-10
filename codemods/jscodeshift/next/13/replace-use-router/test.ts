@@ -3,8 +3,8 @@ import transform, {
 	addUseSearchParamsImport,
 	removeEmptyDestructuring,
 	removeQueryFromDestructuredUseRouterCall,
-	removeUnusedUseRouterImportDeclaration,
-	removeUnusedUseRouterImportSpecifier,
+	removeUnusedImportDeclaration,
+	removeUnusedImportSpecifier,
 	replaceQueryWithSearchParams,
 	replaceRouterQueryWithSearchParams,
 	replaceSearchParamsXWithSearchParamsGetX,
@@ -412,9 +412,7 @@ describe('next 13 replace-use-router-query', function () {
 			}
 		`);
 
-		removeUnusedUseRouterImportSpecifier({
-			importSpecifierImportedName: 'useRouter',
-		})(jscodeshift, root);
+		removeUnusedImportSpecifier(jscodeshift, root);
 
 		const OUTPUT = `
 			import 'next/router';
@@ -441,9 +439,7 @@ describe('next 13 replace-use-router-query', function () {
 			}
 		`);
 
-		removeUnusedUseRouterImportDeclaration({
-			importDeclarationSourceValue: 'next/router',
-		})(jscodeshift, root);
+		removeUnusedImportDeclaration(jscodeshift, root);
 
 		const OUTPUT = `
 			function Component() {
@@ -484,6 +480,194 @@ describe('next 13 replace-use-router-query', function () {
 		};
 
 		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should noop for pathname = a.b', async function (this: Context) {
+		const INPUT = 'const pathname = a.b;';
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
+
+		assert.deepEqual(actualOutput, INPUT);
+	});
+
+	it('should replace useRouter().pathname with usePathname()', async function (this: Context) {
+		const INPUT = 'const pathname = useRouter().pathname;';
+		const OUTPUT =
+			'import { usePathname} from "next/navigation"; const pathname = usePathname();';
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
+
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should replace router.pathname with usePathname()', async function (this: Context) {
+		const INPUT = 'const pathname = router.pathname;';
+		const OUTPUT =
+			'import {usePathname} from "next/navigation"; const pathname = usePathname();';
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
+
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should replace { pathname } destructed from useRouter() with usePathname()', async function (this: Context) {
+		const INPUT = 'const { pathname } = useRouter();';
+		const OUTPUT =
+			'import {usePathname} from "next/navigation"; const {} = useRouter(); const pathname = usePathname();';
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
+
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should replace { pathname } destructed from router with usePathname()', async function (this: Context) {
+		const INPUT = 'const { pathname } = router';
+		const OUTPUT =
+			'import {usePathname} from "next/navigation"; const {} = router; const pathname = usePathname();';
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
+
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should replace { pathname: p } destructed from router with const p = usePathname()', async function (this: Context) {
+		const INPUT = 'const { pathname: p } = router';
+		const OUTPUT =
+			'import {usePathname} from "next/navigation"; const {} = router; const p = usePathname();';
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
+
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should replace router.isReady with true', async function (this: Context) {
+		const INPUT = 'router.isReady';
+		const OUTPUT = 'true';
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
+
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should replace useRouter().isReady with true', async function (this: Context) {
+		const INPUT = 'useRouter().isReady';
+		const OUTPUT = 'true';
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
+
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should remove { isReady } and replace usages with true', async function (this: Context) {
+		const INPUT =
+			'function X() { const { isReady } = useRouter(); const x = isReady; }';
+		const OUTPUT = 'function X() { const x = true; }';
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
+
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should noop for already-existing import', async function (this: Context) {
+		const INPUT = `import { usePathname } from 'next/navigation'; const pathname = usePathname();`;
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
+
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			INPUT.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should add the usePathname import if it is used', async function (this: Context) {
+		const INPUT = 'const pathname = usePathname();';
+		const OUTPUT = `import { usePathname } from 'next/navigation'; const pathname = usePathname();`;
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),

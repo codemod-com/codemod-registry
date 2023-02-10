@@ -290,6 +290,30 @@ export const addSearchParamsVariableDeclarator: IntuitaTransform = (
 	});
 };
 
+export const replaceUseRouterPathnameWithUsePathname: IntuitaTransform = (
+	j,
+	root,
+): void => {
+	root.find(j.VariableDeclarator, {
+		id: {
+			type: 'Identifier',
+			name: 'pathname',
+		},
+		init: {
+			type: 'MemberExpression',
+			property: {
+				type: 'Identifier',
+				name: 'pathname',
+			},
+		},
+	}).replaceWith(() => {
+		return j.variableDeclarator(
+			j.identifier('pathname'),
+			j.callExpression(j.identifier('usePathname'), []),
+		);
+	});
+};
+
 export const replaceTripleDotRouterQueryWithSearchParams: IntuitaTransform = (
 	j,
 	root,
@@ -616,45 +640,38 @@ export const removeEmptyDestructuring: IntuitaTransform = (j, root): void => {
 	});
 };
 
-export const removeUnusedUseRouterImportSpecifier: IntuitaTransformBuilder<{
-	importSpecifierImportedName: string;
-}> =
-	({ importSpecifierImportedName }) =>
-	(j, root): void => {
-		root.find(j.ImportSpecifier, {
-			imported: { name: importSpecifierImportedName },
+export const removeUnusedImportSpecifier: IntuitaTransform = (
+	j,
+	root,
+): void => {
+	root.find(j.ImportSpecifier)
+		.filter((importSpecifierPath) => {
+			const importSpecifier = importSpecifierPath.value;
+
+			const hasLocal = Boolean(importSpecifier.local);
+
+			const name =
+				importSpecifier.local?.name ?? importSpecifier.imported.name;
+
+			const size = root.find(j.Identifier, { name }).size();
+
+			return size === Number(hasLocal) + 1;
 		})
-			.filter((importSpecifierPath) => {
-				const importSpecifier = importSpecifierPath.value;
+		.remove();
+};
 
-				const hasLocal = Boolean(importSpecifier.local);
+export const removeUnusedImportDeclaration: IntuitaTransform = (
+	j,
+	root,
+): void => {
+	root.find(j.ImportDeclaration)
+		.filter((importDeclarationPath) => {
+			const importDeclaration = importDeclarationPath.value;
 
-				const name =
-					importSpecifier.local?.name ??
-					importSpecifier.imported.name;
-
-				const size = root.find(j.Identifier, { name }).size();
-
-				return size === Number(hasLocal) + 1;
-			})
-			.remove();
-	};
-
-export const removeUnusedUseRouterImportDeclaration: IntuitaTransformBuilder<{
-	importDeclarationSourceValue: string;
-}> =
-	({ importDeclarationSourceValue }) =>
-	(j, root): void => {
-		root.find(j.ImportDeclaration, {
-			source: { value: importDeclarationSourceValue },
+			return (importDeclaration.specifiers?.length ?? 0) === 0;
 		})
-			.filter((importDeclarationPath) => {
-				const importDeclaration = importDeclarationPath.value;
-
-				return (importDeclaration.specifiers?.length ?? 0) === 0;
-			})
-			.remove();
-	};
+		.remove();
+};
 
 export const replaceObjectPatternFromSearchParamsWithGetters: IntuitaTransform =
 	(j, root): void => {
@@ -718,6 +735,206 @@ export const replaceObjectPatternFromSearchParamsWithGetters: IntuitaTransform =
 		});
 	};
 
+export const replaceDestructedPathnameWithUsePathname: IntuitaTransform = (
+	j,
+	root,
+): void => {
+	const buildProxy = <T extends object>(obj: T, onDirty: () => void) => {
+		let dirtyFlag = false;
+
+		return new Proxy(obj, {
+			get(target, prop, receiver) {
+				if (prop === 'replace' || prop === 'insertAfter') {
+					if (!dirtyFlag) {
+						dirtyFlag = true;
+						onDirty();
+					}
+				}
+				return Reflect.get(target, prop, receiver);
+			},
+		});
+	};
+
+	type DirtyFlag = 'variableDeclaration' | 'propertyPath';
+
+	const PATHNAME = 'pathname';
+	const USE_PATHNAME = 'usePathname';
+
+	let dirtyFlags = new Set<DirtyFlag>();
+
+	const buildOnDirty = (value: DirtyFlag) => () => {
+		dirtyFlags.add(value);
+	};
+
+	root.find(j.VariableDeclaration).forEach((variableDeclarationPath) => {
+		const variableDeclaration = buildProxy(
+			variableDeclarationPath,
+			buildOnDirty('variableDeclaration'),
+		);
+
+		let valueName: string | null = null;
+
+		j(variableDeclaration)
+			.find(j.ObjectPattern)
+			.forEach((objectPatternPath) => {
+				j(objectPatternPath)
+					.find(j.Property)
+					.forEach((propertyPath) => {
+						const propertyPathProxy = buildProxy(
+							propertyPath,
+							buildOnDirty('propertyPath'),
+						);
+
+						const { key, value } = propertyPathProxy.value;
+
+						if (
+							key.type === 'Identifier' &&
+							value.type === 'Identifier' &&
+							key.name === PATHNAME
+						) {
+							valueName = value.name;
+
+							propertyPathProxy.replace();
+						}
+					});
+			});
+
+		if (dirtyFlags.has('propertyPath') && valueName) {
+			variableDeclaration.insertAfter(
+				j.variableDeclaration('const', [
+					j.variableDeclarator(
+						j.identifier(valueName),
+						j.callExpression(j.identifier(USE_PATHNAME), []),
+					),
+				]),
+			);
+		}
+	});
+};
+
+export const replaceRouterIsReadyWithTrue: IntuitaTransform = (
+	j,
+	root,
+): void => {
+	root.find(j.MemberExpression, {
+		object: {
+			type: 'Identifier',
+			name: 'router',
+		},
+		property: {
+			type: 'Identifier',
+			name: 'isReady',
+		},
+	}).replaceWith(() => {
+		return j.booleanLiteral(true);
+	});
+
+	root.find(j.MemberExpression, {
+		object: {
+			type: 'CallExpression',
+			callee: {
+				type: 'Identifier',
+				name: 'useRouter',
+			},
+		},
+		property: {
+			type: 'Identifier',
+			name: 'isReady',
+		},
+	}).replaceWith(() => {
+		return j.booleanLiteral(true);
+	});
+
+	/** blocks */
+
+	root.find(j.BlockStatement).forEach((blockStatementPath) => {
+		const names: string[] = [];
+
+		j(blockStatementPath)
+			.find(j.VariableDeclarator, {
+				init: {
+					type: 'CallExpression',
+					callee: {
+						type: 'Identifier',
+						name: 'useRouter',
+					},
+				},
+			})
+			.forEach((variableDeclaratorPath) => {
+				j(variableDeclaratorPath)
+					.find(j.ObjectPattern)
+					.forEach((objectPatternPath) => {
+						j(objectPatternPath)
+							.find(j.Property)
+							.forEach((propertyPath) => {
+								const { key, value } = propertyPath.node;
+
+								if (
+									key.type === 'Identifier' &&
+									value.type === 'Identifier' &&
+									key.name === 'isReady'
+								) {
+									names.push(value.name);
+
+									propertyPath.replace();
+								}
+							});
+					});
+			});
+
+		for (const name of names) {
+			root.find(j.Identifier, { name }).replaceWith(
+				j.booleanLiteral(true),
+			);
+		}
+	});
+};
+
+const addUsePathnameImport: IntuitaTransform = (j, root): void => {
+	const importDeclarations = root.find(j.ImportDeclaration, {
+		type: 'ImportDeclaration',
+		specifiers: [
+			{
+				type: 'ImportSpecifier',
+				imported: {
+					type: 'Identifier',
+					name: 'usePathname',
+				},
+			},
+		],
+	});
+
+	if (importDeclarations.size()) {
+		return;
+	}
+
+	const size = root
+		.find(j.CallExpression, {
+			callee: {
+				name: 'usePathname',
+			},
+		})
+		.size();
+
+	if (!size) {
+		return;
+	}
+
+	const importDeclaration = j.importDeclaration(
+		[
+			j.importSpecifier(
+				j.identifier('usePathname'),
+				j.identifier('usePathname'),
+			),
+		],
+		j.stringLiteral('next/navigation'),
+	);
+
+	root.find(j.Program).forEach((program) => {
+		program.value.body.unshift(importDeclaration);
+	});
+};
+
 export default function transformer(
 	file: FileInfo,
 	api: API,
@@ -727,6 +944,7 @@ export default function transformer(
 		addUseSearchParamsImport,
 		addSearchParamsVariableDeclarator,
 		replaceTripleDotRouterQueryWithSearchParams,
+		replaceUseRouterPathnameWithUsePathname,
 		replaceRouterQueryWithSearchParams,
 		replaceUseRouterQueryWithUseSearchParams,
 		replaceSearchParamsXWithSearchParamsGetX,
@@ -734,14 +952,13 @@ export default function transformer(
 		removeQueryFromDestructuredUseRouterCall,
 		replaceQueryWithSearchParams,
 		removeEmptyDestructuring,
-		removeUnusedUseRouterImportSpecifier({
-			importSpecifierImportedName: 'useRouter',
-		}),
-		removeUnusedUseRouterImportDeclaration({
-			importDeclarationSourceValue: 'next/router',
-		}),
 		replaceObjectPatternFromSearchParamsWithGetters,
+		replaceDestructedPathnameWithUsePathname,
+		replaceRouterIsReadyWithTrue,
 		removeEmptyDestructuring,
+		removeUnusedImportSpecifier,
+		removeUnusedImportDeclaration,
+		addUsePathnameImport,
 	];
 
 	const j = api.jscodeshift;
