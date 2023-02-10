@@ -620,11 +620,10 @@ describe('next 13 replace-use-router-query', function () {
 		);
 	});
 
-	xit('should remove { isReady } and replace usages with true', async function (this: Context) {
+	it('should remove { isReady } and replace usages with true', async function (this: Context) {
 		const INPUT =
 			'function X() { const { isReady } = useRouter(); const x = isReady; }';
-		const OUTPUT =
-			'function X() { const { } = useRouter(); const x = true; }';
+		const OUTPUT = 'function X() { const x = true; }';
 
 		const fileInfo: FileInfo = {
 			path: 'index.js',
