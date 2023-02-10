@@ -735,6 +735,83 @@ export const replaceObjectPatternFromSearchParamsWithGetters: IntuitaTransform =
 		});
 	};
 
+export const replaceDestructedPathnameWithUsePathname: IntuitaTransform = (
+	j,
+	root,
+): void => {
+	const buildProxy = <T extends object>(obj: T, onDirty: () => void) => {
+		let dirtyFlag = false;
+
+		return new Proxy(obj, {
+			get(target, prop, receiver) {
+				if (prop === 'replace' || prop === 'insertAfter') {
+					if (!dirtyFlag) {
+						dirtyFlag = true;
+						onDirty();
+					}
+				}
+				return Reflect.get(target, prop, receiver);
+			},
+		});
+	};
+
+	type DirtyFlag = 'variableDeclaration' | 'propertyPath';
+
+	const PATHNAME = 'pathname';
+	const USE_PATHNAME = 'usePathname';
+
+	let dirtyFlags = new Set<DirtyFlag>();
+
+	const buildOnDirty = (value: DirtyFlag) => () => {
+		dirtyFlags.add(value);
+	};
+
+	root.find(j.VariableDeclaration).forEach((variableDeclarationPath) => {
+		const variableDeclaration = buildProxy(
+			variableDeclarationPath,
+			buildOnDirty('variableDeclaration'),
+		);
+
+		let valueName: string | null = null;
+
+		j(variableDeclaration)
+			.find(j.ObjectPattern)
+			.forEach((objectPatternPath) => {
+				j(objectPatternPath)
+					.find(j.Property)
+					.forEach((propertyPath) => {
+						const propertyPathProxy = buildProxy(
+							propertyPath,
+							buildOnDirty('propertyPath'),
+						);
+
+						const { key, value } = propertyPathProxy.value;
+
+						if (
+							key.type === 'Identifier' &&
+							value.type === 'Identifier' &&
+							key.name === PATHNAME
+						) {
+							valueName = value.name;
+
+							propertyPathProxy.replace();
+						}
+					});
+			});
+
+		if (dirtyFlags.has('propertyPath') && valueName) {
+			variableDeclaration.insertAfter(
+				j.variableDeclaration('const', [
+					j.variableDeclarator(
+						j.identifier(valueName),
+						j.callExpression(j.identifier(USE_PATHNAME), []),
+					),
+				]),
+			);
+		}
+	});
+};
+
 export default function transformer(
 	file: FileInfo,
 	api: API,
@@ -753,6 +830,7 @@ export default function transformer(
 		replaceQueryWithSearchParams,
 		removeEmptyDestructuring,
 		replaceObjectPatternFromSearchParamsWithGetters,
+		replaceDestructedPathnameWithUsePathname,
 		removeEmptyDestructuring,
 		removeUnusedImportSpecifier,
 		removeUnusedImportDeclaration,
