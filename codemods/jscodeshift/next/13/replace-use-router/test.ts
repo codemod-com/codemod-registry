@@ -502,7 +502,8 @@ describe('next 13 replace-use-router-query', function () {
 
 	it('should replace useRouter().pathname with usePathname()', async function (this: Context) {
 		const INPUT = 'const pathname = useRouter().pathname;';
-		const OUTPUT = 'const pathname = usePathname();';
+		const OUTPUT =
+			'import { usePathname} from "next/navigation"; const pathname = usePathname();';
 
 		const fileInfo: FileInfo = {
 			path: 'index.js',
@@ -519,7 +520,8 @@ describe('next 13 replace-use-router-query', function () {
 
 	it('should replace router.pathname with usePathname()', async function (this: Context) {
 		const INPUT = 'const pathname = router.pathname;';
-		const OUTPUT = 'const pathname = usePathname();';
+		const OUTPUT =
+			'import {usePathname} from "next/navigation"; const pathname = usePathname();';
 
 		const fileInfo: FileInfo = {
 			path: 'index.js',
@@ -537,7 +539,7 @@ describe('next 13 replace-use-router-query', function () {
 	it('should replace { pathname } destructed from useRouter() with usePathname()', async function (this: Context) {
 		const INPUT = 'const { pathname } = useRouter();';
 		const OUTPUT =
-			'const {} = useRouter(); const pathname = usePathname();';
+			'import {usePathname} from "next/navigation"; const {} = useRouter(); const pathname = usePathname();';
 
 		const fileInfo: FileInfo = {
 			path: 'index.js',
@@ -554,7 +556,8 @@ describe('next 13 replace-use-router-query', function () {
 
 	it('should replace { pathname } destructed from router with usePathname()', async function (this: Context) {
 		const INPUT = 'const { pathname } = router';
-		const OUTPUT = 'const {} = router; const pathname = usePathname();';
+		const OUTPUT =
+			'import {usePathname} from "next/navigation"; const {} = router; const pathname = usePathname();';
 
 		const fileInfo: FileInfo = {
 			path: 'index.js',
@@ -571,7 +574,8 @@ describe('next 13 replace-use-router-query', function () {
 
 	it('should replace { pathname: p } destructed from router with const p = usePathname()', async function (this: Context) {
 		const INPUT = 'const { pathname: p } = router';
-		const OUTPUT = 'const {} = router; const p = usePathname();';
+		const OUTPUT =
+			'import {usePathname} from "next/navigation"; const {} = router; const p = usePathname();';
 
 		const fileInfo: FileInfo = {
 			path: 'index.js',
@@ -624,6 +628,39 @@ describe('next 13 replace-use-router-query', function () {
 		const INPUT =
 			'function X() { const { isReady } = useRouter(); const x = isReady; }';
 		const OUTPUT = 'function X() { const x = true; }';
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
+
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should noop for already-existing import', async function (this: Context) {
+		const INPUT = `import { usePathname } from 'next/navigation'; const pathname = usePathname();`;
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
+
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			INPUT.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should add the usePathname import if it is used', async function (this: Context) {
+		const INPUT = 'const pathname = usePathname();';
+		const OUTPUT = `import { usePathname } from 'next/navigation'; const pathname = usePathname();`;
 
 		const fileInfo: FileInfo = {
 			path: 'index.js',

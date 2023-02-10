@@ -890,6 +890,51 @@ export const replaceRouterIsReadyWithTrue: IntuitaTransform = (
 	});
 };
 
+const addUsePathnameImport: IntuitaTransform = (j, root): void => {
+	const importDeclarations = root.find(j.ImportDeclaration, {
+		type: 'ImportDeclaration',
+		specifiers: [
+			{
+				type: 'ImportSpecifier',
+				imported: {
+					type: 'Identifier',
+					name: 'usePathname',
+				},
+			},
+		],
+	});
+
+	if (importDeclarations.size()) {
+		return;
+	}
+
+	const size = root
+		.find(j.CallExpression, {
+			callee: {
+				name: 'usePathname',
+			},
+		})
+		.size();
+
+	if (!size) {
+		return;
+	}
+
+	const importDeclaration = j.importDeclaration(
+		[
+			j.importSpecifier(
+				j.identifier('usePathname'),
+				j.identifier('usePathname'),
+			),
+		],
+		j.stringLiteral('next/navigation'),
+	);
+
+	root.find(j.Program).forEach((program) => {
+		program.value.body.unshift(importDeclaration);
+	});
+};
+
 export default function transformer(
 	file: FileInfo,
 	api: API,
@@ -913,6 +958,7 @@ export default function transformer(
 		removeEmptyDestructuring,
 		removeUnusedImportSpecifier,
 		removeUnusedImportDeclaration,
+		addUsePathnameImport,
 	];
 
 	const j = api.jscodeshift;
