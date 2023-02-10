@@ -412,9 +412,7 @@ describe('next 13 replace-use-router-query', function () {
 			}
 		`);
 
-		removeUnusedUseRouterImportSpecifier({
-			importSpecifierImportedName: 'useRouter',
-		})(jscodeshift, root);
+		removeUnusedUseRouterImportSpecifier(jscodeshift, root);
 
 		const OUTPUT = `
 			import 'next/router';

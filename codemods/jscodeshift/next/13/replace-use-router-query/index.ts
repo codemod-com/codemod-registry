@@ -640,29 +640,25 @@ export const removeEmptyDestructuring: IntuitaTransform = (j, root): void => {
 	});
 };
 
-export const removeUnusedUseRouterImportSpecifier: IntuitaTransformBuilder<{
-	importSpecifierImportedName: string;
-}> =
-	({ importSpecifierImportedName }) =>
-	(j, root): void => {
-		root.find(j.ImportSpecifier, {
-			imported: { name: importSpecifierImportedName },
+export const removeUnusedUseRouterImportSpecifier: IntuitaTransform = (
+	j,
+	root,
+): void => {
+	root.find(j.ImportSpecifier)
+		.filter((importSpecifierPath) => {
+			const importSpecifier = importSpecifierPath.value;
+
+			const hasLocal = Boolean(importSpecifier.local);
+
+			const name =
+				importSpecifier.local?.name ?? importSpecifier.imported.name;
+
+			const size = root.find(j.Identifier, { name }).size();
+
+			return size === Number(hasLocal) + 1;
 		})
-			.filter((importSpecifierPath) => {
-				const importSpecifier = importSpecifierPath.value;
-
-				const hasLocal = Boolean(importSpecifier.local);
-
-				const name =
-					importSpecifier.local?.name ??
-					importSpecifier.imported.name;
-
-				const size = root.find(j.Identifier, { name }).size();
-
-				return size === Number(hasLocal) + 1;
-			})
-			.remove();
-	};
+		.remove();
+};
 
 export const removeUnusedUseRouterImportDeclaration: IntuitaTransformBuilder<{
 	importDeclarationSourceValue: string;
@@ -759,9 +755,7 @@ export default function transformer(
 		removeQueryFromDestructuredUseRouterCall,
 		replaceQueryWithSearchParams,
 		removeEmptyDestructuring,
-		removeUnusedUseRouterImportSpecifier({
-			importSpecifierImportedName: 'useRouter',
-		}),
+		removeUnusedUseRouterImportSpecifier,
 		removeUnusedUseRouterImportDeclaration({
 			importDeclarationSourceValue: 'next/router',
 		}),
