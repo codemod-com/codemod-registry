@@ -9,6 +9,7 @@ import {
 	MemberExpression,
 	CallExpression,
 	SpreadElement,
+	Transform,
 } from 'jscodeshift';
 
 const buildProxy = <T extends object>(obj: T, onDirty: () => void) => {
@@ -961,11 +962,7 @@ const addUsePathnameImport: IntuitaTransform = (j, root): void => {
 	});
 };
 
-export default function transformer(
-	file: FileInfo,
-	api: API,
-	options: Options,
-) {
+export default function transform(file: FileInfo, api: API, options: Options) {
 	const transforms: IntuitaTransform[] = [
 		addUseSearchParamsImport,
 		addSearchParamsVariableDeclarator,
@@ -990,9 +987,13 @@ export default function transformer(
 	const j = api.jscodeshift;
 	const root = j(file.source);
 
+	let dirtyFlag = false;
+
 	for (const intuitaTransform of transforms) {
-		intuitaTransform(j, root);
+		dirtyFlag &&= intuitaTransform(j, root);
 	}
 
-	return root.toSource();
+	return dirtyFlag ? root.toSource() : undefined;
 }
+
+transform satisfies Transform;
