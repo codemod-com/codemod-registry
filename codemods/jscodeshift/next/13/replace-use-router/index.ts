@@ -9,12 +9,29 @@ import {
 	MemberExpression,
 	CallExpression,
 	SpreadElement,
+	Transform,
 } from 'jscodeshift';
 
-type IntuitaTransform = (j: API['jscodeshift'], root: Collection<any>) => void;
-type IntuitaTransformBuilder<T> = (
-	options: T,
-) => (j: API['jscodeshift'], root: Collection<any>) => void;
+const buildProxy = <T extends object>(obj: T, onDirty: () => void) => {
+	let dirtyFlag = false;
+
+	return new Proxy(obj, {
+		get(target, prop, receiver) {
+			if (prop === 'replace' || prop === 'insertAfter') {
+				if (!dirtyFlag) {
+					dirtyFlag = true;
+					onDirty();
+				}
+			}
+			return Reflect.get(target, prop, receiver);
+		},
+	});
+};
+
+type IntuitaTransform = (
+	j: API['jscodeshift'],
+	root: Collection<any>,
+) => boolean;
 
 const findImportDeclarations =
 	(importedName: string, sourceValue: string) =>
@@ -171,17 +188,14 @@ const findSpreadElements =
 		});
 	};
 
-export const addUseSearchParamsImport: IntuitaTransform = (
-	j: API['jscodeshift'],
-	root: Collection<any>,
-): void => {
+export const addUseSearchParamsImport: IntuitaTransform = (j, root) => {
 	const importDeclarations = findImportDeclarations(
 		'useRouter',
 		'next/router',
 	)(j, root);
 
 	if (importDeclarations.size() === 0) {
-		return;
+		return false;
 	}
 
 	let hasQueries = false;
@@ -241,7 +255,7 @@ export const addUseSearchParamsImport: IntuitaTransform = (
 	});
 
 	if (!hasQueries) {
-		return;
+		return false;
 	}
 
 	const importDeclaration = j.importDeclaration(
@@ -257,20 +271,24 @@ export const addUseSearchParamsImport: IntuitaTransform = (
 	root.find(j.Program).forEach((program) => {
 		program.value.body.unshift(importDeclaration);
 	});
+
+	return true;
 };
 
 export const addSearchParamsVariableDeclarator: IntuitaTransform = (
 	j,
 	root,
-): void => {
+) => {
 	const importDeclarations = findImportDeclarations(
 		'useRouter',
 		'next/router',
 	)(j, root);
 
 	if (importDeclarations.size() === 0) {
-		return;
+		return false;
 	}
+
+	let dirtyFlag = false;
 
 	root.find(j.BlockStatement).forEach((blockStatementPath) => {
 		const blockStatement = j(blockStatementPath);
@@ -287,13 +305,19 @@ export const addSearchParamsVariableDeclarator: IntuitaTransform = (
 				),
 			]),
 		);
+
+		dirtyFlag = true;
 	});
+
+	return dirtyFlag;
 };
 
 export const replaceUseRouterPathnameWithUsePathname: IntuitaTransform = (
 	j,
 	root,
-): void => {
+) => {
+	let dirtyFlag = false;
+
 	root.find(j.VariableDeclarator, {
 		id: {
 			type: 'Identifier',
@@ -307,25 +331,31 @@ export const replaceUseRouterPathnameWithUsePathname: IntuitaTransform = (
 			},
 		},
 	}).replaceWith(() => {
+		dirtyFlag = true;
+
 		return j.variableDeclarator(
 			j.identifier('pathname'),
 			j.callExpression(j.identifier('usePathname'), []),
 		);
 	});
+
+	return dirtyFlag;
 };
 
 export const replaceTripleDotRouterQueryWithSearchParams: IntuitaTransform = (
 	j,
 	root,
-): void => {
+) => {
 	const importDeclarations = findImportDeclarations(
 		'useRouter',
 		'next/router',
 	)(j, root);
 
 	if (importDeclarations.size() === 0) {
-		return;
+		return false;
 	}
+
+	let dirtyFlag = false;
 
 	root.find(j.BlockStatement).forEach((blockStatementPath) => {
 		const blockStatement = j(blockStatementPath);
@@ -350,6 +380,8 @@ export const replaceTripleDotRouterQueryWithSearchParams: IntuitaTransform = (
 				j,
 				blockStatement,
 			).replaceWith(() => {
+				dirtyFlag = true;
+
 				return j.spreadElement(
 					j.callExpression(
 						j.memberExpression(
@@ -363,20 +395,24 @@ export const replaceTripleDotRouterQueryWithSearchParams: IntuitaTransform = (
 			});
 		}
 	});
+
+	return dirtyFlag;
 };
 
 export const replaceRouterQueryWithSearchParams: IntuitaTransform = (
 	j,
 	root,
-): void => {
+) => {
 	const importDeclarations = findImportDeclarations(
 		'useRouter',
 		'next/router',
 	)(j, root);
 
 	if (importDeclarations.size() === 0) {
-		return;
+		return false;
 	}
+
+	let dirtyFlag = false;
 
 	root.find(j.BlockStatement).forEach((blockStatementPath) => {
 		const blockStatement = j(blockStatementPath);
@@ -400,42 +436,58 @@ export const replaceRouterQueryWithSearchParams: IntuitaTransform = (
 			findMemberExpressions(routerName, 'query')(
 				j,
 				blockStatement,
-			).replaceWith(() => j.identifier('searchParams'));
+			).replaceWith(() => {
+				dirtyFlag = true;
+
+				return j.identifier('searchParams');
+			});
 		}
 	});
+
+	return dirtyFlag;
 };
 
 export const replaceUseRouterQueryWithUseSearchParams: IntuitaTransform = (
 	j,
 	root,
-): void => {
+) => {
 	const importDeclarations = findImportDeclarations(
 		'useRouter',
 		'next/router',
 	)(j, root);
 
 	if (importDeclarations.size() === 0) {
-		return;
+		return false;
 	}
+
+	let dirtyFlag = false;
 
 	findMemberExpressionsWithCallExpression('useRouter', 'query')(
 		j,
 		root,
-	).replaceWith(() => j.callExpression(j.identifier('useSearchParams'), []));
+	).replaceWith(() => {
+		dirtyFlag = true;
+
+		return j.callExpression(j.identifier('useSearchParams'), []);
+	});
+
+	return dirtyFlag;
 };
 
 export const replaceSearchParamsXWithSearchParamsGetX: IntuitaTransform = (
 	j,
 	root,
-): void => {
+) => {
 	const importDeclarations = findImportDeclarations(
 		'useSearchParams',
 		'next/navigation',
 	)(j, root);
 
 	if (importDeclarations.size() === 0) {
-		return;
+		return false;
 	}
+
+	let dirtyFlag = false;
 
 	const variableNames: string[] = [];
 
@@ -464,31 +516,37 @@ export const replaceSearchParamsXWithSearchParamsGetX: IntuitaTransform = (
 					return memberExpressionPath.node;
 				}
 
+				dirtyFlag = true;
+
 				return j.callExpression(
 					j.memberExpression(
 						j.identifier('searchParams'),
 						j.identifier('get'),
 						false,
 					),
-					[memberExpressionPath.node.property],
+					[j.stringLiteral(property.name)],
 				);
 			},
 		);
 	}
+
+	return dirtyFlag;
 };
 
 export const replaceUseMemoSecondArgumentWithSearchParams: IntuitaTransform = (
 	j,
 	root,
-): void => {
+) => {
 	const importDeclarations = findImportDeclarations(
 		'useSearchParams',
 		'next/navigation',
 	)(j, root);
 
 	if (importDeclarations.size() === 0) {
-		return;
+		return false;
 	}
+
+	let dirtyFlag = false;
 
 	root.find(j.BlockStatement).forEach((blockStatementPath) => {
 		const blockStatement = j(blockStatementPath);
@@ -529,6 +587,7 @@ export const replaceUseMemoSecondArgumentWithSearchParams: IntuitaTransform = (
 					)(j, dependencyArguments)
 						.forEach(() => {
 							hadSearchParamsGets = true;
+							dirtyFlag = true;
 						})
 						.remove();
 				}
@@ -548,6 +607,8 @@ export const replaceUseMemoSecondArgumentWithSearchParams: IntuitaTransform = (
 					return callExpression.node;
 				}
 
+				dirtyFlag = true;
+
 				return j.callExpression(callExpression.node.callee, [
 					arg[0],
 					j.arrayExpression([
@@ -559,20 +620,24 @@ export const replaceUseMemoSecondArgumentWithSearchParams: IntuitaTransform = (
 				]);
 			});
 	});
+
+	return dirtyFlag;
 };
 
 export const removeQueryFromDestructuredUseRouterCall: IntuitaTransform = (
 	j,
 	root,
-): void => {
+) => {
 	const importDeclarations = findImportDeclarations(
 		'useRouter',
 		'next/router',
 	)(j, root);
 
 	if (importDeclarations.size() === 0) {
-		return;
+		return false;
 	}
+
+	let dirtyFlag = false;
 
 	root.find(j.BlockStatement).forEach((blockStatementPath) => {
 		const blockStatement = j(blockStatementPath);
@@ -590,34 +655,44 @@ export const removeQueryFromDestructuredUseRouterCall: IntuitaTransform = (
 						name: 'query',
 					},
 				})
+				.forEach(() => {
+					dirtyFlag = true;
+				})
 				.remove();
 		});
 	});
+
+	return dirtyFlag;
 };
 
-export const replaceQueryWithSearchParams: IntuitaTransform = (
-	j,
-	root,
-): void => {
+export const replaceQueryWithSearchParams: IntuitaTransform = (j, root) => {
 	const importDeclarations = findImportDeclarations(
 		'useRouter',
 		'next/router',
 	)(j, root);
 
 	if (importDeclarations.size() === 0) {
-		return;
+		return false;
 	}
+
+	let dirtyFlag = false;
 
 	root.find(j.BlockStatement).forEach((blockStatementPath) => {
 		const blockStatement = j(blockStatementPath);
 
-		blockStatement
-			.find(j.Identifier, { name: 'query' })
-			.replaceWith(() => j.identifier('searchParams'));
+		blockStatement.find(j.Identifier, { name: 'query' }).replaceWith(() => {
+			dirtyFlag = true;
+
+			return j.identifier('searchParams');
+		});
 	});
+
+	return dirtyFlag;
 };
 
-export const removeEmptyDestructuring: IntuitaTransform = (j, root): void => {
+export const removeEmptyDestructuring: IntuitaTransform = (j, root) => {
+	let dirtyFlag = false;
+
 	root.find(j.BlockStatement).forEach((blockStatementPath) => {
 		const blockStatement = j(blockStatementPath);
 
@@ -636,14 +711,18 @@ export const removeEmptyDestructuring: IntuitaTransform = (j, root): void => {
 					id.type === 'ObjectPattern' && id.properties.length === 0
 				);
 			})
+			.forEach(() => {
+				dirtyFlag = true;
+			})
 			.remove();
 	});
+
+	return dirtyFlag;
 };
 
-export const removeUnusedImportSpecifier: IntuitaTransform = (
-	j,
-	root,
-): void => {
+export const removeUnusedImportSpecifier: IntuitaTransform = (j, root) => {
+	let dirtyFlag = false;
+
 	root.find(j.ImportSpecifier)
 		.filter((importSpecifierPath) => {
 			const importSpecifier = importSpecifierPath.value;
@@ -657,24 +736,42 @@ export const removeUnusedImportSpecifier: IntuitaTransform = (
 
 			return size === Number(hasLocal) + 1;
 		})
+		.forEach(() => {
+			dirtyFlag = true;
+		})
 		.remove();
+
+	return dirtyFlag;
 };
 
-export const removeUnusedImportDeclaration: IntuitaTransform = (
-	j,
-	root,
-): void => {
+export const removeUnusedImportDeclaration: IntuitaTransform = (j, root) => {
+	let dirtyFlag = false;
+
 	root.find(j.ImportDeclaration)
 		.filter((importDeclarationPath) => {
 			const importDeclaration = importDeclarationPath.value;
 
-			return (importDeclaration.specifiers?.length ?? 0) === 0;
+			const sourceIsCss =
+				importDeclaration.source.type === 'StringLiteral' &&
+				importDeclaration.source.value.endsWith('.css');
+
+			return (
+				(importDeclaration.specifiers?.length ?? 0) === 0 &&
+				!sourceIsCss
+			);
+		})
+		.forEach(() => {
+			dirtyFlag = true;
 		})
 		.remove();
+
+	return dirtyFlag;
 };
 
 export const replaceObjectPatternFromSearchParamsWithGetters: IntuitaTransform =
-	(j, root): void => {
+	(j, root) => {
+		let dirtyFlag = false;
+
 		root.find(j.BlockStatement).forEach((blockStatementPath) => {
 			const blockStatement = j(blockStatementPath);
 
@@ -711,11 +808,15 @@ export const replaceObjectPatternFromSearchParamsWithGetters: IntuitaTransform =
 							}
 
 							keyValues.push([key.name, value.name]);
+
+							dirtyFlag = true;
 						})
 						.remove();
 				});
 
 			for (const [key, value] of keyValues) {
+				dirtyFlag = true;
+
 				blockStatementPath.value.body.push(
 					j.variableDeclaration('const', [
 						j.variableDeclarator(
@@ -733,28 +834,14 @@ export const replaceObjectPatternFromSearchParamsWithGetters: IntuitaTransform =
 				);
 			}
 		});
+
+		return dirtyFlag;
 	};
 
 export const replaceDestructedPathnameWithUsePathname: IntuitaTransform = (
 	j,
 	root,
-): void => {
-	const buildProxy = <T extends object>(obj: T, onDirty: () => void) => {
-		let dirtyFlag = false;
-
-		return new Proxy(obj, {
-			get(target, prop, receiver) {
-				if (prop === 'replace' || prop === 'insertAfter') {
-					if (!dirtyFlag) {
-						dirtyFlag = true;
-						onDirty();
-					}
-				}
-				return Reflect.get(target, prop, receiver);
-			},
-		});
-	};
-
+) => {
 	type DirtyFlag = 'variableDeclaration' | 'propertyPath';
 
 	const PATHNAME = 'pathname';
@@ -778,10 +865,10 @@ export const replaceDestructedPathnameWithUsePathname: IntuitaTransform = (
 			.find(j.ObjectPattern)
 			.forEach((objectPatternPath) => {
 				j(objectPatternPath)
-					.find(j.Property)
-					.forEach((propertyPath) => {
+					.find(j.ObjectProperty)
+					.forEach((objectPropertyPath) => {
 						const propertyPathProxy = buildProxy(
-							propertyPath,
+							objectPropertyPath,
 							buildOnDirty('propertyPath'),
 						);
 
@@ -810,12 +897,13 @@ export const replaceDestructedPathnameWithUsePathname: IntuitaTransform = (
 			);
 		}
 	});
+
+	return dirtyFlags.size === 0;
 };
 
-export const replaceRouterIsReadyWithTrue: IntuitaTransform = (
-	j,
-	root,
-): void => {
+export const replaceRouterIsReadyWithTrue: IntuitaTransform = (j, root) => {
+	let dirtyFlag = false;
+
 	root.find(j.MemberExpression, {
 		object: {
 			type: 'Identifier',
@@ -826,6 +914,8 @@ export const replaceRouterIsReadyWithTrue: IntuitaTransform = (
 			name: 'isReady',
 		},
 	}).replaceWith(() => {
+		dirtyFlag = true;
+
 		return j.booleanLiteral(true);
 	});
 
@@ -842,6 +932,8 @@ export const replaceRouterIsReadyWithTrue: IntuitaTransform = (
 			name: 'isReady',
 		},
 	}).replaceWith(() => {
+		dirtyFlag = true;
+
 		return j.booleanLiteral(true);
 	});
 
@@ -865,7 +957,7 @@ export const replaceRouterIsReadyWithTrue: IntuitaTransform = (
 					.find(j.ObjectPattern)
 					.forEach((objectPatternPath) => {
 						j(objectPatternPath)
-							.find(j.Property)
+							.find(j.ObjectProperty)
 							.forEach((propertyPath) => {
 								const { key, value } = propertyPath.node;
 
@@ -876,6 +968,7 @@ export const replaceRouterIsReadyWithTrue: IntuitaTransform = (
 								) {
 									names.push(value.name);
 
+									dirtyFlag = true;
 									propertyPath.replace();
 								}
 							});
@@ -883,14 +976,18 @@ export const replaceRouterIsReadyWithTrue: IntuitaTransform = (
 			});
 
 		for (const name of names) {
-			root.find(j.Identifier, { name }).replaceWith(
-				j.booleanLiteral(true),
-			);
+			root.find(j.Identifier, { name })
+				.forEach(() => {
+					dirtyFlag = true;
+				})
+				.replaceWith(j.booleanLiteral(true));
 		}
 	});
+
+	return dirtyFlag;
 };
 
-const addUsePathnameImport: IntuitaTransform = (j, root): void => {
+const addUsePathnameImport: IntuitaTransform = (j, root) => {
 	const importDeclarations = root.find(j.ImportDeclaration, {
 		type: 'ImportDeclaration',
 		specifiers: [
@@ -905,7 +1002,7 @@ const addUsePathnameImport: IntuitaTransform = (j, root): void => {
 	});
 
 	if (importDeclarations.size()) {
-		return;
+		return false;
 	}
 
 	const size = root
@@ -917,7 +1014,7 @@ const addUsePathnameImport: IntuitaTransform = (j, root): void => {
 		.size();
 
 	if (!size) {
-		return;
+		return false;
 	}
 
 	const importDeclaration = j.importDeclaration(
@@ -933,13 +1030,11 @@ const addUsePathnameImport: IntuitaTransform = (j, root): void => {
 	root.find(j.Program).forEach((program) => {
 		program.value.body.unshift(importDeclaration);
 	});
+
+	return true;
 };
 
-export default function transformer(
-	file: FileInfo,
-	api: API,
-	options: Options,
-) {
+export default function transform(file: FileInfo, api: API, options: Options) {
 	const transforms: IntuitaTransform[] = [
 		addUseSearchParamsImport,
 		addSearchParamsVariableDeclarator,
@@ -947,10 +1042,10 @@ export default function transformer(
 		replaceUseRouterPathnameWithUsePathname,
 		replaceRouterQueryWithSearchParams,
 		replaceUseRouterQueryWithUseSearchParams,
-		replaceSearchParamsXWithSearchParamsGetX,
-		replaceUseMemoSecondArgumentWithSearchParams,
 		removeQueryFromDestructuredUseRouterCall,
 		replaceQueryWithSearchParams,
+		replaceSearchParamsXWithSearchParamsGetX,
+		replaceUseMemoSecondArgumentWithSearchParams,
 		removeEmptyDestructuring,
 		replaceObjectPatternFromSearchParamsWithGetters,
 		replaceDestructedPathnameWithUsePathname,
@@ -964,9 +1059,13 @@ export default function transformer(
 	const j = api.jscodeshift;
 	const root = j(file.source);
 
+	let dirtyFlag = false;
+
 	for (const intuitaTransform of transforms) {
-		intuitaTransform(j, root);
+		dirtyFlag = intuitaTransform(j, root) || dirtyFlag;
 	}
 
-	return root.toSource();
+	return dirtyFlag ? root.toSource() : undefined;
 }
+
+transform satisfies Transform;

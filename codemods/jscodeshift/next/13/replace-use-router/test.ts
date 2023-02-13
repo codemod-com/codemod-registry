@@ -268,7 +268,7 @@ describe('next 13 replace-use-router-query', function () {
 			source: INPUT,
 		};
 
-		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
+		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
@@ -453,6 +453,25 @@ describe('next 13 replace-use-router-query', function () {
 		);
 	});
 
+	it('should not remove CSS imports', async function (this: Context) {
+		const { jscodeshift } = this.buildApi('tsx');
+
+		const root = jscodeshift(`
+			import './index.css';
+		`);
+
+		removeUnusedImportDeclaration(jscodeshift, root);
+
+		const OUTPUT = `
+			import './index.css';
+		`;
+
+		assert.deepEqual(
+			root?.toSource().replace(/\W/gm, '') ?? '',
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+
 	it('should replace INPUT with OUTPUT (3)', async function (this: Context) {
 		const INPUT = `
 			import { useRouter } from 'next/router';
@@ -495,7 +514,7 @@ describe('next 13 replace-use-router-query', function () {
 			source: INPUT,
 		};
 
-		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
+		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
 
 		assert.deepEqual(actualOutput, INPUT);
 	});
@@ -510,7 +529,7 @@ describe('next 13 replace-use-router-query', function () {
 			source: INPUT,
 		};
 
-		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
+		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
@@ -528,7 +547,7 @@ describe('next 13 replace-use-router-query', function () {
 			source: INPUT,
 		};
 
-		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
+		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
@@ -546,7 +565,7 @@ describe('next 13 replace-use-router-query', function () {
 			source: INPUT,
 		};
 
-		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
+		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
@@ -564,7 +583,7 @@ describe('next 13 replace-use-router-query', function () {
 			source: INPUT,
 		};
 
-		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
+		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
@@ -582,7 +601,7 @@ describe('next 13 replace-use-router-query', function () {
 			source: INPUT,
 		};
 
-		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
+		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
@@ -599,7 +618,7 @@ describe('next 13 replace-use-router-query', function () {
 			source: INPUT,
 		};
 
-		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
+		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
@@ -616,7 +635,7 @@ describe('next 13 replace-use-router-query', function () {
 			source: INPUT,
 		};
 
-		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
+		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
@@ -634,7 +653,7 @@ describe('next 13 replace-use-router-query', function () {
 			source: INPUT,
 		};
 
-		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
+		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
@@ -650,7 +669,7 @@ describe('next 13 replace-use-router-query', function () {
 			source: INPUT,
 		};
 
-		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
+		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
@@ -667,7 +686,44 @@ describe('next 13 replace-use-router-query', function () {
 			source: INPUT,
 		};
 
-		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
+		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should replace query.a if query comes from useRouter return value destructurizing', async function (this: Context) {
+		const INPUT = `
+			import { useRouter } from 'next/router';
+
+			export function Component() {
+				const { query } = useRouter();
+
+				if (query.a && query.b) {
+
+				}
+			}
+		`;
+		const OUTPUT = `
+			import { useSearchParams } from "next/navigation";
+
+			export function Component() {
+				const searchParams = useSearchParams();
+
+				if (searchParams.get('a') && searchParams.get('b')) {
+
+				}
+			}
+		`;
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
