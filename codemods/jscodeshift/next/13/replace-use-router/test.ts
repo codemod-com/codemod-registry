@@ -222,6 +222,8 @@ describe('next 13 replace-use-router-query', function () {
 
 		replaceSearchParamsXWithSearchParamsGetX(jscodeshift, root);
 
+		console.log(root?.toSource());
+
 		assert.deepEqual(
 			root?.toSource().replace(/\W/gm, '') ?? '',
 			`
@@ -453,6 +455,25 @@ describe('next 13 replace-use-router-query', function () {
 		);
 	});
 
+	it('should not remove CSS imports', async function (this: Context) {
+		const { jscodeshift } = this.buildApi('tsx');
+
+		const root = jscodeshift(`
+			import './index.css';
+		`);
+
+		removeUnusedImportDeclaration(jscodeshift, root);
+
+		const OUTPUT = `
+			import './index.css';
+		`;
+
+		assert.deepEqual(
+			root?.toSource().replace(/\W/gm, '') ?? '',
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+
 	it('should replace INPUT with OUTPUT (3)', async function (this: Context) {
 		const INPUT = `
 			import { useRouter } from 'next/router';
@@ -674,4 +695,40 @@ describe('next 13 replace-use-router-query', function () {
 			OUTPUT.replace(/\W/gm, ''),
 		);
 	});
+
+	// it.only('test', async function (this: Context) {
+	// 	const INPUT = `
+	// 		import { useRouter } from 'next/router';
+
+	// 		export function Component() {
+	// 			const router = useRouter();
+
+	// 			const a = router.query.a;
+	// 		}
+	// 	`;
+	// 	const OUTPUT = `
+	// 		import { useSearchParams } from "next/navigation";
+	// 		import { useRouter } from 'next/router';
+
+	// 		export function Component() {
+	// 			const searchParams = useSearchParams();
+
+	// 			const a = searchParams.get();
+	// 		}
+	// 	`;
+
+	// 	const fileInfo: FileInfo = {
+	// 		path: 'index.js',
+	// 		source: INPUT,
+	// 	};
+
+	// 	const actualOutput = transform(fileInfo, this.buildApi('js'), {});
+
+	// 	console.log(actualOutput);
+
+	// 	assert.deepEqual(
+	// 		actualOutput?.replace(/\W/gm, ''),
+	// 		OUTPUT.replace(/\W/gm, ''),
+	// 	);
+	// });
 });

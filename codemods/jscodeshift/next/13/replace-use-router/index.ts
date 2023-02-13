@@ -470,7 +470,7 @@ export const replaceSearchParamsXWithSearchParamsGetX: IntuitaTransform = (
 						j.identifier('get'),
 						false,
 					),
-					[memberExpressionPath.node.property],
+					[j.stringLiteral(property.name)],
 				);
 			},
 		);
@@ -668,7 +668,14 @@ export const removeUnusedImportDeclaration: IntuitaTransform = (
 		.filter((importDeclarationPath) => {
 			const importDeclaration = importDeclarationPath.value;
 
-			return (importDeclaration.specifiers?.length ?? 0) === 0;
+			const sourceIsCss =
+				importDeclaration.source.type === 'StringLiteral' &&
+				importDeclaration.source.value.endsWith('.css');
+
+			return (
+				(importDeclaration.specifiers?.length ?? 0) === 0 &&
+				!sourceIsCss
+			);
 		})
 		.remove();
 };
