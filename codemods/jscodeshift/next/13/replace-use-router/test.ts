@@ -696,7 +696,7 @@ describe('next 13 replace-use-router-query', function () {
 		);
 	});
 
-	it('test', async function (this: Context) {
+	it('should replace query.a if query comes from useRouter return value destructurizing', async function (this: Context) {
 		const INPUT = `
 			import { useRouter } from 'next/router';
 

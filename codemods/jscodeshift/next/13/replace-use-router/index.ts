@@ -11,10 +11,23 @@ import {
 	SpreadElement,
 } from 'jscodeshift';
 
+const buildProxy = <T extends object>(obj: T, onDirty: () => void) => {
+	let dirtyFlag = false;
+
+	return new Proxy(obj, {
+		get(target, prop, receiver) {
+			if (prop === 'replace' || prop === 'insertAfter') {
+				if (!dirtyFlag) {
+					dirtyFlag = true;
+					onDirty();
+				}
+			}
+			return Reflect.get(target, prop, receiver);
+		},
+	});
+};
+
 type IntuitaTransform = (j: API['jscodeshift'], root: Collection<any>) => void;
-type IntuitaTransformBuilder<T> = (
-	options: T,
-) => (j: API['jscodeshift'], root: Collection<any>) => void;
 
 const findImportDeclarations =
 	(importedName: string, sourceValue: string) =>
@@ -748,22 +761,6 @@ export const replaceDestructedPathnameWithUsePathname: IntuitaTransform = (
 	j,
 	root,
 ): void => {
-	const buildProxy = <T extends object>(obj: T, onDirty: () => void) => {
-		let dirtyFlag = false;
-
-		return new Proxy(obj, {
-			get(target, prop, receiver) {
-				if (prop === 'replace' || prop === 'insertAfter') {
-					if (!dirtyFlag) {
-						dirtyFlag = true;
-						onDirty();
-					}
-				}
-				return Reflect.get(target, prop, receiver);
-			},
-		});
-	};
-
 	type DirtyFlag = 'variableDeclaration' | 'propertyPath';
 
 	const PATHNAME = 'pathname';
