@@ -696,7 +696,7 @@ describe('next 13 replace-use-router-query', function () {
 		);
 	});
 
-	xit('test', async function (this: Context) {
+	it('test', async function (this: Context) {
 		const INPUT = `
 			import { useRouter } from 'next/router';
 
@@ -710,7 +710,6 @@ describe('next 13 replace-use-router-query', function () {
 		`;
 		const OUTPUT = `
 			import { useSearchParams } from "next/navigation";
-			import { useRouter } from 'next/router';
 
 			export function Component() {
 				const searchParams = useSearchParams();
