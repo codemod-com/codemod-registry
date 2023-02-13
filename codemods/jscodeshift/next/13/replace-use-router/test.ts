@@ -222,8 +222,6 @@ describe('next 13 replace-use-router-query', function () {
 
 		replaceSearchParamsXWithSearchParamsGetX(jscodeshift, root);
 
-		console.log(root?.toSource());
-
 		assert.deepEqual(
 			root?.toSource().replace(/\W/gm, '') ?? '',
 			`
@@ -726,8 +724,6 @@ describe('next 13 replace-use-router-query', function () {
 		};
 
 		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
-
-		console.log(actualOutput);
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),

@@ -439,7 +439,7 @@ export const replaceRouterQueryWithSearchParams: IntuitaTransform = (
 			).replaceWith(() => {
 				dirtyFlag = true;
 
-				j.identifier('searchParams');
+				return j.identifier('searchParams');
 			});
 		}
 	});
@@ -468,7 +468,7 @@ export const replaceUseRouterQueryWithUseSearchParams: IntuitaTransform = (
 	).replaceWith(() => {
 		dirtyFlag = true;
 
-		j.callExpression(j.identifier('useSearchParams'), []);
+		return j.callExpression(j.identifier('useSearchParams'), []);
 	});
 
 	return dirtyFlag;
@@ -1062,7 +1062,7 @@ export default function transform(file: FileInfo, api: API, options: Options) {
 	let dirtyFlag = false;
 
 	for (const intuitaTransform of transforms) {
-		dirtyFlag &&= intuitaTransform(j, root);
+		dirtyFlag = intuitaTransform(j, root) || dirtyFlag;
 	}
 
 	return dirtyFlag ? root.toSource() : undefined;
