@@ -690,7 +690,9 @@ export const replaceQueryWithSearchParams: IntuitaTransform = (j, root) => {
 	return dirtyFlag;
 };
 
-export const removeEmptyDestructuring: IntuitaTransform = (j, root): void => {
+export const removeEmptyDestructuring: IntuitaTransform = (j, root) => {
+	let dirtyFlag = false;
+
 	root.find(j.BlockStatement).forEach((blockStatementPath) => {
 		const blockStatement = j(blockStatementPath);
 
@@ -709,14 +711,18 @@ export const removeEmptyDestructuring: IntuitaTransform = (j, root): void => {
 					id.type === 'ObjectPattern' && id.properties.length === 0
 				);
 			})
+			.forEach(() => {
+				dirtyFlag = true;
+			})
 			.remove();
 	});
+
+	return dirtyFlag;
 };
 
-export const removeUnusedImportSpecifier: IntuitaTransform = (
-	j,
-	root,
-): void => {
+export const removeUnusedImportSpecifier: IntuitaTransform = (j, root) => {
+	let dirtyFlag = false;
+
 	root.find(j.ImportSpecifier)
 		.filter((importSpecifierPath) => {
 			const importSpecifier = importSpecifierPath.value;
@@ -730,7 +736,12 @@ export const removeUnusedImportSpecifier: IntuitaTransform = (
 
 			return size === Number(hasLocal) + 1;
 		})
+		.forEach(() => {
+			dirtyFlag = true;
+		})
 		.remove();
+
+	return dirtyFlag;
 };
 
 export const removeUnusedImportDeclaration: IntuitaTransform = (
