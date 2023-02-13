@@ -402,15 +402,17 @@ export const replaceTripleDotRouterQueryWithSearchParams: IntuitaTransform = (
 export const replaceRouterQueryWithSearchParams: IntuitaTransform = (
 	j,
 	root,
-): void => {
+) => {
 	const importDeclarations = findImportDeclarations(
 		'useRouter',
 		'next/router',
 	)(j, root);
 
 	if (importDeclarations.size() === 0) {
-		return;
+		return false;
 	}
+
+	let dirtyFlag = false;
 
 	root.find(j.BlockStatement).forEach((blockStatementPath) => {
 		const blockStatement = j(blockStatementPath);
@@ -434,28 +436,42 @@ export const replaceRouterQueryWithSearchParams: IntuitaTransform = (
 			findMemberExpressions(routerName, 'query')(
 				j,
 				blockStatement,
-			).replaceWith(() => j.identifier('searchParams'));
+			).replaceWith(() => {
+				dirtyFlag = true;
+
+				j.identifier('searchParams');
+			});
 		}
 	});
+
+	return dirtyFlag;
 };
 
 export const replaceUseRouterQueryWithUseSearchParams: IntuitaTransform = (
 	j,
 	root,
-): void => {
+) => {
 	const importDeclarations = findImportDeclarations(
 		'useRouter',
 		'next/router',
 	)(j, root);
 
 	if (importDeclarations.size() === 0) {
-		return;
+		return false;
 	}
+
+	let dirtyFlag = false;
 
 	findMemberExpressionsWithCallExpression('useRouter', 'query')(
 		j,
 		root,
-	).replaceWith(() => j.callExpression(j.identifier('useSearchParams'), []));
+	).replaceWith(() => {
+		dirtyFlag = true;
+
+		j.callExpression(j.identifier('useSearchParams'), []);
+	});
+
+	return dirtyFlag;
 };
 
 export const replaceQueryFromDestructuredUseRouterWithSearchParams = () => {};
