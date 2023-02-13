@@ -696,39 +696,43 @@ describe('next 13 replace-use-router-query', function () {
 		);
 	});
 
-	// it.only('test', async function (this: Context) {
-	// 	const INPUT = `
-	// 		import { useRouter } from 'next/router';
+	xit('test', async function (this: Context) {
+		const INPUT = `
+			import { useRouter } from 'next/router';
 
-	// 		export function Component() {
-	// 			const router = useRouter();
+			export function Component() {
+				const { query } = useRouter();
 
-	// 			const a = router.query.a;
-	// 		}
-	// 	`;
-	// 	const OUTPUT = `
-	// 		import { useSearchParams } from "next/navigation";
-	// 		import { useRouter } from 'next/router';
+				if (query.a && query.b) {
 
-	// 		export function Component() {
-	// 			const searchParams = useSearchParams();
+				}
+			}
+		`;
+		const OUTPUT = `
+			import { useSearchParams } from "next/navigation";
+			import { useRouter } from 'next/router';
 
-	// 			const a = searchParams.get();
-	// 		}
-	// 	`;
+			export function Component() {
+				const searchParams = useSearchParams();
 
-	// 	const fileInfo: FileInfo = {
-	// 		path: 'index.js',
-	// 		source: INPUT,
-	// 	};
+				if (searchParams.get('a') && searchParams.get('b')) {
 
-	// 	const actualOutput = transform(fileInfo, this.buildApi('js'), {});
+				}
+			}
+		`;
 
-	// 	console.log(actualOutput);
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
 
-	// 	assert.deepEqual(
-	// 		actualOutput?.replace(/\W/gm, ''),
-	// 		OUTPUT.replace(/\W/gm, ''),
-	// 	);
-	// });
+		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
+
+		console.log(actualOutput);
+
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
 });

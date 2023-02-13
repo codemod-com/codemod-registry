@@ -424,6 +424,8 @@ export const replaceUseRouterQueryWithUseSearchParams: IntuitaTransform = (
 	).replaceWith(() => j.callExpression(j.identifier('useSearchParams'), []));
 };
 
+export const replaceQueryFromDestructuredUseRouterWithSearchParams = () => {};
+
 export const replaceSearchParamsXWithSearchParamsGetX: IntuitaTransform = (
 	j,
 	root,
