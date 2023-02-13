@@ -726,7 +726,7 @@ describe('next 13 replace-use-router-query', function () {
 			source: INPUT,
 		};
 
-		const actualOutput = transform(fileInfo, this.buildApi('js'), {});
+		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
 
 		console.log(actualOutput);
 
