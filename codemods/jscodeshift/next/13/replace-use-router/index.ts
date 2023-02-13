@@ -474,20 +474,20 @@ export const replaceUseRouterQueryWithUseSearchParams: IntuitaTransform = (
 	return dirtyFlag;
 };
 
-export const replaceQueryFromDestructuredUseRouterWithSearchParams = () => {};
-
 export const replaceSearchParamsXWithSearchParamsGetX: IntuitaTransform = (
 	j,
 	root,
-): void => {
+) => {
 	const importDeclarations = findImportDeclarations(
 		'useSearchParams',
 		'next/navigation',
 	)(j, root);
 
 	if (importDeclarations.size() === 0) {
-		return;
+		return false;
 	}
+
+	let dirtyFlag = false;
 
 	const variableNames: string[] = [];
 
@@ -516,6 +516,8 @@ export const replaceSearchParamsXWithSearchParamsGetX: IntuitaTransform = (
 					return memberExpressionPath.node;
 				}
 
+				dirtyFlag = true;
+
 				return j.callExpression(
 					j.memberExpression(
 						j.identifier('searchParams'),
@@ -527,20 +529,24 @@ export const replaceSearchParamsXWithSearchParamsGetX: IntuitaTransform = (
 			},
 		);
 	}
+
+	return dirtyFlag;
 };
 
 export const replaceUseMemoSecondArgumentWithSearchParams: IntuitaTransform = (
 	j,
 	root,
-): void => {
+) => {
 	const importDeclarations = findImportDeclarations(
 		'useSearchParams',
 		'next/navigation',
 	)(j, root);
 
 	if (importDeclarations.size() === 0) {
-		return;
+		return false;
 	}
+
+	let dirtyFlag = false;
 
 	root.find(j.BlockStatement).forEach((blockStatementPath) => {
 		const blockStatement = j(blockStatementPath);
@@ -581,6 +587,7 @@ export const replaceUseMemoSecondArgumentWithSearchParams: IntuitaTransform = (
 					)(j, dependencyArguments)
 						.forEach(() => {
 							hadSearchParamsGets = true;
+							dirtyFlag = true;
 						})
 						.remove();
 				}
@@ -600,6 +607,8 @@ export const replaceUseMemoSecondArgumentWithSearchParams: IntuitaTransform = (
 					return callExpression.node;
 				}
 
+				dirtyFlag = true;
+
 				return j.callExpression(callExpression.node.callee, [
 					arg[0],
 					j.arrayExpression([
@@ -611,20 +620,24 @@ export const replaceUseMemoSecondArgumentWithSearchParams: IntuitaTransform = (
 				]);
 			});
 	});
+
+	return dirtyFlag;
 };
 
 export const removeQueryFromDestructuredUseRouterCall: IntuitaTransform = (
 	j,
 	root,
-): void => {
+) => {
 	const importDeclarations = findImportDeclarations(
 		'useRouter',
 		'next/router',
 	)(j, root);
 
 	if (importDeclarations.size() === 0) {
-		return;
+		return false;
 	}
+
+	let dirtyFlag = false;
 
 	root.find(j.BlockStatement).forEach((blockStatementPath) => {
 		const blockStatement = j(blockStatementPath);
@@ -642,31 +655,39 @@ export const removeQueryFromDestructuredUseRouterCall: IntuitaTransform = (
 						name: 'query',
 					},
 				})
+				.forEach(() => {
+					dirtyFlag = true;
+				})
 				.remove();
 		});
 	});
+
+	return dirtyFlag;
 };
 
-export const replaceQueryWithSearchParams: IntuitaTransform = (
-	j,
-	root,
-): void => {
+export const replaceQueryWithSearchParams: IntuitaTransform = (j, root) => {
 	const importDeclarations = findImportDeclarations(
 		'useRouter',
 		'next/router',
 	)(j, root);
 
 	if (importDeclarations.size() === 0) {
-		return;
+		return false;
 	}
+
+	let dirtyFlag = false;
 
 	root.find(j.BlockStatement).forEach((blockStatementPath) => {
 		const blockStatement = j(blockStatementPath);
 
-		blockStatement
-			.find(j.Identifier, { name: 'query' })
-			.replaceWith(() => j.identifier('searchParams'));
+		blockStatement.find(j.Identifier, { name: 'query' }).replaceWith(() => {
+			dirtyFlag = true;
+
+			return j.identifier('searchParams');
+		});
 	});
+
+	return dirtyFlag;
 };
 
 export const removeEmptyDestructuring: IntuitaTransform = (j, root): void => {
