@@ -787,10 +787,10 @@ export const replaceDestructedPathnameWithUsePathname: IntuitaTransform = (
 			.find(j.ObjectPattern)
 			.forEach((objectPatternPath) => {
 				j(objectPatternPath)
-					.find(j.Property)
-					.forEach((propertyPath) => {
+					.find(j.ObjectProperty)
+					.forEach((objectPropertyPath) => {
 						const propertyPathProxy = buildProxy(
-							propertyPath,
+							objectPropertyPath,
 							buildOnDirty('propertyPath'),
 						);
 
@@ -874,7 +874,7 @@ export const replaceRouterIsReadyWithTrue: IntuitaTransform = (
 					.find(j.ObjectPattern)
 					.forEach((objectPatternPath) => {
 						j(objectPatternPath)
-							.find(j.Property)
+							.find(j.ObjectProperty)
 							.forEach((propertyPath) => {
 								const { key, value } = propertyPath.node;
 
