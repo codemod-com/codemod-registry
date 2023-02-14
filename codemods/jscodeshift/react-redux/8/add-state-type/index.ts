@@ -86,6 +86,19 @@ const upsertTypeAnnotationOnStateParameterOfMapStateToProps = (
 	];
 };
 
+const addImportStatement = (j: JSCodeshift, root: Collection<any>) => {
+	const importDeclaration = j.importDeclaration(
+		[j.importSpecifier(j.identifier('State'), j.identifier('State'))],
+		j.stringLiteral('state'),
+	);
+
+	root.find(j.Program).forEach((program) => {
+		program.value.body.unshift(importDeclaration);
+	});
+
+	return [];
+};
+
 export default function transform(file: FileInfo, api: API, _: Options) {
 	const j = api.jscodeshift;
 
@@ -95,11 +108,15 @@ export default function transform(file: FileInfo, api: API, _: Options) {
 		stateTypeIdentifierName: 'State',
 	};
 
-	const x = upsertTypeAnnotationOnStateParameterOfMapStateToProps(
+	const modOutputs = upsertTypeAnnotationOnStateParameterOfMapStateToProps(
 		j,
 		root,
 		options,
 	);
+
+	for (const modOutput of modOutputs) {
+		addImportStatement(j, modOutput.root);
+	}
 
 	return root.toSource();
 }
