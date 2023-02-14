@@ -7,19 +7,15 @@ import {
 	Transform,
 } from 'jscodeshift';
 
-type ModOutput = Readonly<{
-	root: Collection<any>;
-	options: { stateTypeIdentifierName: string };
-	dirtyFlag: boolean;
-	mod: string;
-}>;
-
 const upsertTypeAnnotationOnStateParameterOfMapStateToProps = (
 	j: JSCodeshift,
 	root: Collection<any>,
-	options: { stateTypeIdentifierName: string },
-): ModOutput[] => {
-	let dirtyFlag = false;
+	options: {
+		stateTypeIdentifierName: string;
+		stateSourceLiteralValue: string;
+	},
+) => {
+	let dirtyFlag: boolean = false;
 
 	root.find(j.VariableDeclarator, {
 		id: {
@@ -80,16 +76,28 @@ const upsertTypeAnnotationOnStateParameterOfMapStateToProps = (
 		{
 			root,
 			options,
-			dirtyFlag,
-			mod: 'x',
+			dirtyFlag: true,
+			mod: 'addImportStatement',
 		},
 	];
 };
 
-const addImportStatement = (j: JSCodeshift, root: Collection<any>) => {
+const addImportStatement = (
+	j: JSCodeshift,
+	root: Collection<any>,
+	{
+		stateTypeIdentifierName,
+		stateSourceLiteralValue,
+	}: { stateTypeIdentifierName: string; stateSourceLiteralValue: string },
+) => {
 	const importDeclaration = j.importDeclaration(
-		[j.importSpecifier(j.identifier('State'), j.identifier('State'))],
-		j.stringLiteral('state'),
+		[
+			j.importSpecifier(
+				j.identifier(stateTypeIdentifierName),
+				j.identifier(stateTypeIdentifierName),
+			),
+		],
+		j.stringLiteral(stateSourceLiteralValue),
 	);
 
 	root.find(j.Program).forEach((program) => {
@@ -99,13 +107,20 @@ const addImportStatement = (j: JSCodeshift, root: Collection<any>) => {
 	return [];
 };
 
-export default function transform(file: FileInfo, api: API, _: Options) {
+export default function transform(file: FileInfo, api: API, jOptions: Options) {
 	const j = api.jscodeshift;
 
 	const root = j(file.source);
 
 	const options = {
-		stateTypeIdentifierName: 'State',
+		stateTypeIdentifierName:
+			'stateTypeIdentifierName' in jOptions
+				? String(jOptions.stateTypeIdentifierName)
+				: 'State',
+		stateSourceLiteralValue:
+			'stateSourceLiteralValue' in jOptions
+				? String(jOptions.stateSourceLiteralValue)
+				: 'state',
 	};
 
 	const modOutputs = upsertTypeAnnotationOnStateParameterOfMapStateToProps(
@@ -115,7 +130,9 @@ export default function transform(file: FileInfo, api: API, _: Options) {
 	);
 
 	for (const modOutput of modOutputs) {
-		addImportStatement(j, modOutput.root);
+		if (modOutput.mod === 'addImportStatement') {
+			addImportStatement(j, modOutput.root, modOutput.options);
+		}
 	}
 
 	return root.toSource();
