@@ -1,9 +1,25 @@
-import { API, FileInfo, Options, Transform } from 'jscodeshift';
+import {
+	API,
+	Collection,
+	FileInfo,
+	JSCodeshift,
+	Options,
+	Transform,
+} from 'jscodeshift';
 
-export default function transform(file: FileInfo, api: API, options: Options) {
-	const j = api.jscodeshift;
+type ModOutput = Readonly<{
+	root: Collection<any>;
+	options: { stateTypeIdentifierName: string };
+	dirtyFlag: boolean;
+	mod: string;
+}>;
 
-	const root = j(file.source);
+const upsertTypeAnnotationOnStateParameterOfMapStateToProps = (
+	j: JSCodeshift,
+	root: Collection<any>,
+	options: { stateTypeIdentifierName: string },
+): ModOutput[] => {
+	let dirtyFlag = false;
 
 	root.find(j.VariableDeclarator, {
 		id: {
@@ -16,7 +32,12 @@ export default function transform(file: FileInfo, api: API, options: Options) {
 	}).forEach((variableDeclaratorPath) => {
 		j(variableDeclaratorPath)
 			.find(j.ArrowFunctionExpression)
+			.filter((arrowFunctionExpressionPath) => {
+				return arrowFunctionExpressionPath.value.params.length !== 0;
+			})
 			.replaceWith((arrowFunctionExpressionPath) => {
+				dirtyFlag = true;
+
 				const params = arrowFunctionExpressionPath.value.params.map(
 					(patternKind, i) => {
 						if (i !== 0) {
@@ -26,7 +47,9 @@ export default function transform(file: FileInfo, api: API, options: Options) {
 						if (patternKind.type === 'Identifier') {
 							const typeAnnotation = j.typeAnnotation(
 								j.genericTypeAnnotation(
-									j.identifier('State'),
+									j.identifier(
+										options.stateTypeIdentifierName,
+									),
 									null,
 								),
 							);
@@ -48,6 +71,35 @@ export default function transform(file: FileInfo, api: API, options: Options) {
 				);
 			});
 	});
+
+	if (!dirtyFlag) {
+		return [];
+	}
+
+	return [
+		{
+			root,
+			options,
+			dirtyFlag,
+			mod: 'x',
+		},
+	];
+};
+
+export default function transform(file: FileInfo, api: API, _: Options) {
+	const j = api.jscodeshift;
+
+	const root = j(file.source);
+
+	const options = {
+		stateTypeIdentifierName: 'State',
+	};
+
+	const x = upsertTypeAnnotationOnStateParameterOfMapStateToProps(
+		j,
+		root,
+		options,
+	);
 
 	return root.toSource();
 }
