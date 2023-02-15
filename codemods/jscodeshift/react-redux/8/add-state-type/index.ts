@@ -84,7 +84,10 @@ export const upsertTypeAnnotationOnStateObjectPattern: AtomicMod = (
 ) => {
 	let dirtyFlag: boolean = false;
 
-	if (!root.isOfType(j.ArrowFunctionExpression)) {
+	if (
+		!root.isOfType(j.ArrowFunctionExpression) &&
+		!root.isOfType(j.FunctionDeclaration)
+	) {
 		return [dirtyFlag, []];
 	}
 
