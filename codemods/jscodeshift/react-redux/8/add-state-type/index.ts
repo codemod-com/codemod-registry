@@ -69,11 +69,13 @@ export const upsertTypeAnnotationOnStateIdentifier: AtomicMod<
 
 	const filePath = root.closest(j.File);
 
-	if (!dirtyFlag) {
-		return [dirtyFlag, []];
+	const lazyAtomicMods: LazyAtomicMod[] = [];
+
+	if (dirtyFlag) {
+		lazyAtomicMods.push([findStateImportDeclarations, filePath, settings]);
 	}
 
-	return [dirtyFlag, [[findStateImportDeclarations, filePath, settings]]];
+	return [dirtyFlag, lazyAtomicMods];
 };
 
 export const upsertTypeAnnotationOnDispatchIdentifier: AtomicMod<
@@ -132,17 +134,16 @@ export const upsertTypeAnnotationOnDispatchIdentifier: AtomicMod<
 
 	const filePath = root.closest(j.File);
 
-	if (!dirtyFlag) {
-		return [dirtyFlag, []];
-	}
+	const lazyAtomicMods: LazyAtomicMod[] = [];
 
-	return [
-		dirtyFlag,
-		[
+	if (dirtyFlag) {
+		lazyAtomicMods.push(
 			[findStateImportDeclarations, filePath, settings],
 			[findThunkDispatchImportDeclarations, filePath, settings],
-		],
-	];
+		);
+	}
+
+	return [dirtyFlag, lazyAtomicMods];
 };
 
 export const upsertTypeAnnotationOnStateObjectPattern: AtomicMod<
