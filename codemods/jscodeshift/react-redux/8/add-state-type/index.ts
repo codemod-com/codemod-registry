@@ -7,13 +7,28 @@ import {
 	Transform,
 } from 'jscodeshift';
 
-const upsertTypeAnnotationOnStateParameterOfMapStateToProps = (
+type Settings = {
+	stateTypeIdentifierName: string;
+	stateSourceLiteralValue: string;
+};
+
+type AtomicMod = (
 	j: JSCodeshift,
 	root: Collection<any>,
-	options: {
-		stateTypeIdentifierName: string;
-		stateSourceLiteralValue: string;
-	},
+	settings: Settings,
+) => ReadonlyArray<{
+	root: Collection<any>;
+	settings: Settings;
+	dirtyFlag: boolean;
+	mod:
+		| 'upsertTypeAnnotationOnStateParameterOfMapStateToProps'
+		| 'addImportStatement';
+}>;
+
+const upsertTypeAnnotationOnStateParameterOfMapStateToProps: AtomicMod = (
+	j,
+	root,
+	settings,
 ) => {
 	let dirtyFlag: boolean = false;
 
@@ -46,7 +61,7 @@ const upsertTypeAnnotationOnStateParameterOfMapStateToProps = (
 
 				const typeAnnotation = j.typeAnnotation(
 					j.genericTypeAnnotation(
-						j.identifier(options.stateTypeIdentifierName),
+						j.identifier(settings.stateTypeIdentifierName),
 						null,
 					),
 				);
@@ -71,7 +86,7 @@ const upsertTypeAnnotationOnStateParameterOfMapStateToProps = (
 	return [
 		{
 			root,
-			options,
+			settings,
 			dirtyFlag: true,
 			mod: 'addImportStatement',
 		},
