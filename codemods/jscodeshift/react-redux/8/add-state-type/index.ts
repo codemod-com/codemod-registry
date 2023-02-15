@@ -10,20 +10,21 @@ import {
 	Transform,
 } from 'jscodeshift';
 
-type AtomicMod<T> = (
+type AtomicMod<T, D extends 'find' | 'replace'> = (
 	j: JSCodeshift,
 	root: Collection<T>,
 	settings: Partial<Record<string, string>>,
-) => [boolean, ReadonlyArray<LazyAtomicMod>];
+) => [D extends 'replace' ? boolean : false, ReadonlyArray<LazyAtomicMod>];
 
 type LazyAtomicMod = [
-	AtomicMod<any>,
+	AtomicMod<any, 'find' | 'replace'>,
 	Collection<any>,
 	Partial<Record<string, string>>,
 ];
 
 export const upsertTypeAnnotationOnStateIdentifier: AtomicMod<
-	ArrowFunctionExpression | FunctionDeclaration
+	ArrowFunctionExpression | FunctionDeclaration,
+	'replace'
 > = (j, root, settings) => {
 	let dirtyFlag: boolean = false;
 
@@ -79,7 +80,8 @@ export const upsertTypeAnnotationOnStateIdentifier: AtomicMod<
 };
 
 export const upsertTypeAnnotationOnDispatchIdentifier: AtomicMod<
-	ArrowFunctionExpression | FunctionDeclaration
+	ArrowFunctionExpression | FunctionDeclaration,
+	'replace'
 > = (j, root, settings) => {
 	let dirtyFlag: boolean = false;
 
@@ -147,7 +149,8 @@ export const upsertTypeAnnotationOnDispatchIdentifier: AtomicMod<
 };
 
 export const upsertTypeAnnotationOnStateObjectPattern: AtomicMod<
-	ArrowFunctionExpression | FunctionDeclaration
+	ArrowFunctionExpression | FunctionDeclaration,
+	'replace'
 > = (j, root, settings) => {
 	let dirtyFlag: boolean = false;
 
@@ -200,7 +203,8 @@ export const upsertTypeAnnotationOnStateObjectPattern: AtomicMod<
 };
 
 export const upsertTypeAnnotationOnMapStateToPropsArrowFunction: AtomicMod<
-	any
+	File,
+	'replace'
 > = (j, root, settings) => {
 	const lazyAtomicMods: LazyAtomicMod[] = [];
 
@@ -238,11 +242,10 @@ export const upsertTypeAnnotationOnMapStateToPropsArrowFunction: AtomicMod<
 	return [false, lazyAtomicMods];
 };
 
-export const upsertTypeAnnotationOnMapStateToPropsFunction: AtomicMod<any> = (
-	j,
-	root,
-	settings,
-) => {
+export const upsertTypeAnnotationOnMapStateToPropsFunction: AtomicMod<
+	File,
+	'find'
+> = (j, root, settings) => {
 	const lazyAtomicMods: LazyAtomicMod[] = [];
 
 	root.find(j.FunctionDeclaration, {
@@ -273,9 +276,11 @@ export const upsertTypeAnnotationOnMapStateToPropsFunction: AtomicMod<any> = (
 	return [false, lazyAtomicMods];
 };
 
-export const upsertTypeAnnotationOnMapDispatchToPropsArrowFunction: AtomicMod<
-	any
-> = (j, root, settings) => {
+export const findMapDispatchToPropsArrowFunctions: AtomicMod<File, 'find'> = (
+	j,
+	root,
+	settings,
+) => {
 	const lazyAtomicMods: LazyAtomicMod[] = [];
 
 	root.find(j.VariableDeclarator, {
@@ -307,7 +312,8 @@ export const upsertTypeAnnotationOnMapDispatchToPropsArrowFunction: AtomicMod<
 };
 
 export const upsertTypeAnnotationOnMapDispatchToPropsFunction: AtomicMod<
-	any
+	File,
+	'find'
 > = (j, root, settings) => {
 	const lazyAtomicMods: LazyAtomicMod[] = [];
 
@@ -333,11 +339,10 @@ export const upsertTypeAnnotationOnMapDispatchToPropsFunction: AtomicMod<
 	return [false, lazyAtomicMods];
 };
 
-export const ensureStateImportDeclarationsDoNotExist: AtomicMod<File> = (
-	j,
-	root,
-	settings,
-) => {
+export const ensureStateImportDeclarationsDoNotExist: AtomicMod<
+	File,
+	'find'
+> = (j, root, settings) => {
 	const stateTypeIdentifierName = settings.stateTypeIdentifierName ?? 'State';
 	const existingDeclarations = root.find(j.ImportDeclaration, {
 		specifiers: [
@@ -360,7 +365,7 @@ export const ensureStateImportDeclarationsDoNotExist: AtomicMod<File> = (
 	return [false, [[addStateImportDeclaration, root, settings]]];
 };
 
-export const addStateImportDeclaration: AtomicMod<any> = (
+export const addStateImportDeclaration: AtomicMod<File, 'replace'> = (
 	j,
 	root,
 	settings,
@@ -403,7 +408,10 @@ export const addStateImportDeclaration: AtomicMod<any> = (
 	return [true, []];
 };
 
-export const addThunkDispatchImportDeclaration: AtomicMod<File> = (j, root) => {
+export const addThunkDispatchImportDeclaration: AtomicMod<File, 'replace'> = (
+	j,
+	root,
+) => {
 	const existingDeclarations = root.find(j.ImportDeclaration, {
 		specifiers: [
 			{
@@ -460,7 +468,7 @@ export default function transform(file: FileInfo, api: API, jOptions: Options) {
 	const lazyAtomicMods: LazyAtomicMod[] = [
 		[upsertTypeAnnotationOnMapStateToPropsArrowFunction, root, settings],
 		[upsertTypeAnnotationOnMapStateToPropsFunction, root, settings],
-		[upsertTypeAnnotationOnMapDispatchToPropsArrowFunction, root, settings],
+		[findMapDispatchToPropsArrowFunctions, root, settings],
 		[upsertTypeAnnotationOnMapDispatchToPropsFunction, root, settings],
 	];
 
