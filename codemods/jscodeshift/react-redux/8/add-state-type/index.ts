@@ -197,7 +197,7 @@ export const upsertTypeAnnotationOnStateObjectPattern: AtomicMod<
 	return [dirtyFlag, [[findStateImportDeclarations, filePath, settings]]];
 };
 
-export const findMapStateToPropsArrowFunction: AtomicMod<File, 'read'> = (
+export const findMapStateToPropsArrowFunctions: AtomicMod<File, 'read'> = (
 	j,
 	root,
 	settings,
@@ -231,7 +231,7 @@ export const findMapStateToPropsArrowFunction: AtomicMod<File, 'read'> = (
 	return [false, lazyAtomicMods];
 };
 
-export const findMapStateToPropsFunction: AtomicMod<File, 'write'> = (
+export const findMapStateToPropsFunctions: AtomicMod<File, 'write'> = (
 	j,
 	root,
 	settings,
@@ -250,17 +250,10 @@ export const findMapStateToPropsFunction: AtomicMod<File, 'write'> = (
 
 		const collection = j(functionDeclarationPath);
 
-		lazyAtomicMods.push([
-			upsertTypeAnnotationOnStateIdentifier,
-			collection,
-			settings,
-		]);
-
-		lazyAtomicMods.push([
-			upsertTypeAnnotationOnStateObjectPattern,
-			collection,
-			settings,
-		]);
+		lazyAtomicMods.push(
+			[upsertTypeAnnotationOnStateIdentifier, collection, settings],
+			[upsertTypeAnnotationOnStateObjectPattern, collection, settings],
+		);
 	});
 
 	return [false, lazyAtomicMods];
@@ -301,7 +294,7 @@ export const findMapDispatchToPropsArrowFunctions: AtomicMod<File, 'read'> = (
 	return [false, lazyAtomicMods];
 };
 
-export const findMapDispatchToPropsFunction: AtomicMod<File, 'read'> = (
+export const findMapDispatchToPropsFunctions: AtomicMod<File, 'read'> = (
 	j,
 	root,
 	settings,
@@ -432,10 +425,10 @@ export default function transform(file: FileInfo, api: API, jOptions: Options) {
 	};
 
 	const lazyAtomicMods: LazyAtomicMod[] = [
-		[findMapStateToPropsArrowFunction, root, settings],
-		[findMapStateToPropsFunction, root, settings],
+		[findMapStateToPropsArrowFunctions, root, settings],
+		[findMapStateToPropsFunctions, root, settings],
 		[findMapDispatchToPropsArrowFunctions, root, settings],
-		[findMapDispatchToPropsFunction, root, settings],
+		[findMapDispatchToPropsFunctions, root, settings],
 	];
 
 	const handleLazyAtomicMod = (lazyAtomicMod: LazyAtomicMod) => {
