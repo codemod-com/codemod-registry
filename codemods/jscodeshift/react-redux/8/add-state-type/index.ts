@@ -96,8 +96,8 @@ const addImportStatement = (
 		j.stringLiteral(stateSourceLiteralValue),
 	);
 
-	root.find(j.Program).forEach((program) => {
-		program.value.body.unshift(importDeclaration);
+	root.find(j.Program).forEach((programPath) => {
+		programPath.value.body.unshift(importDeclaration);
 	});
 
 	return [];
@@ -105,6 +105,8 @@ const addImportStatement = (
 
 export default function transform(file: FileInfo, api: API, jOptions: Options) {
 	const j = api.jscodeshift;
+
+	let dirtyFlag = false;
 
 	const root = j(file.source);
 
