@@ -359,10 +359,10 @@ export const findStateImportDeclarations: AtomicMod<File, 'find'> = (
 		return [false, []];
 	}
 
-	return [false, [[addStateImportDeclaration, root, { name, value }]]];
+	return [false, [[addImportDeclaration, root, { name, value }]]];
 };
 
-export const addStateImportDeclaration: AtomicMod<File, 'replace'> = (
+export const addImportDeclaration: AtomicMod<File, 'replace'> = (
 	j,
 	root,
 	settings,
@@ -392,6 +392,9 @@ export const addThunkDispatchImportDeclaration: AtomicMod<File, 'replace'> = (
 	j,
 	root,
 ) => {
+	const name = 'ThunkDispatch';
+	const value = 'redux-thunk';
+
 	const existingDeclarations = root.find(j.ImportDeclaration, {
 		specifiers: [
 			{
@@ -410,21 +413,7 @@ export const addThunkDispatchImportDeclaration: AtomicMod<File, 'replace'> = (
 		return [false, []];
 	}
 
-	const importDeclaration = j.importDeclaration(
-		[
-			j.importSpecifier(
-				j.identifier('ThunkDispatch'),
-				j.identifier('ThunkDispatch'),
-			),
-		],
-		j.stringLiteral('redux-thunk'),
-	);
-
-	root.find(j.Program).forEach((programPath) => {
-		programPath.value.body.unshift(importDeclaration);
-	});
-
-	return [true, []];
+	return [false, [[addImportDeclaration, root, { name, value }]]];
 };
 
 export default function transform(file: FileInfo, api: API, jOptions: Options) {
