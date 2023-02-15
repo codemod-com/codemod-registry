@@ -2,6 +2,7 @@ import {
 	API,
 	ArrowFunctionExpression,
 	Collection,
+	File,
 	FileInfo,
 	FunctionDeclaration,
 	JSCodeshift,
@@ -133,7 +134,13 @@ export const upsertTypeAnnotationOnDispatchIdentifier: AtomicMod<
 		return [dirtyFlag, []];
 	}
 
-	return [dirtyFlag, [[addStateImportDeclaration, filePath, settings]]];
+	return [
+		dirtyFlag,
+		[
+			[addStateImportDeclaration, filePath, settings],
+			[addThunkDispatchImportDeclaration, filePath, settings],
+		],
+	];
 };
 
 export const upsertTypeAnnotationOnStateObjectPattern: AtomicMod<
@@ -300,8 +307,8 @@ export const upsertTypeAnnotationOnMapDispatchToPropsArrowFunction: AtomicMod<
 };
 
 export const addStateImportDeclaration: AtomicMod<any> = (
-	j: JSCodeshift,
-	root: Collection<any>,
+	j,
+	root,
 	settings,
 ) => {
 	const importDeclaration = j.importDeclaration(
@@ -312,6 +319,24 @@ export const addStateImportDeclaration: AtomicMod<any> = (
 			),
 		],
 		j.stringLiteral(settings.stateSourceLiteralValue ?? 'state'),
+	);
+
+	root.find(j.Program).forEach((programPath) => {
+		programPath.value.body.unshift(importDeclaration);
+	});
+
+	return [true, []];
+};
+
+export const addThunkDispatchImportDeclaration: AtomicMod<File> = (j, root) => {
+	const importDeclaration = j.importDeclaration(
+		[
+			j.importSpecifier(
+				j.identifier('ThunkDispatch'),
+				j.identifier('ThunkDispatch'),
+			),
+		],
+		j.stringLiteral('redux-thunk'),
 	);
 
 	root.find(j.Program).forEach((programPath) => {
