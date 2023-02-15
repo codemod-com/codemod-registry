@@ -7,18 +7,17 @@ import {
 	Transform,
 } from 'jscodeshift';
 
-type Settings = {
-	stateTypeIdentifierName: string;
-	stateSourceLiteralValue: string;
-};
-
 type AtomicMod = (
 	j: JSCodeshift,
 	root: Collection<any>,
-	settings: Settings,
+	settings: Partial<Record<string, string>>,
 ) => [boolean, ReadonlyArray<LazyAtomicMod>];
 
-type LazyAtomicMod = [AtomicMod, Collection<any>, Settings];
+type LazyAtomicMod = [
+	AtomicMod,
+	Collection<any>,
+	Partial<Record<string, string>>,
+];
 
 export const upsertTypeAnnotationOnStateParameterOfMapStateToProps: AtomicMod =
 	(j, root, settings) => {
@@ -56,7 +55,9 @@ export const upsertTypeAnnotationOnStateParameterOfMapStateToProps: AtomicMod =
 
 					const typeAnnotation = j.typeAnnotation(
 						j.genericTypeAnnotation(
-							j.identifier(settings.stateTypeIdentifierName),
+							j.identifier(
+								settings.stateTypeIdentifierName ?? 'State',
+							),
 							null,
 						),
 					);
@@ -89,11 +90,11 @@ export const addImportStatement: AtomicMod = (
 	const importDeclaration = j.importDeclaration(
 		[
 			j.importSpecifier(
-				j.identifier(settings.stateTypeIdentifierName),
-				j.identifier(settings.stateTypeIdentifierName),
+				j.identifier(settings.stateTypeIdentifierName ?? 'State'),
+				j.identifier(settings.stateTypeIdentifierName ?? 'State'),
 			),
 		],
-		j.stringLiteral(settings.stateSourceLiteralValue),
+		j.stringLiteral(settings.stateSourceLiteralValue ?? 'state'),
 	);
 
 	root.find(j.Program).forEach((programPath) => {
