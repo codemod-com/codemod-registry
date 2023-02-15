@@ -332,12 +332,15 @@ export const addStateImportDeclaration: AtomicMod<any> = (
 	root,
 	settings,
 ) => {
+	const stateTypeIdentifierName = settings.stateTypeIdentifierName ?? 'State';
+	const stateSourceLiteralValue = settings.stateSourceLiteralValue ?? 'state';
+
 	const existingDeclarations = root.find(j.ImportDeclaration, {
 		specifiers: [
 			{
 				imported: {
 					type: 'Identifier',
-					name: settings.stateTypeIdentifierName ?? 'State',
+					name: stateTypeIdentifierName,
 				},
 			},
 		],
@@ -353,11 +356,11 @@ export const addStateImportDeclaration: AtomicMod<any> = (
 	const importDeclaration = j.importDeclaration(
 		[
 			j.importSpecifier(
-				j.identifier(settings.stateTypeIdentifierName ?? 'State'),
-				j.identifier(settings.stateTypeIdentifierName ?? 'State'),
+				j.identifier(stateTypeIdentifierName),
+				j.identifier(stateTypeIdentifierName),
 			),
 		],
-		j.stringLiteral(settings.stateSourceLiteralValue ?? 'state'),
+		j.stringLiteral(stateSourceLiteralValue),
 	);
 
 	root.find(j.Program).forEach((programPath) => {
