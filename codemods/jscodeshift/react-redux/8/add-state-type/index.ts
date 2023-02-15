@@ -21,12 +21,13 @@ type AtomicMod = (
 	ReadonlyArray<{
 		root: Collection<any>;
 		settings: Settings;
-		dirtyFlag: boolean;
 		mod:
 			| 'upsertTypeAnnotationOnStateParameterOfMapStateToProps'
 			| 'addImportStatement';
 	}>,
 ];
+
+type LazyAtomicMod = [AtomicMod, ...Parameters<AtomicMod>];
 
 const upsertTypeAnnotationOnStateParameterOfMapStateToProps: AtomicMod = (
 	j,
@@ -87,7 +88,7 @@ const upsertTypeAnnotationOnStateParameterOfMapStateToProps: AtomicMod = (
 	}
 
 	return [
-		dirtyFlag,
+		true,
 		[
 			{
 				root,
@@ -138,7 +139,7 @@ export default function transform(file: FileInfo, api: API, jOptions: Options) {
 				: 'state',
 	};
 
-	const lazyMods: [AtomicMod, ...Parameters<AtomicMod>][] = [
+	const lazyAtomicMod: LazyAtomicMod[] = [
 		[
 			upsertTypeAnnotationOnStateParameterOfMapStateToProps,
 			j,
@@ -148,17 +149,13 @@ export default function transform(file: FileInfo, api: API, jOptions: Options) {
 	];
 
 	while (true) {
-		const lastLazyMod = lazyMods.pop();
+		const last = lazyAtomicMod.pop();
 
-		if (!lastLazyMod) {
+		if (!last) {
 			break;
 		}
 
-		const [dirtyFlag] = lastLazyMod[0](
-			lastLazyMod[1],
-			lastLazyMod[2],
-			lastLazyMod[3],
-		);
+		const [dirtyFlag] = last[0](last[1], last[2], last[3]);
 	}
 
 	// const modOutputs = upsertTypeAnnotationOnStateParameterOfMapStateToProps(
