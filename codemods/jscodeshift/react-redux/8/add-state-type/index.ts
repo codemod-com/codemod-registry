@@ -26,7 +26,10 @@ export const upsertTypeAnnotationOnStateIdentifier: AtomicMod = (
 ) => {
 	let dirtyFlag: boolean = false;
 
-	if (!root.isOfType(j.ArrowFunctionExpression)) {
+	if (
+		!root.isOfType(j.ArrowFunctionExpression) &&
+		!root.isOfType(j.FunctionDeclaration)
+	) {
 		return [dirtyFlag, []];
 	}
 
@@ -156,6 +159,35 @@ export const upsertTypeAnnotationOnStateDestructuredParameterOfMapStateToProps: 
 		return [false, lazyAtomicMods];
 	};
 
+export const upsertTypeAnnotationOnMapStateToPropsFunction: AtomicMod = (
+	j,
+	root,
+	settings,
+) => {
+	const lazyAtomicMods: LazyAtomicMod[] = [];
+
+	root.find(j.FunctionDeclaration, {
+		id: {
+			type: 'Identifier',
+			name: 'mapStateToProps',
+		},
+	}).forEach((functionDeclarationPath) => {
+		if (functionDeclarationPath.value.params.length === 0) {
+			return;
+		}
+
+		const collection = j(functionDeclarationPath);
+
+		lazyAtomicMods.push([
+			upsertTypeAnnotationOnStateIdentifier,
+			collection,
+			settings,
+		]);
+	});
+
+	return [false, lazyAtomicMods];
+};
+
 export const upsertTypeAnnotationOnStateParameterOfMapStateToProps: AtomicMod =
 	(j, root, settings) => {
 		const lazyAtomicMods: LazyAtomicMod[] = [];
@@ -234,6 +266,7 @@ export default function transform(file: FileInfo, api: API, jOptions: Options) {
 			root,
 			settings,
 		],
+		[upsertTypeAnnotationOnMapStateToPropsFunction, root, settings],
 	];
 
 	while (true) {
