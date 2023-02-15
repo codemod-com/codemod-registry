@@ -73,10 +73,7 @@ export const upsertTypeAnnotationOnStateIdentifier: AtomicMod<
 		return [dirtyFlag, []];
 	}
 
-	return [
-		dirtyFlag,
-		[[ensureStateImportDeclarationsDoNotExist, filePath, settings]],
-	];
+	return [dirtyFlag, [[findStateImportDeclarations, filePath, settings]]];
 };
 
 export const upsertTypeAnnotationOnDispatchIdentifier: AtomicMod<
@@ -142,7 +139,7 @@ export const upsertTypeAnnotationOnDispatchIdentifier: AtomicMod<
 	return [
 		dirtyFlag,
 		[
-			[ensureStateImportDeclarationsDoNotExist, filePath, settings],
+			[findStateImportDeclarations, filePath, settings],
 			[addThunkDispatchImportDeclaration, filePath, settings],
 		],
 	];
@@ -196,10 +193,7 @@ export const upsertTypeAnnotationOnStateObjectPattern: AtomicMod<
 		return [dirtyFlag, []];
 	}
 
-	return [
-		dirtyFlag,
-		[[ensureStateImportDeclarationsDoNotExist, filePath, settings]],
-	];
+	return [dirtyFlag, [[findStateImportDeclarations, filePath, settings]]];
 };
 
 export const upsertTypeAnnotationOnMapStateToPropsArrowFunction: AtomicMod<
@@ -339,10 +333,11 @@ export const upsertTypeAnnotationOnMapDispatchToPropsFunction: AtomicMod<
 	return [false, lazyAtomicMods];
 };
 
-export const ensureStateImportDeclarationsDoNotExist: AtomicMod<
-	File,
-	'find'
-> = (j, root, settings) => {
+export const findStateImportDeclarations: AtomicMod<File, 'find'> = (
+	j,
+	root,
+	settings,
+) => {
 	const stateTypeIdentifierName = settings.stateTypeIdentifierName ?? 'State';
 	const existingDeclarations = root.find(j.ImportDeclaration, {
 		specifiers: [
@@ -372,24 +367,6 @@ export const addStateImportDeclaration: AtomicMod<File, 'replace'> = (
 ) => {
 	const stateTypeIdentifierName = settings.stateTypeIdentifierName ?? 'State';
 	const stateSourceLiteralValue = settings.stateSourceLiteralValue ?? 'state';
-
-	const existingDeclarations = root.find(j.ImportDeclaration, {
-		specifiers: [
-			{
-				imported: {
-					type: 'Identifier',
-					name: stateTypeIdentifierName,
-				},
-			},
-		],
-		source: {
-			value: settings.stateSourceLiteralValue ?? 'state',
-		},
-	});
-
-	if (existingDeclarations.size() !== 0) {
-		return [false, []];
-	}
 
 	const importDeclaration = j.importDeclaration(
 		[
