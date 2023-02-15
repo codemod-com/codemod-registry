@@ -295,12 +295,33 @@ export const upsertTypeAnnotationOnMapDispatchToPropsArrowFunction: AtomicMod<
 			collection,
 			settings,
 		]);
+	});
 
-		// lazyAtomicMods.push([
-		// 	upsertTypeAnnotationOnStateObjectPattern,
-		// 	collection,
-		// 	settings,
-		// ]);
+	return [false, lazyAtomicMods];
+};
+
+export const upsertTypeAnnotationOnMapDispatchToPropsFunction: AtomicMod<
+	any
+> = (j, root, settings) => {
+	const lazyAtomicMods: LazyAtomicMod[] = [];
+
+	root.find(j.FunctionDeclaration, {
+		id: {
+			type: 'Identifier',
+			name: 'mapDispatchToProps',
+		},
+	}).forEach((functionDeclarationPath) => {
+		if (functionDeclarationPath.value.params.length === 0) {
+			return;
+		}
+
+		const collection = j(functionDeclarationPath);
+
+		lazyAtomicMods.push([
+			upsertTypeAnnotationOnDispatchIdentifier,
+			collection,
+			settings,
+		]);
 	});
 
 	return [false, lazyAtomicMods];
@@ -368,6 +389,7 @@ export default function transform(file: FileInfo, api: API, jOptions: Options) {
 		[upsertTypeAnnotationOnMapStateToPropsArrowFunction, root, settings],
 		[upsertTypeAnnotationOnMapStateToPropsFunction, root, settings],
 		[upsertTypeAnnotationOnMapDispatchToPropsArrowFunction, root, settings],
+		[upsertTypeAnnotationOnMapDispatchToPropsFunction, root, settings],
 	];
 
 	while (true) {

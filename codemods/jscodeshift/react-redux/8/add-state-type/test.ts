@@ -123,7 +123,7 @@ describe.only('react-redux-8 add-state-type', function () {
 		);
 	});
 
-	it.only('should add the State type for state parameter of the mapDispatchToProps arrow function', function () {
+	it('should add the State type for state parameter of the mapDispatchToProps arrow function', function () {
 		const INPUT = `
             const mapDispatchToProps = (dispatch) => ({
                 onA: (a) => dispatch(a),
@@ -137,6 +137,41 @@ describe.only('react-redux-8 add-state-type', function () {
 			const mapDispatchToProps = (dispatch: ThunkDispatch<State, any, any>) => ({
                 onA: (a) => dispatch(a),
             });
+		`;
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+
+		console.log(actualOutput);
+
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should add the State type for state parameter of the mapDispatchToProps arrow function', function () {
+		const INPUT = `
+            function mapDispatchToProps (dispatch) {
+				return {
+					onA: (a) => dispatch(a),
+				}
+            };
+        `;
+
+		const OUTPUT = `
+			import { ThunkDispatch } from "redux-thunk";
+			import { State } from "state";
+
+			function mapDispatchToProps (dispatch: ThunkDispatch<State, any, any>) {
+				return {
+					onA: (a) => dispatch(a),
+				}
+            };
 		`;
 
 		const fileInfo: FileInfo = {
