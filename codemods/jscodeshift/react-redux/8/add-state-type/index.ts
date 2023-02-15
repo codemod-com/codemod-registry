@@ -1,7 +1,9 @@
 import {
 	API,
+	ArrowFunctionExpression,
 	Collection,
 	FileInfo,
+	FunctionDeclaration,
 	JSCodeshift,
 	Options,
 	Transform,
@@ -19,11 +21,9 @@ type LazyAtomicMod = [
 	Partial<Record<string, string>>,
 ];
 
-export const upsertTypeAnnotationOnStateIdentifier: AtomicMod<any> = (
-	j,
-	root,
-	settings,
-) => {
+export const upsertTypeAnnotationOnStateIdentifier: AtomicMod<
+	ArrowFunctionExpression | FunctionDeclaration
+> = (j, root, settings) => {
 	let dirtyFlag: boolean = false;
 
 	if (
@@ -33,19 +33,16 @@ export const upsertTypeAnnotationOnStateIdentifier: AtomicMod<any> = (
 		return [dirtyFlag, []];
 	}
 
-	root.forEach((arrowFunctionExpressionPath) => {
-		const patternKind = arrowFunctionExpressionPath.value.params[0];
+	root.forEach((astPath) => {
+		const patternKind = astPath.value.params[0];
 
 		if (patternKind?.type !== 'Identifier') {
 			return;
 		}
 
-		const identifierPathCollection = j(arrowFunctionExpressionPath).find(
-			j.Identifier,
-			{
-				name: patternKind.name,
-			},
-		);
+		const identifierPathCollection = j(astPath).find(j.Identifier, {
+			name: patternKind.name,
+		});
 
 		const typeAnnotation = j.typeAnnotation(
 			j.genericTypeAnnotation(
@@ -77,11 +74,9 @@ export const upsertTypeAnnotationOnStateIdentifier: AtomicMod<any> = (
 	return [dirtyFlag, [[addImportStatement, filePath, settings]]];
 };
 
-export const upsertTypeAnnotationOnStateObjectPattern: AtomicMod<any> = (
-	j,
-	root,
-	settings,
-) => {
+export const upsertTypeAnnotationOnStateObjectPattern: AtomicMod<
+	ArrowFunctionExpression | FunctionDeclaration
+> = (j, root, settings) => {
 	let dirtyFlag: boolean = false;
 
 	if (
@@ -91,16 +86,14 @@ export const upsertTypeAnnotationOnStateObjectPattern: AtomicMod<any> = (
 		return [dirtyFlag, []];
 	}
 
-	root.forEach((arrowFunctionExpressionPath) => {
-		const patternKind = arrowFunctionExpressionPath.value.params[0];
+	root.forEach((astPath) => {
+		const patternKind = astPath.value.params[0];
 
 		if (patternKind?.type !== 'ObjectPattern') {
 			return;
 		}
 
-		const objectPatternPathCollection = j(arrowFunctionExpressionPath).find(
-			j.ObjectPattern,
-		);
+		const objectPatternPathCollection = j(astPath).find(j.ObjectPattern);
 
 		const typeAnnotation = j.typeAnnotation(
 			j.genericTypeAnnotation(
