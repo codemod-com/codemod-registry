@@ -24,8 +24,6 @@ export const upsertTypeAnnotationOnStateIdentifier: AtomicMod = (
 	root,
 	settings,
 ) => {
-	console.log('upsertTypeAnnotationOnStateIndentifier');
-
 	let dirtyFlag: boolean = false;
 
 	if (!root.isOfType(j.ArrowFunctionExpression)) {
