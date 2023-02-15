@@ -72,7 +72,10 @@ export const upsertTypeAnnotationOnStateIdentifier: AtomicMod<
 		return [dirtyFlag, []];
 	}
 
-	return [dirtyFlag, [[addStateImportDeclaration, filePath, settings]]];
+	return [
+		dirtyFlag,
+		[[ensureStateImportDeclarationsDoNotExist, filePath, settings]],
+	];
 };
 
 export const upsertTypeAnnotationOnDispatchIdentifier: AtomicMod<
@@ -137,7 +140,7 @@ export const upsertTypeAnnotationOnDispatchIdentifier: AtomicMod<
 	return [
 		dirtyFlag,
 		[
-			[addStateImportDeclaration, filePath, settings],
+			[ensureStateImportDeclarationsDoNotExist, filePath, settings],
 			[addThunkDispatchImportDeclaration, filePath, settings],
 		],
 	];
@@ -190,7 +193,10 @@ export const upsertTypeAnnotationOnStateObjectPattern: AtomicMod<
 		return [dirtyFlag, []];
 	}
 
-	return [dirtyFlag, [[addStateImportDeclaration, filePath, settings]]];
+	return [
+		dirtyFlag,
+		[[ensureStateImportDeclarationsDoNotExist, filePath, settings]],
+	];
 };
 
 export const upsertTypeAnnotationOnMapStateToPropsArrowFunction: AtomicMod<
@@ -325,6 +331,33 @@ export const upsertTypeAnnotationOnMapDispatchToPropsFunction: AtomicMod<
 	});
 
 	return [false, lazyAtomicMods];
+};
+
+export const ensureStateImportDeclarationsDoNotExist: AtomicMod<File> = (
+	j,
+	root,
+	settings,
+) => {
+	const stateTypeIdentifierName = settings.stateTypeIdentifierName ?? 'State';
+	const existingDeclarations = root.find(j.ImportDeclaration, {
+		specifiers: [
+			{
+				imported: {
+					type: 'Identifier',
+					name: stateTypeIdentifierName,
+				},
+			},
+		],
+		source: {
+			value: settings.stateSourceLiteralValue ?? 'state',
+		},
+	});
+
+	if (existingDeclarations.size() !== 0) {
+		return [false, []];
+	}
+
+	return [false, [[addStateImportDeclaration, root, settings]]];
 };
 
 export const addStateImportDeclaration: AtomicMod<any> = (
