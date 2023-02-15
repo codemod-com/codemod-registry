@@ -58,4 +58,36 @@ describe.only('react-redux-8 add-state-type', function () {
 			OUTPUT.replace(/\W/gm, ''),
 		);
 	});
+
+	it.only('should add the State type for state destructized parameter of the mapStateToProps function', function () {
+		const INPUT = `
+			function mapStateToProps (a) {
+				return {
+					a
+				}
+			}
+        `;
+
+		const OUTPUT = `
+			import { State } from "state";
+
+			function mapStateToProps (a: State) {
+				return {
+					a
+				}
+			}
+		`;
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
 });
