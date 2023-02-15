@@ -128,42 +128,43 @@ export const upsertTypeAnnotationOnStateObjectPattern: AtomicMod = (
 	return [dirtyFlag, [[addImportStatement, filePath, settings]]];
 };
 
-export const upsertTypeAnnotationOnStateDestructuredParameterOfMapStateToProps: AtomicMod =
-	(j, root, settings) => {
-		const lazyAtomicMods: LazyAtomicMod[] = [];
+export const upsertTypeAnnotationOnMapStateToPropsArrowFunction: AtomicMod = (
+	j,
+	root,
+	settings,
+) => {
+	const lazyAtomicMods: LazyAtomicMod[] = [];
 
-		root.find(j.VariableDeclarator, {
-			id: {
-				type: 'Identifier',
-				name: 'mapStateToProps',
-			},
-			init: {
-				type: 'ArrowFunctionExpression',
-			},
-		}).forEach((variableDeclaratorPath) => {
-			const collection = j(variableDeclaratorPath)
-				.find(j.ArrowFunctionExpression)
-				.filter((arrowFunctionExpressionPath) => {
-					return (
-						arrowFunctionExpressionPath.value.params.length !== 0
-					);
-				});
+	root.find(j.VariableDeclarator, {
+		id: {
+			type: 'Identifier',
+			name: 'mapStateToProps',
+		},
+		init: {
+			type: 'ArrowFunctionExpression',
+		},
+	}).forEach((variableDeclaratorPath) => {
+		const collection = j(variableDeclaratorPath)
+			.find(j.ArrowFunctionExpression)
+			.filter((arrowFunctionExpressionPath) => {
+				return arrowFunctionExpressionPath.value.params.length !== 0;
+			});
 
-			lazyAtomicMods.push([
-				upsertTypeAnnotationOnStateIdentifier,
-				collection,
-				settings,
-			]);
+		lazyAtomicMods.push([
+			upsertTypeAnnotationOnStateIdentifier,
+			collection,
+			settings,
+		]);
 
-			lazyAtomicMods.push([
-				upsertTypeAnnotationOnStateObjectPattern,
-				collection,
-				settings,
-			]);
-		});
+		lazyAtomicMods.push([
+			upsertTypeAnnotationOnStateObjectPattern,
+			collection,
+			settings,
+		]);
+	});
 
-		return [false, lazyAtomicMods];
-	};
+	return [false, lazyAtomicMods];
+};
 
 export const upsertTypeAnnotationOnMapStateToPropsFunction: AtomicMod = (
 	j,
@@ -235,11 +236,7 @@ export default function transform(file: FileInfo, api: API, jOptions: Options) {
 	};
 
 	const lazyAtomicMods: LazyAtomicMod[] = [
-		[
-			upsertTypeAnnotationOnStateDestructuredParameterOfMapStateToProps,
-			root,
-			settings,
-		],
+		[upsertTypeAnnotationOnMapStateToPropsArrowFunction, root, settings],
 		[upsertTypeAnnotationOnMapStateToPropsFunction, root, settings],
 	];
 
