@@ -16,14 +16,17 @@ type AtomicMod = (
 	j: JSCodeshift,
 	root: Collection<any>,
 	settings: Settings,
-) => ReadonlyArray<{
-	root: Collection<any>;
-	settings: Settings;
-	dirtyFlag: boolean;
-	mod:
-		| 'upsertTypeAnnotationOnStateParameterOfMapStateToProps'
-		| 'addImportStatement';
-}>;
+) => [
+	boolean,
+	ReadonlyArray<{
+		root: Collection<any>;
+		settings: Settings;
+		dirtyFlag: boolean;
+		mod:
+			| 'upsertTypeAnnotationOnStateParameterOfMapStateToProps'
+			| 'addImportStatement';
+	}>,
+];
 
 const upsertTypeAnnotationOnStateParameterOfMapStateToProps: AtomicMod = (
 	j,
@@ -80,42 +83,41 @@ const upsertTypeAnnotationOnStateParameterOfMapStateToProps: AtomicMod = (
 	});
 
 	if (!dirtyFlag) {
-		return [];
+		return [dirtyFlag, []];
 	}
 
 	return [
-		{
-			root,
-			settings,
-			dirtyFlag: true,
-			mod: 'addImportStatement',
-		},
+		dirtyFlag,
+		[
+			{
+				root,
+				settings,
+				mod: 'addImportStatement',
+			},
+		],
 	];
 };
 
-const addImportStatement = (
+const addImportStatement: AtomicMod = (
 	j: JSCodeshift,
 	root: Collection<any>,
-	{
-		stateTypeIdentifierName,
-		stateSourceLiteralValue,
-	}: { stateTypeIdentifierName: string; stateSourceLiteralValue: string },
+	settings,
 ) => {
 	const importDeclaration = j.importDeclaration(
 		[
 			j.importSpecifier(
-				j.identifier(stateTypeIdentifierName),
-				j.identifier(stateTypeIdentifierName),
+				j.identifier(settings.stateTypeIdentifierName),
+				j.identifier(settings.stateTypeIdentifierName),
 			),
 		],
-		j.stringLiteral(stateSourceLiteralValue),
+		j.stringLiteral(settings.stateSourceLiteralValue),
 	);
 
 	root.find(j.Program).forEach((programPath) => {
 		programPath.value.body.unshift(importDeclaration);
 	});
 
-	return [];
+	return [true, []];
 };
 
 export default function transform(file: FileInfo, api: API, jOptions: Options) {
@@ -125,7 +127,7 @@ export default function transform(file: FileInfo, api: API, jOptions: Options) {
 
 	const root = j(file.source);
 
-	const options = {
+	const settings = {
 		stateTypeIdentifierName:
 			'stateTypeIdentifierName' in jOptions
 				? String(jOptions.stateTypeIdentifierName)
@@ -136,17 +138,40 @@ export default function transform(file: FileInfo, api: API, jOptions: Options) {
 				: 'state',
 	};
 
-	const modOutputs = upsertTypeAnnotationOnStateParameterOfMapStateToProps(
-		j,
-		root,
-		options,
-	);
+	const lazyMods: [AtomicMod, ...Parameters<AtomicMod>][] = [
+		[
+			upsertTypeAnnotationOnStateParameterOfMapStateToProps,
+			j,
+			root,
+			settings,
+		],
+	];
 
-	for (const modOutput of modOutputs) {
-		if (modOutput.mod === 'addImportStatement') {
-			addImportStatement(j, modOutput.root, modOutput.options);
+	while (true) {
+		const lastLazyMod = lazyMods.pop();
+
+		if (!lastLazyMod) {
+			break;
 		}
+
+		const [dirtyFlag] = lastLazyMod[0](
+			lastLazyMod[1],
+			lastLazyMod[2],
+			lastLazyMod[3],
+		);
 	}
+
+	// const modOutputs = upsertTypeAnnotationOnStateParameterOfMapStateToProps(
+	// 	j,
+	// 	root,
+	// 	options,
+	// );
+
+	// for (const modOutput of modOutputs) {
+	// 	if (modOutput.mod === 'addImportStatement') {
+	// 		addImportStatement(j, modOutput.root, modOutput.options);
+	// 	}
+	// }
 
 	return root.toSource();
 }
