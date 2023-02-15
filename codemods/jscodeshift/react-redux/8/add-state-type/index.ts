@@ -139,12 +139,18 @@ export default function transform(file: FileInfo, api: API, jOptions: Options) {
 
 		const [newDirtyFlag, newMods] = last[0](last[1], last[2], last[3]);
 
+		dirtyFlag ||= newDirtyFlag;
+
 		// newMods: 0, 1, 2
 		// 2, 1, 0 so 0 gets picked first
 
 		for (const newMod of newMods) {
 			lazyAtomicMods.unshift(newMod);
 		}
+	}
+
+	if (!dirtyFlag) {
+		return undefined;
 	}
 
 	return root.toSource();
