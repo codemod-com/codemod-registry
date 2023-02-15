@@ -428,23 +428,22 @@ export default function transform(file: FileInfo, api: API, jOptions: Options) {
 		[upsertTypeAnnotationOnMapDispatchToPropsFunction, root, settings],
 	];
 
-	while (true) {
-		const last = lazyAtomicMods.pop();
-
-		if (!last) {
-			break;
-		}
-
-		const [newDirtyFlag, newMods] = last[0](j, last[1], last[2]);
+	const handleLazyAtomicMod = (lazyAtomicMod: LazyAtomicMod) => {
+		const [newDirtyFlag, newMods] = lazyAtomicMod[0](
+			j,
+			lazyAtomicMod[1],
+			lazyAtomicMod[2],
+		);
 
 		dirtyFlag ||= newDirtyFlag;
 
-		// newMods: 0, 1, 2
-		// 2, 1, 0 so 0 gets picked first
-
 		for (const newMod of newMods) {
-			lazyAtomicMods.unshift(newMod);
+			handleLazyAtomicMod(newMod);
 		}
+	};
+
+	for (const lazyAtomicMod of lazyAtomicMods) {
+		handleLazyAtomicMod(lazyAtomicMod);
 	}
 
 	if (!dirtyFlag) {
