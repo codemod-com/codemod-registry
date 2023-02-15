@@ -146,8 +146,6 @@ describe.only('react-redux-8 add-state-type', function () {
 
 		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
 
-		console.log(actualOutput);
-
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),
@@ -181,7 +179,50 @@ describe.only('react-redux-8 add-state-type', function () {
 
 		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
 
-		console.log(actualOutput);
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should add the State type for state parameter of the mapStateToProps and the mapDispatchToProps arrow function', function () {
+		const INPUT = `
+			function mapStateToProps (state) {
+				return {
+					...state
+				}
+			}
+
+            function mapDispatchToProps (dispatch) {
+				return {
+					onA: (a) => dispatch(a),
+				}
+            };
+        `;
+
+		const OUTPUT = `
+			import { ThunkDispatch } from "redux-thunk";
+			import { State } from "state";
+
+			function mapStateToProps (state: State) {
+				return {
+					...state
+				}
+			}
+
+			function mapDispatchToProps (dispatch: ThunkDispatch<State, any, any>) {
+				return {
+					onA: (a) => dispatch(a),
+				}
+            };
+		`;
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),

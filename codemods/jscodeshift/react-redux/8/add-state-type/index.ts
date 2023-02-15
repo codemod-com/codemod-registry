@@ -332,6 +332,24 @@ export const addStateImportDeclaration: AtomicMod<any> = (
 	root,
 	settings,
 ) => {
+	const existingDeclarations = root.find(j.ImportDeclaration, {
+		specifiers: [
+			{
+				imported: {
+					type: 'Identifier',
+					name: settings.stateTypeIdentifierName ?? 'State',
+				},
+			},
+		],
+		source: {
+			value: settings.stateSourceLiteralValue ?? 'state',
+		},
+	});
+
+	if (existingDeclarations.size() !== 0) {
+		return [false, []];
+	}
+
 	const importDeclaration = j.importDeclaration(
 		[
 			j.importSpecifier(
@@ -350,6 +368,24 @@ export const addStateImportDeclaration: AtomicMod<any> = (
 };
 
 export const addThunkDispatchImportDeclaration: AtomicMod<File> = (j, root) => {
+	const existingDeclarations = root.find(j.ImportDeclaration, {
+		specifiers: [
+			{
+				imported: {
+					type: 'Identifier',
+					name: 'ThunkDispatch',
+				},
+			},
+		],
+		source: {
+			value: 'redux-thunk',
+		},
+	});
+
+	if (existingDeclarations.size() !== 0) {
+		return [false, []];
+	}
+
 	const importDeclaration = j.importDeclaration(
 		[
 			j.importSpecifier(
