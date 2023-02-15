@@ -71,7 +71,69 @@ export const upsertTypeAnnotationOnStateIdentifier: AtomicMod<
 		return [dirtyFlag, []];
 	}
 
-	return [dirtyFlag, [[addImportStatement, filePath, settings]]];
+	return [dirtyFlag, [[addStateImportDeclaration, filePath, settings]]];
+};
+
+export const upsertTypeAnnotationOnDispatchIdentifier: AtomicMod<
+	ArrowFunctionExpression | FunctionDeclaration
+> = (j, root, settings) => {
+	let dirtyFlag: boolean = false;
+
+	if (
+		!root.isOfType(j.ArrowFunctionExpression) &&
+		!root.isOfType(j.FunctionDeclaration)
+	) {
+		return [dirtyFlag, []];
+	}
+
+	root.forEach((astPath) => {
+		const patternKind = astPath.value.params[0];
+
+		if (patternKind?.type !== 'Identifier') {
+			return;
+		}
+
+		const identifierPathCollection = j(astPath).find(j.Identifier, {
+			name: patternKind.name,
+		});
+
+		const typeAnnotation = j.typeAnnotation(
+			j.genericTypeAnnotation(
+				j.identifier('ThunkDispatch'),
+				j.typeParameterInstantiation([
+					j.genericTypeAnnotation(
+						j.identifier(
+							settings.stateTypeIdentifierName ?? 'State',
+						),
+						null,
+					),
+					j.anyTypeAnnotation(),
+					j.anyTypeAnnotation(),
+				]),
+			),
+		);
+
+		dirtyFlag = true;
+
+		// this uses the fact that the state parameter must be the first
+		// found identifier under the arrow-function-expression
+		identifierPathCollection.paths()[0]?.replace(
+			j.identifier.from({
+				comments: patternKind.comments ?? null,
+				name: patternKind.name,
+				optional: patternKind.optional,
+				typeAnnotation,
+			}),
+		);
+	});
+
+	const filePath = root.closest(j.File);
+
+	if (!dirtyFlag) {
+		return [dirtyFlag, []];
+	}
+
+	return [dirtyFlag, [[addStateImportDeclaration, filePath, settings]]];
 };
 
 export const upsertTypeAnnotationOnStateObjectPattern: AtomicMod<
@@ -121,7 +183,7 @@ export const upsertTypeAnnotationOnStateObjectPattern: AtomicMod<
 		return [dirtyFlag, []];
 	}
 
-	return [dirtyFlag, [[addImportStatement, filePath, settings]]];
+	return [dirtyFlag, [[addStateImportDeclaration, filePath, settings]]];
 };
 
 export const upsertTypeAnnotationOnMapStateToPropsArrowFunction: AtomicMod<
@@ -198,7 +260,46 @@ export const upsertTypeAnnotationOnMapStateToPropsFunction: AtomicMod<any> = (
 	return [false, lazyAtomicMods];
 };
 
-export const addImportStatement: AtomicMod<any> = (
+export const upsertTypeAnnotationOnMapDispatchToPropsArrowFunction: AtomicMod<
+	any
+> = (j, root, settings) => {
+	const lazyAtomicMods: LazyAtomicMod[] = [];
+
+	root.find(j.VariableDeclarator, {
+		id: {
+			type: 'Identifier',
+			name: 'mapDispatchToProps',
+		},
+		init: {
+			type: 'ArrowFunctionExpression',
+		},
+	}).forEach((variableDeclaratorPath) => {
+		const collection = j(variableDeclaratorPath)
+			.find(j.ArrowFunctionExpression)
+			.filter((arrowFunctionExpressionPath, i) => {
+				return (
+					i === 0 &&
+					arrowFunctionExpressionPath.value.params.length !== 0
+				);
+			});
+
+		lazyAtomicMods.push([
+			upsertTypeAnnotationOnDispatchIdentifier,
+			collection,
+			settings,
+		]);
+
+		// lazyAtomicMods.push([
+		// 	upsertTypeAnnotationOnStateObjectPattern,
+		// 	collection,
+		// 	settings,
+		// ]);
+	});
+
+	return [false, lazyAtomicMods];
+};
+
+export const addStateImportDeclaration: AtomicMod<any> = (
 	j: JSCodeshift,
 	root: Collection<any>,
 	settings,
@@ -241,6 +342,7 @@ export default function transform(file: FileInfo, api: API, jOptions: Options) {
 	const lazyAtomicMods: LazyAtomicMod[] = [
 		[upsertTypeAnnotationOnMapStateToPropsArrowFunction, root, settings],
 		[upsertTypeAnnotationOnMapStateToPropsFunction, root, settings],
+		[upsertTypeAnnotationOnMapDispatchToPropsArrowFunction, root, settings],
 	];
 
 	while (true) {
