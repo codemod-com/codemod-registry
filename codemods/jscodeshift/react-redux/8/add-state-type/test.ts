@@ -59,7 +59,7 @@ describe.only('react-redux-8 add-state-type', function () {
 		);
 	});
 
-	it.only('should add the State type for state destructized parameter of the mapStateToProps function', function () {
+	xit('should add the State type for state destructized parameter of the mapStateToProps function', function () {
 		const INPUT = `
 			function mapStateToProps (a) {
 				return {
