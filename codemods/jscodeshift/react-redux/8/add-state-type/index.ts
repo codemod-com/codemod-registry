@@ -74,9 +74,60 @@ export const upsertTypeAnnotationOnStateIdentifier: AtomicMod = (
 	return [dirtyFlag, [[addImportStatement, filePath, settings]]];
 };
 
+export const upsertTypeAnnotationOnStateObjectPattern: AtomicMod = (
+	j,
+	root,
+	settings,
+) => {
+	let dirtyFlag: boolean = false;
+
+	if (!root.isOfType(j.ArrowFunctionExpression)) {
+		return [dirtyFlag, []];
+	}
+
+	root.forEach((arrowFunctionExpressionPath) => {
+		const patternKind = arrowFunctionExpressionPath.value.params[0];
+
+		if (patternKind?.type !== 'ObjectPattern') {
+			return;
+		}
+
+		const objectPatternPathCollection = j(arrowFunctionExpressionPath).find(
+			j.ObjectPattern,
+		);
+
+		const typeAnnotation = j.typeAnnotation(
+			j.genericTypeAnnotation(
+				j.identifier(settings.stateTypeIdentifierName ?? 'State'),
+				null,
+			),
+		);
+		dirtyFlag = true;
+
+		// this uses the fact that the state parameter must be the first
+		// found object pattern under the arrow-function-expression
+		objectPatternPathCollection.paths()[0]?.replace(
+			j.objectPattern.from({
+				comments: patternKind.comments ?? null,
+				decorators: patternKind.decorators,
+				properties: patternKind.properties,
+				typeAnnotation,
+			}),
+		);
+	});
+
+	const filePath = root.closest(j.File);
+
+	if (!dirtyFlag) {
+		return [dirtyFlag, []];
+	}
+
+	return [dirtyFlag, [[addImportStatement, filePath, settings]]];
+};
+
 export const upsertTypeAnnotationOnStateDestructuredParameterOfMapStateToProps: AtomicMod =
 	(j, root, settings) => {
-		let dirtyFlag: boolean = false;
+		const lazyAtomicMods: LazyAtomicMod[] = [];
 
 		root.find(j.VariableDeclarator, {
 			id: {
@@ -87,53 +138,22 @@ export const upsertTypeAnnotationOnStateDestructuredParameterOfMapStateToProps: 
 				type: 'ArrowFunctionExpression',
 			},
 		}).forEach((variableDeclaratorPath) => {
-			j(variableDeclaratorPath)
+			const collection = j(variableDeclaratorPath)
 				.find(j.ArrowFunctionExpression)
 				.filter((arrowFunctionExpressionPath) => {
 					return (
 						arrowFunctionExpressionPath.value.params.length !== 0
 					);
-				})
-				.forEach((arrowFunctionExpressionPath) => {
-					const patternKind =
-						arrowFunctionExpressionPath.value.params[0];
-
-					if (patternKind?.type !== 'ObjectPattern') {
-						return;
-					}
-
-					const objectPatternPathCollection = j(
-						arrowFunctionExpressionPath,
-					).find(j.ObjectPattern);
-
-					const typeAnnotation = j.typeAnnotation(
-						j.genericTypeAnnotation(
-							j.identifier(
-								settings.stateTypeIdentifierName ?? 'State',
-							),
-							null,
-						),
-					);
-					dirtyFlag = true;
-
-					// this uses the fact that the state parameter must be the first
-					// found object pattern under the arrow-function-expression
-					objectPatternPathCollection.paths()[0]?.replace(
-						j.objectPattern.from({
-							comments: patternKind.comments ?? null,
-							decorators: patternKind.decorators,
-							properties: patternKind.properties,
-							typeAnnotation,
-						}),
-					);
 				});
+
+			lazyAtomicMods.push([
+				upsertTypeAnnotationOnStateObjectPattern,
+				collection,
+				settings,
+			]);
 		});
 
-		if (!dirtyFlag) {
-			return [dirtyFlag, []];
-		}
-
-		return [true, [[addImportStatement, root, settings]]];
+		return [false, lazyAtomicMods];
 	};
 
 export const upsertTypeAnnotationOnStateParameterOfMapStateToProps: AtomicMod =
