@@ -2,8 +2,8 @@ import { FileInfo } from 'jscodeshift';
 import assert from 'node:assert';
 import transform from '.';
 
-describe.only('react-redux-8 add-state-type', function () {
-	it('', function () {
+describe('react-redux-8 add-state-type', function () {
+	it('should add the State type for state parameter of the mapStateToProps arrow function', function () {
 		const INPUT = `
             const mapStateToProps = (state) => ({
                 a: selectA(state),
@@ -15,6 +15,36 @@ describe.only('react-redux-8 add-state-type', function () {
 
 			const mapStateToProps = (state: State) => ({
                 a: selectA(state),
+            });
+		`;
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+
+		console.log(actualOutput);
+
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+
+	it.only('should add the State type for state destructized parameter of the mapStateToProps arrow function', function () {
+		const INPUT = `
+            const mapStateToProps = ({ a }) => ({
+                a,
+            });
+        `;
+
+		const OUTPUT = `
+			import { State } from "state";
+
+			const mapStateToProps = ({ a }: State) => ({
+                a,
             });
 		`;
 
