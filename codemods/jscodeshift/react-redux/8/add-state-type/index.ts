@@ -338,18 +338,20 @@ export const findStateImportDeclarations: AtomicMod<File, 'find'> = (
 	root,
 	settings,
 ) => {
-	const stateTypeIdentifierName = settings.stateTypeIdentifierName ?? 'State';
+	const name = settings.stateTypeIdentifierName ?? 'State';
+	const value = settings.stateSourceLiteralValue ?? 'state';
+
 	const existingDeclarations = root.find(j.ImportDeclaration, {
 		specifiers: [
 			{
 				imported: {
 					type: 'Identifier',
-					name: stateTypeIdentifierName,
+					name,
 				},
 			},
 		],
 		source: {
-			value: settings.stateSourceLiteralValue ?? 'state',
+			value,
 		},
 	});
 
@@ -357,7 +359,7 @@ export const findStateImportDeclarations: AtomicMod<File, 'find'> = (
 		return [false, []];
 	}
 
-	return [false, [[addStateImportDeclaration, root, settings]]];
+	return [false, [[addStateImportDeclaration, root, { name, value }]]];
 };
 
 export const addStateImportDeclaration: AtomicMod<File, 'replace'> = (
@@ -365,17 +367,18 @@ export const addStateImportDeclaration: AtomicMod<File, 'replace'> = (
 	root,
 	settings,
 ) => {
-	const stateTypeIdentifierName = settings.stateTypeIdentifierName ?? 'State';
-	const stateSourceLiteralValue = settings.stateSourceLiteralValue ?? 'state';
+	const name = settings.name;
+	const value = settings.value;
+
+	if (!name || !value) {
+		throw new Error(
+			`addStateImportDeclaration requires a name and a value in settings`,
+		);
+	}
 
 	const importDeclaration = j.importDeclaration(
-		[
-			j.importSpecifier(
-				j.identifier(stateTypeIdentifierName),
-				j.identifier(stateTypeIdentifierName),
-			),
-		],
-		j.stringLiteral(stateSourceLiteralValue),
+		[j.importSpecifier(j.identifier(name), j.identifier(name))],
+		j.stringLiteral(value),
 	);
 
 	root.find(j.Program).forEach((programPath) => {
