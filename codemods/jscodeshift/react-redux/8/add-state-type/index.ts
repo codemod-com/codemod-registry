@@ -197,10 +197,11 @@ export const upsertTypeAnnotationOnStateObjectPattern: AtomicMod<
 	return [dirtyFlag, [[findStateImportDeclarations, filePath, settings]]];
 };
 
-export const upsertTypeAnnotationOnMapStateToPropsArrowFunction: AtomicMod<
-	File,
-	'write'
-> = (j, root, settings) => {
+export const findMapStateToPropsArrowFunction: AtomicMod<File, 'read'> = (
+	j,
+	root,
+	settings,
+) => {
 	const lazyAtomicMods: LazyAtomicMod[] = [];
 
 	root.find(j.VariableDeclarator, {
@@ -230,10 +231,11 @@ export const upsertTypeAnnotationOnMapStateToPropsArrowFunction: AtomicMod<
 	return [false, lazyAtomicMods];
 };
 
-export const upsertTypeAnnotationOnMapStateToPropsFunction: AtomicMod<
-	File,
-	'write'
-> = (j, root, settings) => {
+export const findMapStateToPropsFunction: AtomicMod<File, 'write'> = (
+	j,
+	root,
+	settings,
+) => {
 	const lazyAtomicMods: LazyAtomicMod[] = [];
 
 	root.find(j.FunctionDeclaration, {
@@ -299,10 +301,11 @@ export const findMapDispatchToPropsArrowFunctions: AtomicMod<File, 'read'> = (
 	return [false, lazyAtomicMods];
 };
 
-export const upsertTypeAnnotationOnMapDispatchToPropsFunction: AtomicMod<
-	File,
-	'read'
-> = (j, root, settings) => {
+export const findMapDispatchToPropsFunction: AtomicMod<File, 'read'> = (
+	j,
+	root,
+	settings,
+) => {
 	const lazyAtomicMods: LazyAtomicMod[] = [];
 
 	root.find(j.FunctionDeclaration, {
@@ -356,32 +359,6 @@ export const findStateImportDeclarations: AtomicMod<File, 'read'> = (
 	return [false, [[addImportDeclaration, root, { name, value }]]];
 };
 
-export const addImportDeclaration: AtomicMod<File, 'write'> = (
-	j,
-	root,
-	settings,
-) => {
-	const name = settings.name;
-	const value = settings.value;
-
-	if (!name || !value) {
-		throw new Error(
-			`addStateImportDeclaration requires a name and a value in settings`,
-		);
-	}
-
-	const importDeclaration = j.importDeclaration(
-		[j.importSpecifier(j.identifier(name), j.identifier(name))],
-		j.stringLiteral(value),
-	);
-
-	root.find(j.Program).forEach((programPath) => {
-		programPath.value.body.unshift(importDeclaration);
-	});
-
-	return [true, []];
-};
-
 export const findThunkDispatchImportDeclarations: AtomicMod<File, 'write'> = (
 	j,
 	root,
@@ -410,6 +387,32 @@ export const findThunkDispatchImportDeclarations: AtomicMod<File, 'write'> = (
 	return [false, [[addImportDeclaration, root, { name, value }]]];
 };
 
+export const addImportDeclaration: AtomicMod<File, 'write'> = (
+	j,
+	root,
+	settings,
+) => {
+	const name = settings.name;
+	const value = settings.value;
+
+	if (!name || !value) {
+		throw new Error(
+			`addStateImportDeclaration requires a name and a value in settings`,
+		);
+	}
+
+	const importDeclaration = j.importDeclaration(
+		[j.importSpecifier(j.identifier(name), j.identifier(name))],
+		j.stringLiteral(value),
+	);
+
+	root.find(j.Program).forEach((programPath) => {
+		programPath.value.body.unshift(importDeclaration);
+	});
+
+	return [true, []];
+};
+
 export default function transform(file: FileInfo, api: API, jOptions: Options) {
 	const j = api.jscodeshift;
 
@@ -429,10 +432,10 @@ export default function transform(file: FileInfo, api: API, jOptions: Options) {
 	};
 
 	const lazyAtomicMods: LazyAtomicMod[] = [
-		[upsertTypeAnnotationOnMapStateToPropsArrowFunction, root, settings],
-		[upsertTypeAnnotationOnMapStateToPropsFunction, root, settings],
+		[findMapStateToPropsArrowFunction, root, settings],
+		[findMapStateToPropsFunction, root, settings],
 		[findMapDispatchToPropsArrowFunctions, root, settings],
-		[upsertTypeAnnotationOnMapDispatchToPropsFunction, root, settings],
+		[findMapDispatchToPropsFunction, root, settings],
 	];
 
 	const handleLazyAtomicMod = (lazyAtomicMod: LazyAtomicMod) => {
