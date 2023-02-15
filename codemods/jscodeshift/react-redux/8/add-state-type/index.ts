@@ -7,19 +7,19 @@ import {
 	Transform,
 } from 'jscodeshift';
 
-type AtomicMod = (
+type AtomicMod<T> = (
 	j: JSCodeshift,
-	root: Collection<any>,
+	root: Collection<T>,
 	settings: Partial<Record<string, string>>,
 ) => [boolean, ReadonlyArray<LazyAtomicMod>];
 
 type LazyAtomicMod = [
-	AtomicMod,
+	AtomicMod<any>,
 	Collection<any>,
 	Partial<Record<string, string>>,
 ];
 
-export const upsertTypeAnnotationOnStateIdentifier: AtomicMod = (
+export const upsertTypeAnnotationOnStateIdentifier: AtomicMod<any> = (
 	j,
 	root,
 	settings,
@@ -77,7 +77,7 @@ export const upsertTypeAnnotationOnStateIdentifier: AtomicMod = (
 	return [dirtyFlag, [[addImportStatement, filePath, settings]]];
 };
 
-export const upsertTypeAnnotationOnStateObjectPattern: AtomicMod = (
+export const upsertTypeAnnotationOnStateObjectPattern: AtomicMod<any> = (
 	j,
 	root,
 	settings,
@@ -131,11 +131,9 @@ export const upsertTypeAnnotationOnStateObjectPattern: AtomicMod = (
 	return [dirtyFlag, [[addImportStatement, filePath, settings]]];
 };
 
-export const upsertTypeAnnotationOnMapStateToPropsArrowFunction: AtomicMod = (
-	j,
-	root,
-	settings,
-) => {
+export const upsertTypeAnnotationOnMapStateToPropsArrowFunction: AtomicMod<
+	any
+> = (j, root, settings) => {
 	const lazyAtomicMods: LazyAtomicMod[] = [];
 
 	root.find(j.VariableDeclarator, {
@@ -149,8 +147,11 @@ export const upsertTypeAnnotationOnMapStateToPropsArrowFunction: AtomicMod = (
 	}).forEach((variableDeclaratorPath) => {
 		const collection = j(variableDeclaratorPath)
 			.find(j.ArrowFunctionExpression)
-			.filter((arrowFunctionExpressionPath) => {
-				return arrowFunctionExpressionPath.value.params.length !== 0;
+			.filter((arrowFunctionExpressionPath, i) => {
+				return (
+					i === 0 &&
+					arrowFunctionExpressionPath.value.params.length !== 0
+				);
 			});
 
 		lazyAtomicMods.push([
@@ -169,7 +170,7 @@ export const upsertTypeAnnotationOnMapStateToPropsArrowFunction: AtomicMod = (
 	return [false, lazyAtomicMods];
 };
 
-export const upsertTypeAnnotationOnMapStateToPropsFunction: AtomicMod = (
+export const upsertTypeAnnotationOnMapStateToPropsFunction: AtomicMod<any> = (
 	j,
 	root,
 	settings,
@@ -204,7 +205,7 @@ export const upsertTypeAnnotationOnMapStateToPropsFunction: AtomicMod = (
 	return [false, lazyAtomicMods];
 };
 
-export const addImportStatement: AtomicMod = (
+export const addImportStatement: AtomicMod<any> = (
 	j: JSCodeshift,
 	root: Collection<any>,
 	settings,
