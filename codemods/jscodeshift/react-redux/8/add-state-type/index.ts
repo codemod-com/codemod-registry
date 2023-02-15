@@ -10,21 +10,21 @@ import {
 	Transform,
 } from 'jscodeshift';
 
-type AtomicMod<T, D extends 'find' | 'replace'> = (
+type AtomicMod<T, D extends 'read' | 'write'> = (
 	j: JSCodeshift,
 	root: Collection<T>,
 	settings: Partial<Record<string, string>>,
-) => [D extends 'replace' ? boolean : false, ReadonlyArray<LazyAtomicMod>];
+) => [D extends 'write' ? boolean : false, ReadonlyArray<LazyAtomicMod>];
 
 type LazyAtomicMod = [
-	AtomicMod<any, 'find' | 'replace'>,
+	AtomicMod<any, 'read' | 'write'>,
 	Collection<any>,
 	Partial<Record<string, string>>,
 ];
 
 export const upsertTypeAnnotationOnStateIdentifier: AtomicMod<
 	ArrowFunctionExpression | FunctionDeclaration,
-	'replace'
+	'write'
 > = (j, root, settings) => {
 	let dirtyFlag: boolean = false;
 
@@ -78,7 +78,7 @@ export const upsertTypeAnnotationOnStateIdentifier: AtomicMod<
 
 export const upsertTypeAnnotationOnDispatchIdentifier: AtomicMod<
 	ArrowFunctionExpression | FunctionDeclaration,
-	'replace'
+	'write'
 > = (j, root, settings) => {
 	let dirtyFlag: boolean = false;
 
@@ -147,7 +147,7 @@ export const upsertTypeAnnotationOnDispatchIdentifier: AtomicMod<
 
 export const upsertTypeAnnotationOnStateObjectPattern: AtomicMod<
 	ArrowFunctionExpression | FunctionDeclaration,
-	'replace'
+	'write'
 > = (j, root, settings) => {
 	let dirtyFlag: boolean = false;
 
@@ -198,7 +198,7 @@ export const upsertTypeAnnotationOnStateObjectPattern: AtomicMod<
 
 export const upsertTypeAnnotationOnMapStateToPropsArrowFunction: AtomicMod<
 	File,
-	'replace'
+	'write'
 > = (j, root, settings) => {
 	const lazyAtomicMods: LazyAtomicMod[] = [];
 
@@ -238,7 +238,7 @@ export const upsertTypeAnnotationOnMapStateToPropsArrowFunction: AtomicMod<
 
 export const upsertTypeAnnotationOnMapStateToPropsFunction: AtomicMod<
 	File,
-	'find'
+	'write'
 > = (j, root, settings) => {
 	const lazyAtomicMods: LazyAtomicMod[] = [];
 
@@ -270,7 +270,7 @@ export const upsertTypeAnnotationOnMapStateToPropsFunction: AtomicMod<
 	return [false, lazyAtomicMods];
 };
 
-export const findMapDispatchToPropsArrowFunctions: AtomicMod<File, 'find'> = (
+export const findMapDispatchToPropsArrowFunctions: AtomicMod<File, 'read'> = (
 	j,
 	root,
 	settings,
@@ -307,7 +307,7 @@ export const findMapDispatchToPropsArrowFunctions: AtomicMod<File, 'find'> = (
 
 export const upsertTypeAnnotationOnMapDispatchToPropsFunction: AtomicMod<
 	File,
-	'find'
+	'read'
 > = (j, root, settings) => {
 	const lazyAtomicMods: LazyAtomicMod[] = [];
 
@@ -333,7 +333,7 @@ export const upsertTypeAnnotationOnMapDispatchToPropsFunction: AtomicMod<
 	return [false, lazyAtomicMods];
 };
 
-export const findStateImportDeclarations: AtomicMod<File, 'find'> = (
+export const findStateImportDeclarations: AtomicMod<File, 'read'> = (
 	j,
 	root,
 	settings,
@@ -362,7 +362,7 @@ export const findStateImportDeclarations: AtomicMod<File, 'find'> = (
 	return [false, [[addImportDeclaration, root, { name, value }]]];
 };
 
-export const addImportDeclaration: AtomicMod<File, 'replace'> = (
+export const addImportDeclaration: AtomicMod<File, 'write'> = (
 	j,
 	root,
 	settings,
@@ -388,7 +388,7 @@ export const addImportDeclaration: AtomicMod<File, 'replace'> = (
 	return [true, []];
 };
 
-export const findThunkDispatchImportDeclarations: AtomicMod<File, 'replace'> = (
+export const findThunkDispatchImportDeclarations: AtomicMod<File, 'write'> = (
 	j,
 	root,
 ) => {
