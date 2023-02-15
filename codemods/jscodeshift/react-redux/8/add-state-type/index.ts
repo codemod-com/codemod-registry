@@ -140,7 +140,7 @@ export const upsertTypeAnnotationOnDispatchIdentifier: AtomicMod<
 		dirtyFlag,
 		[
 			[findStateImportDeclarations, filePath, settings],
-			[addThunkDispatchImportDeclaration, filePath, settings],
+			[findThunkDispatchImportDeclarations, filePath, settings],
 		],
 	];
 };
@@ -388,7 +388,7 @@ export const addImportDeclaration: AtomicMod<File, 'replace'> = (
 	return [true, []];
 };
 
-export const addThunkDispatchImportDeclaration: AtomicMod<File, 'replace'> = (
+export const findThunkDispatchImportDeclarations: AtomicMod<File, 'replace'> = (
 	j,
 	root,
 ) => {
