@@ -220,17 +220,10 @@ export const upsertTypeAnnotationOnMapStateToPropsArrowFunction: AtomicMod<
 				);
 			});
 
-		lazyAtomicMods.push([
-			upsertTypeAnnotationOnStateIdentifier,
-			collection,
-			settings,
-		]);
-
-		lazyAtomicMods.push([
-			upsertTypeAnnotationOnStateObjectPattern,
-			collection,
-			settings,
-		]);
+		lazyAtomicMods.push(
+			[upsertTypeAnnotationOnStateIdentifier, collection, settings],
+			[upsertTypeAnnotationOnStateObjectPattern, collection, settings],
+		);
 	});
 
 	return [false, lazyAtomicMods];
