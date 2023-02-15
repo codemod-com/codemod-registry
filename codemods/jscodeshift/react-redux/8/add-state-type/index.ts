@@ -31,39 +31,35 @@ const upsertTypeAnnotationOnStateParameterOfMapStateToProps = (
 			.filter((arrowFunctionExpressionPath) => {
 				return arrowFunctionExpressionPath.value.params.length !== 0;
 			})
-			.replaceWith((arrowFunctionExpressionPath) => {
-				dirtyFlag = true;
+			.forEach((arrowFunctionExpressionPath) => {
+				const patternKind = arrowFunctionExpressionPath.value.params[0];
 
-				const params = arrowFunctionExpressionPath.value.params.map(
-					(patternKind, i) => {
-						if (i !== 0) {
-							return patternKind;
-						}
+				if (patternKind?.type !== 'Identifier') {
+					return;
+				}
 
-						if (patternKind.type === 'Identifier') {
-							const typeAnnotation = j.typeAnnotation(
-								j.genericTypeAnnotation(
-									j.identifier(
-										options.stateTypeIdentifierName,
-									),
-									null,
-								),
-							);
+				const identifierCollection = j(
+					arrowFunctionExpressionPath,
+				).find(j.Identifier, {
+					name: patternKind.name,
+				});
 
-							return {
-								...patternKind,
-								typeAnnotation,
-							};
-						}
-
-						return patternKind;
-					},
+				const typeAnnotation = j.typeAnnotation(
+					j.genericTypeAnnotation(
+						j.identifier(options.stateTypeIdentifierName),
+						null,
+					),
 				);
 
-				return j.arrowFunctionExpression(
-					params,
-					arrowFunctionExpressionPath.value.body,
-					arrowFunctionExpressionPath.value.expression,
+				dirtyFlag = true;
+
+				// this uses the fact that the state parameter must be the first
+				// found indentifier under the arrow-function-expression
+				identifierCollection.paths()[0]?.replace(
+					j.identifier.from({
+						name: patternKind.name,
+						typeAnnotation,
+					}),
 				);
 			});
 	});
