@@ -233,8 +233,8 @@ function nextConfigTransformer(j: JSCodeshift, root: Collection) {
 					i === 0 && values.includes(stringLiteralPath.value.value),
 			);
 
-		const pathTypeStringLiteralsPaths = imagesObjectPropertyPaths
-			.map((objectPropertyPath) =>
+		const pathObjectPropertyPaths = imagesObjectPropertyPaths.map(
+			(objectPropertyPath) =>
 				j(objectPropertyPath)
 					.find(j.ObjectProperty, {
 						key: {
@@ -243,14 +243,15 @@ function nextConfigTransformer(j: JSCodeshift, root: Collection) {
 						},
 					})
 					.paths(),
-			)
+		);
+
+		const loaderType = loaderTypeStringLiteralsPaths.nodes()[0]?.value;
+		const pathPrefix = pathObjectPropertyPaths
 			.map((objectPropertyPath) =>
 				j(objectPropertyPath).find(j.StringLiteral).paths(),
 			)
-			.filter((_, i) => i === 0);
-
-		const loaderType = loaderTypeStringLiteralsPaths.nodes()[0]?.value;
-		const pathPrefix = pathTypeStringLiteralsPaths.nodes()[0]?.value;
+			.filter((_, i) => i === 0)
+			.nodes()[0]?.value;
 
 		if (!loaderType || !pathPrefix) {
 			return;
@@ -261,7 +262,7 @@ function nextConfigTransformer(j: JSCodeshift, root: Collection) {
 			j.stringLiteral('custom'),
 		);
 
-		// pathTypeStringLiteralsPaths.remove();
+		pathObjectPropertyPaths.remove();
 
 		const filename = `./${loaderType}-loader.js`;
 
