@@ -204,13 +204,17 @@ function nextConfigTransformer(j: JSCodeshift, root: Collection) {
 	root.find(j.ObjectExpression).forEach((objectExpressionPath) => {
 		const values = ['imgix', 'cloudinary', 'akamai'];
 
-		const loaderTypeStringLiteralsPaths = j(objectExpressionPath)
-			.find(j.ObjectProperty, {
+		const imagesObjectPropertyPaths = j(objectExpressionPath).find(
+			j.ObjectProperty,
+			{
 				key: {
 					type: 'Identifier',
 					name: 'images',
 				},
-			})
+			},
+		);
+
+		const loaderTypeStringLiteralsPaths = imagesObjectPropertyPaths
 			.map((objectPropertyPath) =>
 				j(objectPropertyPath)
 					.find(j.ObjectProperty, {
@@ -229,9 +233,29 @@ function nextConfigTransformer(j: JSCodeshift, root: Collection) {
 					i === 0 && values.includes(stringLiteralPath.value.value),
 			);
 
-		let loaderType = loaderTypeStringLiteralsPaths.nodes()[0]?.value;
+		const pathTypeStringLiteralsPaths = imagesObjectPropertyPaths
+			.map((objectPropertyPath) =>
+				j(objectPropertyPath)
+					.find(j.ObjectProperty, {
+						key: {
+							type: 'Identifier',
+							name: 'path',
+						},
+					})
+					.paths(),
+			)
+			.map((objectPropertyPath) =>
+				j(objectPropertyPath).find(j.StringLiteral).paths(),
+			)
+			.filter(
+				(stringLiteralPath, i) =>
+					i === 0 && values.includes(stringLiteralPath.value.value),
+			);
 
-		console.log(loaderType);
+		const loaderType = loaderTypeStringLiteralsPaths.nodes()[0]?.value;
+		const pathPrefix = pathTypeStringLiteralsPaths.nodes()[0]?.value;
+
+		console.log(loaderType, pathPrefix);
 
 		// replacement
 		loaderTypeStringLiteralsPaths.replaceWith(() =>
