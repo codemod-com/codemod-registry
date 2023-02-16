@@ -276,16 +276,25 @@ function nextConfigTransformer(j: JSCodeshift, root: Collection) {
 			.forEach((objectPropertyPath) => {
 				j(objectPropertyPath)
 					.find(j.ObjectExpression)
-					.filter((_, i) => i === 0);
-				// .replaceWith((objectExpressionPath) => {
-				// 	return objectExpressionPath.value;
-				// });
-			});
+					.filter((_, i) => i === 0)
+					.replaceWith((objectExpressionPath) => {
+						const objectExpression = objectExpressionPath.value;
 
-		// properties.push(
-		// 	j.property('init', j.identifier('loaderFile'), j.literal(filename)),
-		// );
-		// value.properties = properties;
+						const properties = [
+							...objectExpression.properties,
+							j.property(
+								'init',
+								j.identifier('loaderFile'),
+								j.literal(filename),
+							),
+						];
+
+						return {
+							...objectExpression,
+							properties,
+						};
+					});
+			});
 
 		const normalizeSrc = `const normalizeSrc = (src) => src[0] === '/' ? src.slice(1) : src`;
 		if (loaderType === 'imgix') {
