@@ -2,7 +2,7 @@ import transform from '.';
 import { FileInfo } from 'jscodeshift';
 import assert from 'node:assert';
 
-describe.only('new-image-experimental', () => {
+describe('new-image-experimental', () => {
 	const INPUT = `
 		const withPwa = (opts) => {
 			// no-op but image this adds props
