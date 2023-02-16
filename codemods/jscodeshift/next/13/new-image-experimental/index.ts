@@ -200,7 +200,11 @@ function findAndReplaceProps(
 		});
 }
 
-function nextConfigTransformer(j: JSCodeshift, root: Collection) {
+function nextConfigTransformer(
+	j: JSCodeshift,
+	root: Collection,
+	dryRun: boolean,
+) {
 	root.find(j.ObjectExpression).forEach((objectExpressionPath) => {
 		const LOADERS = ['imgix', 'cloudinary', 'akamai'];
 
@@ -296,7 +300,8 @@ function nextConfigTransformer(j: JSCodeshift, root: Collection) {
 			});
 
 		const normalizeSrc = `const normalizeSrc = (src) => src[0] === '/' ? src.slice(1) : src`;
-		if (loaderType === 'imgix') {
+
+		if (loaderType === 'imgix' && !dryRun) {
 			writeFileSync(
 				filename,
 				`${normalizeSrc}
@@ -313,7 +318,7 @@ function nextConfigTransformer(j: JSCodeshift, root: Collection) {
 					.map((l) => l.trim())
 					.join('\n'),
 			);
-		} else if (loaderType === 'cloudinary') {
+		} else if (loaderType === 'cloudinary' && !dryRun) {
 			writeFileSync(
 				filename,
 				`${normalizeSrc}
@@ -326,7 +331,7 @@ function nextConfigTransformer(j: JSCodeshift, root: Collection) {
 					.map((l) => l.trim())
 					.join('\n'),
 			);
-		} else if (loaderType === 'akamai') {
+		} else if (loaderType === 'akamai' && !dryRun) {
 			writeFileSync(
 				filename,
 				`${normalizeSrc}
@@ -358,7 +363,11 @@ export default function transformer(
 		const j = api.jscodeshift.withParser('tsx');
 		const root = j(file.source);
 
-		return nextConfigTransformer(j, root).toSource();
+		return nextConfigTransformer(
+			j,
+			root,
+			Boolean(options.dryRun),
+		).toSource();
 	}
 
 	const j = api.jscodeshift;

@@ -35,7 +35,9 @@ describe('new-image-experimental', () => {
 			source: INPUT,
 		};
 
-		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {
+			dryRun: true,
+		});
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
@@ -49,7 +51,9 @@ describe('new-image-experimental', () => {
 			source: INPUT,
 		};
 
-		const actualOutput = transform(fileInfo, this.buildApi(), {});
+		const actualOutput = transform(fileInfo, this.buildApi(), {
+			dryRun: true,
+		});
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
