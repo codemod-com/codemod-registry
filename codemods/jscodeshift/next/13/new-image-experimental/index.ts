@@ -244,129 +244,79 @@ function nextConfigTransformer(j: JSCodeshift, root: Collection) {
 					})
 					.paths(),
 			)
-			.map((objectPropertyPath) =>
-				j(objectPropertyPath).find(j.StringLiteral).paths(),
-			)
-			.filter(
-				(stringLiteralPath, i) =>
-					i === 0 && values.includes(stringLiteralPath.value.value),
-			);
+			.map((objectPropertyPath) => {
+				console.log(
+					j(objectPropertyPath).find(j.StringLiteral).paths(),
+				);
+
+				return j(objectPropertyPath).find(j.StringLiteral).paths();
+			})
+			.filter((_, i) => i === 0);
 
 		const loaderType = loaderTypeStringLiteralsPaths.nodes()[0]?.value;
 		const pathPrefix = pathTypeStringLiteralsPaths.nodes()[0]?.value;
 
-		console.log(loaderType, pathPrefix);
+		if (!loaderType || !pathPrefix) {
+			return;
+		}
 
 		// replacement
 		loaderTypeStringLiteralsPaths.replaceWith(() =>
 			j.stringLiteral('custom'),
 		);
 
-		// 	const [images] = objectExpressionPath.value.properties;
+		pathTypeStringLiteralsPaths.remove();
 
-		// 	if (!images) {
-		// 		return;
-		// 	}
+		const filename = `./${loaderType}-loader.js`;
 
-		// 	if (images.type !== 'ObjectProperty') {
-		// 		return;
-		// 	}
+		// properties.push(
+		// 	j.property('init', j.identifier('loaderFile'), j.literal(filename)),
+		// );
+		// value.properties = properties;
 
-		// 	const { key, value } = images;
-
-		// 	if (key.type !== 'Identifier' || key.name !== 'images') {
-		// 		return;
-		// 	}
-
-		// 	if (value.type !== 'ObjectExpression') {
-		// 		return;
-		// 	}
-
-		// 	let pathPrefix = '';
-		// 	let loaderType = '';
-
-		// 	const properties = value.properties.filter((p) => {
-		// 		if (
-		// 			p.type === 'ObjectProperty' &&
-		// 			p.key.type === 'Identifier' &&
-		// 			p.key.name === 'loader' &&
-		// 			'value' in p.value
-		// 		) {
-		// 			if (
-		// 				p.value.value === 'imgix' ||
-		// 				p.value.value === 'cloudinary' ||
-		// 				p.value.value === 'akamai'
-		// 			) {
-		// 				loaderType = p.value.value;
-		// 				p.value.value = 'custom';
-		// 			}
-		// 		}
-		// 		if (
-		// 			p.type === 'ObjectProperty' &&
-		// 			p.key.type === 'Identifier' &&
-		// 			p.key.name === 'path' &&
-		// 			'value' in p.value
-		// 		) {
-		// 			pathPrefix = String(p.value.value);
-		// 			return false;
-		// 		}
-		// 		return true;
-		// 	});
-
-		// 	if (loaderType && pathPrefix) {
-		// 		let filename = `./${loaderType}-loader.js`;
-		// 		properties.push(
-		// 			j.property(
-		// 				'init',
-		// 				j.identifier('loaderFile'),
-		// 				j.literal(filename),
-		// 			),
-		// 		);
-		// 		value.properties = properties;
-		// 		const normalizeSrc = `const normalizeSrc = (src) => src[0] === '/' ? src.slice(1) : src`;
-		// 		if (loaderType === 'imgix') {
-		// 			writeFileSync(
-		// 				filename,
-		// 				`${normalizeSrc}
-		// export default function imgixLoader({ src, width, quality }) {
-		// 	const url = new URL('${pathPrefix}' + normalizeSrc(src))
-		// 	const params = url.searchParams
-		// 	params.set('auto', params.getAll('auto').join(',') || 'format')
-		// 	params.set('fit', params.get('fit') || 'max')
-		// 	params.set('w', params.get('w') || width.toString())
-		// 	if (quality) { params.set('q', quality.toString()) }
-		// 	return url.href
-		// }`
-		// 					.split('\n')
-		// 					.map((l) => l.trim())
-		// 					.join('\n'),
-		// 			);
-		// 		} else if (loaderType === 'cloudinary') {
-		// 			writeFileSync(
-		// 				filename,
-		// 				`${normalizeSrc}
-		// export default function cloudinaryLoader({ src, width, quality }) {
-		// 	const params = ['f_auto', 'c_limit', 'w_' + width, 'q_' + (quality || 'auto')]
-		// 	const paramsString = params.join(',') + '/'
-		// 	return '${pathPrefix}' + paramsString + normalizeSrc(src)
-		// }`
-		// 					.split('\n')
-		// 					.map((l) => l.trim())
-		// 					.join('\n'),
-		// 			);
-		// 		} else if (loaderType === 'akamai') {
-		// 			writeFileSync(
-		// 				filename,
-		// 				`${normalizeSrc}
-		// export default function akamaiLoader({ src, width, quality }) {
-		// 	return '${pathPrefix}' + normalizeSrc(src) + '?imwidth=' + width
-		// }`
-		// 					.split('\n')
-		// 					.map((l) => l.trim())
-		// 					.join('\n'),
-		// 			);
-		// 		}
-		// 	}
+		const normalizeSrc = `const normalizeSrc = (src) => src[0] === '/' ? src.slice(1) : src`;
+		if (loaderType === 'imgix') {
+			writeFileSync(
+				filename,
+				`${normalizeSrc}
+		export default function imgixLoader({ src, width, quality }) {
+			const url = new URL('${pathPrefix}' + normalizeSrc(src))
+			const params = url.searchParams
+			params.set('auto', params.getAll('auto').join(',') || 'format')
+			params.set('fit', params.get('fit') || 'max')
+			params.set('w', params.get('w') || width.toString())
+			if (quality) { params.set('q', quality.toString()) }
+			return url.href
+		}`
+					.split('\n')
+					.map((l) => l.trim())
+					.join('\n'),
+			);
+		} else if (loaderType === 'cloudinary') {
+			writeFileSync(
+				filename,
+				`${normalizeSrc}
+		export default function cloudinaryLoader({ src, width, quality }) {
+			const params = ['f_auto', 'c_limit', 'w_' + width, 'q_' + (quality || 'auto')]
+			const paramsString = params.join(',') + '/'
+			return '${pathPrefix}' + paramsString + normalizeSrc(src)
+		}`
+					.split('\n')
+					.map((l) => l.trim())
+					.join('\n'),
+			);
+		} else if (loaderType === 'akamai') {
+			writeFileSync(
+				filename,
+				`${normalizeSrc}
+		export default function akamaiLoader({ src, width, quality }) {
+			return '${pathPrefix}' + normalizeSrc(src) + '?imwidth=' + width
+		}`
+					.split('\n')
+					.map((l) => l.trim())
+					.join('\n'),
+			);
+		}
 	});
 
 	return root;
