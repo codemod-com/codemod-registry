@@ -244,13 +244,9 @@ function nextConfigTransformer(j: JSCodeshift, root: Collection) {
 					})
 					.paths(),
 			)
-			.map((objectPropertyPath) => {
-				console.log(
-					j(objectPropertyPath).find(j.StringLiteral).paths(),
-				);
-
-				return j(objectPropertyPath).find(j.StringLiteral).paths();
-			})
+			.map((objectPropertyPath) =>
+				j(objectPropertyPath).find(j.StringLiteral).paths(),
+			)
 			.filter((_, i) => i === 0);
 
 		const loaderType = loaderTypeStringLiteralsPaths.nodes()[0]?.value;
