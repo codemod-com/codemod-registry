@@ -229,14 +229,14 @@ function nextConfigTransformer(j: JSCodeshift, root: Collection) {
 					i === 0 && values.includes(stringLiteralPath.value.value),
 			);
 
-		let loaderType = loaderTypeStringLiteralsPaths
-			.nodes()
-			.map(({ value }) => value)[0];
+		let loaderType = loaderTypeStringLiteralsPaths.nodes()[0]?.value;
 
 		console.log(loaderType);
 
 		// replacement
-		// loaderTypeStringLiteralsPaths.re((stringLiteral) => {});
+		loaderTypeStringLiteralsPaths.replaceWith(() =>
+			j.stringLiteral('custom'),
+		);
 
 		// 	const [images] = objectExpressionPath.value.properties;
 
