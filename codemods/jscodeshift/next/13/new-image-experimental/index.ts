@@ -261,9 +261,25 @@ function nextConfigTransformer(j: JSCodeshift, root: Collection) {
 			j.stringLiteral('custom'),
 		);
 
-		pathTypeStringLiteralsPaths.remove();
+		// pathTypeStringLiteralsPaths.remove();
 
 		const filename = `./${loaderType}-loader.js`;
+
+		j(objectExpressionPath)
+			.find(j.ObjectProperty, {
+				key: {
+					type: 'Identifier',
+					name: 'images',
+				},
+			})
+			.forEach((objectPropertyPath) => {
+				j(objectPropertyPath)
+					.find(j.ObjectExpression)
+					.filter((_, i) => i === 0);
+				// .replaceWith((objectExpressionPath) => {
+				// 	return objectExpressionPath.value;
+				// });
+			});
 
 		// properties.push(
 		// 	j.property('init', j.identifier('loaderFile'), j.literal(filename)),
