@@ -2,7 +2,7 @@ import { FileInfo } from 'jscodeshift';
 import assert from 'node:assert';
 import transform from '.';
 
-describe.only('react-redux-8 add-state-type', function () {
+describe('react-redux-8 add-state-type', function () {
 	it('should add the State type for state parameter of the mapStateToProps arrow function', function () {
 		const INPUT = `
             const mapStateToProps = (state) => ({

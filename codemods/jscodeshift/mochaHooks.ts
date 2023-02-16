@@ -1,9 +1,9 @@
 import jscodeshift, { API } from 'jscodeshift';
 import type { RootHookObject, Context } from 'mocha';
 
-const buildApi = (parser: string): API => ({
-	j: jscodeshift.withParser(parser),
-	jscodeshift: jscodeshift.withParser(parser),
+const buildApi = (parser: string | undefined): API => ({
+	j: parser ? jscodeshift.withParser(parser) : jscodeshift,
+	jscodeshift: parser ? jscodeshift.withParser(parser) : jscodeshift,
 	stats: () => {
 		console.error(
 			'The stats function was called, which is not supported on purpose',
