@@ -202,7 +202,7 @@ function findAndReplaceProps(
 
 function nextConfigTransformer(j: JSCodeshift, root: Collection) {
 	root.find(j.ObjectExpression).forEach((objectExpressionPath) => {
-		const values = ['imgix', 'cloudinary', 'akamai'];
+		const LOADERS = ['imgix', 'cloudinary', 'akamai'];
 
 		const imagesObjectPropertyPaths = j(objectExpressionPath).find(
 			j.ObjectProperty,
@@ -230,7 +230,7 @@ function nextConfigTransformer(j: JSCodeshift, root: Collection) {
 			)
 			.filter(
 				(stringLiteralPath, i) =>
-					i === 0 && values.includes(stringLiteralPath.value.value),
+					i === 0 && LOADERS.includes(stringLiteralPath.value.value),
 			);
 
 		const pathObjectPropertyPaths = imagesObjectPropertyPaths.map(
@@ -257,14 +257,13 @@ function nextConfigTransformer(j: JSCodeshift, root: Collection) {
 			return;
 		}
 
-		// replacement
+		const filename = `./${loaderType}-loader.js`;
+
 		loaderTypeStringLiteralsPaths.replaceWith(() =>
 			j.stringLiteral('custom'),
 		);
 
 		pathObjectPropertyPaths.remove();
-
-		const filename = `./${loaderType}-loader.js`;
 
 		j(objectExpressionPath)
 			.find(j.ObjectProperty, {
