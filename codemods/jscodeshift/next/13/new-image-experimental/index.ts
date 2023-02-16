@@ -348,9 +348,6 @@ export default function transformer(
 	api: API,
 	options: Options,
 ) {
-	const j = api.jscodeshift;
-	const root = j(file.source);
-
 	const isConfig =
 		file.path === 'next.config.js' ||
 		file.path === 'next.config.ts' ||
@@ -358,9 +355,14 @@ export default function transformer(
 		file.path === 'next.config.cjs';
 
 	if (isConfig) {
-		const result = nextConfigTransformer(j, root);
-		return result.toSource();
+		const j = api.jscodeshift.withParser('tsx');
+		const root = j(file.source);
+
+		return nextConfigTransformer(j, root).toSource();
 	}
+
+	const j = api.jscodeshift;
+	const root = j(file.source);
 
 	// Before: import Image from "next/legacy/image"
 	//  After: import Image from "next/image"

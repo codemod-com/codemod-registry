@@ -51,8 +51,6 @@ describe.only('new-image-experimental', () => {
 
 		const actualOutput = transform(fileInfo, this.buildApi(), {});
 
-		console.log(actualOutput);
-
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),
