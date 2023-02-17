@@ -26,8 +26,10 @@ import { FileInfo } from 'jscodeshift';
 import assert from 'node:assert';
 import transform from '.';
 
-describe.only('', function () {
-	it('', function () {
+describe('next 13 new-link', function () {
+	it('add legacy behavior', function () {
+		// adapted from https://github.com/vercel/next.js/blob/canary/packages/next-codemod/transforms/__testfixtures__/new-link/add-legacy-behavior.output.js
+
 		const INPUT = `
             import Link from 'next/link'
 

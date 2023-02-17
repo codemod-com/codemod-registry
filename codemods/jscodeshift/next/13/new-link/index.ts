@@ -33,6 +33,8 @@ export default function transform(file: FileInfo, api: API, options: Options) {
 
 	const root = j(file.source);
 
+	let dirtyFlag = false;
+
 	root.find(j.ImportDeclaration, { source: { value: 'next/link' } }).forEach(
 		(path) => {
 			const defaultImport = j(path).find(j.ImportDefaultSpecifier);
@@ -85,6 +87,9 @@ export default function transform(file: FileInfo, api: API, options: Options) {
 						.push(
 							j.jsxAttribute(j.jsxIdentifier('legacyBehavior')),
 						);
+
+					dirtyFlag = true;
+
 					return;
 				}
 
@@ -118,6 +123,9 @@ export default function transform(file: FileInfo, api: API, options: Options) {
 						.push(
 							j.jsxAttribute(j.jsxIdentifier('legacyBehavior')),
 						);
+
+					dirtyFlag = true;
+
 					return;
 				}
 
@@ -139,15 +147,23 @@ export default function transform(file: FileInfo, api: API, options: Options) {
 
 					$link.get('attributes').value.push(...uniqueProps);
 
+					dirtyFlag = true;
+
 					// Remove props from <a>
 					props.length = 0;
 				}
 
 				const childrenProps = $childrenWithA.get('children');
 				$childrenWithA.replaceWith(childrenProps.value);
+
+				dirtyFlag = true;
 			});
 		},
 	);
+
+	if (!dirtyFlag) {
+		return undefined;
+	}
 
 	return root.toSource();
 }
