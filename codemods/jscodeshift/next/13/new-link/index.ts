@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 /*
-Changes to the original file: add any typings in places where the compiler complained
+Changes to the original file: add any typings in places where the compiler complained, added dirtyFlag
 */
 
 import { API, FileInfo, Options } from 'jscodeshift';
