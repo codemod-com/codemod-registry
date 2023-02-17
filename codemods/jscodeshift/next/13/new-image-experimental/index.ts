@@ -36,6 +36,7 @@ import type {
 	JSXAttribute,
 	Options,
 } from 'jscodeshift';
+import { basename } from 'path';
 
 function findAndReplaceProps(
 	j: JSCodeshift,
@@ -353,11 +354,8 @@ export default function transformer(
 	api: API,
 	options: Options,
 ) {
-	const isConfig =
-		file.path === 'next.config.js' ||
-		file.path === 'next.config.ts' ||
-		file.path === 'next.config.mjs' ||
-		file.path === 'next.config.cjs';
+	const name = basename(file.path);
+	const isConfig = name.startsWith('next.config.');
 
 	if (isConfig) {
 		const j = api.jscodeshift.withParser('tsx');
