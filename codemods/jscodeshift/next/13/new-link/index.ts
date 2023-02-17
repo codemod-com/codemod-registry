@@ -23,19 +23,20 @@ SOFTWARE.
 */
 
 /*
-Changes to the original file: add any typings in places where the compiler complained
+Changes to the original file: add any typings in places where the compiler complained, added dirtyFlag
 */
 
-import { API, FileInfo } from 'jscodeshift';
+import { API, FileInfo, Options } from 'jscodeshift';
 
-export default function transformer(file: FileInfo, api: API) {
+export default function transform(file: FileInfo, api: API, options: Options) {
 	const j = api.jscodeshift;
 
-	const $j = j(file.source);
+	const root = j(file.source);
 
-	return $j
-		.find(j.ImportDeclaration, { source: { value: 'next/link' } })
-		.forEach((path) => {
+	let dirtyFlag = false;
+
+	root.find(j.ImportDeclaration, { source: { value: 'next/link' } }).forEach(
+		(path) => {
 			const defaultImport = j(path).find(j.ImportDefaultSpecifier);
 			if (defaultImport.size() === 0) {
 				return;
@@ -49,8 +50,8 @@ export default function transformer(file: FileInfo, api: API) {
 				return;
 			}
 
-			const linkElements = $j.findJSXElements(variableName);
-			const hasStylesJSX = $j
+			const linkElements = root.findJSXElements(variableName);
+			const hasStylesJSX = root
 				.findJSXElements('style')
 				.some((stylePath) => {
 					const $style = j(stylePath);
@@ -86,6 +87,9 @@ export default function transformer(file: FileInfo, api: API) {
 						.push(
 							j.jsxAttribute(j.jsxIdentifier('legacyBehavior')),
 						);
+
+					dirtyFlag = true;
+
 					return;
 				}
 
@@ -119,6 +123,9 @@ export default function transformer(file: FileInfo, api: API) {
 						.push(
 							j.jsxAttribute(j.jsxIdentifier('legacyBehavior')),
 						);
+
+					dirtyFlag = true;
+
 					return;
 				}
 
@@ -140,13 +147,23 @@ export default function transformer(file: FileInfo, api: API) {
 
 					$link.get('attributes').value.push(...uniqueProps);
 
+					dirtyFlag = true;
+
 					// Remove props from <a>
 					props.length = 0;
 				}
 
 				const childrenProps = $childrenWithA.get('children');
 				$childrenWithA.replaceWith(childrenProps.value);
+
+				dirtyFlag = true;
 			});
-		})
-		.toSource();
+		},
+	);
+
+	if (!dirtyFlag) {
+		return undefined;
+	}
+
+	return root.toSource();
 }
