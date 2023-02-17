@@ -1,10 +1,7 @@
 {
-    "schemaVersion": "1.0.0",
-    "name": "immutable/0/add-deprecation-comment",
-    "engine": "jscodeshift",
-    "extensions": [
-        "js*",
-        "ts*"
-    ],
-    "dependency": "immutable"
+	"schemaVersion": "1.0.0",
+	"name": "immutable/0/add-deprecation-comment",
+	"engine": "jscodeshift",
+	"extensions": ["js*", "ts*"],
+	"dependency": "immutable"
 }
