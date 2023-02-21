@@ -319,7 +319,7 @@ describe('react-redux-8 add-state-type', function () {
 		const OUTPUT = `
 			import { State } from "state";
 			
-			const selectX = (state) => {
+			const selectX = (state: State) => {
 				return {
 					...state
 				}
