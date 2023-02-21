@@ -277,7 +277,8 @@ export const findSelectFunctions: AtomicMod<File, 'write'> = (
 
 		if (
 			identifierKind?.type !== 'Identifier' ||
-			!identifierKind.name.startsWith('select')
+			!identifierKind.name.startsWith('select') ||
+			identifierKind.name.length === 6
 		) {
 			return;
 		}
