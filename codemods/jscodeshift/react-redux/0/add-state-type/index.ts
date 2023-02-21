@@ -259,6 +259,44 @@ export const findMapStateToPropsFunctions: AtomicMod<File, 'write'> = (
 	return [false, lazyAtomicMods];
 };
 
+export const findSelectFunctions: AtomicMod<File, 'write'> = (
+	j,
+	root,
+	settings,
+) => {
+	const lazyAtomicMods: LazyAtomicMod[] = [];
+
+	root.find(j.FunctionDeclaration, {
+		id: {
+			type: 'Identifier',
+		},
+	}).forEach((functionDeclarationPath) => {
+		const functionDeclaration = functionDeclarationPath.value;
+
+		const identifierKind = functionDeclaration.id;
+
+		if (
+			identifierKind?.type !== 'Identifier' ||
+			!identifierKind.name.startsWith('select')
+		) {
+			return;
+		}
+
+		if (functionDeclarationPath.value.params.length === 0) {
+			return;
+		}
+
+		const collection = j(functionDeclarationPath);
+
+		lazyAtomicMods.push(
+			[upsertTypeAnnotationOnStateIdentifier, collection, settings],
+			[upsertTypeAnnotationOnStateObjectPattern, collection, settings],
+		);
+	});
+
+	return [false, lazyAtomicMods];
+};
+
 export const findMapDispatchToPropsArrowFunctions: AtomicMod<File, 'read'> = (
 	j,
 	root,
@@ -429,6 +467,7 @@ export default function transform(file: FileInfo, api: API, jOptions: Options) {
 		[findMapStateToPropsFunctions, root, settings],
 		[findMapDispatchToPropsArrowFunctions, root, settings],
 		[findMapDispatchToPropsFunctions, root, settings],
+		[findSelectFunctions, root, settings],
 	];
 
 	const handleLazyAtomicMod = (lazyAtomicMod: LazyAtomicMod) => {
