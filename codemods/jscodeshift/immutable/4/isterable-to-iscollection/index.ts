@@ -20,6 +20,8 @@ function transform(
   	if (!dirtyFlag) {
 		return undefined;
 	}
+
+	return root.toSource(options);
 };
 
 transform satisfies Transform;
