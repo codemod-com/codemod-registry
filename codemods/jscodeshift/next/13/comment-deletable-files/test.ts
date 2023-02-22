@@ -3,8 +3,31 @@ import { Context } from 'mocha';
 import assert from 'node:assert';
 import transform from '.';
 
-describe.only('next 13 comment-deletable-files', function () {
-	it('should add a comment', async function (this: Context) {
+describe('next 13 comment-deletable-files', function () {
+	it('should not add a comment if a file basename does not start with _app / _document / _error', async function (this: Context) {
+		const INPUT = `
+			import { useRouter } from 'next/router';
+
+			export function Component() {
+				const { query } = useRouter();
+
+				if (query.a && query.b) {
+
+				}
+			}
+		`;
+
+		const fileInfo: FileInfo = {
+			path: '_other.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+
+		assert.deepEqual(actualOutput, undefined);
+	});
+
+	it('should add a comment if a file basename starts with _app', async function (this: Context) {
 		const INPUT = `
 			import { useRouter } from 'next/router';
 
