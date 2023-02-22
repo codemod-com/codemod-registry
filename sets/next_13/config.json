@@ -7,7 +7,8 @@
         "jscodeshift/next/13/new-image-experimental",
         "jscodeshift/next/13/new-link",
         "jscodeshift/next/13/next-image-to-legacy-image",
-        "jscodeshift/next/13/replace-use-router"
+        "jscodeshift/next/13/replace-use-router",
+        "jscodeshift/next/13/comment-deletable-files"
     ],
     "dependencyVersionLowerThan": [
         "next",

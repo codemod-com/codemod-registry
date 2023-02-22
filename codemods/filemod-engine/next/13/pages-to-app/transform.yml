@@ -4,11 +4,6 @@ includePattern: "**/pages/**/*.{js,jsx,ts,tsx}"
 excludePatterns:
   - "**/node_modules/**"
   - "**/pages/api/**"
-deleteRules:
-  fileRoot:
-    - "_app"
-    - "_document"
-    - "_error"
 copyRules:
   - replaceDirectoryName:
       - "pages"
