@@ -3,7 +3,8 @@
     "name": "immutable_4",
     "codemods": [
         "jscodeshift/immutable/4/map-to-array",
-        "jscodeshift/immutable/4/rename-to-seq"
+        "jscodeshift/immutable/4/rename-to-seq",
+        "jscodeshift/immutable/4/isterable-to-iscollection"
     ],
     "dependencyVersionLowerThan": [
         "immutable",

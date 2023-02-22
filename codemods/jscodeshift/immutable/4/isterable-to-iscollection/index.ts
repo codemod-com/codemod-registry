@@ -1,7 +1,7 @@
 /*
 The MIT License (MIT)
 
-Copyright (c) 2023 Rajasegar Chandran
+Copyright (c) 2023 Mohab Sameh
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -27,16 +27,30 @@ Changes to the original file: added options
 */
 
 
-module.exports = function transformer(file, api, options) {
+import type { FileInfo, API, Options, Transform } from 'jscodeshift';
+
+function transform(
+	file: FileInfo,
+	api: API,
+	options: Options,
+): string | undefined {
 	const j = api.jscodeshift;
-
 	const root = j(file.source);
-
-	root.find(j.Identifier)
-    .filter(path => path.node.name === 'isIterable')
-      .replaceWith(j.identifier('isCollection'));
-
-	return root.toSource(options);
+  	let dirtyFlag = false;
+  
+  
+  	root.find(j.Identifier).forEach((path) => {
+      if(path.node.name === 'isIterable') {
+        path.node.name = 'isCollection'
+        dirtyFlag = true;
+      };
+    });
+  
+  	if (!dirtyFlag) {
+		return undefined;
+	}
 };
 
-module.exports.type = 'js';
+transform satisfies Transform;
+
+export default transform;
