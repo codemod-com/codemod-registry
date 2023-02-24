@@ -53,15 +53,18 @@ export const addCommentOnFunctionDeclaration: ModFunction<
 	'write'
 > = (j, root, settings) => {
 	const lazyModFunctions: LazyModFunction[] = [];
+	let dirtyFlag = false;
 
 	root.forEach((functionDeclarationPath) => {
+		dirtyFlag = true;
+
 		functionDeclarationPath.value.comments = [
 			...(functionDeclarationPath.value.comments ?? []),
 			j.commentLine(' TODO: remove this function'),
 		];
 	});
 
-	return [false, lazyModFunctions];
+	return [dirtyFlag, lazyModFunctions];
 };
 
 export const findReturnStatements: ModFunction<FunctionDeclaration, 'read'> = (
@@ -132,13 +135,22 @@ export const findObjectProperties: ModFunction<any, 'read'> = (
 
 		const { name } = objectProperty.key;
 
-		lazyModFunctions.push([
-			addGetXFunctionDefinition,
-			fileCollection,
-			{
-				name,
-			},
-		]);
+		lazyModFunctions.push(
+			[
+				addGetXFunctionDefinition,
+				fileCollection,
+				{
+					name,
+				},
+			],
+			[
+				findComponentFunctionDefinition,
+				fileCollection,
+				{
+					name,
+				},
+			],
+		);
 	});
 
 	return [false, lazyModFunctions];
@@ -173,6 +185,38 @@ export const addGetXFunctionDefinition: ModFunction<File, 'write'> = (
 	});
 
 	return [dirtyFlag, []];
+};
+
+export const findComponentFunctionDefinition: ModFunction<File, 'read'> = (
+	j,
+	root,
+	settings,
+) => {
+	const lazyModFunctions: LazyModFunction[] = [];
+
+	root.find(j.FunctionDeclaration, {
+		id: {
+			type: 'Identifier',
+		},
+	}).forEach((functionDeclarationPath) => {
+		const functionDeclaration = functionDeclarationPath.value;
+
+		if (functionDeclaration.id?.type !== 'Identifier') {
+			return;
+		}
+
+		const firstCharacter = functionDeclaration.id.name.charAt(0);
+
+		if (firstCharacter !== firstCharacter.toUpperCase()) {
+			return;
+		}
+
+		const functionDeclarationCollection = j(functionDeclarationPath);
+
+		console.log(functionDeclaration.id, settings);
+	});
+
+	return [false, lazyModFunctions];
 };
 
 export default function transform(
