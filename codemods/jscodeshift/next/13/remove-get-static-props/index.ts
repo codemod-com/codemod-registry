@@ -217,14 +217,38 @@ export const findComponentFunctionDefinition: ModFunction<File, 'read'> = (
 
 		const functionDeclarationCollection = j(functionDeclarationPath);
 
-		lazyModFunctions.push([
-			findObjectPatternsWithFunctionDeclaration,
-			functionDeclarationCollection,
-			settings,
-		]);
+		lazyModFunctions.push(
+			[
+				findObjectPatternsWithFunctionDeclaration,
+				functionDeclarationCollection,
+				settings,
+			],
+			[addX, functionDeclarationCollection, settings],
+		);
 	});
 
 	return [false, lazyModFunctions];
+};
+
+export const addX: ModFunction<FunctionDeclaration, 'write'> = (
+	j,
+	root,
+	settings,
+) => {
+	const variableDeclaration = j.variableDeclaration('const', [
+		j.variableDeclarator(
+			j.identifier('users'),
+			j.awaitExpression(j.callExpression(j.identifier('getUsers'), [])),
+		),
+	]);
+
+	root.find(j.BlockStatement).forEach((blockStatementPath) => {
+		const blockStatement = blockStatementPath.value;
+
+		blockStatement.body.unshift(variableDeclaration);
+	});
+
+	return [true, []];
 };
 
 export const findObjectPatternsWithFunctionDeclaration: ModFunction<
@@ -236,8 +260,6 @@ export const findObjectPatternsWithFunctionDeclaration: ModFunction<
 	const functionDeclarationPath = root.paths()[0];
 
 	root.find(j.ObjectPattern).forEach((objectPatternPath) => {
-		console.log('AAA');
-
 		if (
 			objectPatternPath.parentPath.parentPath !== functionDeclarationPath
 		) {
