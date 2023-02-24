@@ -98,21 +98,58 @@ export const findObjectProperties: ModFunction<any, 'read'> = (
 ) => {
 	const lazyModFunctions: LazyModFunction[] = [];
 
+	const fileCollection = root.closest(j.File);
+
 	root.find(j.ObjectProperty, {
 		key: {
 			type: 'Identifier',
 		},
 	}).forEach((objectPropertyPath) => {
+		// TODO how to ensure only one level of nesting?
 		const objectProperty = objectPropertyPath.value;
 
 		if (objectProperty.key.type !== 'Identifier') {
 			return;
 		}
 
-		console.log(objectProperty.key.name);
+		const { name } = objectProperty.key;
+
+		lazyModFunctions.push([
+			addGetXFunctionDefinition,
+			fileCollection,
+			{
+				name,
+			},
+		]);
 	});
 
 	return [false, lazyModFunctions];
+};
+
+export const addGetXFunctionDefinition: ModFunction<File, 'write'> = (
+	j,
+	root,
+	settings,
+) => {
+	const name = 'name' in settings ? settings.name ?? '' : '';
+
+	const identifierName = name
+		.split('')
+		.map((character, i) => (i == 0 ? character.toUpperCase() : character))
+		.join('');
+
+	const functionDeclaration = j.functionDeclaration.from({
+		async: true,
+		body: j.blockStatement([]),
+		id: j.identifier(`get${identifierName}`),
+		params: [],
+	});
+
+	root.find(j.Program).forEach((program) => {
+		program.value.body.unshift(functionDeclaration);
+	});
+
+	return [true, []];
 };
 
 export default function transform(
