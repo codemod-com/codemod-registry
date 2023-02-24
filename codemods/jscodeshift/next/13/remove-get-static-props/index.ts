@@ -95,7 +95,25 @@ export const findObjectProperties: ModFunction<any, 'read'> = (
 	j,
 	root,
 	settings,
-) => {};
+) => {
+	const lazyModFunctions: LazyModFunction[] = [];
+
+	root.find(j.ObjectProperty, {
+		key: {
+			type: 'Identifier',
+		},
+	}).forEach((objectPropertyPath) => {
+		const objectProperty = objectPropertyPath.value;
+
+		if (objectProperty.key.type !== 'Identifier') {
+			return;
+		}
+
+		console.log(objectProperty.key.name);
+	});
+
+	return [false, lazyModFunctions];
+};
 
 export default function transform(
 	file: FileInfo,
