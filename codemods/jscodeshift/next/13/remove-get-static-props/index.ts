@@ -5,6 +5,7 @@ import type {
 	FunctionDeclaration,
 	JSCodeshift,
 	Options,
+	ReturnStatement,
 	Transform,
 } from 'jscodeshift';
 
@@ -36,7 +37,7 @@ export const findGetStaticPropsFunctions: ModFunction<File, 'read'> = (
 		const functionDeclarationCollection = j(functionDeclarationPath);
 
 		lazyModFunctions.push([
-			findReturns,
+			findReturnStatements,
 			functionDeclarationCollection,
 			settings,
 		]);
@@ -45,7 +46,7 @@ export const findGetStaticPropsFunctions: ModFunction<File, 'read'> = (
 	return [false, lazyModFunctions];
 };
 
-export const findReturns: ModFunction<FunctionDeclaration, 'read'> = (
+export const findReturnStatements: ModFunction<FunctionDeclaration, 'read'> = (
 	j,
 	root,
 	settings,
@@ -53,11 +54,48 @@ export const findReturns: ModFunction<FunctionDeclaration, 'read'> = (
 	const lazyModFunctions: LazyModFunction[] = [];
 
 	root.find(j.ReturnStatement).forEach((returnStatementPath) => {
-		console.log(returnStatementPath.value);
+		const returnStatementCollection = j(returnStatementPath);
+
+		lazyModFunctions.push([
+			findPropsObjectProperty,
+			returnStatementCollection,
+			settings,
+		]);
 	});
 
 	return [false, lazyModFunctions];
 };
+
+export const findPropsObjectProperty: ModFunction<any, 'read'> = (
+	j,
+	root,
+	settings,
+) => {
+	const lazyModFunctions: LazyModFunction[] = [];
+
+	root.find(j.ObjectProperty, {
+		key: {
+			type: 'Identifier',
+			name: 'props',
+		},
+	}).forEach((objectPropertyPath) => {
+		const objectPropertyCollection = j(objectPropertyPath);
+
+		lazyModFunctions.push([
+			findObjectProperties,
+			objectPropertyCollection,
+			settings,
+		]);
+	});
+
+	return [false, lazyModFunctions];
+};
+
+export const findObjectProperties: ModFunction<any, 'read'> = (
+	j,
+	root,
+	settings,
+) => {};
 
 export default function transform(
 	file: FileInfo,
