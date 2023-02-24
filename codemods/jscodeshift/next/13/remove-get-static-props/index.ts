@@ -146,11 +146,15 @@ export const addGetXFunctionDefinition: ModFunction<File, 'write'> = (
 		params: [],
 	});
 
+	let dirtyFlag = false;
+
 	root.find(j.Program).forEach((program) => {
+		dirtyFlag = true;
+
 		program.value.body.unshift(functionDeclaration);
 	});
 
-	return [true, []];
+	return [dirtyFlag, []];
 };
 
 export default function transform(
