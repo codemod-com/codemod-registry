@@ -132,16 +132,26 @@ export const addRevalidateVariableDeclaration: ModFunction<any, 'write'> = (
 	root,
 	settings,
 ) => {
+	const revalidate = parseInt(settings.revalidate ?? '0', 10);
+
 	const exportNamedDeclaration = j.exportNamedDeclaration(
 		j.variableDeclaration('const', [
 			j.variableDeclarator(
 				j.identifier('revalidate'),
-				j.numericLiteral(10),
+				j.numericLiteral(revalidate),
 			),
 		]),
 	);
 
-	return [false, []];
+	let dirtyFlag = false;
+
+	root.find(j.Program).forEach((program) => {
+		dirtyFlag = true;
+
+		program.value.body.push(exportNamedDeclaration);
+	});
+
+	return [dirtyFlag, []];
 };
 
 export const findPropsObjectProperty: ModFunction<any, 'read'> = (
