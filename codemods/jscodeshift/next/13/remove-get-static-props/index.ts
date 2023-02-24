@@ -256,15 +256,7 @@ export const findObjectPatternsWithFunctionDeclaration: ModFunction<
 > = (j, root, settings) => {
 	const lazyModFunctions: LazyModFunction[] = [];
 
-	const functionDeclarationPath = root.paths()[0];
-
 	root.find(j.ObjectPattern).forEach((objectPatternPath) => {
-		if (
-			objectPatternPath.parentPath.parentPath !== functionDeclarationPath
-		) {
-			return;
-		}
-
 		const objectPatternCollection = j(objectPatternPath);
 
 		lazyModFunctions.push([
