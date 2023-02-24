@@ -4,6 +4,7 @@ import type {
 	FileInfo,
 	FunctionDeclaration,
 	JSCodeshift,
+	ObjectPattern,
 	Options,
 	Transform,
 } from 'jscodeshift';
@@ -216,10 +217,77 @@ export const findComponentFunctionDefinition: ModFunction<File, 'read'> = (
 
 		const functionDeclarationCollection = j(functionDeclarationPath);
 
-		console.log(functionDeclaration.id, settings);
+		lazyModFunctions.push([
+			findObjectPatternsWithFunctionDeclaration,
+			functionDeclarationCollection,
+			settings,
+		]);
 	});
 
 	return [false, lazyModFunctions];
+};
+
+export const findObjectPatternsWithFunctionDeclaration: ModFunction<
+	FunctionDeclaration,
+	'read'
+> = (j, root, settings) => {
+	const lazyModFunctions: LazyModFunction[] = [];
+
+	const functionDeclarationPath = root.paths()[0];
+
+	root.find(j.ObjectPattern).forEach((objectPatternPath) => {
+		console.log('AAA');
+
+		if (
+			objectPatternPath.parentPath.parentPath !== functionDeclarationPath
+		) {
+			return;
+		}
+
+		const objectPatternCollection = j(objectPatternPath);
+
+		lazyModFunctions.push([
+			findObjectPropertiesWithinFunctionParameters,
+			objectPatternCollection,
+			settings,
+		]);
+	});
+
+	return [false, lazyModFunctions];
+};
+
+export const findObjectPropertiesWithinFunctionParameters: ModFunction<
+	ObjectPattern,
+	'read'
+> = (j, root, settings) => {
+	const name = 'name' in settings ? settings.name ?? '' : '';
+
+	const objectPropertyCollection = root.find(j.ObjectProperty, {
+		key: {
+			type: 'Identifier',
+			name,
+		},
+	});
+
+	const lazyModFunctions: LazyModFunction[] = [
+		[removeCollection, objectPropertyCollection, settings],
+	];
+
+	return [false, lazyModFunctions];
+};
+
+export const removeCollection: ModFunction<any, 'write'> = (
+	j,
+	root,
+	settings,
+) => {
+	if (!root.length) {
+		return [false, []];
+	}
+
+	root.remove();
+
+	return [true, []];
 };
 
 export default function transform(
