@@ -21,9 +21,35 @@ describe.only('next 13 remove-get-static-props', function () {
 
 	it('should not remove anything if getStaticProps', function () {
 		const INPUT = `
-			export default function Component() {
+			export async function getStaticProps() {
+				const users = await promise;
+			  
+				return { props: { users } };
+			}
+			  
+			export default function Component({ users }) {
+				return users.map(user => <b>user</b>)
             }
         `;
+
+		const OUTPUT = `
+			async function getUsers() {
+				// TODO: implement this function
+			}
+
+			// the getStaticProps should be removed
+			export async function getStaticProps() {
+				const users = await promise;
+			
+				return { props: { users } };
+			}
+
+			export default function Component() {
+				const users = await getUsers();
+
+				return users.map(user => <b>user</b>)
+			}
+		`;
 
 		const fileInfo: FileInfo = {
 			path: 'index.js',
@@ -32,6 +58,9 @@ describe.only('next 13 remove-get-static-props', function () {
 
 		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
 
-		assert.deepEqual(actualOutput, undefined);
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
 	});
 });
