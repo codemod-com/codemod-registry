@@ -127,10 +127,6 @@ export const findObjectProperties: ModFunction<any, 'read'> = (
 			type: 'Identifier',
 		},
 	}).forEach((objectPropertyPath, i) => {
-		if (i !== 0) {
-			return;
-		}
-
 		const objectProperty = objectPropertyPath.value;
 
 		if (objectProperty.key.type !== 'Identifier') {
