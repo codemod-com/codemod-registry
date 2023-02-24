@@ -2,6 +2,7 @@ import type {
 	API,
 	Collection,
 	FileInfo,
+	FunctionDeclaration,
 	JSCodeshift,
 	Options,
 	Transform,
@@ -19,6 +20,45 @@ type LazyModFunction = [
 	Partial<Record<string, string>>,
 ];
 
+export const findGetStaticPropsFunctions: ModFunction<File, 'read'> = (
+	j,
+	root,
+	settings,
+) => {
+	const lazyModFunctions: LazyModFunction[] = [];
+
+	root.find(j.FunctionDeclaration, {
+		id: {
+			type: 'Identifier',
+			name: 'getStaticProps',
+		},
+	}).forEach((functionDeclarationPath) => {
+		const functionDeclarationCollection = j(functionDeclarationPath);
+
+		lazyModFunctions.push([
+			findReturns,
+			functionDeclarationCollection,
+			settings,
+		]);
+	});
+
+	return [false, lazyModFunctions];
+};
+
+export const findReturns: ModFunction<FunctionDeclaration, 'read'> = (
+	j,
+	root,
+	settings,
+) => {
+	const lazyModFunctions: LazyModFunction[] = [];
+
+	root.find(j.ReturnStatement).forEach((returnStatementPath) => {
+		console.log(returnStatementPath.value);
+	});
+
+	return [false, lazyModFunctions];
+};
+
 export default function transform(
 	file: FileInfo,
 	api: API,
@@ -31,7 +71,9 @@ export default function transform(
 	const root = j(file.source);
 	const settings = {};
 
-	const lazyModFunctions: LazyModFunction[] = [];
+	const lazyModFunctions: LazyModFunction[] = [
+		[findGetStaticPropsFunctions, root, settings],
+	];
 
 	const handleLazyModFunction = (lazyModFunction: LazyModFunction) => {
 		const [modFunction, localCollection, localSettings] = lazyModFunction;
