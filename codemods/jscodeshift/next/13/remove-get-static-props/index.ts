@@ -223,22 +223,29 @@ export const findComponentFunctionDefinition: ModFunction<File, 'read'> = (
 				functionDeclarationCollection,
 				settings,
 			],
-			[addX, functionDeclarationCollection, settings],
+			[addVariableDeclarations, functionDeclarationCollection, settings],
 		);
 	});
 
 	return [false, lazyModFunctions];
 };
 
-export const addX: ModFunction<FunctionDeclaration, 'write'> = (
-	j,
-	root,
-	settings,
-) => {
+export const addVariableDeclarations: ModFunction<
+	FunctionDeclaration,
+	'write'
+> = (j, root, settings) => {
+	const name = 'name' in settings ? settings.name ?? '' : '';
+	const identifierName = name
+		.split('')
+		.map((character, i) => (i == 0 ? character.toUpperCase() : character))
+		.join('');
+
 	const variableDeclaration = j.variableDeclaration('const', [
 		j.variableDeclarator(
-			j.identifier('users'),
-			j.awaitExpression(j.callExpression(j.identifier('getUsers'), [])),
+			j.identifier(name),
+			j.awaitExpression(
+				j.callExpression(j.identifier(`get${identifierName}`), []),
+			),
 		),
 	]);
 
