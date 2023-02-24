@@ -2,7 +2,7 @@ import { FileInfo } from 'jscodeshift';
 import assert from 'node:assert';
 import transform from '.';
 
-describe.only('next 13 remove-get-static-props', function () {
+describe('next 13 remove-get-static-props', function () {
 	it('should not remove anything if getStaticProps', function () {
 		const INPUT = `
 			export default function Component() {
