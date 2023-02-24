@@ -5,7 +5,6 @@ import type {
 	FunctionDeclaration,
 	JSCodeshift,
 	Options,
-	ReturnStatement,
 	Transform,
 } from 'jscodeshift';
 
@@ -36,11 +35,30 @@ export const findGetStaticPropsFunctions: ModFunction<File, 'read'> = (
 	}).forEach((functionDeclarationPath) => {
 		const functionDeclarationCollection = j(functionDeclarationPath);
 
-		lazyModFunctions.push([
-			findReturnStatements,
-			functionDeclarationCollection,
-			settings,
-		]);
+		lazyModFunctions.push(
+			[findReturnStatements, functionDeclarationCollection, settings],
+			[
+				addCommentOnFunctionDeclaration,
+				functionDeclarationCollection,
+				settings,
+			],
+		);
+	});
+
+	return [false, lazyModFunctions];
+};
+
+export const addCommentOnFunctionDeclaration: ModFunction<
+	FunctionDeclaration,
+	'write'
+> = (j, root, settings) => {
+	const lazyModFunctions: LazyModFunction[] = [];
+
+	root.forEach((functionDeclarationPath) => {
+		functionDeclarationPath.value.comments = [
+			...(functionDeclarationPath.value.comments ?? []),
+			j.commentLine(' TODO: remove this function'),
+		];
 	});
 
 	return [false, lazyModFunctions];
