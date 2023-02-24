@@ -52,7 +52,7 @@ export const findGetStaticPropsFunctions: ModFunction<File, 'read'> = (
 export const addCommentOnFunctionDeclaration: ModFunction<
 	FunctionDeclaration,
 	'write'
-> = (j, root, settings) => {
+> = (j, root) => {
 	const lazyModFunctions: LazyModFunction[] = [];
 	let dirtyFlag = false;
 
@@ -113,11 +113,7 @@ export const findPropsObjectProperty: ModFunction<any, 'read'> = (
 	return [false, lazyModFunctions];
 };
 
-export const findObjectProperties: ModFunction<any, 'read'> = (
-	j,
-	root,
-	settings,
-) => {
+export const findObjectProperties: ModFunction<any, 'read'> = (j, root) => {
 	const lazyModFunctions: LazyModFunction[] = [];
 
 	const fileCollection = root.closest(j.File);
@@ -126,7 +122,7 @@ export const findObjectProperties: ModFunction<any, 'read'> = (
 		key: {
 			type: 'Identifier',
 		},
-	}).forEach((objectPropertyPath, i) => {
+	}).forEach((objectPropertyPath) => {
 		const objectProperty = objectPropertyPath.value;
 
 		if (objectProperty.key.type !== 'Identifier') {
@@ -301,11 +297,7 @@ export const findObjectPropertiesWithinFunctionParameters: ModFunction<
 	return [false, lazyModFunctions];
 };
 
-export const removeCollection: ModFunction<any, 'write'> = (
-	j,
-	root,
-	settings,
-) => {
+export const removeCollection: ModFunction<any, 'write'> = (_, root, __) => {
 	if (!root.length) {
 		return [false, []];
 	}
@@ -318,7 +310,7 @@ export const removeCollection: ModFunction<any, 'write'> = (
 export default function transform(
 	file: FileInfo,
 	api: API,
-	options: Options,
+	_: Options,
 ): string | undefined {
 	const j = api.jscodeshift;
 
