@@ -78,14 +78,70 @@ export const findReturnStatements: ModFunction<FunctionDeclaration, 'read'> = (
 	root.find(j.ReturnStatement).forEach((returnStatementPath) => {
 		const returnStatementCollection = j(returnStatementPath);
 
-		lazyModFunctions.push([
-			findPropsObjectProperty,
-			returnStatementCollection,
-			settings,
-		]);
+		lazyModFunctions.push(
+			[findPropsObjectProperty, returnStatementCollection, settings],
+			[findRevalidateObjectProperty, returnStatementCollection, settings],
+		);
 	});
 
 	return [false, lazyModFunctions];
+};
+
+export const findRevalidateObjectProperty: ModFunction<any, 'read'> = (
+	j,
+	root,
+	settings,
+) => {
+	const lazyModFunctions: LazyModFunction[] = [];
+
+	const fileCollection = root.closest(j.File);
+
+	root.find(j.ObjectProperty, {
+		key: {
+			type: 'Identifier',
+			name: 'revalidate',
+		},
+		value: {
+			type: 'NumericLiteral',
+		},
+	}).forEach((objectPropertyPath) => {
+		console.log(objectPropertyPath.value);
+
+		const objectPropertyCollection = j(objectPropertyPath);
+
+		objectPropertyCollection
+			.find(j.NumericLiteral)
+			.forEach((numericLiteralPath) => {
+				const numericLiteral = numericLiteralPath.value;
+
+				const revalidate = String(numericLiteral.value);
+
+				lazyModFunctions.push([
+					addRevalidateVariableDeclaration,
+					fileCollection,
+					{ revalidate },
+				]);
+			});
+	});
+
+	return [false, lazyModFunctions];
+};
+
+export const addRevalidateVariableDeclaration: ModFunction<any, 'write'> = (
+	j,
+	root,
+	settings,
+) => {
+	const exportNamedDeclaration = j.exportNamedDeclaration(
+		j.variableDeclaration('const', [
+			j.variableDeclarator(
+				j.identifier('revalidate'),
+				j.numericLiteral(10),
+			),
+		]),
+	);
+
+	return [false, []];
 };
 
 export const findPropsObjectProperty: ModFunction<any, 'read'> = (

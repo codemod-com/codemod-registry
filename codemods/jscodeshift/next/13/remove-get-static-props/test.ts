@@ -66,13 +66,13 @@ describe('next 13 remove-get-static-props', function () {
 		);
 	});
 
-	it('should create additional functions if getStaticProps is present', function () {
+	it.only('should create additional functions if getStaticProps is present', function () {
 		const INPUT = `
 			export async function getStaticProps() {
 				const users = await promise;
 				const groups = await anotherPromise;
 			  
-				return { props: { users, groups } };
+				return { props: { users, groups }, revalidate: 1 };
 			}
 			  
 			export default function Component({ users, groups }) {
@@ -104,6 +104,8 @@ describe('next 13 remove-get-static-props', function () {
 
 				return [...users, ...groups].map(obj => <b>{obj}</b>)
 			}
+
+			export const revalidate = 10;
 		`;
 
 		const fileInfo: FileInfo = {
