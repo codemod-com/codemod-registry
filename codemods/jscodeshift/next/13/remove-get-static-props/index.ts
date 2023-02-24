@@ -142,6 +142,7 @@ export const addGetXFunctionDefinition: ModFunction<File, 'write'> = (
 		async: true,
 		body: j.blockStatement([]),
 		id: j.identifier(`get${identifierName}`),
+		comments: [j.commentLine(' TODO: implement this function')],
 		params: [],
 	});
 

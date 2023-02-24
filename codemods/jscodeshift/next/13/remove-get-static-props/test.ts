@@ -33,11 +33,11 @@ describe.only('next 13 remove-get-static-props', function () {
         `;
 
 		const OUTPUT = `
+			// TODO: implement this function
 			async function getUsers() {
-				// TODO: implement this function
 			}
 
-			// the getStaticProps should be removed
+			// TODO: the getStaticProps should be removed
 			export async function getStaticProps() {
 				const users = await promise;
 			
