@@ -125,8 +125,11 @@ export const findObjectProperties: ModFunction<any, 'read'> = (
 		key: {
 			type: 'Identifier',
 		},
-	}).forEach((objectPropertyPath) => {
-		// TODO how to ensure only one level of nesting?
+	}).forEach((objectPropertyPath, i) => {
+		if (i !== 0) {
+			return;
+		}
+
 		const objectProperty = objectPropertyPath.value;
 
 		if (objectProperty.key.type !== 'Identifier') {
