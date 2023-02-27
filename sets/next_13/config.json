@@ -9,7 +9,8 @@
         "jscodeshift/next/13/next-image-to-legacy-image",
         "jscodeshift/next/13/replace-use-router",
         "jscodeshift/next/13/comment-deletable-files",
-        "jscodeshift/next/13/remove-get-static-props"
+        "jscodeshift/next/13/remove-get-static-props",
+        "jscodeshift/next/13/built-in-next-font"
     ],
     "dependencyVersionLowerThan": [
         "next",
