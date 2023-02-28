@@ -375,19 +375,15 @@ export default function transformer(
 	//  After: import Image from "next/image"
 	root.find(j.ImportDeclaration, {
 		source: { value: 'next/legacy/image' },
-	}).forEach((imageImport) => {
-		const defaultSpecifier = imageImport.node.specifiers?.find(
+	}).forEach((importDeclarationPath) => {
+		const defaultSpecifier = importDeclarationPath.node.specifiers?.find(
 			(node) => node.type === 'ImportDefaultSpecifier',
 		) as ImportDefaultSpecifier | undefined;
 		const tagName = defaultSpecifier?.local?.name;
 
 		if (tagName) {
-			j(imageImport).replaceWith(
-				j.importDeclaration(
-					imageImport.node.specifiers,
-					j.stringLiteral('next/image'),
-				),
-			);
+			importDeclarationPath.node.source = j.stringLiteral('next/image');
+
 			findAndReplaceProps(j, root, tagName);
 		}
 	});
@@ -395,10 +391,8 @@ export default function transformer(
 	//  After: const Image = await import("next/image")
 	root.find(j.ImportExpression, {
 		source: { value: 'next/legacy/image' },
-	}).forEach((imageImport) => {
-		j(imageImport).replaceWith(
-			j.importExpression(j.stringLiteral('next/image')),
-		);
+	}).forEach((importExpressionPath) => {
+		importExpressionPath.node.source = j.stringLiteral('next/image');
 	});
 
 	// Before: const Image = require("next/legacy/image")

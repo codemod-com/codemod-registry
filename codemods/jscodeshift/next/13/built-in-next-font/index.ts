@@ -34,17 +34,22 @@ export default function transform(file: FileInfo, api: API, options: Options) {
 
 	let dirtyFlag = false;
 
+	root.find(j.ImportDeclaration, {
+		source: { value: '@next/font' },
+	}).forEach((importDeclarationPath) => {
+		dirtyFlag = true;
+
+		importDeclarationPath.node.source = j.stringLiteral('next/font');
+	});
+
 	// Before: import { ... } from '@next/font/google'
 	// After: import { ... } from 'next/font/google'
 	root.find(j.ImportDeclaration, {
 		source: { value: '@next/font/google' },
-	}).replaceWith((importDeclarationPath) => {
+	}).forEach((importDeclarationPath) => {
 		dirtyFlag = true;
 
-		return j.importDeclaration(
-			importDeclarationPath.node.specifiers,
-			j.stringLiteral('next/font/google'),
-		);
+		importDeclarationPath.node.source = j.stringLiteral('next/font/google');
 	});
 
 	// Before: import localFont from '@next/font/local'
@@ -54,10 +59,7 @@ export default function transform(file: FileInfo, api: API, options: Options) {
 	}).replaceWith((importDeclarationPath) => {
 		dirtyFlag = true;
 
-		return j.importDeclaration(
-			importDeclarationPath.node.specifiers,
-			j.stringLiteral('next/font/local'),
-		);
+		importDeclarationPath.node.source = j.stringLiteral('next/font/local');
 	});
 
 	return dirtyFlag ? root.toSource(options) : undefined;
