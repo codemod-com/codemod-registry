@@ -45,15 +45,15 @@ export default function transformer(
 	root.find(j.ImportExpression, {
 		source: { value: 'next/image' },
 	}).forEach((importExpressionPath) => {
-		importExpressionPath.node.source = j.stringLiteral('next/legacy/');
+		importExpressionPath.node.source = j.stringLiteral('next/legacy/image');
 	});
 
 	// Before: import Image from "next/future/image"
 	//  After: import Image from "next/image"
 	root.find(j.ImportDeclaration, {
 		source: { value: 'next/future/image' },
-	}).forEach((imageFutureImport) => {
-		imageFutureImport.node.source = j.stringLiteral('next/image');
+	}).forEach((importDeclarationPath) => {
+		importDeclarationPath.node.source = j.stringLiteral('next/image');
 	});
 
 	// Before: const Image = await import("next/future/image")
