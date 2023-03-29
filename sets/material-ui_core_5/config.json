@@ -1,0 +1,6 @@
+{
+  "schemaVersion": "1.0.0",
+  "name": "material-ui_core_5",
+  "codemods": ["jscodeshift/material-ui/core/5/adapter-v4"],
+  "dependencyVersionLowerThan": ["@material-ui/core", "5.0.0"]
+}
