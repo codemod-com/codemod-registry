@@ -24,6 +24,4 @@ describe('immutable-4 isiterable-to-iscollection', function () {
 			OUTPUT.replace(/\W/gm, ''),
 		);
 	});
-
-	
 });
