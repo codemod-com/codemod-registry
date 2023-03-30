@@ -7,22 +7,21 @@ function transform(
 ): string | undefined {
 	const j = api.jscodeshift;
 	const root = j(file.source);
-  	let dirtyFlag = false;
-  
-  
-  	root.find(j.Identifier).forEach((path) => {
-      if(path.node.name === 'isIterable') {
-        path.node.name = 'isCollection'
-        dirtyFlag = true;
-      };
-    });
-  
-  	if (!dirtyFlag) {
+	let dirtyFlag = false;
+
+	root.find(j.Identifier).forEach((path) => {
+		if (path.node.name === 'isIterable') {
+			path.node.name = 'isCollection';
+			dirtyFlag = true;
+		}
+	});
+
+	if (!dirtyFlag) {
 		return undefined;
 	}
 
 	return root.toSource(options);
-};
+}
 
 transform satisfies Transform;
 
