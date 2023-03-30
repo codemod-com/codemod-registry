@@ -3,6 +3,7 @@ lockfileVersion: 5.4
 specifiers:
     '@babel/core': '>=7.13.0 <8.0.0'
     '@babel/preset-env': ^7.1.6
+    '@babel/traverse': ^7.20.12
     '@types/chai': ^4.3.4
     '@types/jscodeshift': ^0.11.6
     '@types/mocha': ^10.0.1
@@ -23,6 +24,7 @@ dependencies:
 devDependencies:
     '@babel/core': 7.20.12
     '@babel/preset-env': 7.20.2_@babel+core@7.20.12
+    '@babel/traverse': 7.20.12
     '@types/chai': 4.3.4
     '@types/jscodeshift': 0.11.6
     '@types/mocha': 10.0.1
