@@ -33,21 +33,6 @@ const getJSExports = memoize((file) => {
 	return result;
 });
 
-// istanbul ignore next
-if (process.env.NODE_ENV === 'test') {
-	const resolve = require.resolve;
-	// @ts-ignore
-	require.resolve = (source) =>
-		resolve(
-			source
-				.replace(/^@material-ui\/core\/es/, '../../../mui-material/src')
-				.replace(
-					/^@material-ui\/core\/modern/,
-					'../../../mui-material/src',
-				),
-		);
-}
-
 export default function transformer(fileInfo, api, options) {
 	const j = api.jscodeshift;
 	const importModule = options.importModule || '@material-ui/core';
@@ -94,10 +79,16 @@ export default function transformer(fileInfo, api, options) {
 			loader = require.resolve(`${importModule}/modern/${subpath}`, {
 				paths: [dirname(fileInfo.path)],
 			});
-		} catch (error) {
-			loader = require.resolve(`${importModule}/es/${subpath}`, {
-				paths: [dirname(fileInfo.path)],
-			});
+		} catch (error) {}
+
+		if (!loader) {
+			try {
+				loader = require.resolve(`${importModule}/es/${subpath}`, {
+					paths: [dirname(fileInfo.path)],
+				});
+			} catch (error) {
+				throw error;
+			}
 		}
 
 		const whitelist = getJSExports(loader);

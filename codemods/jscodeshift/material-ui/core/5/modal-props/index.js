@@ -6,7 +6,6 @@ import { EOL } from 'os';
  */
 export default function transformer(file, api, options) {
 	const j = api.jscodeshift;
-
 	const printOptions = options.printOptions;
 
 	let hasDisableBackdropClick = false;

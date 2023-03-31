@@ -1,7 +1,6 @@
 export default function transformer(file, api, options) {
 	const j = api.jscodeshift;
 	const root = j(file.source);
-
 	const printOptions = options.printOptions;
 
 	const jsxLinkNames = [];
