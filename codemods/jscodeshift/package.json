@@ -17,6 +17,7 @@
 		"@types/sinon": "^10.0.13",
 		"chai": "^4.3.7",
 		"jscodeshift": "^0.14.0",
+		"jscodeshift-add-imports": "^1.0.10",
 		"mocha": "^10.2.0",
 		"prettier": "^2.8.3",
 		"sinon": "^15.0.1",
