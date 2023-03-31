@@ -1,4 +1,3 @@
-/* eslint-disable no-template-curly-in-string */
 /**
  * @param {import('jscodeshift').FileInfo} file
  */

@@ -51,11 +51,16 @@ export default function transformer(fileInfo, api, options) {
 	const importModule = options.importModule || '@mui/material';
 	const targetModule = options.targetModule || '@mui/material';
 
-	const whitelist = getJSExports(
-		require.resolve(`${importModule}/modern`, {
+	let loader;
+	try {
+		loader = require.resolve(`${importModule}/modern`, {
 			paths: [dirname(fileInfo.path)],
-		}),
-	);
+		});
+	} catch (error) {
+		throw error;
+	}
+	
+	const whitelist = getJSExports(loader);
 	const printOptions = options.printOptions || {
 		quote: 'single',
 		trailingComma: true,

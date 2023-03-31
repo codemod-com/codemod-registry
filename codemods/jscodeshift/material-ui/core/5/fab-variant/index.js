@@ -4,7 +4,6 @@
  */
 export default function transformer(file, api, options) {
 	const j = api.jscodeshift;
-
 	const printOptions = options.printOptions;
 
 	const source = j(file.source)
