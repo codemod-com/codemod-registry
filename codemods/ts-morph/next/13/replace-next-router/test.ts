@@ -20,7 +20,7 @@ const transform = (beforeText: string, afterText: string) => {
 };
 
 describe.only('next 13 replace-next-router', function () {
-	xit('should add useSearchParams import because of "router.query"', async function (this: Context) {
+	it('should add useSearchParams import because of "router.query"', async function (this: Context) {
 		const beforeText = `
 			import { useRouter } from 'next/router';
 
@@ -45,7 +45,7 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it.only('should add useSearchParams import because of "useRouter().query"', async function (this: Context) {
+	it('should add useSearchParams import because of "useRouter().query"', async function (this: Context) {
 		const beforeText = `
 			import { useRouter } from 'next/router';
 
@@ -68,31 +68,24 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	// it('should add useSearchParams import because of "const { query } = useRouter()"', async function (this: Context) {
-	// 	const { jscodeshift } = this.buildApi('tsx');
+	it('should add useSearchParams import because of "const { query } = useRouter()"', async function (this: Context) {
+		const beforeText = `
+			import { useRouter } from 'next/router';
 
-	// 	const root = jscodeshift(`
-	// 		import { useRouter } from 'next/router';
+			function Component() {
+				const { query } = useRouter();
+			}
+		`;
 
-	// 		function Component() {
-	// 			const { query } = useRouter();
-	// 		}
-	// 	`);
+		const afterText = `
+			function Component() {
+			}
+        `;
 
-	// 	addUseSearchParamsImport(jscodeshift, root);
+		const { actual, expected } = transform(beforeText, afterText);
 
-	// 	assert.deepEqual(
-	// 		root?.toSource().replace(/\W/gm, '') ?? '',
-	// 		`
-	// 		import { useSearchParams } from 'next/navigation';
-	// 		import { useRouter } from 'next/router';
-
-	// 		function Component() {
-	// 			const { query } = useRouter();
-	// 		}
-	// 		`.replace(/\W/gm, ''),
-	// 	);
-	// });
+		deepStrictEqual(actual, expected);
+	});
 
 	// it('should add searchParams variable declarator because of "useRouter()"', async function (this: Context) {
 	// 	const { jscodeshift } = this.buildApi('tsx');

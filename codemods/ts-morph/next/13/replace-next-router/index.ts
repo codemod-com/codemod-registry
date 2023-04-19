@@ -179,6 +179,8 @@ const handleUseRouterCallExpression = (
 				}
 			}
 		}
+
+		return;
 	}
 
 	if (Node.isPropertyAccessExpression(parent)) {
