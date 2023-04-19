@@ -194,9 +194,7 @@ describe.only('next 13 replace-next-router', function () {
 	});
 
 	// it('should replace "searchParams.a" with "searchParams.get("a")"', async function (this: Context) {
-	// 	const { jscodeshift } = this.buildApi('tsx');
-
-	// 	const root = jscodeshift(`
+	// 	const beforeText = `
 	// 		import { useSearchParams } from 'next/navigation';
 
 	// 		function Component() {
@@ -204,13 +202,9 @@ describe.only('next 13 replace-next-router', function () {
 
 	// 			const a = searchParams.a;
 	// 		}
-	// 	`);
+	// 	`;
 
-	// 	replaceSearchParamsXWithSearchParamsGetX(jscodeshift, root);
-
-	// 	assert.deepEqual(
-	// 		root?.toSource().replace(/\W/gm, '') ?? '',
-	// 		`
+	// 	const afterText = `
 	// 		import { useSearchParams } from 'next/navigation';
 
 	// 		function Component() {
@@ -218,49 +212,42 @@ describe.only('next 13 replace-next-router', function () {
 
 	// 			const a = searchParams.get('a');
 	// 		}
-	// 		`.replace(/\W/gm, ''),
-	// 	);
+	// 		`;
+
+	// 	const { actual, expected } = transform(beforeText, afterText);
+
+	// 	deepStrictEqual(actual, expected);
 	// });
 
-	// it('should replace INPUT with OUTPUT', async function (this: Context) {
-	// 	const INPUT = `
-	// 		import { useRouter } from 'next/router';
+	it('should replace INPUT with OUTPUT', async function (this: Context) {
+		const beforeText = `
+			import { useRouter } from 'next/router';
 
-	// 		function Component() {
-	// 			const router = useRouter();
+			function Component() {
+				const router = useRouter();
 
-	// 			const x = router.query.a;
+				const x = router.query.a;
 
-	// 			const z = { ...router.query, b: 1 }
-	// 		}
-	// 	`;
+				const z = { ...router.query, b: 1 }
+			}
+		`;
 
-	// 	const OUTPUT = `
-	// 		import { useSearchParams } from 'next/navigation';
-	// 		import { useRouter } from 'next/router';
+		const afterText = `
+            import { useSearchParams } from "next/navigation";
 
-	// 		function Component() {
-	// 			const searchParams = useSearchParams();
-	// 			const router = useRouter();
+			function Component() {
+				const searchParams = useSearchParams();
 
-	// 			const x = searchParams.get('a');
+				const x = searchParams.get("a");
 
-	// 			const z = { ...searchParams.entries(), b: 1}
-	// 		}
-	// 	`;
+				const z = { ...Object.fromEntries(searchParams), b: 1 };
+			}
+		`;
 
-	// 	const fileInfo: FileInfo = {
-	// 		path: 'index.js',
-	// 		source: INPUT,
-	// 	};
+		const { actual, expected } = transform(beforeText, afterText);
 
-	// 	const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
-
-	// 	assert.deepEqual(
-	// 		actualOutput?.replace(/\W/gm, ''),
-	// 		OUTPUT.replace(/\W/gm, ''),
-	// 	);
-	// });
+		deepStrictEqual(actual, expected);
+	});
 
 	// it('should replace INPUT with OUTPUT (2)', async function (this: Context) {
 	// 	const INPUT = `
