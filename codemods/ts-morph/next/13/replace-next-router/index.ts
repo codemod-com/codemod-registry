@@ -9,8 +9,10 @@ export const buildContainer = <T>(initialValue: NonNullable<T>) => {
 		return currentValue;
 	};
 
-	const set = (value: NonNullable<T>): void => {
-		currentValue = value;
+	const set = (
+		callback: (previousValue: NonNullable<T>) => NonNullable<T>,
+	): void => {
+		currentValue = callback(currentValue);
 	};
 
 	return {
@@ -144,8 +146,8 @@ const handleCallExpression = (
 				if (Node.isPropertyAccessExpression(parent)) {
 					handlePAE(
 						parent,
-						() => requiresSearchParams.set(true),
-						() => requiresPathname.set(true),
+						() => requiresSearchParams.set(() => true),
+						() => requiresPathname.set(() => true),
 					);
 				}
 			});
@@ -169,7 +171,7 @@ const handleCallExpression = (
 
 						nameNode.findReferencesAsNodes().forEach((node) => {
 							handleQueryNode(node, () =>
-								requiresSearchParams.set(true),
+								requiresSearchParams.set(() => true),
 							);
 						});
 					}
@@ -209,19 +211,20 @@ const handleReferencedNode = (
 				'const searchParams = useSearchParams();',
 			);
 
-			usesSearchParams.set(true);
+			usesSearchParams.set(() => true);
 		}
 
 		if (requiresPathname.get()) {
 			block?.insertStatements(0, 'const pathname = usePathname();');
 
-			usesPathname.set(true);
+			usesPathname.set(() => true);
 		}
 	}
 };
 
 const handleImportDeclaration = (
 	importDeclaration: ImportDeclaration,
+	useRouterReferenceCount: Container<number>,
 	usesSearchParams: Container<boolean>,
 	usesPathname: Container<boolean>,
 ) => {
@@ -250,6 +253,10 @@ const handleImportDeclaration = (
 		if (referenceCount === 0) {
 			namedImport.remove();
 		}
+
+		useRouterReferenceCount.set(
+			(previousCount) => previousCount + referenceCount,
+		);
 	});
 
 	// TODO can we remove it?
@@ -286,9 +293,12 @@ export const handleSourceFile = (
 		'usePathname',
 	);
 
+	const useRouterReferenceCount = buildContainer<number>(0);
+
 	importDeclarations.forEach((importDeclaration) =>
 		handleImportDeclaration(
 			importDeclaration,
+			useRouterReferenceCount,
 			usesSearchParams,
 			usesPathname,
 		),
@@ -296,10 +306,12 @@ export const handleSourceFile = (
 
 	// check if router is still used
 
-	sourceFile.insertStatements(
-		0,
-		'import { useRouter } from "next/navigation";',
-	);
+	if (useRouterReferenceCount.get() === 0) {
+		sourceFile.insertStatements(
+			0,
+			'import { useRouter } from "next/navigation";',
+		);
+	}
 
 	if (usesSearchParams.get() && !hasUseSearchParamsImport) {
 		sourceFile.insertStatements(

@@ -33,7 +33,6 @@ describe.only('next 13 replace-next-router', function () {
 
 		const afterText = `
         import { useSearchParams } from "next/navigation";
-        import { useRouter } from "next/navigation";
 
         function Component() {
             const searchParams = useSearchParams();
