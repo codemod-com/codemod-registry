@@ -361,7 +361,7 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, undefined);
 	});
 
-	it('should replace INPUT with OUTPUT (3)', async function (this: Context) {
+	it.only('should replace INPUT with OUTPUT (3)', async function (this: Context) {
 		const beforeText = `
 			import { useRouter } from 'next/router';
 
@@ -382,9 +382,9 @@ describe.only('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText);
 
-		deepStrictEqual(actual, undefined);
+		deepStrictEqual(actual, expected);
 	});
 
 	// it('should noop for pathname = a.b', async function (this: Context) {

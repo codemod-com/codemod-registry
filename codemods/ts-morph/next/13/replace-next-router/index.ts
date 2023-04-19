@@ -110,7 +110,7 @@ const handlePAE = (
 
 const handleQueryNode = (
 	node: Node,
-	onReplacedWithSearchParams: () => void,
+	requiresSearchParams: Container<boolean>,
 ) => {
 	if (Node.isIdentifier(node)) {
 		const parent = node.getParent();
@@ -120,7 +120,7 @@ const handleQueryNode = (
 
 			parent.replaceWithText(`searchParams.get('${name}')`);
 
-			onReplacedWithSearchParams();
+			requiresSearchParams.set(() => true);
 		}
 	}
 };
@@ -169,10 +169,10 @@ const handleUseRouterCallExpression = (
 					if (nameNode.getText() === 'query') {
 						// find query.a usages
 
+						// TODO
+
 						nameNode.findReferencesAsNodes().forEach((node) => {
-							handleQueryNode(node, () =>
-								requiresSearchParams.set(() => true),
-							);
+							handleQueryNode(node, requiresSearchParams);
 						});
 					}
 
