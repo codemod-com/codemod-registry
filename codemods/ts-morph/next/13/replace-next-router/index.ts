@@ -114,6 +114,12 @@ const handlePAE = (
 
 		onReplacedWithPathname();
 	}
+
+	if (nodeName === 'isReady') {
+		const parentNode = node.getParent();
+
+		node.replaceWithText('true');
+	}
 };
 
 const handleQueryNode = (
