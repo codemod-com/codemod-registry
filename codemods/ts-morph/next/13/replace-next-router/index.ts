@@ -112,24 +112,26 @@ const handleQueryNode = (
 	node: Node,
 	requiresSearchParams: Container<boolean>,
 ) => {
-	if (Node.isIdentifier(node)) {
-		const parent = node.getParent();
+	if (!Node.isIdentifier(node)) {
+		return;
+	}
 
-		if (Node.isPropertyAccessExpression(parent)) {
-			const name = parent.getName();
+	const parent = node.getParent();
 
-			parent.replaceWithText(`searchParams.get('${name}')`);
+	if (Node.isPropertyAccessExpression(parent)) {
+		const name = parent.getName();
 
-			requiresSearchParams.set(() => true);
+		parent.replaceWithText(`searchParams.get('${name}')`);
 
-			return;
-		}
+		requiresSearchParams.set(() => true);
 
-		if (Node.isVariableDeclaration(parent)) {
-			console.log(parent.print());
+		return;
+	}
 
-			// TODO expand here
-		}
+	if (Node.isVariableDeclaration(parent)) {
+		console.log(parent.print());
+
+		// TODO expand here
 	}
 };
 
