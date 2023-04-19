@@ -136,7 +136,6 @@ const handleUseRouterCallExpression = (
 		const bindingName = parent.getNameNode();
 
 		if (Node.isIdentifier(bindingName)) {
-			console.log(bindingName);
 			// e.g. router
 
 			bindingName.findReferencesAsNodes().forEach((node) => {
@@ -214,8 +213,6 @@ const handleReferencedNode = (
 		const parent = node.getParent();
 
 		if (Node.isCallExpression(parent)) {
-			console.log('A', parent.print());
-
 			handleUseRouterCallExpression(
 				parent,
 				requiresSearchParams,

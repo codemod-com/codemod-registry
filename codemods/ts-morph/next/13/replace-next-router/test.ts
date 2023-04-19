@@ -74,11 +74,17 @@ describe.only('next 13 replace-next-router', function () {
 
 			function Component() {
 				const { query } = useRouter();
+
+                const a = query.a;
 			}
 		`;
 
 		const afterText = `
+            import { useSearchParams } from "next/navigation";
+
 			function Component() {
+                const searchParams = useSearchParams();
+                const a = searchParams.get('a');
 			}
         `;
 
@@ -87,31 +93,28 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	// it('should add searchParams variable declarator because of "useRouter()"', async function (this: Context) {
-	// 	const { jscodeshift } = this.buildApi('tsx');
+	xit('should add searchParams variable declarator because of "useRouter()"', async function (this: Context) {
+		const beforeText = `
+			import { useRouter } from 'next/router';
 
-	// 	const root = jscodeshift(`
-	// 		import { useRouter } from 'next/router';
+			function Component() {
+				const { query } = useRouter();
+			}
+		`;
 
-	// 		function Component() {
-	// 			const { query } = useRouter();
-	// 		}
-	// 	`);
+		const afterText = `
+			import { useRouter } from 'next/router';
 
-	// 	addSearchParamsVariableDeclarator(jscodeshift, root);
+			function Component() {
+				const searchParams = useSearchParams();
+				const { query } = useRouter();
+			}
+			`;
 
-	// 	assert.deepEqual(
-	// 		root?.toSource().replace(/\W/gm, '') ?? '',
-	// 		`
-	// 		import { useRouter } from 'next/router';
+		const { actual, expected } = transform(beforeText, afterText);
 
-	// 		function Component() {
-	// 			const searchParams = useSearchParams();
-	// 			const { query } = useRouter();
-	// 		}
-	// 		`.replace(/\W/gm, ''),
-	// 	);
-	// });
+		deepStrictEqual(actual, expected);
+	});
 
 	// it('should replace "...?.query" with "...searchParams.entries()."', async function (this: Context) {
 	// 	const { jscodeshift } = this.buildApi('tsx');
