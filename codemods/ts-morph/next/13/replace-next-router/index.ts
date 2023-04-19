@@ -7,16 +7,14 @@ import {
 import { PropertyAccessExpression, SourceFile, ts } from 'ts-morph';
 import { Node } from 'ts-morph';
 
-export const buildContainer = <T>(initialValue: NonNullable<T>) => {
-	let currentValue: NonNullable<T> = initialValue;
+export const buildContainer = <T>(initialValue: T) => {
+	let currentValue: T = initialValue;
 
-	const get = (): NonNullable<T> => {
+	const get = (): T => {
 		return currentValue;
 	};
 
-	const set = (
-		callback: (previousValue: NonNullable<T>) => NonNullable<T>,
-	): void => {
+	const set = (callback: (previousValue: T) => T): void => {
 		currentValue = callback(currentValue);
 	};
 
@@ -170,7 +168,7 @@ const handleQueryNode = (
 
 const handleVariableDeclarationWithRouter = (
 	variableDeclaration: VariableDeclaration,
-	requiresPathname: Container<boolean>,
+	requiresPathname: Container<string | null>,
 ) => {
 	const nameNode = variableDeclaration.getNameNode();
 
@@ -179,13 +177,16 @@ const handleVariableDeclarationWithRouter = (
 		let count = 0;
 
 		for (const element of elements) {
+			console.log('ABCD', element.getText());
+
 			const nameNode = element.getNameNode();
+			const propertyNameNode = element.getPropertyNameNode() ?? nameNode;
 
 			if (
-				Node.isIdentifier(nameNode) &&
-				nameNode.getText() === 'pathname'
+				Node.isIdentifier(propertyNameNode) &&
+				propertyNameNode.getText() === 'pathname'
 			) {
-				requiresPathname.set(() => true);
+				requiresPathname.set(() => nameNode.getText());
 
 				++count;
 			}
@@ -200,7 +201,7 @@ const handleVariableDeclarationWithRouter = (
 const handleUseRouterCallExpression = (
 	node: CallExpression,
 	requiresSearchParams: Container<boolean>,
-	requiresPathname: Container<boolean>,
+	requiresPathname: Container<string | null>,
 	labelContainer: Container<ReadonlyArray<string>>,
 ) => {
 	const parent = node.getParent();
@@ -216,7 +217,7 @@ const handleUseRouterCallExpression = (
 					handlePAE(
 						parent,
 						() => requiresSearchParams.set(() => true),
-						() => requiresPathname.set(() => true),
+						() => requiresPathname.set(() => 'pathname'),
 					);
 
 					return;
@@ -257,7 +258,7 @@ const handleUseRouterCallExpression = (
 					}
 
 					if (nameNode.getText() === 'pathname') {
-						requiresPathname.set(() => true);
+						requiresPathname.set(() => 'pathname');
 					}
 
 					// TODO ensure we remove it when all occurences have been replaced
@@ -278,7 +279,7 @@ const handleUseRouterCallExpression = (
 	if (Node.isPropertyAccessExpression(parent)) {
 		const nameNode = parent.getNameNode();
 		if (Node.isIdentifier(nameNode) && nameNode.getText() === 'pathname') {
-			requiresPathname.set(() => true);
+			requiresPathname.set(() => 'pathname');
 
 			const grandparent = parent.getParent();
 
@@ -321,7 +322,7 @@ const handleUseRouterNode = (
 	}
 
 	const requiresSearchParams = buildContainer<boolean>(false); // TODO check if the statement exists
-	const requiresPathname = buildContainer<boolean>(false); // TODO check if the statement exists
+	const requiresPathname = buildContainer<string | null>(null); // TODO check if the statement exists
 	const labelContainer = buildContainer<ReadonlyArray<string>>([]);
 
 	const parent = node.getParent();
@@ -343,10 +344,13 @@ const handleUseRouterNode = (
 		usesSearchParams.set(() => true);
 	}
 
-	if (requiresPathname.get()) {
-		statements.push('const pathname = usePathname();');
+	{
+		const pathname = requiresPathname.get();
 
-		usesPathname.set(() => true);
+		if (pathname !== null) {
+			statements.push(`const ${pathname} = usePathname();`);
+			usesPathname.set(() => true);
+		}
 	}
 
 	{

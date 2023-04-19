@@ -455,17 +455,17 @@ describe.only('next 13 replace-next-router', function () {
 
 	it('should replace { pathname } destructed from router with usePathname()', async function (this: Context) {
 		const beforeText = `
-        import { useRouter } from 'next/router';
-        
-        function Component() {
-            const router = useRouter();
+            import { useRouter } from 'next/router';
+            
+            function Component() {
+                const router = useRouter();
 
-            const { pathname } = router;
-        }
-        
+                const { pathname } = router;
+            }
         `;
+
 		const afterText = `
-			import {usePathname} from "next/navigation";
+			import { usePathname } from "next/navigation";
 
             function Component() {
                 const pathname = usePathname();
@@ -477,23 +477,27 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	// it('should replace { pathname: p } destructed from router with const p = usePathname()', async function (this: Context) {
-	// 	const INPUT = 'const { pathname: p } = router';
-	// 	const OUTPUT =
-	// 		'import {usePathname} from "next/navigation"; const {} = router; const p = usePathname();';
+	it('should replace { pathname: p } destructed from router with const p = usePathname()', async function (this: Context) {
+		const beforeText = `
+            import { useRouter } from 'next/router';
 
-	// 	const fileInfo: FileInfo = {
-	// 		path: 'index.js',
-	// 		source: INPUT,
-	// 	};
+            function Component() {
+                const router = useRouter();
+                const { pathname: p } = router;
+            }
+        `;
+		const afterText = `
+            import { usePathname } from "next/navigation";
+            
+            function Component() {
+                const p = usePathname();
+            }
+        `;
 
-	// 	const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+		const { actual, expected } = transform(beforeText, afterText);
 
-	// 	assert.deepEqual(
-	// 		actualOutput?.replace(/\W/gm, ''),
-	// 		OUTPUT.replace(/\W/gm, ''),
-	// 	);
-	// });
+		deepStrictEqual(actual, expected);
+	});
 
 	// it('should replace router.isReady with true', async function (this: Context) {
 	// 	const INPUT = 'router.isReady';
