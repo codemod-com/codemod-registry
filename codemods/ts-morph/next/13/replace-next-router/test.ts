@@ -249,51 +249,41 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	// it('should replace INPUT with OUTPUT (2)', async function (this: Context) {
-	// 	const INPUT = `
-	// 		import { useRouter } from 'next/router';
+	it('should replace INPUT with OUTPUT (2)', async function (this: Context) {
+		const beforeText = `
+			import { useRouter } from 'next/router';
 
-	// 		const a = 1;
+			const a = 1;
 
-	// 		function Component() {
-	// 			const router = useRouter();
+			function Component() {
+				const router = useRouter();
 
-	// 			const nextA = useMemo(
-	// 				() => (router.query.a ? null : router.query.b),
-	// 				[router.query.a, router.query.b, c],
-	// 			) ?? a;
-	// 		}
-	// 	`;
+				const nextA = useMemo(
+					() => (router.query.a ? null : router.query.b),
+					[router.query.a, router.query.b, c],
+				) ?? a;
+			}
+		`;
 
-	// 	const OUTPUT = `
-	// 		import { useSearchParams } from 'next/navigation';
-	// 		import { useRouter } from 'next/router';
+		const afterText = `
+			import { useSearchParams } from "next/navigation";
 
-	// 		const a = 1;
+			const a = 1;
 
-	// 		function Component() {
-	// 			const searchParams = useSearchParams()
-	// 			const router = useRouter();
+			function Component() {
+				const searchParams = useSearchParams()
 
-	// 			const nextA = useMemo(
-	// 				() => (searchParams.get('a') ? null : searchParams.get('b')),
-	// 				[searchParams, c],
-	// 			) ?? a;
-	// 		}
-	// 	`;
+				const nextA = useMemo(
+					() => (searchParams.get("a") ? null : searchParams.get("b")),
+					[searchParams.get("a"), searchParams.get("b"), c],
+				) ?? a;
+			}
+		`;
 
-	// 	const fileInfo: FileInfo = {
-	// 		path: 'index.js',
-	// 		source: INPUT,
-	// 	};
+		const { actual, expected } = transform(beforeText, afterText);
 
-	// 	const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
-
-	// 	assert.deepEqual(
-	// 		actualOutput?.replace(/\W/gm, ''),
-	// 		OUTPUT.replace(/\W/gm, ''),
-	// 	);
-	// });
+		deepStrictEqual(actual, expected);
+	});
 
 	// it('should replace "query" with "searchParams"', async function (this: Context) {
 	// 	const { jscodeshift } = this.buildApi('tsx');
