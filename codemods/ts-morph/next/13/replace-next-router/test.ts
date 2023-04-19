@@ -280,35 +280,38 @@ describe.only('next 13 replace-next-router', function () {
 			}
 		`;
 
+		// TODO useMemo second parameter -> searchParams if at all
+
 		const { actual, expected } = transform(beforeText, afterText);
 
 		deepStrictEqual(actual, expected);
 	});
 
-	// it('should replace "query" with "searchParams"', async function (this: Context) {
-	// 	const { jscodeshift } = this.buildApi('tsx');
+	it('should replace "query" with "searchParams"', async function (this: Context) {
+		const beforeText = `
+			import { useRouter } from 'next/router';
 
-	// 	const root = jscodeshift(`
-	// 		import { useRouter } from 'next/router';
+			function Component() {
+				const { a, b, c } = query;
+			}
+		`;
 
-	// 		function Component() {
-	// 			const { a, b, c } = query;
-	// 		}
-	// 	`);
+		const afterText = `
+			import { useSearchParams } from 'next/navigation';
 
-	// 	replaceQueryWithSearchParams(jscodeshift, root);
+			function Component() {
+                const searchParams = useSearchParams();
 
-	// 	assert.deepEqual(
-	// 		root?.toSource().replace(/\W/gm, '') ?? '',
-	// 		`
-	// 		import { useRouter } from 'next/router';
+				const a = searchParams.get("a");
+                const a = searchParams.get("b");
+                const a = searchParams.get("c");
+			}
+        `;
 
-	// 		function Component() {
-	// 			const { a, b, c } = searchParams;
-	// 		}
-	// 		`.replace(/\W/gm, ''),
-	// 	);
-	// });
+		const { actual, expected } = transform(beforeText, afterText);
+
+		deepStrictEqual(actual, expected);
+	});
 
 	// it('should delete query from destructured useRouter call', async function (this: Context) {
 	// 	const { jscodeshift } = this.buildApi('tsx');
