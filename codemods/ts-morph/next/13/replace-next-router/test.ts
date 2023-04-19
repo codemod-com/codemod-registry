@@ -292,19 +292,20 @@ describe.only('next 13 replace-next-router', function () {
 			import { useRouter } from 'next/router';
 
 			function Component() {
-				const { a, b, c } = query;
+                const router = useRouter();
+				const { a, b, c } = router.query;
 			}
 		`;
 
 		const afterText = `
-			import { useSearchParams } from 'next/navigation';
+			import { useSearchParams } from "next/navigation";
 
 			function Component() {
                 const searchParams = useSearchParams();
 
-				const a = searchParams.get("a");
-                const a = searchParams.get("b");
-                const a = searchParams.get("c");
+				const a = searchParams.get("a"),
+                    b = searchParams.get("b"),
+                    c = searchParams.get("c");
 			}
         `;
 
@@ -313,32 +314,24 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	// it('should delete query from destructured useRouter call', async function (this: Context) {
-	// 	const { jscodeshift } = this.buildApi('tsx');
+	it('should delete query from destructured useRouter call', async function (this: Context) {
+		const beforeText = `
+			import { useRouter } from 'next/router';
 
-	// 	const root = jscodeshift(`
-	// 		import { useRouter } from 'next/router';
+			function Component() {
+				const { query } = useRouter();
+			}
+		`;
 
-	// 		function Component() {
-	// 			const { query } = useRouter();
-	// 		}
-	// 	`);
+		const afterText = `
+			function Component() {
+			}
+		`;
 
-	// 	removeQueryFromDestructuredUseRouterCall(jscodeshift, root);
+		const { actual, expected } = transform(beforeText, afterText);
 
-	// 	const OUTPUT = `
-	// 		import { useRouter } from 'next/router';
-
-	// 		function Component() {
-	// 			const { } = useRouter();
-	// 		}
-	// 	`;
-
-	// 	assert.deepEqual(
-	// 		root?.toSource().replace(/\W/gm, '') ?? '',
-	// 		OUTPUT.replace(/\W/gm, ''),
-	// 	);
-	// });
+		deepStrictEqual(actual, expected);
+	});
 
 	// it('should delete empty useRouter destructuring', async function (this: Context) {
 	// 	const { jscodeshift } = this.buildApi('tsx');
