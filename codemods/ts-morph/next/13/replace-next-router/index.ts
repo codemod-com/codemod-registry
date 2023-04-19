@@ -1,4 +1,4 @@
-import { EmitHint, ImportDeclaration } from 'ts-morph';
+import { CallExpression, EmitHint, ImportDeclaration } from 'ts-morph';
 import { PropertyAccessExpression, SourceFile, ts } from 'ts-morph';
 import { Node } from 'ts-morph';
 
@@ -123,6 +123,65 @@ const handleQueryNode = (
 	}
 };
 
+const handleCallExpression = (
+	parent: CallExpression,
+	usesSearchParams: Container<boolean>,
+	usesPathname: Container<boolean>,
+) => {
+	// useRouter();
+
+	const grandparent = parent.getParent();
+
+	if (Node.isVariableDeclaration(grandparent)) {
+		const bindingName = grandparent.getNameNode();
+
+		if (Node.isIdentifier(bindingName)) {
+			// e.g. router
+
+			bindingName.findReferencesAsNodes().forEach((node) => {
+				const parent = node.getParent();
+
+				if (Node.isPropertyAccessExpression(parent)) {
+					handlePAE(
+						parent,
+						() => usesSearchParams.set(true),
+						() => usesPathname.set(true),
+					);
+				}
+			});
+
+			const referenceCount = bindingName.findReferencesAsNodes().length;
+
+			if (referenceCount === 0) {
+				console.log(grandparent.print());
+				grandparent.remove();
+				return;
+			}
+		}
+
+		if (Node.isObjectBindingPattern(bindingName)) {
+			for (const element of bindingName.getElements()) {
+				const nameNode = element.getNameNode();
+
+				if (Node.isIdentifier(nameNode)) {
+					if (nameNode.getText() === 'query') {
+						// find query.a usages
+
+						nameNode.findReferencesAsNodes().forEach((node) => {
+							handleQueryNode(node, () =>
+								usesSearchParams.set(true),
+							);
+						});
+					}
+
+					// TODO ensure we remove it when all occurences have been replaced
+					grandparent.remove();
+				}
+			}
+		}
+	}
+};
+
 const handleReferencedNode = (
 	node: Node<ts.Node>,
 	usesSearchParams: Container<boolean>,
@@ -137,52 +196,11 @@ const handleReferencedNode = (
 		const parent = node.getParent();
 
 		if (Node.isCallExpression(parent)) {
-			// useRouter();
-
-			const grandparent = parent.getParent();
-
-			if (Node.isVariableDeclaration(grandparent)) {
-				const bindingName = grandparent.getNameNode();
-
-				if (Node.isIdentifier(bindingName)) {
-					// e.g. router
-
-					bindingName.findReferencesAsNodes().forEach((node) => {
-						const parent = node.getParent();
-
-						if (Node.isPropertyAccessExpression(parent)) {
-							handlePAE(
-								parent,
-								() => requiresSearchParams.set(true),
-								() => requiresPathname.set(true),
-							);
-						}
-					});
-				}
-
-				if (Node.isObjectBindingPattern(bindingName)) {
-					for (const element of bindingName.getElements()) {
-						const nameNode = element.getNameNode();
-
-						if (Node.isIdentifier(nameNode)) {
-							if (nameNode.getText() === 'query') {
-								// find query.a usages
-
-								nameNode
-									.findReferencesAsNodes()
-									.forEach((node) => {
-										handleQueryNode(node, () =>
-											requiresSearchParams.set(true),
-										);
-									});
-							}
-
-							// TODO ensure we remove it when all occurences have been replaced
-							grandparent.remove();
-						}
-					}
-				}
-			}
+			handleCallExpression(
+				parent,
+				requiresSearchParams,
+				requiresPathname,
+			);
 		}
 
 		if (requiresSearchParams.get()) {
@@ -224,8 +242,17 @@ const handleImportDeclaration = (
 			.forEach((node) =>
 				handleReferencedNode(node, usesSearchParams, usesPathname),
 			);
+
+		const referenceCount = namedImport
+			.getNameNode()
+			.findReferencesAsNodes().length;
+
+		if (referenceCount === 0) {
+			namedImport.remove();
+		}
 	});
 
+	// TODO can we remove it?
 	importDeclaration.remove();
 };
 
@@ -266,6 +293,8 @@ export const handleSourceFile = (
 			usesPathname,
 		),
 	);
+
+	// check if router is still used
 
 	sourceFile.insertStatements(
 		0,
