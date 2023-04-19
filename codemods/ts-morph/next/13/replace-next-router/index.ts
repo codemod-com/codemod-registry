@@ -1,4 +1,9 @@
-import { CallExpression, EmitHint, ImportDeclaration } from 'ts-morph';
+import {
+	CallExpression,
+	EmitHint,
+	ImportDeclaration,
+	VariableDeclaration,
+} from 'ts-morph';
 import { PropertyAccessExpression, SourceFile, ts } from 'ts-morph';
 import { Node } from 'ts-morph';
 
@@ -163,6 +168,35 @@ const handleQueryNode = (
 	}
 };
 
+const handleVariableDeclarationWithRouter = (
+	variableDeclaration: VariableDeclaration,
+	requiresPathname: Container<boolean>,
+) => {
+	const nameNode = variableDeclaration.getNameNode();
+
+	if (Node.isObjectBindingPattern(nameNode)) {
+		const elements = nameNode.getElements();
+		let count = 0;
+
+		for (const element of elements) {
+			const nameNode = element.getNameNode();
+
+			if (
+				Node.isIdentifier(nameNode) &&
+				nameNode.getText() === 'pathname'
+			) {
+				requiresPathname.set(() => true);
+
+				++count;
+			}
+		}
+
+		if (count === elements.length) {
+			variableDeclaration.remove();
+		}
+	}
+};
+
 const handleUseRouterCallExpression = (
 	node: CallExpression,
 	requiresSearchParams: Container<boolean>,
@@ -183,6 +217,15 @@ const handleUseRouterCallExpression = (
 						parent,
 						() => requiresSearchParams.set(() => true),
 						() => requiresPathname.set(() => true),
+					);
+
+					return;
+				}
+
+				if (Node.isVariableDeclaration(parent)) {
+					handleVariableDeclarationWithRouter(
+						parent,
+						requiresPathname,
 					);
 				}
 			});

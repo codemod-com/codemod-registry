@@ -1,5 +1,5 @@
 require:
     - 'ts-node/register'
 full-trace: true
-bail: true
+bail: false
 spec: './**/test.ts'
