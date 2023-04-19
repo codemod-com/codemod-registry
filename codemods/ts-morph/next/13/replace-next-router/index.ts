@@ -125,19 +125,20 @@ const handleQueryNode = (
 	}
 };
 
-const handleCallExpression = (
-	parent: CallExpression,
+const handleUseRouterCallExpression = (
+	node: CallExpression,
 	requiresSearchParams: Container<boolean>,
 	requiresPathname: Container<boolean>,
 ) => {
-	// useRouter();
+	const parent = node.getParent();
 
-	const grandparent = parent.getParent();
+	console.log('ABCD', parent?.print());
 
-	if (Node.isVariableDeclaration(grandparent)) {
-		const bindingName = grandparent.getNameNode();
+	if (Node.isVariableDeclaration(parent)) {
+		const bindingName = parent.getNameNode();
 
 		if (Node.isIdentifier(bindingName)) {
+			console.log(bindingName);
 			// e.g. router
 
 			bindingName.findReferencesAsNodes().forEach((node) => {
@@ -155,8 +156,7 @@ const handleCallExpression = (
 			const referenceCount = bindingName.findReferencesAsNodes().length;
 
 			if (referenceCount === 0) {
-				console.log(grandparent.print());
-				grandparent.remove();
+				parent.remove();
 				return;
 			}
 		}
@@ -177,7 +177,7 @@ const handleCallExpression = (
 					}
 
 					// TODO ensure we remove it when all occurences have been replaced
-					grandparent.remove();
+					parent.remove();
 				}
 			}
 		}
@@ -198,7 +198,9 @@ const handleReferencedNode = (
 		const parent = node.getParent();
 
 		if (Node.isCallExpression(parent)) {
-			handleCallExpression(
+			console.log('A', parent.print());
+
+			handleUseRouterCallExpression(
 				parent,
 				requiresSearchParams,
 				requiresPathname,
@@ -303,8 +305,6 @@ export const handleSourceFile = (
 			usesPathname,
 		),
 	);
-
-	// check if router is still used
 
 	if (useRouterReferenceCount.get() === 0) {
 		sourceFile.insertStatements(

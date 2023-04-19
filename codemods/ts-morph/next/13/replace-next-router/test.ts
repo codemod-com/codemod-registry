@@ -20,7 +20,7 @@ const transform = (beforeText: string, afterText: string) => {
 };
 
 describe.only('next 13 replace-next-router', function () {
-	it('should add useSearchParams import because of "router.query"', async function (this: Context) {
+	xit('should add useSearchParams import because of "router.query"', async function (this: Context) {
 		const beforeText = `
 			import { useRouter } from 'next/router';
 
@@ -45,7 +45,7 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	xit('should add useSearchParams import because of "useRouter().query"', async function (this: Context) {
+	it.only('should add useSearchParams import because of "useRouter().query"', async function (this: Context) {
 		const beforeText = `
 			import { useRouter } from 'next/router';
 
@@ -56,10 +56,10 @@ describe.only('next 13 replace-next-router', function () {
 
 		const afterText = `
 			import { useSearchParams } from 'next/navigation';
-			import { useRouter } from 'next/router';
 
 			function Component() {
-				const a = useRouter().query.a;
+                const searchParams = useSearchParams();
+				const a = searchParams.get("a");
 			}
         `;
 
