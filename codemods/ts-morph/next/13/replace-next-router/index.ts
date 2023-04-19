@@ -103,7 +103,12 @@ const handlePAE = (
 	}
 
 	if (nodeName === 'pathname') {
-		node.replaceWithText('pathname');
+		const parentNode = node.getParent();
+
+		if (Node.isVariableDeclaration(parentNode)) {
+			parentNode.remove();
+		}
+
 		onReplacedWithPathname();
 	}
 };
@@ -170,8 +175,6 @@ const handleUseRouterCallExpression = (
 		const bindingName = parent.getNameNode();
 
 		if (Node.isIdentifier(bindingName)) {
-			// e.g. router
-
 			bindingName.findReferencesAsNodes().forEach((node) => {
 				const parent = node.getParent();
 

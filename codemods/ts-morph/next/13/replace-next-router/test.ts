@@ -408,23 +408,28 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	// it('should replace router.pathname with usePathname()', async function (this: Context) {
-	// 	const INPUT = 'const pathname = router.pathname;';
-	// 	const OUTPUT =
-	// 		'import {usePathname} from "next/navigation"; const pathname = usePathname();';
+	it('should replace router.pathname with usePathname()', async function (this: Context) {
+		const beforeText = `
+            import { useRouter } from 'next/router';
 
-	// 	const fileInfo: FileInfo = {
-	// 		path: 'index.js',
-	// 		source: INPUT,
-	// 	};
+            function Component() {
+                const router = useRouter();
+                const pathname = router.pathname;
+            }
+        `;
 
-	// 	const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+		const afterText = `
+			import { usePathname } from "next/navigation";
+            
+            function Component() {
+                const pathname = usePathname();
+            }
+        `;
 
-	// 	assert.deepEqual(
-	// 		actualOutput?.replace(/\W/gm, ''),
-	// 		OUTPUT.replace(/\W/gm, ''),
-	// 	);
-	// });
+		const { actual, expected } = transform(beforeText, afterText);
+
+		deepStrictEqual(actual, expected);
+	});
 
 	// it('should replace { pathname } destructed from useRouter() with usePathname()', async function (this: Context) {
 	// 	const INPUT = 'const { pathname } = useRouter();';
