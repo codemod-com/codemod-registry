@@ -257,6 +257,10 @@ const handleUseRouterNode = (
 
 	const block = node.getFirstAncestorByKind(ts.SyntaxKind.Block);
 
+	if (block === undefined) {
+		return;
+	}
+
 	const requiresSearchParams = buildContainer<boolean>(false); // TODO check if the statement exists
 	const requiresPathname = buildContainer<boolean>(false); // TODO check if the statement exists
 	const labelContainer = buildContainer<ReadonlyArray<string>>([]);
@@ -294,7 +298,7 @@ const handleUseRouterNode = (
 		}
 	}
 
-	block?.insertStatements(0, statements);
+	block.insertStatements(0, statements);
 };
 
 const handleImportDeclaration = (
