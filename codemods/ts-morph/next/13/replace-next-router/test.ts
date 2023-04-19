@@ -499,7 +499,7 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it.only('should replace router.isReady with true', async function (this: Context) {
+	it('should replace router.isReady with true', async function (this: Context) {
 		const beforeText = `
             import { useRouter } from 'next/router';
 
