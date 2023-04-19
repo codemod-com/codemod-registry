@@ -353,32 +353,25 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	// it('should remove unused useRouter import specifiers', async function (this: Context) {
-	// 	const { jscodeshift } = this.buildApi('tsx');
+	it('should remove unused useRouter import specifiers', async function (this: Context) {
+		const beforeText = `
+			import { useRouter } from 'next/router';
 
-	// 	const root = jscodeshift(`
-	// 		import { useRouter } from 'next/router';
+			function Component() {
 
-	// 		function Component() {
+			}
+		`;
 
-	// 		}
-	// 	`);
+		const afterText = `
+			function Component() {
 
-	// 	removeUnusedImportSpecifier(jscodeshift, root);
+			}
+		`;
 
-	// 	const OUTPUT = `
-	// 		import 'next/router';
+		const { actual, expected } = transform(beforeText, afterText);
 
-	// 		function Component() {
-
-	// 		}
-	// 	`;
-
-	// 	assert.deepEqual(
-	// 		root?.toSource().replace(/\W/gm, '') ?? '',
-	// 		OUTPUT.replace(/\W/gm, ''),
-	// 	);
-	// });
+		deepStrictEqual(actual, expected);
+	});
 
 	// it('should remove unused useRouter import declarations', async function (this: Context) {
 	// 	const { jscodeshift } = this.buildApi('tsx');

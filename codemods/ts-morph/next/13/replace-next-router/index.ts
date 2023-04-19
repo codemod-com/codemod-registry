@@ -159,8 +159,6 @@ const handleUseRouterCallExpression = (
 		}
 
 		if (Node.isObjectBindingPattern(bindingName)) {
-			console.log('ABCD');
-
 			const elements = bindingName.getElements();
 			let count = 0;
 
