@@ -361,39 +361,31 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, undefined);
 	});
 
-	// it('should replace INPUT with OUTPUT (3)', async function (this: Context) {
-	// 	const INPUT = `
-	// 		import { useRouter } from 'next/router';
+	it('should replace INPUT with OUTPUT (3)', async function (this: Context) {
+		const beforeText = `
+			import { useRouter } from 'next/router';
 
-	// 		function Component() {
-	// 			const { query } = useRouter();
-	// 			const { a, b, c } = query;
-	// 		}
-	// 	`;
+			function Component() {
+				const { query } = useRouter();
+				const { a, b, c } = query;
+			}
+		`;
 
-	// 	const OUTPUT = `
-	// 		import { useSearchParams } from 'next/navigation';
+		const afterText = `
+			import { useSearchParams } from 'next/navigation';
 
-	// 		function Component() {
-	// 			const searchParams = useSearchParams();
-	// 			const a = searchParams.get('a');
-	// 			const b = searchParams.get('b');
-	// 			const c = searchParams.get('c');
-	// 		}
-	// 	`;
+			function Component() {
+				const searchParams = useSearchParams();
+				const a = searchParams.get('a');
+				const b = searchParams.get('b');
+				const c = searchParams.get('c');
+			}
+		`;
 
-	// 	const fileInfo: FileInfo = {
-	// 		path: 'index.js',
-	// 		source: INPUT,
-	// 	};
+		const { actual } = transform(beforeText, afterText);
 
-	// 	const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
-
-	// 	assert.deepEqual(
-	// 		actualOutput?.replace(/\W/gm, ''),
-	// 		OUTPUT.replace(/\W/gm, ''),
-	// 	);
-	// });
+		deepStrictEqual(actual, undefined);
+	});
 
 	// it('should noop for pathname = a.b', async function (this: Context) {
 	// 	const INPUT = 'const pathname = a.b;';
