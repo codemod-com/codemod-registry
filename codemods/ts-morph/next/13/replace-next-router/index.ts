@@ -125,8 +125,8 @@ const handleQueryNode = (
 
 const handleCallExpression = (
 	parent: CallExpression,
-	usesSearchParams: Container<boolean>,
-	usesPathname: Container<boolean>,
+	requiresSearchParams: Container<boolean>,
+	requiresPathname: Container<boolean>,
 ) => {
 	// useRouter();
 
@@ -144,8 +144,8 @@ const handleCallExpression = (
 				if (Node.isPropertyAccessExpression(parent)) {
 					handlePAE(
 						parent,
-						() => usesSearchParams.set(true),
-						() => usesPathname.set(true),
+						() => requiresSearchParams.set(true),
+						() => requiresPathname.set(true),
 					);
 				}
 			});
@@ -169,7 +169,7 @@ const handleCallExpression = (
 
 						nameNode.findReferencesAsNodes().forEach((node) => {
 							handleQueryNode(node, () =>
-								usesSearchParams.set(true),
+								requiresSearchParams.set(true),
 							);
 						});
 					}
