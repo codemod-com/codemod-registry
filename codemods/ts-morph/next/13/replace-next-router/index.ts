@@ -230,6 +230,19 @@ const handleUseRouterCallExpression = (
 	}
 
 	if (Node.isPropertyAccessExpression(parent)) {
+		const nameNode = parent.getNameNode();
+		if (Node.isIdentifier(nameNode) && nameNode.getText() === 'pathname') {
+			requiresPathname.set(() => true);
+
+			const grandparent = parent.getParent();
+
+			if (Node.isVariableDeclaration(grandparent)) {
+				grandparent.remove();
+			}
+
+			return;
+		}
+
 		const grandparent = parent.getParent();
 
 		if (Node.isPropertyAccessExpression(grandparent)) {
