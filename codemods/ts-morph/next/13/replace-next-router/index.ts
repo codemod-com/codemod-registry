@@ -111,6 +111,7 @@ const handlePAE = (
 const handleQueryNode = (
 	node: Node,
 	requiresSearchParams: Container<boolean>,
+	labelContainer: Container<ReadonlyArray<string>>,
 ) => {
 	if (!Node.isIdentifier(node)) {
 		return;
@@ -129,9 +130,29 @@ const handleQueryNode = (
 	}
 
 	if (Node.isVariableDeclaration(parent)) {
-		console.log(parent.print());
+		const variableDeclaration = parent;
 
-		// TODO expand here
+		const nameNode = variableDeclaration.getNameNode();
+
+		if (Node.isObjectBindingPattern(nameNode)) {
+			const objectBindingPattern = nameNode;
+			const elements = objectBindingPattern.getElements();
+
+			const labels: string[] = [];
+
+			elements.forEach((element) => {
+				const nameNode = element.getNameNode();
+
+				if (Node.isIdentifier(nameNode)) {
+					labels.push(nameNode.getText());
+				}
+			});
+
+			labelContainer.set(() => labels);
+			requiresSearchParams.set(() => true);
+
+			return;
+		}
 	}
 };
 
@@ -139,6 +160,7 @@ const handleUseRouterCallExpression = (
 	node: CallExpression,
 	requiresSearchParams: Container<boolean>,
 	requiresPathname: Container<boolean>,
+	labelContainer: Container<ReadonlyArray<string>>,
 ) => {
 	const parent = node.getParent();
 
@@ -184,7 +206,11 @@ const handleUseRouterCallExpression = (
 						// TODO
 
 						nameNode.findReferencesAsNodes().forEach((node) => {
-							handleQueryNode(node, requiresSearchParams);
+							handleQueryNode(
+								node,
+								requiresSearchParams,
+								labelContainer,
+							);
 						});
 					}
 
@@ -230,6 +256,7 @@ const handleReferencedNode = (
 
 		const requiresSearchParams = buildContainer<boolean>(false); // TODO check if the statement exists
 		const requiresPathname = buildContainer<boolean>(false); // TODO check if the statement exists
+		const labelContainer = buildContainer<ReadonlyArray<string>>([]);
 
 		const parent = node.getParent();
 
@@ -238,14 +265,12 @@ const handleReferencedNode = (
 				parent,
 				requiresSearchParams,
 				requiresPathname,
+				labelContainer,
 			);
 		}
 
 		if (requiresSearchParams.get()) {
-			block?.insertStatements(
-				0,
-				'const searchParams = useSearchParams();',
-			);
+			block?.addStatements('const searchParams = useSearchParams();');
 
 			usesSearchParams.set(() => true);
 		}
@@ -254,6 +279,16 @@ const handleReferencedNode = (
 			block?.insertStatements(0, 'const pathname = usePathname();');
 
 			usesPathname.set(() => true);
+		}
+
+		{
+			const labels = labelContainer.get();
+
+			for (const label of labels) {
+				block?.addStatements(
+					`const ${label} = searchParams.get("${label}")`,
+				);
+			}
 		}
 	}
 };

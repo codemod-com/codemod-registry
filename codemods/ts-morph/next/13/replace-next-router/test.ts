@@ -372,13 +372,13 @@ describe.only('next 13 replace-next-router', function () {
 		`;
 
 		const afterText = `
-			import { useSearchParams } from 'next/navigation';
+			import { useSearchParams } from "next/navigation";
 
 			function Component() {
 				const searchParams = useSearchParams();
-				const a = searchParams.get('a');
-				const b = searchParams.get('b');
-				const c = searchParams.get('c');
+				const a = searchParams.get("a");
+				const b = searchParams.get("b");
+				const c = searchParams.get("c");
 			}
 		`;
 
