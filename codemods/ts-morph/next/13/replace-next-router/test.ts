@@ -118,34 +118,31 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	// it('should replace "...?.query" with "...searchParams.entries()."', async function (this: Context) {
-	// 	const { jscodeshift } = this.buildApi('tsx');
+	it('should replace "...?.query" with "...searchParams.entries()."', async function (this: Context) {
+		const beforeText = `
+			import { useRouter } from 'next/router';
 
-	// 	const root = jscodeshift(`
-	// 		import { useRouter } from 'next/router';
+			function Component() {
+				const r = useRouter();
 
-	// 		function Component() {
-	// 			const r = useRouter();
+				const shallowCopiedQuery = { ...r.query }
+			}
+		`;
 
-	// 			const shallowCopiedQuery = { ...r.query }
-	// 		}
-	// 	`);
+		const afterText = `
+            import { useSearchParams } from "next/navigation";
 
-	// 	replaceTripleDotRouterQueryWithSearchParams(jscodeshift, root);
+			function Component() {
+				const searchParams = useSearchParams();
 
-	// 	assert.deepEqual(
-	// 		root?.toSource().replace(/\W/gm, '') ?? '',
-	// 		`
-	// 		import { useRouter } from 'next/router';
+				const shallowCopiedQuery = { ...Object.fromEntries(searchParams) };
+			}
+			`;
 
-	// 		function Component() {
-	// 			const r = useRouter();
+		const { actual, expected } = transform(beforeText, afterText);
 
-	// 			const shallowCopiedQuery = { ...searchParams.entries() }
-	// 		}
-	// 		`.replace(/\W/gm, ''),
-	// 	);
-	// });
+		deepStrictEqual(actual, expected);
+	});
 
 	// it('should replace "?.query" with "searchParams"', async function (this: Context) {
 	// 	const { jscodeshift } = this.buildApi('tsx');
