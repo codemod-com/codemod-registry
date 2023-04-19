@@ -204,10 +204,6 @@ const handleUseRouterCallExpression = (
 
 				if (Node.isIdentifier(nameNode)) {
 					if (nameNode.getText() === 'query') {
-						// find query.a usages
-
-						// TODO
-
 						nameNode.findReferencesAsNodes().forEach((node) => {
 							handleQueryNode(
 								node,
@@ -215,6 +211,10 @@ const handleUseRouterCallExpression = (
 								labelContainer,
 							);
 						});
+					}
+
+					if (nameNode.getText() === 'pathname') {
+						requiresPathname.set(() => true);
 					}
 
 					// TODO ensure we remove it when all occurences have been replaced
