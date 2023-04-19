@@ -121,6 +121,14 @@ const handleQueryNode = (
 			parent.replaceWithText(`searchParams.get('${name}')`);
 
 			requiresSearchParams.set(() => true);
+
+			return;
+		}
+
+		if (Node.isVariableDeclaration(parent)) {
+			console.log(parent.print());
+
+			// TODO expand here
 		}
 	}
 };
@@ -167,6 +175,8 @@ const handleUseRouterCallExpression = (
 
 				if (Node.isIdentifier(nameNode)) {
 					if (nameNode.getText() === 'query') {
+						console.log('ABCD', parent.print());
+
 						// find query.a usages
 
 						// TODO
