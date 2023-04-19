@@ -193,32 +193,6 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	// it('should replace "searchParams.a" with "searchParams.get("a")"', async function (this: Context) {
-	// 	const beforeText = `
-	// 		import { useSearchParams } from 'next/navigation';
-
-	// 		function Component() {
-	// 			const searchParams = useSearchParams();
-
-	// 			const a = searchParams.a;
-	// 		}
-	// 	`;
-
-	// 	const afterText = `
-	// 		import { useSearchParams } from 'next/navigation';
-
-	// 		function Component() {
-	// 			const searchParams = useSearchParams();
-
-	// 			const a = searchParams.get('a');
-	// 		}
-	// 		`;
-
-	// 	const { actual, expected } = transform(beforeText, afterText);
-
-	// 	deepStrictEqual(actual, expected);
-	// });
-
 	it('should replace INPUT with OUTPUT', async function (this: Context) {
 		const beforeText = `
 			import { useRouter } from 'next/router';
@@ -372,31 +346,6 @@ describe.only('next 13 replace-next-router', function () {
 
 		deepStrictEqual(actual, expected);
 	});
-
-	// it('should remove unused useRouter import declarations', async function (this: Context) {
-	// 	const { jscodeshift } = this.buildApi('tsx');
-
-	// 	const root = jscodeshift(`
-	// 		import 'next/router';
-
-	// 		function Component() {
-
-	// 		}
-	// 	`);
-
-	// 	removeUnusedImportDeclaration(jscodeshift, root);
-
-	// 	const OUTPUT = `
-	// 		function Component() {
-
-	// 		}
-	// 	`;
-
-	// 	assert.deepEqual(
-	// 		root?.toSource().replace(/\W/gm, '') ?? '',
-	// 		OUTPUT.replace(/\W/gm, ''),
-	// 	);
-	// });
 
 	// it('should not remove CSS imports', async function (this: Context) {
 	// 	const { jscodeshift } = this.buildApi('tsx');
