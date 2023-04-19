@@ -246,55 +246,55 @@ const handleUseRouterCallExpression = (
 	}
 };
 
-const handleReferencedNode = (
+const handleUseRouterNode = (
 	node: Node<ts.Node>,
 	usesSearchParams: Container<boolean>,
 	usesPathname: Container<boolean>,
 ) => {
-	if (Node.isIdentifier(node)) {
-		const block = node.getFirstAncestorByKind(ts.SyntaxKind.Block);
-
-		const requiresSearchParams = buildContainer<boolean>(false); // TODO check if the statement exists
-		const requiresPathname = buildContainer<boolean>(false); // TODO check if the statement exists
-		const labelContainer = buildContainer<ReadonlyArray<string>>([]);
-
-		const parent = node.getParent();
-
-		if (Node.isCallExpression(parent)) {
-			handleUseRouterCallExpression(
-				parent,
-				requiresSearchParams,
-				requiresPathname,
-				labelContainer,
-			);
-		}
-
-		const statements: string[] = [];
-
-		if (requiresSearchParams.get()) {
-			statements.push('const searchParams = useSearchParams();');
-
-			usesSearchParams.set(() => true);
-		}
-
-		if (requiresPathname.get()) {
-			statements.push('const pathname = usePathname();');
-
-			usesPathname.set(() => true);
-		}
-
-		{
-			const labels = labelContainer.get();
-
-			for (const label of labels) {
-				statements.push(
-					`const ${label} = searchParams.get("${label}")`,
-				);
-			}
-		}
-
-		block?.insertStatements(0, statements);
+	if (!Node.isIdentifier(node)) {
+		return;
 	}
+
+	const block = node.getFirstAncestorByKind(ts.SyntaxKind.Block);
+
+	const requiresSearchParams = buildContainer<boolean>(false); // TODO check if the statement exists
+	const requiresPathname = buildContainer<boolean>(false); // TODO check if the statement exists
+	const labelContainer = buildContainer<ReadonlyArray<string>>([]);
+
+	const parent = node.getParent();
+
+	if (Node.isCallExpression(parent)) {
+		handleUseRouterCallExpression(
+			parent,
+			requiresSearchParams,
+			requiresPathname,
+			labelContainer,
+		);
+	}
+
+	const statements: string[] = [];
+
+	if (requiresSearchParams.get()) {
+		statements.push('const searchParams = useSearchParams();');
+
+		usesSearchParams.set(() => true);
+	}
+
+	if (requiresPathname.get()) {
+		statements.push('const pathname = usePathname();');
+
+		usesPathname.set(() => true);
+	}
+
+	{
+		const labels = labelContainer.get();
+
+		for (const label of labels) {
+			statements.push(`const ${label} = searchParams.get("${label}")`);
+		}
+	}
+
+	block?.insertStatements(0, statements);
 };
 
 const handleImportDeclaration = (
@@ -318,7 +318,7 @@ const handleImportDeclaration = (
 			.getNameNode()
 			.findReferencesAsNodes()
 			.forEach((node) =>
-				handleReferencedNode(node, usesSearchParams, usesPathname),
+				handleUseRouterNode(node, usesSearchParams, usesPathname),
 			);
 
 		const referenceCount = namedImport
