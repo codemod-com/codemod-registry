@@ -170,30 +170,28 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	// it('should replace "useRouter().query" with "useSearchParams()"', async function (this: Context) {
-	// 	const { jscodeshift } = this.buildApi('tsx');
+	it('should replace "useRouter().query" with "useSearchParams()"', async function (this: Context) {
+		const beforeText = `
+			import { useRouter } from 'next/router';
 
-	// 	const root = jscodeshift(`
-	// 		import { useRouter } from 'next/router';
+			function Component() {
+				const a = useRouter().query.a;
+			}
+		`;
 
-	// 		function Component() {
-	// 			const a = useRouter().query.a;
-	// 		}
-	// 	`);
+		const afterText = `
+            import { useSearchParams } from "next/navigation";
 
-	// 	replaceUseRouterQueryWithUseSearchParams(jscodeshift, root);
+			function Component() {
+				const searchParams = useSearchParams();
+                const a = searchParams.get("a");
+			}
+			`;
 
-	// 	assert.deepEqual(
-	// 		root?.toSource().replace(/\W/gm, '') ?? '',
-	// 		`
-	// 		import { useRouter } from 'next/router';
+		const { actual, expected } = transform(beforeText, afterText);
 
-	// 		function Component() {
-	// 			const a = useSearchParams().a;
-	// 		}
-	// 		`.replace(/\W/gm, ''),
-	// 	);
-	// });
+		deepStrictEqual(actual, expected);
+	});
 
 	// it('should replace "searchParams.a" with "searchParams.get("a")"', async function (this: Context) {
 	// 	const { jscodeshift } = this.buildApi('tsx');
