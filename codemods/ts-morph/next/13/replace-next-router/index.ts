@@ -148,6 +148,8 @@ const handleQueryNode = (
 				}
 			});
 
+			variableDeclaration.remove();
+
 			labelContainer.set(() => labels);
 			requiresSearchParams.set(() => true);
 
