@@ -201,8 +201,6 @@ const handleUseRouterCallExpression = (
 
 				if (Node.isIdentifier(nameNode)) {
 					if (nameNode.getText() === 'query') {
-						console.log('ABCD', parent.print());
-
 						// find query.a usages
 
 						// TODO
@@ -271,14 +269,16 @@ const handleReferencedNode = (
 			);
 		}
 
+		const statements: string[] = [];
+
 		if (requiresSearchParams.get()) {
-			block?.addStatements('const searchParams = useSearchParams();');
+			statements.push('const searchParams = useSearchParams();');
 
 			usesSearchParams.set(() => true);
 		}
 
 		if (requiresPathname.get()) {
-			block?.addStatements('const pathname = usePathname();');
+			statements.push('const pathname = usePathname();');
 
 			usesPathname.set(() => true);
 		}
@@ -287,11 +287,13 @@ const handleReferencedNode = (
 			const labels = labelContainer.get();
 
 			for (const label of labels) {
-				block?.addStatements(
+				statements.push(
 					`const ${label} = searchParams.get("${label}")`,
 				);
 			}
 		}
+
+		block?.insertStatements(0, statements);
 	}
 };
 
