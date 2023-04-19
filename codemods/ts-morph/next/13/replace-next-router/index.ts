@@ -132,8 +132,6 @@ const handleUseRouterCallExpression = (
 ) => {
 	const parent = node.getParent();
 
-	console.log('ABCD', parent?.print());
-
 	if (Node.isVariableDeclaration(parent)) {
 		const bindingName = parent.getNameNode();
 
@@ -181,6 +179,22 @@ const handleUseRouterCallExpression = (
 				}
 			}
 		}
+	}
+
+	if (Node.isPropertyAccessExpression(parent)) {
+		const grandparent = parent.getParent();
+
+		if (Node.isPropertyAccessExpression(grandparent)) {
+			const nameNode = grandparent.getNameNode();
+
+			if (Node.isIdentifier(nameNode)) {
+				grandparent.replaceWithText(
+					`searchParams.get("${nameNode.getText()}")`,
+				);
+			}
+		}
+
+		requiresSearchParams.set(() => true);
 	}
 };
 
