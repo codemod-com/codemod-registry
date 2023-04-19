@@ -347,24 +347,19 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	// it('should not remove CSS imports', async function (this: Context) {
-	// 	const { jscodeshift } = this.buildApi('tsx');
+	it('should not remove CSS imports', async function (this: Context) {
+		const beforeText = `
+			import './index.css';
+		`;
 
-	// 	const root = jscodeshift(`
-	// 		import './index.css';
-	// 	`);
+		const afterText = `
+			import './index.css';
+		`;
 
-	// 	removeUnusedImportDeclaration(jscodeshift, root);
+		const { actual } = transform(beforeText, afterText);
 
-	// 	const OUTPUT = `
-	// 		import './index.css';
-	// 	`;
-
-	// 	assert.deepEqual(
-	// 		root?.toSource().replace(/\W/gm, '') ?? '',
-	// 		OUTPUT.replace(/\W/gm, ''),
-	// 	);
-	// });
+		deepStrictEqual(actual, undefined);
+	});
 
 	// it('should replace INPUT with OUTPUT (3)', async function (this: Context) {
 	// 	const INPUT = `
