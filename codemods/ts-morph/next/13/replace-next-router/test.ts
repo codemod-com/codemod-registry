@@ -93,21 +93,23 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	xit('should add searchParams variable declarator because of "useRouter()"', async function (this: Context) {
+	it('should add searchParams variable declarator because of "useRouter()"', async function (this: Context) {
 		const beforeText = `
 			import { useRouter } from 'next/router';
 
 			function Component() {
 				const { query } = useRouter();
+
+                const a = query.a;
 			}
 		`;
 
 		const afterText = `
-			import { useRouter } from 'next/router';
+            import { useSearchParams } from "next/navigation";
 
 			function Component() {
 				const searchParams = useSearchParams();
-				const { query } = useRouter();
+				const a = searchParams.get('a');
 			}
 			`;
 
