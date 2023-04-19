@@ -159,7 +159,12 @@ const handleUseRouterCallExpression = (
 		}
 
 		if (Node.isObjectBindingPattern(bindingName)) {
-			for (const element of bindingName.getElements()) {
+			console.log('ABCD');
+
+			const elements = bindingName.getElements();
+			let count = 0;
+
+			for (const element of elements) {
 				const nameNode = element.getNameNode();
 
 				if (Node.isIdentifier(nameNode)) {
@@ -174,8 +179,14 @@ const handleUseRouterCallExpression = (
 					}
 
 					// TODO ensure we remove it when all occurences have been replaced
-					parent.remove();
+					// parent.remove();
+					++count;
 				}
+			}
+
+			if (elements.length === count) {
+				parent.remove();
+				return;
 			}
 		}
 
