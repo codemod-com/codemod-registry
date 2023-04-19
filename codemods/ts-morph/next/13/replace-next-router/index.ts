@@ -112,8 +112,6 @@ const handleQueryNode = (
 	node: Node,
 	onReplacedWithSearchParams: () => void,
 ) => {
-	console.log('TEXT');
-
 	if (Node.isIdentifier(node)) {
 		const parent = node.getParent();
 
