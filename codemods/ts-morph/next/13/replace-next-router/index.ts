@@ -276,7 +276,7 @@ const handleReferencedNode = (
 		}
 
 		if (requiresPathname.get()) {
-			block?.insertStatements(0, 'const pathname = usePathname();');
+			block?.addStatements('const pathname = usePathname();');
 
 			usesPathname.set(() => true);
 		}
