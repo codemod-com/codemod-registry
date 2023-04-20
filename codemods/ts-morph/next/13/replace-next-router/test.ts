@@ -602,4 +602,42 @@ describe.only('next 13 replace-next-router', function () {
 
 		deepStrictEqual(actual, expected);
 	});
+
+	it.only('test', async function (this: Context) {
+		const beforeText = `
+			import { useRouter } from 'next/router';
+
+			export function Component() {
+				const { route, pathname } = useRouter();
+
+				return route === 'test && pathname === 'test;
+			}
+		`;
+
+		const afterText = `
+			import { useRouter } from 'next/navigation';
+			import { usePathname } from "next/navigation";
+
+			export function Component() {
+				const { route } = useRouter();
+				const { pathname } = usePathname();
+
+				return route === 'test && pathname === 'test;
+			}
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText);
+
+		deepStrictEqual(actual, expected);
+	});
+
+	// const a = useRouter().query[?];
+
+	// const { a: b } = useRouter().query as { ... }
+
+	// const isPreview = useRouter().isPreview;
+
+	// const {
+	// 		query: { a },
+	// 	} = useRouter();
 });
