@@ -361,7 +361,42 @@ const handleUseRouterCallExpression = (
 		if (Node.isAsExpression(grandparent)) {
 			const greatgrandparent = grandparent.getParent();
 
-			console.log(greatgrandparent);
+			if (Node.isVariableDeclaration(greatgrandparent)) {
+				const bindingName = greatgrandparent.getNameNode();
+
+				if (Node.isObjectBindingPattern(bindingName)) {
+					const elements = bindingName.getElements();
+
+					const properties: { name: string; propertyName: string }[] =
+						[];
+
+					for (const element of elements) {
+						const nameNode = element.getNameNode();
+						const propertyNameNode =
+							element.getPropertyNameNode() ?? nameNode;
+
+						if (
+							Node.isIdentifier(nameNode) &&
+							Node.isIdentifier(propertyNameNode)
+						) {
+							properties.push({
+								name: nameNode.getText(),
+								propertyName: propertyNameNode.getText(),
+							});
+						}
+					}
+
+					requiresSearchParams.set(() => true);
+
+					const text = properties
+						.map(({ name, propertyName }) => {
+							return `${name} = searchParams.get("${propertyName}")`;
+						})
+						.join(',\n');
+
+					greatgrandparent.replaceWithText(text);
+				}
+			}
 		}
 	}
 };

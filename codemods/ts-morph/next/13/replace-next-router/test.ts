@@ -672,7 +672,7 @@ describe.only('next 13 replace-next-router', function () {
 
 			export function Component() {
 				const searchParams = useSearchParams();
-				const b = searchParams.get('a');
+				const b = searchParams.get("a");
 			}
 		`;
 
