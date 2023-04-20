@@ -200,6 +200,94 @@ const handleVariableDeclarationWithRouter = (
 	}
 };
 
+const handleVariableDeclaration = (
+	parent: VariableDeclaration,
+	requiresRoute: Container<boolean>,
+	requiresSearchParams: Container<boolean>,
+	requiresPathname: Container<string | null>,
+	labelContainer: Container<ReadonlyArray<string>>,
+) => {
+	const bindingName = parent.getNameNode();
+
+	if (Node.isIdentifier(bindingName)) {
+		bindingName.findReferencesAsNodes().forEach((node) => {
+			const parent = node.getParent();
+
+			if (Node.isPropertyAccessExpression(parent)) {
+				handlePAE(
+					parent,
+					() => requiresSearchParams.set(() => true),
+					() => requiresPathname.set(() => 'pathname'),
+				);
+
+				return;
+			}
+
+			if (Node.isVariableDeclaration(parent)) {
+				handleVariableDeclarationWithRouter(parent, requiresPathname);
+			}
+		});
+
+		const referenceCount = bindingName.findReferencesAsNodes().length;
+
+		if (referenceCount === 0) {
+			parent.remove();
+			return;
+		}
+	}
+
+	if (Node.isObjectBindingPattern(bindingName)) {
+		const elements = bindingName.getElements();
+		let count = 0;
+
+		for (const element of elements) {
+			const nameNode = element.getNameNode();
+
+			if (Node.isIdentifier(nameNode)) {
+				const text = nameNode.getText();
+
+				if (text === 'query') {
+					nameNode.findReferencesAsNodes().forEach((node) => {
+						handleQueryNode(
+							node,
+							requiresSearchParams,
+							labelContainer,
+						);
+					});
+
+					++count;
+				}
+
+				if (text === 'pathname') {
+					requiresPathname.set(() => 'pathname');
+
+					++count;
+				}
+
+				if (text === 'isReady') {
+					nameNode.findReferencesAsNodes().forEach((node) => {
+						node.replaceWithText('true');
+					});
+
+					++count;
+				}
+
+				if (text === 'route') {
+					requiresRoute.set(() => true);
+					++count;
+				}
+			}
+		}
+
+		if (elements.length === count) {
+			parent.remove();
+			return;
+		}
+	}
+
+	return;
+};
+
 const handleUseRouterCallExpression = (
 	node: CallExpression,
 	requiresRoute: Container<boolean>,
@@ -210,87 +298,13 @@ const handleUseRouterCallExpression = (
 	const parent = node.getParent();
 
 	if (Node.isVariableDeclaration(parent)) {
-		const bindingName = parent.getNameNode();
-
-		if (Node.isIdentifier(bindingName)) {
-			bindingName.findReferencesAsNodes().forEach((node) => {
-				const parent = node.getParent();
-
-				if (Node.isPropertyAccessExpression(parent)) {
-					handlePAE(
-						parent,
-						() => requiresSearchParams.set(() => true),
-						() => requiresPathname.set(() => 'pathname'),
-					);
-
-					return;
-				}
-
-				if (Node.isVariableDeclaration(parent)) {
-					handleVariableDeclarationWithRouter(
-						parent,
-						requiresPathname,
-					);
-				}
-			});
-
-			const referenceCount = bindingName.findReferencesAsNodes().length;
-
-			if (referenceCount === 0) {
-				parent.remove();
-				return;
-			}
-		}
-
-		if (Node.isObjectBindingPattern(bindingName)) {
-			const elements = bindingName.getElements();
-			let count = 0;
-
-			for (const element of elements) {
-				const nameNode = element.getNameNode();
-
-				if (Node.isIdentifier(nameNode)) {
-					const text = nameNode.getText();
-
-					if (text === 'query') {
-						nameNode.findReferencesAsNodes().forEach((node) => {
-							handleQueryNode(
-								node,
-								requiresSearchParams,
-								labelContainer,
-							);
-						});
-
-						++count;
-					}
-
-					if (text === 'pathname') {
-						requiresPathname.set(() => 'pathname');
-
-						++count;
-					}
-
-					if (text === 'isReady') {
-						nameNode.findReferencesAsNodes().forEach((node) => {
-							node.replaceWithText('true');
-						});
-
-						++count;
-					}
-
-					if (text === 'route') {
-						requiresRoute.set(() => true);
-						++count;
-					}
-				}
-			}
-
-			if (elements.length === count) {
-				parent.remove();
-				return;
-			}
-		}
-
+		handleVariableDeclaration(
+			parent,
+			requiresRoute,
+			requiresSearchParams,
+			requiresPathname,
+			labelContainer,
+		);
 		return;
 	}
 
@@ -341,6 +355,13 @@ const handleUseRouterCallExpression = (
 			}
 
 			requiresSearchParams.set(() => true);
+			return;
+		}
+
+		if (Node.isAsExpression(grandparent)) {
+			const greatgrandparent = grandparent.getParent();
+
+			console.log(greatgrandparent);
 		}
 	}
 };
