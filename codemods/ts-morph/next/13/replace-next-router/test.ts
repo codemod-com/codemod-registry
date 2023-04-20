@@ -573,57 +573,33 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, undefined);
 	});
 
-	// it('should add the usePathname import if it is used', async function (this: Context) {
-	// 	const INPUT = 'const pathname = usePathname();';
-	// 	const OUTPUT = `import { usePathname } from 'next/navigation'; const pathname = usePathname();`;
+	it('should replace query.a if query comes from useRouter return value destructurizing', async function (this: Context) {
+		const beforeText = `
+			import { useRouter } from 'next/router';
 
-	// 	const fileInfo: FileInfo = {
-	// 		path: 'index.js',
-	// 		source: INPUT,
-	// 	};
+			export function Component() {
+				const { query } = useRouter();
 
-	// 	const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+				if (query.a && query.b) {
 
-	// 	assert.deepEqual(
-	// 		actualOutput?.replace(/\W/gm, ''),
-	// 		OUTPUT.replace(/\W/gm, ''),
-	// 	);
-	// });
+				}
+			}
+		`;
 
-	// it('should replace query.a if query comes from useRouter return value destructurizing', async function (this: Context) {
-	// 	const INPUT = `
-	// 		import { useRouter } from 'next/router';
+		const afterText = `
+			import { useSearchParams } from "next/navigation";
 
-	// 		export function Component() {
-	// 			const { query } = useRouter();
+			export function Component() {
+				const searchParams = useSearchParams();
 
-	// 			if (query.a && query.b) {
+				if (searchParams.get('a') && searchParams.get('b')) {
 
-	// 			}
-	// 		}
-	// 	`;
-	// 	const OUTPUT = `
-	// 		import { useSearchParams } from "next/navigation";
+				}
+			}
+		`;
 
-	// 		export function Component() {
-	// 			const searchParams = useSearchParams();
+		const { actual, expected } = transform(beforeText, afterText);
 
-	// 			if (searchParams.get('a') && searchParams.get('b')) {
-
-	// 			}
-	// 		}
-	// 	`;
-
-	// 	const fileInfo: FileInfo = {
-	// 		path: 'index.js',
-	// 		source: INPUT,
-	// 	};
-
-	// 	const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
-
-	// 	assert.deepEqual(
-	// 		actualOutput?.replace(/\W/gm, ''),
-	// 		OUTPUT.replace(/\W/gm, ''),
-	// 	);
-	// });
+		deepStrictEqual(actual, expected);
+	});
 });

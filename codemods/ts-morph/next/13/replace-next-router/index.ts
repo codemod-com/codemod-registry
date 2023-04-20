@@ -181,8 +181,6 @@ const handleVariableDeclarationWithRouter = (
 		let count = 0;
 
 		for (const element of elements) {
-			console.log('ABCD', element.getText());
-
 			const nameNode = element.getNameNode();
 			const propertyNameNode = element.getPropertyNameNode() ?? nameNode;
 
