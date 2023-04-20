@@ -620,7 +620,7 @@ describe.only('next 13 replace-next-router', function () {
 
 			export function Component() {
 				const { route } = useRouter();
-				const { pathname } = usePathname();
+				const pathname = usePathname();
 
 				return route === 'test && pathname === 'test;
 			}

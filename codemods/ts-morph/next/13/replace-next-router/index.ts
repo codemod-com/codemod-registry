@@ -249,7 +249,9 @@ const handleUseRouterCallExpression = (
 				const nameNode = element.getNameNode();
 
 				if (Node.isIdentifier(nameNode)) {
-					if (nameNode.getText() === 'query') {
+					const text = nameNode.getText();
+
+					if (text === 'query') {
 						nameNode.findReferencesAsNodes().forEach((node) => {
 							handleQueryNode(
 								node,
@@ -257,21 +259,27 @@ const handleUseRouterCallExpression = (
 								labelContainer,
 							);
 						});
+
+						++count;
 					}
 
-					if (nameNode.getText() === 'pathname') {
+					if (text === 'pathname') {
 						requiresPathname.set(() => 'pathname');
+
+						++count;
 					}
 
-					if (nameNode.getText() === 'isReady') {
+					if (text === 'isReady') {
 						nameNode.findReferencesAsNodes().forEach((node) => {
 							node.replaceWithText('true');
 						});
+
+						++count;
 					}
 
-					// TODO ensure we remove it when all occurences have been replaced
-					// parent.remove();
-					++count;
+					if (text === 'route') {
+						++count;
+					}
 				}
 			}
 
