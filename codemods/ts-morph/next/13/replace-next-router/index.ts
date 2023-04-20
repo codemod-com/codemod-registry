@@ -116,8 +116,6 @@ const handlePAE = (
 	}
 
 	if (nodeName === 'isReady') {
-		const parentNode = node.getParent();
-
 		node.replaceWithText('true');
 	}
 };
@@ -284,6 +282,15 @@ const handleUseRouterCallExpression = (
 
 	if (Node.isPropertyAccessExpression(parent)) {
 		const nameNode = parent.getNameNode();
+
+		console.log('AAA', parent?.print(), nameNode.print());
+
+		if (Node.isIdentifier(nameNode) && nameNode.getText() === 'isReady') {
+			parent.replaceWithText('true');
+
+			return;
+		}
+
 		if (Node.isIdentifier(nameNode) && nameNode.getText() === 'pathname') {
 			requiresPathname.set(() => 'pathname');
 

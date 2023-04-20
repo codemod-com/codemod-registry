@@ -519,22 +519,24 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	// it('should replace useRouter().isReady with true', async function (this: Context) {
-	// 	const INPUT = 'useRouter().isReady';
-	// 	const OUTPUT = 'true';
+	it('should replace useRouter().isReady with true', async function (this: Context) {
+		const beforeText = `
+            import { useRouter } from 'next/router';
 
-	// 	const fileInfo: FileInfo = {
-	// 		path: 'index.js',
-	// 		source: INPUT,
-	// 	};
+            function Component() {
+                const ready = useRouter().isReady;
+            }
+        `;
+		const afterText = `
+            function Component() {
+                const ready = true;
+            }
+        `;
 
-	// 	const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+		const { actual, expected } = transform(beforeText, afterText);
 
-	// 	assert.deepEqual(
-	// 		actualOutput?.replace(/\W/gm, ''),
-	// 		OUTPUT.replace(/\W/gm, ''),
-	// 	);
-	// });
+		deepStrictEqual(actual, expected);
+	});
 
 	// it('should remove { isReady } and replace usages with true', async function (this: Context) {
 	// 	const INPUT =
