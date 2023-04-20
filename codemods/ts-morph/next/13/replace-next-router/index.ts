@@ -265,6 +265,12 @@ const handleUseRouterCallExpression = (
 						requiresPathname.set(() => 'pathname');
 					}
 
+					if (nameNode.getText() === 'isReady') {
+						nameNode.findReferencesAsNodes().forEach((node) => {
+							node.replaceWithText('true');
+						});
+					}
+
 					// TODO ensure we remove it when all occurences have been replaced
 					// parent.remove();
 					++count;
@@ -282,8 +288,6 @@ const handleUseRouterCallExpression = (
 
 	if (Node.isPropertyAccessExpression(parent)) {
 		const nameNode = parent.getNameNode();
-
-		console.log('AAA', parent?.print(), nameNode.print());
 
 		if (Node.isIdentifier(nameNode) && nameNode.getText() === 'isReady') {
 			parent.replaceWithText('true');
