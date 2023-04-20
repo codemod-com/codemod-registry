@@ -559,21 +559,19 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	// it('should noop for already-existing import', async function (this: Context) {
-	// 	const INPUT = `import { usePathname } from 'next/navigation'; const pathname = usePathname();`;
+	it('should noop for already-existing import', async function (this: Context) {
+		const beforeText = `
+			import { usePathname } from 'next/navigation';
 
-	// 	const fileInfo: FileInfo = {
-	// 		path: 'index.js',
-	// 		source: INPUT,
-	// 	};
+			function Component() {
+				const pathname = usePathname();
+			}
+		`;
 
-	// 	const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+		const { actual } = transform(beforeText, beforeText);
 
-	// 	assert.deepEqual(
-	// 		actualOutput?.replace(/\W/gm, ''),
-	// 		INPUT.replace(/\W/gm, ''),
-	// 	);
-	// });
+		deepStrictEqual(actual, undefined);
+	});
 
 	// it('should add the usePathname import if it is used', async function (this: Context) {
 	// 	const INPUT = 'const pathname = usePathname();';
