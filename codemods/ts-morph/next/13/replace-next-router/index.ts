@@ -202,6 +202,7 @@ const handleVariableDeclarationWithRouter = (
 
 const handleUseRouterCallExpression = (
 	node: CallExpression,
+	requiresRoute: Container<boolean>,
 	requiresSearchParams: Container<boolean>,
 	requiresPathname: Container<string | null>,
 	labelContainer: Container<ReadonlyArray<string>>,
@@ -278,6 +279,7 @@ const handleUseRouterCallExpression = (
 					}
 
 					if (text === 'route') {
+						requiresRoute.set(() => true);
 						++count;
 					}
 				}
@@ -331,6 +333,7 @@ const handleUseRouterCallExpression = (
 
 const handleUseRouterNode = (
 	node: Node<ts.Node>,
+	usesRoute: Container<boolean>,
 	usesSearchParams: Container<boolean>,
 	usesPathname: Container<boolean>,
 ) => {
@@ -344,6 +347,7 @@ const handleUseRouterNode = (
 		return;
 	}
 
+	const requiresRoute = buildContainer<boolean>(false);
 	const requiresSearchParams = buildContainer<boolean>(false); // TODO check if the statement exists
 	const requiresPathname = buildContainer<string | null>(null); // TODO check if the statement exists
 	const labelContainer = buildContainer<ReadonlyArray<string>>([]);
@@ -353,6 +357,7 @@ const handleUseRouterNode = (
 	if (Node.isCallExpression(parent)) {
 		handleUseRouterCallExpression(
 			parent,
+			requiresRoute,
 			requiresSearchParams,
 			requiresPathname,
 			labelContainer,
@@ -360,6 +365,12 @@ const handleUseRouterNode = (
 	}
 
 	const statements: string[] = [];
+
+	if (requiresRoute.get()) {
+		statements.push('const { route } = useRouter();');
+
+		usesRoute.set(() => true);
+	}
 
 	if (requiresSearchParams.get()) {
 		statements.push('const searchParams = useSearchParams();');
@@ -390,6 +401,7 @@ const handleUseRouterNode = (
 const handleImportDeclaration = (
 	importDeclaration: ImportDeclaration,
 	useRouterReferenceCount: Container<number>,
+	usesRoute: Container<boolean>,
 	usesSearchParams: Container<boolean>,
 	usesPathname: Container<boolean>,
 ) => {
@@ -408,7 +420,12 @@ const handleImportDeclaration = (
 			.getNameNode()
 			.findReferencesAsNodes()
 			.forEach((node) =>
-				handleUseRouterNode(node, usesSearchParams, usesPathname),
+				handleUseRouterNode(
+					node,
+					usesRoute,
+					usesSearchParams,
+					usesPathname,
+				),
 			);
 
 		const referenceCount = namedImport
@@ -431,6 +448,7 @@ const handleImportDeclaration = (
 export const handleSourceFile = (
 	sourceFile: SourceFile,
 ): string | undefined => {
+	const usesRoute = buildContainer<boolean>(false);
 	const usesSearchParams = buildContainer<boolean>(false);
 	const usesPathname = buildContainer<boolean>(false);
 
@@ -464,12 +482,13 @@ export const handleSourceFile = (
 		handleImportDeclaration(
 			importDeclaration,
 			useRouterReferenceCount,
+			usesRoute,
 			usesSearchParams,
 			usesPathname,
 		),
 	);
 
-	if (useRouterReferenceCount.get() === 0) {
+	if (useRouterReferenceCount.get() === 0 || usesRoute.get()) {
 		sourceFile.insertStatements(
 			0,
 			'import { useRouter } from "next/navigation";',

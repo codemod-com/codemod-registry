@@ -603,7 +603,7 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it.only('test', async function (this: Context) {
+	it('test', async function (this: Context) {
 		const beforeText = `
 			import { useRouter } from 'next/router';
 
@@ -615,8 +615,8 @@ describe.only('next 13 replace-next-router', function () {
 		`;
 
 		const afterText = `
-			import { useRouter } from 'next/navigation';
 			import { usePathname } from "next/navigation";
+			import { useRouter } from "next/navigation";
 
 			export function Component() {
 				const { route } = useRouter();
