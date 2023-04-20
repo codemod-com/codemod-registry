@@ -631,7 +631,34 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	// const a = useRouter().query[?];
+	it('test', async function (this: Context) {
+		const beforeText = `
+			import { useRouter } from 'next/router';
+
+			const A = 'constant';
+
+			export function Component() {
+				const a = useRouter().query[A];
+			}
+		`;
+
+		const afterText = `
+			import { useSearchParams } from "next/navigation";
+
+			const A = 'constant';
+
+			export function Component() {
+				const searchParams = useSearchParams();
+				const a = searchParams.get(A);
+			}
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText);
+
+		deepStrictEqual(actual, expected);
+	});
+
+	//
 
 	// const { a: b } = useRouter().query as { ... }
 

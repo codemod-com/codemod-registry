@@ -317,6 +317,20 @@ const handleUseRouterCallExpression = (
 
 		const grandparent = parent.getParent();
 
+		// TODO check if it's useRouter().query etc.
+
+		if (Node.isElementAccessExpression(grandparent)) {
+			const argumentExpression = grandparent.getArgumentExpression();
+
+			grandparent.replaceWithText(
+				`searchParams.get(${argumentExpression?.print()})`,
+			);
+
+			requiresSearchParams.set(() => true);
+
+			return;
+		}
+
 		if (Node.isPropertyAccessExpression(grandparent)) {
 			const nameNode = grandparent.getNameNode();
 
@@ -325,9 +339,9 @@ const handleUseRouterCallExpression = (
 					`searchParams.get("${nameNode.getText()}")`,
 				);
 			}
-		}
 
-		requiresSearchParams.set(() => true);
+			requiresSearchParams.set(() => true);
+		}
 	}
 };
 
