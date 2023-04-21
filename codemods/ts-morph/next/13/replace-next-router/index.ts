@@ -296,8 +296,6 @@ const handleVariableDeclaration = (
 		}
 
 		if (elements.length === count) {
-			console.log(variableDeclaration.print());
-
 			variableDeclaration.remove();
 
 			return;

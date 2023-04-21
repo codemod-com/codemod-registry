@@ -603,7 +603,7 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it('test', async function (this: Context) {
+	it('should replace { route } = useRouter() with usePathname()', async function (this: Context) {
 		const beforeText = `
 			import { useRouter } from 'next/router';
 
@@ -630,7 +630,7 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it('test', async function (this: Context) {
+	it('should replace useRouter().query[A] with useSearchParams', async function (this: Context) {
 		const beforeText = `
 			import { useRouter } from 'next/router';
 
@@ -657,7 +657,7 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it('test', async function (this: Context) {
+	it('should replace useRouter().query as A with useSearchParams', async function (this: Context) {
 		const beforeText = `
 			import { useRouter } from 'next/router';
 
@@ -680,7 +680,7 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it('test', async function (this: Context) {
+	it('should replace router.pathname with pathname', async function (this: Context) {
 		const beforeText = `
 			import { useRouter } from 'next/router';
 
@@ -706,7 +706,7 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it('test', async function (this: Context) {
+	it('should replace router.asPath with pathname and searchParams', async function (this: Context) {
 		const beforeText = `
 			import { useRouter } from 'next/router';
 
@@ -734,7 +734,7 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it('test', async function (this: Context) {
+	it('should switch the useRouter import source to next/router for router.push', async function (this: Context) {
 		const beforeText = `
 			import { useRouter } from 'next/router';
 
@@ -763,10 +763,4 @@ describe.only('next 13 replace-next-router', function () {
 
 		deepStrictEqual(actual, expected);
 	});
-
-	// const isPreview = useRouter().isPreview;
-
-	// const {
-	// 		query: { a },
-	// 	} = useRouter();
 });
