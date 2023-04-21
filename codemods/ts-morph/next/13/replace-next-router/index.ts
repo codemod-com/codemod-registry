@@ -303,8 +303,6 @@ const handleVariableDeclaration = (
 			return;
 		}
 	}
-
-	return;
 };
 
 const handleUseRouterCallExpression = (
@@ -349,8 +347,6 @@ const handleUseRouterCallExpression = (
 		}
 
 		const grandparent = parent.getParent();
-
-		// TODO check if it's useRouter().query etc.
 
 		if (Node.isElementAccessExpression(grandparent)) {
 			const argumentExpression = grandparent.getArgumentExpression();
