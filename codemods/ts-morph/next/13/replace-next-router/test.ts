@@ -722,8 +722,8 @@ describe.only('next 13 replace-next-router', function () {
 			import { useSearchParams } from "next/navigation";
 
 			export function Component() {
-				const pathname = usePathname();
 				const searchParams = useSearchParams();
+				const pathname = usePathname();
 
 				return <b>{\`\${pathname}?\${searchParams}\`}</b>;
 			}

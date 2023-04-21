@@ -120,6 +120,13 @@ const handlePAE = (
 	if (nodeName === 'isReady') {
 		node.replaceWithText('true');
 	}
+
+	if (nodeName === 'asPath') {
+		node.replaceWithText('`${pathname}?${searchParams}`');
+
+		onReplacedWithSearchParams();
+		onReplacedWithPathname();
+	}
 };
 
 const handleQueryNode = (
