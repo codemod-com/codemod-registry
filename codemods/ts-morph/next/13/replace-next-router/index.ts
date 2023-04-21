@@ -110,6 +110,8 @@ const handlePAE = (
 
 		if (Node.isVariableDeclaration(parentNode)) {
 			parentNode.remove();
+		} else {
+			node.replaceWithText('pathname');
 		}
 
 		onReplacedWithPathname();
@@ -210,10 +212,10 @@ const handleVariableDeclaration = (
 	const bindingName = variableDeclaration.getNameNode();
 
 	if (Node.isIdentifier(bindingName)) {
-		console.log('HERE', bindingName.print());
-
 		bindingName.findReferencesAsNodes().forEach((node) => {
 			const parent = node.getParent();
+
+			console.log('HERE', parent?.print(), parent?.getKindName());
 
 			if (Node.isPropertyAccessExpression(parent)) {
 				handlePAE(

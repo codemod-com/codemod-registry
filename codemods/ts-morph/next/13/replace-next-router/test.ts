@@ -681,14 +681,14 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it.only('test', async function (this: Context) {
+	it('test', async function (this: Context) {
 		const beforeText = `
 			import { useRouter } from 'next/router';
 
 			export function Component() {
 				const router = useRouter();
 
-				return <b>router.pathname</b>;
+				return <b>{router.pathname}</b>;
 			}
 		`;
 
@@ -698,7 +698,7 @@ describe.only('next 13 replace-next-router', function () {
 			export function Component() {
 				const pathname = usePathname();
 
-				return <b>pathname</b>;
+				return <b>{pathname}</b>;
 			}
 		`;
 
