@@ -706,6 +706,34 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
+	it('test', async function (this: Context) {
+		const beforeText = `
+			import { useRouter } from 'next/router';
+
+			export function Component() {
+				const router = useRouter();
+
+				return <b>{router.asPath}</b>;
+			}
+		`;
+
+		const afterText = `
+			import { usePathname } from "next/navigation";
+			import { useSearchParams } from "next/navigation";
+
+			export function Component() {
+				const pathname = usePathname();
+				const searchParams = useSearchParams();
+
+				return <b>{\`\${pathname}?\${searchParams}\`}</b>;
+			}
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText);
+
+		deepStrictEqual(actual, expected);
+	});
+
 	// const isPreview = useRouter().isPreview;
 
 	// const {

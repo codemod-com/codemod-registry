@@ -204,7 +204,6 @@ const handleVariableDeclarationWithRouter = (
 
 const handleVariableDeclaration = (
 	variableDeclaration: VariableDeclaration,
-	requiresRoute: Container<boolean>,
 	requiresSearchParams: Container<boolean>,
 	requiresPathname: Container<ReadonlyArray<string>>,
 	labelContainer: Container<ReadonlyArray<string>>,
@@ -291,7 +290,6 @@ const handleVariableDeclaration = (
 
 const handleUseRouterCallExpression = (
 	node: CallExpression,
-	requiresRoute: Container<boolean>,
 	requiresSearchParams: Container<boolean>,
 	requiresPathname: Container<ReadonlyArray<string>>,
 	labelContainer: Container<ReadonlyArray<string>>,
@@ -301,7 +299,6 @@ const handleUseRouterCallExpression = (
 	if (Node.isVariableDeclaration(parent)) {
 		handleVariableDeclaration(
 			parent,
-			requiresRoute,
 			requiresSearchParams,
 			requiresPathname,
 			labelContainer,
@@ -418,7 +415,6 @@ const handleUseRouterNode = (
 		return;
 	}
 
-	const requiresRoute = buildContainer<boolean>(false);
 	const requiresSearchParams = buildContainer<boolean>(false); // TODO check if the statement exists
 	const requiresPathname = buildContainer<ReadonlyArray<string>>([]); // TODO check if the statement exists
 	const labelContainer = buildContainer<ReadonlyArray<string>>([]);
@@ -428,7 +424,6 @@ const handleUseRouterNode = (
 	if (Node.isCallExpression(parent)) {
 		handleUseRouterCallExpression(
 			parent,
-			requiresRoute,
 			requiresSearchParams,
 			requiresPathname,
 			labelContainer,
@@ -436,12 +431,6 @@ const handleUseRouterNode = (
 	}
 
 	const statements: string[] = [];
-
-	if (requiresRoute.get()) {
-		statements.push('const { route } = useRouter();');
-
-		usesRoute.set(() => true);
-	}
 
 	if (requiresSearchParams.get()) {
 		statements.push('const searchParams = useSearchParams();');
