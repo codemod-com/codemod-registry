@@ -420,25 +420,21 @@ const handleUseRouterCallExpression = (
 	}
 };
 
-const handleUseRouterNode = (
-	node: Node<ts.Node>,
+const handleUseRouterIdentifier = (
+	node: Identifier,
 	usesRouterImport: Container<boolean>,
 	usesSearchParams: Container<boolean>,
 	usesPathname: Container<boolean>,
 ) => {
-	if (!Node.isIdentifier(node)) {
-		return;
-	}
-
 	const block = node.getFirstAncestorByKind(ts.SyntaxKind.Block);
 
 	if (block === undefined) {
 		return;
 	}
 
-	const requiresSearchParams = buildContainer<boolean>(false); // TODO check if the statement exists
-	const usesRouter = buildContainer<boolean>(false); // TODO check if the statement exist
-	const requiresPathname = buildContainer<ReadonlyArray<string>>([]); // TODO check if the statement exists
+	const requiresSearchParams = buildContainer<boolean>(false);
+	const usesRouter = buildContainer<boolean>(false);
+	const requiresPathname = buildContainer<ReadonlyArray<string>>([]);
 	const labelContainer = buildContainer<ReadonlyArray<string>>([]);
 
 	const parent = node.getParent();
@@ -506,14 +502,18 @@ const handleImportDeclaration = (
 		namedImport
 			.getNameNode()
 			.findReferencesAsNodes()
-			.forEach((node) =>
-				handleUseRouterNode(
+			.forEach((node) => {
+				if (!Node.isIdentifier(node)) {
+					return;
+				}
+
+				handleUseRouterIdentifier(
 					node,
 					usesRoute,
 					usesSearchParams,
 					usesPathname,
-				),
-			);
+				);
+			});
 
 		const referenceCount = namedImport
 			.getNameNode()
@@ -528,7 +528,6 @@ const handleImportDeclaration = (
 		);
 	});
 
-	// TODO can we remove it?
 	importDeclaration.remove();
 };
 
