@@ -610,19 +610,18 @@ describe.only('next 13 replace-next-router', function () {
 			export function Component() {
 				const { route, pathname } = useRouter();
 
-				return route === 'test && pathname === 'test;
+				return route === 'test' && pathname === 'test';
 			}
 		`;
 
 		const afterText = `
 			import { usePathname } from "next/navigation";
-			import { useRouter } from "next/navigation";
 
 			export function Component() {
-				const { route } = useRouter();
+				const route = usePathname();
 				const pathname = usePathname();
 
-				return route === 'test && pathname === 'test;
+				return route === 'test' && pathname === 'test';
 			}
 		`;
 

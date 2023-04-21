@@ -174,7 +174,7 @@ const handleQueryNode = (
 
 const handleVariableDeclarationWithRouter = (
 	variableDeclaration: VariableDeclaration,
-	requiresPathname: Container<string | null>,
+	requiresPathname: Container<ReadonlyArray<string>>,
 ) => {
 	const nameNode = variableDeclaration.getNameNode();
 
@@ -190,7 +190,7 @@ const handleVariableDeclarationWithRouter = (
 				Node.isIdentifier(propertyNameNode) &&
 				propertyNameNode.getText() === 'pathname'
 			) {
-				requiresPathname.set(() => nameNode.getText());
+				requiresPathname.set((array) => [...array, nameNode.getText()]);
 
 				++count;
 			}
@@ -206,7 +206,7 @@ const handleVariableDeclaration = (
 	variableDeclaration: VariableDeclaration,
 	requiresRoute: Container<boolean>,
 	requiresSearchParams: Container<boolean>,
-	requiresPathname: Container<string | null>,
+	requiresPathname: Container<ReadonlyArray<string>>,
 	labelContainer: Container<ReadonlyArray<string>>,
 ) => {
 	const bindingName = variableDeclaration.getNameNode();
@@ -215,13 +215,12 @@ const handleVariableDeclaration = (
 		bindingName.findReferencesAsNodes().forEach((node) => {
 			const parent = node.getParent();
 
-			console.log('HERE', parent?.print(), parent?.getKindName());
-
 			if (Node.isPropertyAccessExpression(parent)) {
 				handlePAE(
 					parent,
 					() => requiresSearchParams.set(() => true),
-					() => requiresPathname.set(() => 'pathname'),
+					() =>
+						requiresPathname.set((array) => [...array, 'pathname']),
 				);
 
 				return;
@@ -262,8 +261,8 @@ const handleVariableDeclaration = (
 					++count;
 				}
 
-				if (text === 'pathname') {
-					requiresPathname.set(() => 'pathname');
+				if (text === 'pathname' || text === 'route') {
+					requiresPathname.set((array) => [...array, text]);
 
 					++count;
 				}
@@ -275,16 +274,14 @@ const handleVariableDeclaration = (
 
 					++count;
 				}
-
-				if (text === 'route') {
-					requiresRoute.set(() => true);
-					++count;
-				}
 			}
 		}
 
 		if (elements.length === count) {
+			console.log(variableDeclaration.print());
+
 			variableDeclaration.remove();
+
 			return;
 		}
 	}
@@ -296,7 +293,7 @@ const handleUseRouterCallExpression = (
 	node: CallExpression,
 	requiresRoute: Container<boolean>,
 	requiresSearchParams: Container<boolean>,
-	requiresPathname: Container<string | null>,
+	requiresPathname: Container<ReadonlyArray<string>>,
 	labelContainer: Container<ReadonlyArray<string>>,
 ) => {
 	const parent = node.getParent();
@@ -322,7 +319,7 @@ const handleUseRouterCallExpression = (
 		}
 
 		if (Node.isIdentifier(nameNode) && nameNode.getText() === 'pathname') {
-			requiresPathname.set(() => 'pathname');
+			requiresPathname.set((array) => array.concat('pathname'));
 
 			const grandparent = parent.getParent();
 
@@ -423,7 +420,7 @@ const handleUseRouterNode = (
 
 	const requiresRoute = buildContainer<boolean>(false);
 	const requiresSearchParams = buildContainer<boolean>(false); // TODO check if the statement exists
-	const requiresPathname = buildContainer<string | null>(null); // TODO check if the statement exists
+	const requiresPathname = buildContainer<ReadonlyArray<string>>([]); // TODO check if the statement exists
 	const labelContainer = buildContainer<ReadonlyArray<string>>([]);
 
 	const parent = node.getParent();
@@ -453,9 +450,9 @@ const handleUseRouterNode = (
 	}
 
 	{
-		const pathname = requiresPathname.get();
+		const pathnames = requiresPathname.get();
 
-		if (pathname !== null) {
+		for (const pathname of pathnames) {
 			statements.push(`const ${pathname} = usePathname();`);
 			usesPathname.set(() => true);
 		}
