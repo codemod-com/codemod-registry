@@ -1,6 +1,7 @@
 import {
 	CallExpression,
 	EmitHint,
+	Identifier,
 	ImportDeclaration,
 	VariableDeclaration,
 } from 'ts-morph';
@@ -27,7 +28,7 @@ export const buildContainer = <T>(initialValue: T) => {
 type Container<T> = ReturnType<typeof buildContainer<T>>;
 
 const hasImport = (
-	importDeclarations: ImportDeclaration[],
+	importDeclarations: readonly ImportDeclaration[],
 	moduleSpecifierText: string,
 	namedImportText: string,
 ): boolean => {
@@ -44,14 +45,13 @@ const hasImport = (
 	});
 };
 
-const handlePAE = (
+// e.g. router.query
+const handleRouterPropertyAccessExpression = (
 	node: PropertyAccessExpression,
 	onReplacedWithSearchParams: () => void,
 	usesRouter: Container<boolean>,
 	onReplacedWithPathname: () => void,
 ) => {
-	// e.g. router.query
-
 	const nodeName = node.getName();
 
 	if (nodeName === 'query') {
@@ -141,15 +141,11 @@ const handlePAE = (
 	usesRouter.set(() => true);
 };
 
-const handleQueryNode = (
-	node: Node,
+const handleQueryIdentifierNode = (
+	node: Identifier,
 	requiresSearchParams: Container<boolean>,
 	labelContainer: Container<ReadonlyArray<string>>,
 ) => {
-	if (!Node.isIdentifier(node)) {
-		return;
-	}
-
 	const parent = node.getParent();
 
 	if (Node.isPropertyAccessExpression(parent)) {
@@ -235,7 +231,7 @@ const handleVariableDeclaration = (
 			const parent = node.getParent();
 
 			if (Node.isPropertyAccessExpression(parent)) {
-				handlePAE(
+				handleRouterPropertyAccessExpression(
 					parent,
 					() => requiresSearchParams.set(() => true),
 					usesRouter,
@@ -271,11 +267,13 @@ const handleVariableDeclaration = (
 
 				if (text === 'query') {
 					nameNode.findReferencesAsNodes().forEach((node) => {
-						handleQueryNode(
-							node,
-							requiresSearchParams,
-							labelContainer,
-						);
+						if (Node.isIdentifier(node)) {
+							handleQueryIdentifierNode(
+								node,
+								requiresSearchParams,
+								labelContainer,
+							);
+						}
 					});
 
 					++count;
