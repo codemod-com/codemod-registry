@@ -201,15 +201,17 @@ const handleVariableDeclarationWithRouter = (
 };
 
 const handleVariableDeclaration = (
-	parent: VariableDeclaration,
+	variableDeclaration: VariableDeclaration,
 	requiresRoute: Container<boolean>,
 	requiresSearchParams: Container<boolean>,
 	requiresPathname: Container<string | null>,
 	labelContainer: Container<ReadonlyArray<string>>,
 ) => {
-	const bindingName = parent.getNameNode();
+	const bindingName = variableDeclaration.getNameNode();
 
 	if (Node.isIdentifier(bindingName)) {
+		console.log('HERE', bindingName.print());
+
 		bindingName.findReferencesAsNodes().forEach((node) => {
 			const parent = node.getParent();
 
@@ -231,7 +233,7 @@ const handleVariableDeclaration = (
 		const referenceCount = bindingName.findReferencesAsNodes().length;
 
 		if (referenceCount === 0) {
-			parent.remove();
+			variableDeclaration.remove();
 			return;
 		}
 	}
@@ -280,7 +282,7 @@ const handleVariableDeclaration = (
 		}
 
 		if (elements.length === count) {
-			parent.remove();
+			variableDeclaration.remove();
 			return;
 		}
 	}
