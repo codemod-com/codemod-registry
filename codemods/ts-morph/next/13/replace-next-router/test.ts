@@ -193,7 +193,7 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it('should replace INPUT with OUTPUT', async function (this: Context) {
+	it('should replace ...router.query with ...Object.fromEntries(searchParams)', async function (this: Context) {
 		const beforeText = `
 			import { useRouter } from 'next/router';
 
@@ -223,7 +223,7 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it('should replace INPUT with OUTPUT (2)', async function (this: Context) {
+	it('should replace router.query.a with searchParams.get("a")', async function (this: Context) {
 		const beforeText = `
 			import { useRouter } from 'next/router';
 
@@ -361,7 +361,7 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, undefined);
 	});
 
-	it('should replace INPUT with OUTPUT (3)', async function (this: Context) {
+	it('should replace { a } = query with a = searchParams.get("a")', async function (this: Context) {
 		const beforeText = `
 			import { useRouter } from 'next/router';
 
