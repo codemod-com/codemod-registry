@@ -1,25 +1,21 @@
 ---
 name: Report faulty codemod
-about: 'Please do not include any proprietary code. Provide a minimum meaningful sample
-  so we can reproduce the issue. '
+about: ''
 title: ''
 labels: ''
 assignees: ''
 
 ---
+:warning::warning: Please do not include any proprietary code in the issue. :warning::warning:
 
-**Codemod name**
-Provide a name of the faulty codemod
+---
+### Codemod:
 
-**Codemod input**
-Provide a sample code that codemod was executed on
+**1. Code before transformation (Input for codemod)**
+	
+**2. Expected code after transformation (Desired output of codemod)**
 
-**Expected codemod ouput**
+**3. Faulty code obtained after running the current version of the codemod (Actual output of codemod)**
 
-Provide expected codemod output
-
-**Actual codemod output**
-Provide actual codemod output
-
+---	
 **Additional context**
-Add any other context about the problem here.
