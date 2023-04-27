@@ -6,8 +6,10 @@
         "js*",
         "ts*"
     ],
-    "dependencyVersionLowerThan": [
-        "next",
-        "13.0.0"
+    "dependencies": [
+        {
+            "name": "next",
+            "range": "<13"
+        }
     ]
 }

@@ -2,7 +2,17 @@
 	"schemaVersion": "1.0.0",
 	"name": "next/13/move-css-in-js-styles",
 	"engine": "jscodeshift",
-	"options": ["createFile"],
-	"extensions": ["js*", "ts*"],
-	"dependencyVersionLowerThan": ["next", "13.0.0"]
+	"options": [
+		"createFile"
+	],
+	"extensions": [
+		"js*",
+		"ts*"
+	],
+	"dependencies": [
+		{
+			"name": "next",
+			"range": "<13"
+		}
+	]
 }
