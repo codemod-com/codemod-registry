@@ -844,12 +844,12 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it('should transform usages within a JS default function (router.isPath', () => {
+	it.only('should transform usages within a JS default function (router.isPath', () => {
 		const beforeText = `
 			import { useRouter } from 'next/router'
 			import { useEffect } from 'react'
 			
-			export default function Page(props) {
+			export default function Component() {
 				const router = useRouter();
 				
 				const [path, setPath] = useState(
@@ -858,7 +858,7 @@ describe.only('next 13 replace-next-router', function () {
 
 				useEffect(() => {
 					if (router.isReady) {
-						setAsPath(router.asPath)
+						setPath(router.asPath)
 					}
 				}, [router.asPath, router.isReady])
 				return (
@@ -870,19 +870,30 @@ describe.only('next 13 replace-next-router', function () {
 			}
 		`;
 
-		/**
-		 * In addition, the new useRouter hook has the following changes:
-
-    isFallback has been removed because fallback has been replaced.
-    The locale, locales, defaultLocales, domainLocales values have been removed
-	because built-in i18n Next.js features are no longer necessary in the app directory. We will document a comprehensive example of how to achieve i18n using nested routing and generateStaticParams in the coming weeks.
-    basePath has been removed. The alternative will not be part of useRouter. It has not yet been implemented.
-    asPath has been removed because the concept of as has been removed from the new router.
-    isReady has been removed because it is no longer necessary. During static rendering, any component that uses the useSearchParams() hook will skip the prerendering step and instead be rendered on the client at runtime
-		 */
-
 		const afterText = `
-			
+			import { usePathname } from "next/navigation";
+			import { useSearchParams } from "next/navigation";
+			import { useEffect } from 'react';
+
+			export default function Component() {
+				const searchParams = useSearchParams();
+				const pathname = usePathname();
+
+				const [path, setPath] = useState(true ? \`\${pathname}?\${searchParams}\` : pathname);
+
+				useEffect(() => {
+					if (true) {
+						setPath(\`\${pathname}?\${searchParams}\`);
+					}
+				}, [\`\${pathname}?\${searchParams}\`, true]);
+
+				return (
+					<>
+						<p>{JSON.stringify(searchParams)}</p>
+						<p>{pathname}</p>
+					</>
+				)
+			}
 		`;
 
 		const { actual, expected } = transform(beforeText, afterText, '.js');
