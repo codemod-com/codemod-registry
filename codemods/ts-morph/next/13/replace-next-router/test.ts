@@ -901,26 +901,35 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	// 		```export default function Page(props) {
-	// 	if (useRouter().isFallback) {
-	// 	  return <p>Loading...</p>
-	// 	}
-	// 	return (
-	// 	  <>
-	// 		<p id="props">{JSON.stringify(props)}</p>
-	// 		<Link href="/fallback-true-blog/first?hello=world" shallow id="to-query-shallow">
-	// 		  to /fallback-true-blog/first?hello=world
-	// 		</Link>
-	// 		<br />
-	// 		<Link href="/fallback-true-blog/second" shallow id="to-no-query-shallow">
-	// 		  to /fallback-true-blog/second
-	// 		</Link>
-	// 		<br />
-	// 	  </>
-	// 	)
-	//   }```;
+	it('should transform usages within a JS default function (router.isPath', () => {
+		const beforeText = `
+			import { useRouter } from 'next/router';
 
-	// 		```
+			export default function Component(props) {
+				if (useRouter().isFallback) {
+					return null;
+				}
+
+				return <div></div>;
+			}
+		`;
+
+		const afterText = `
+			export default function Component(props) {
+				if (false) {
+					return null;
+				}
+
+				return <div></div>;
+			}
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.js');
+
+		deepStrictEqual(actual, expected);
+	});
+
+	// 		```;
 	//   import { useRouter } from 'next/router'
 	// import Link from 'next/link'
 	// const Show = ({ show, time }) => {

@@ -120,7 +120,11 @@ const handleRouterPropertyAccessExpression = (
 		node.replaceWithText('pathname');
 
 		onReplacedWithPathname();
-	} else {
+	}
+	// } else if (nodeName === 'isFallback') {
+	// 	console.log('TEXT');
+	// } else {
+	else {
 		// unrecognized node names
 		usesRouter.set(() => true);
 	}
@@ -402,6 +406,17 @@ const handleUseRouterCallExpression = (
 			} else {
 				parent.replaceWithText('searchParams');
 			}
+
+			return;
+		}
+
+		if (
+			Node.isIdentifier(nameNode) &&
+			nameNode.getText() === 'isFallback'
+		) {
+			parent.replaceWithText('false');
+
+			return;
 		}
 	}
 };
