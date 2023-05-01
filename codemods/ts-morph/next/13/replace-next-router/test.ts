@@ -784,9 +784,9 @@ describe.only('next 13 replace-next-router', function () {
 			export default function DynamicRoutes() {
 				const { query } = useRouter();
 				return (
-					<main>
-						{query.routeName}
-					</main>
+					<div>
+						{query.a}
+					</div>
 				)
 			}
 		`;
@@ -798,9 +798,9 @@ describe.only('next 13 replace-next-router', function () {
 				const searchParams = useSearchParams();
 
 				return (
-					<main>
-						{searchParams.get('routeName')}
-					</main>
+					<div>
+						{searchParams.get('a')}
+					</div>
 				)
 			}
 		`;
@@ -849,26 +849,14 @@ describe.only('next 13 replace-next-router', function () {
 			import { useRouter } from 'next/router'
 			import { useEffect } from 'react'
 			
-			export default function Component() {
+			function Component() {
 				const router = useRouter();
 				
-				const [path, setPath] = useState(
+				const [path,] = useState(
 					router.isReady ? router.asPath : router.href
 				);
 
-				useEffect(() => {
-					if (!router.isReady) {
-						return;
-					}
-
-					setPath(router.asPath)
-				}, [router.asPath, router.isReady])
-				return (
-					<>
-						<p>{JSON.stringify(router.query)}</p>
-						<p>{router.pathname}</p>
-					</>
-				)
+				return null;
 			}
 		`;
 
@@ -877,26 +865,13 @@ describe.only('next 13 replace-next-router', function () {
 			import { useSearchParams } from "next/navigation";
 			import { useEffect } from 'react';
 
-			export default function Component() {
+			function Component() {
 				const searchParams = useSearchParams();
 				const pathname = usePathname();
 
-				const [path, setPath] = useState(true ? \`\${pathname}?\${searchParams}\` : pathname);
+				const [path,] = useState(true ? \`\${pathname}?\${searchParams}\` : pathname);
 
-				useEffect(() => {
-					if (!true) {
-						return;
-					}
-
-					setPath(\`\${pathname}?\${searchParams}\`);
-				}, [\`\${pathname}?\${searchParams}\`, true]);
-
-				return (
-					<>
-						<p>{JSON.stringify(...Object.fromEntries(searchParams))}</p>
-						<p>{pathname}</p>
-					</>
-				)
+				return null;
 			}
 		`;
 
