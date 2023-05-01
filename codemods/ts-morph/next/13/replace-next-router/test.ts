@@ -3,14 +3,27 @@ import { handleSourceFile } from '.';
 import { Project } from 'ts-morph';
 import { deepStrictEqual } from 'node:assert';
 
-const transform = (beforeText: string, afterText: string) => {
-	const project = new Project({ useInMemoryFileSystem: true });
+const transform = (
+	beforeText: string,
+	afterText: string,
+	extension: '.js' | '.tsx',
+) => {
+	const project = new Project({
+		useInMemoryFileSystem: true,
+		skipFileDependencyResolution: true,
+		compilerOptions: {
+			allowJs: true,
+		},
+	});
 
-	const actualSourceFile = project.createSourceFile('actual.tsx', beforeText);
+	const actualSourceFile = project.createSourceFile(
+		`actual${extension}`,
+		beforeText,
+	);
 	const actual = handleSourceFile(actualSourceFile);
 
 	const expected = project
-		.createSourceFile('expected.tsx', afterText)
+		.createSourceFile(`expected${extension}`, afterText)
 		.print();
 
 	return {
@@ -40,7 +53,7 @@ describe.only('next 13 replace-next-router', function () {
         }
         `;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -63,7 +76,7 @@ describe.only('next 13 replace-next-router', function () {
 			}
         `;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -88,7 +101,7 @@ describe.only('next 13 replace-next-router', function () {
 			}
         `;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -113,7 +126,7 @@ describe.only('next 13 replace-next-router', function () {
 			}
 			`;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -139,7 +152,7 @@ describe.only('next 13 replace-next-router', function () {
 			}
 			`;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -165,7 +178,7 @@ describe.only('next 13 replace-next-router', function () {
 			}
         `;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -188,7 +201,7 @@ describe.only('next 13 replace-next-router', function () {
 			}
 			`;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -218,7 +231,7 @@ describe.only('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -256,7 +269,7 @@ describe.only('next 13 replace-next-router', function () {
 
 		// TODO useMemo second parameter -> searchParams if at all
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -283,7 +296,7 @@ describe.only('next 13 replace-next-router', function () {
 			}
         `;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -302,7 +315,7 @@ describe.only('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -322,7 +335,7 @@ describe.only('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -342,7 +355,7 @@ describe.only('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -356,7 +369,7 @@ describe.only('next 13 replace-next-router', function () {
 			import './index.css';
 		`;
 
-		const { actual } = transform(beforeText, afterText);
+		const { actual } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, undefined);
 	});
@@ -382,7 +395,7 @@ describe.only('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -403,7 +416,7 @@ describe.only('next 13 replace-next-router', function () {
             }
         `;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -426,7 +439,7 @@ describe.only('next 13 replace-next-router', function () {
             }
         `;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -448,7 +461,7 @@ describe.only('next 13 replace-next-router', function () {
             }
 	    `;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -472,7 +485,7 @@ describe.only('next 13 replace-next-router', function () {
             }
         `;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -494,7 +507,7 @@ describe.only('next 13 replace-next-router', function () {
             }
         `;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -514,7 +527,7 @@ describe.only('next 13 replace-next-router', function () {
             }
         `;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -533,7 +546,7 @@ describe.only('next 13 replace-next-router', function () {
             }
         `;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -554,7 +567,7 @@ describe.only('next 13 replace-next-router', function () {
             }
         `;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -568,7 +581,7 @@ describe.only('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual } = transform(beforeText, beforeText);
+		const { actual } = transform(beforeText, beforeText, '.tsx');
 
 		deepStrictEqual(actual, undefined);
 	});
@@ -598,7 +611,7 @@ describe.only('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -625,7 +638,7 @@ describe.only('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -652,7 +665,7 @@ describe.only('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -675,7 +688,7 @@ describe.only('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -701,7 +714,7 @@ describe.only('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -729,7 +742,7 @@ describe.only('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -759,7 +772,168 @@ describe.only('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(actual, expected);
+	});
+
+	it('should transform usages within a JS default function', () => {
+		const beforeText = `
+			import { useRouter } from 'next/router';
+
+			export default function DynamicRoutes() {
+				const { query } = useRouter();
+				return (
+					<div>
+						{query.a}
+					</div>
+				)
+			}
+		`;
+
+		const afterText = `
+			import { useSearchParams } from "next/navigation";	
+
+			export default function DynamicRoutes() {
+				const searchParams = useSearchParams();
+
+				return (
+					<div>
+						{searchParams.get('a')}
+					</div>
+				)
+			}
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.js');
+
+		deepStrictEqual(actual, expected);
+	});
+
+	it('should replace useRouter().query with ...Object.fromEntries(searchParams)', () => {
+		const beforeText = `
+			import React from 'react'
+			import { useRouter } from 'next/router'
+
+			export default () => {
+				return (
+					<>
+						<div>{JSON.stringify(useRouter().query)}</div>
+					</>
+				)
+			}
+		`;
+
+		const afterText = `
+			import { useSearchParams } from "next/navigation";
+			import React from 'react'
+
+			export default () => {
+				const searchParams = useSearchParams();
+
+				return (
+					<>
+						<div>{JSON.stringify(...Object.fromEntries(searchParams)}</div>
+					</>
+				)
+			}
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.js');
+
+		deepStrictEqual(actual, expected);
+	});
+
+	it('should replace router.isReady, router.asPath, router.href with proper replacements', () => {
+		const beforeText = `
+			import { useRouter } from 'next/router'
+			import { useEffect } from 'react'
+			
+			function Component() {
+				const router = useRouter();
+				
+				const [path,] = useState(
+					router.isReady ? router.asPath : router.href
+				);
+
+				return null;
+			}
+		`;
+
+		const afterText = `
+			import { usePathname } from "next/navigation";
+			import { useSearchParams } from "next/navigation";
+			import { useEffect } from 'react';
+
+			function Component() {
+				const searchParams = useSearchParams();
+				const pathname = usePathname();
+
+				const [path,] = useState(true ? \`\${pathname}?\${searchParams}\` : pathname);
+
+				return null;
+			}
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.js');
+
+		deepStrictEqual(actual, expected);
+	});
+
+	it('should replace useRouter().isFallback with false', () => {
+		const beforeText = `
+			import { useRouter } from 'next/router';
+
+			export default function Component(props) {
+				if (useRouter().isFallback) {
+					return null;
+				}
+
+				return <div></div>;
+			}
+		`;
+
+		const afterText = `
+			export default function Component(props) {
+				if (false) {
+					return null;
+				}
+
+				return <div></div>;
+			}
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.js');
+
+		deepStrictEqual(actual, expected);
+	});
+
+	it('should replace router.isFallback with false', () => {
+		const beforeText = `
+			import { useRouter } from 'next/router'
+		
+			const Component = () => {
+		  		const router = useRouter()
+
+		  		if (router.isFallback) {
+		    		return null;
+		  		}
+
+				return null;
+			}
+		`;
+
+		const afterText = `
+			const Component = () => {
+				if (false) {
+					return null;
+				}
+
+				return null;
+			}
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.js');
 
 		deepStrictEqual(actual, expected);
 	});
