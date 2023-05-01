@@ -929,13 +929,33 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	// 		```;
-	//   import { useRouter } from 'next/router'
-	// import Link from 'next/link'
-	// const Show = ({ show, time }) => {
-	//   const router = useRouter()
-	//   if (router.isFallback) {
-	//     return <div>Loading...</div>
-	//   }
-	//   ```;
+	it('should transform usages within a JS default function (router.isPath', () => {
+		const beforeText = `
+			import { useRouter } from 'next/router'
+		
+			const Component = () => {
+		  		const router = useRouter()
+
+		  		if (router.isFallback) {
+		    		return null;
+		  		}
+
+				return null;
+			}
+		`;
+
+		const afterText = `
+			const Component = () => {
+				if (false) {
+					return null;
+				}
+
+				return null;
+			}
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.js');
+
+		deepStrictEqual(actual, expected);
+	});
 });

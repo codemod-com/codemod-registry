@@ -120,11 +120,9 @@ const handleRouterPropertyAccessExpression = (
 		node.replaceWithText('pathname');
 
 		onReplacedWithPathname();
-	}
-	// } else if (nodeName === 'isFallback') {
-	// 	console.log('TEXT');
-	// } else {
-	else {
+	} else if (nodeName === 'isFallback') {
+		node.replaceWithText('false');
+	} else {
 		// unrecognized node names
 		usesRouter.set(() => true);
 	}
