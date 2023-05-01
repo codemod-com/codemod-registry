@@ -189,7 +189,7 @@ const handleQueryIdentifierNode = (
 
 const handleVariableDeclarationWithRouter = (
 	variableDeclaration: VariableDeclaration,
-	requiresPathname: Container<ReadonlyArray<string>>,
+	requiresPathname: Container<Set<string>>,
 ) => {
 	const nameNode = variableDeclaration.getNameNode();
 
@@ -205,7 +205,7 @@ const handleVariableDeclarationWithRouter = (
 				Node.isIdentifier(propertyNameNode) &&
 				propertyNameNode.getText() === 'pathname'
 			) {
-				requiresPathname.set((array) => [...array, nameNode.getText()]);
+				requiresPathname.set((set) => set.add(nameNode.getText()));
 
 				++count;
 			}
@@ -221,7 +221,7 @@ const handleVariableDeclaration = (
 	variableDeclaration: VariableDeclaration,
 	requiresSearchParams: Container<boolean>,
 	usesRouter: Container<boolean>,
-	requiresPathname: Container<ReadonlyArray<string>>,
+	requiresPathname: Container<Set<string>>,
 	labelContainer: Container<ReadonlyArray<string>>,
 ) => {
 	const bindingName = variableDeclaration.getNameNode();
@@ -236,7 +236,7 @@ const handleVariableDeclaration = (
 					() => requiresSearchParams.set(() => true),
 					usesRouter,
 					() =>
-						requiresPathname.set((array) => [...array, 'pathname']),
+						requiresPathname.set((array) => array.add('pathname')),
 				);
 
 				return;
@@ -280,7 +280,7 @@ const handleVariableDeclaration = (
 				}
 
 				if (text === 'pathname' || text === 'route') {
-					requiresPathname.set((array) => [...array, text]);
+					requiresPathname.set((set) => set.add(text));
 
 					++count;
 				}
@@ -307,7 +307,7 @@ const handleUseRouterCallExpression = (
 	node: CallExpression,
 	requiresSearchParams: Container<boolean>,
 	usesRouter: Container<boolean>,
-	requiresPathname: Container<ReadonlyArray<string>>,
+	requiresPathname: Container<Set<string>>,
 	labelContainer: Container<ReadonlyArray<string>>,
 ) => {
 	const parent = node.getParent();
@@ -334,7 +334,7 @@ const handleUseRouterCallExpression = (
 		}
 
 		if (Node.isIdentifier(nameNode) && nameNode.getText() === 'pathname') {
-			requiresPathname.set((array) => array.concat('pathname'));
+			requiresPathname.set((set) => set.add('pathname'));
 
 			const grandparent = parent.getParent();
 
@@ -435,7 +435,7 @@ const handleUseRouterIdentifier = (
 
 	const requiresSearchParams = buildContainer<boolean>(false);
 	const usesRouter = buildContainer<boolean>(false);
-	const requiresPathname = buildContainer<ReadonlyArray<string>>([]);
+	const requiresPathname = buildContainer<Set<string>>(new Set());
 	const labelContainer = buildContainer<ReadonlyArray<string>>([]);
 
 	const parent = node.getParent();

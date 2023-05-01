@@ -863,8 +863,8 @@ describe.only('next 13 replace-next-router', function () {
 				}, [router.asPath, router.isReady])
 				return (
 					<>
-					<p>{JSON.stringify(router.query)}</p>
-					<p>{router.pathname}</p>
+						<p>{JSON.stringify(router.query)}</p>
+						<p>{router.pathname}</p>
 					</>
 				)
 			}
