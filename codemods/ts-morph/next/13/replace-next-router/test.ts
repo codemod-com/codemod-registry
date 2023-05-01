@@ -844,29 +844,51 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	// 		```
-	// import { useRouter } from 'next/router'
-	// import { useEffect } from 'react'
-	// import { useState } from 'react'
-	// export default function Page(props) {
-	//   const router = useRouter()
-	//   const [asPath, setAsPath] = useState(router.isReady ? router.asPath : router.href)
-	//   useEffect(() => {
-	//     if (router.isReady) {
-	//       setAsPath(router.asPath)
-	//     }
-	//   }, [router.asPath, router.isReady])
-	//   return (
-	//     <>
-	//       <p id="ssg">/blog/[slug]</p>
-	//       <p id="query">{JSON.stringify(router.query)}</p>
-	//       <p id="pathname">{router.pathname}</p>
-	//       <p id="as-path">{asPath}</p>
-	//       <p id="props">{JSON.stringify(props)}</p>
-	//     </>
-	//   )
-	// }
-	// ```;
+	it('should transform usages within a JS default function (router.isPath', () => {
+		const beforeText = `
+			import { useRouter } from 'next/router'
+			import { useEffect } from 'react'
+			
+			export default function Page(props) {
+				const router = useRouter();
+				
+				const [path, setPath] = useState(
+					router.isReady ? router.asPath : router.href
+				);
+
+				useEffect(() => {
+					if (router.isReady) {
+						setAsPath(router.asPath)
+					}
+				}, [router.asPath, router.isReady])
+				return (
+					<>
+					<p>{JSON.stringify(router.query)}</p>
+					<p>{router.pathname}</p>
+					</>
+				)
+			}
+		`;
+
+		/**
+		 * In addition, the new useRouter hook has the following changes:
+
+    isFallback has been removed because fallback has been replaced.
+    The locale, locales, defaultLocales, domainLocales values have been removed
+	because built-in i18n Next.js features are no longer necessary in the app directory. We will document a comprehensive example of how to achieve i18n using nested routing and generateStaticParams in the coming weeks.
+    basePath has been removed. The alternative will not be part of useRouter. It has not yet been implemented.
+    asPath has been removed because the concept of as has been removed from the new router.
+    isReady has been removed because it is no longer necessary. During static rendering, any component that uses the useSearchParams() hook will skip the prerendering step and instead be rendered on the client at runtime
+		 */
+
+		const afterText = `
+			
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.js');
+
+		deepStrictEqual(actual, expected);
+	});
 
 	// 		```export default function Page(props) {
 	// 	if (useRouter().isFallback) {
