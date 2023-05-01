@@ -102,6 +102,12 @@ const handleRouterPropertyAccessExpression = (
 			}
 		}
 
+		if (Node.isCallExpression(parentNode)) {
+			node.replaceWithText('...Object.fromEntries(searchParams)');
+
+			return;
+		}
+
 		node.replaceWithText('searchParams');
 		onReplacedWithSearchParams();
 	} else if (nodeName === 'pathname') {

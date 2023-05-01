@@ -889,7 +889,7 @@ describe.only('next 13 replace-next-router', function () {
 
 				return (
 					<>
-						<p>{JSON.stringify(searchParams)}</p>
+						<p>{JSON.stringify(...Object.fromEntries(searchParams))}</p>
 						<p>{pathname}</p>
 					</>
 				)
