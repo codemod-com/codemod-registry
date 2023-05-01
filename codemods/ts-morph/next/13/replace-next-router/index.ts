@@ -104,11 +104,7 @@ const handleRouterPropertyAccessExpression = (
 
 		node.replaceWithText('searchParams');
 		onReplacedWithSearchParams();
-
-		return;
-	}
-
-	if (nodeName === 'pathname') {
+	} else if (nodeName === 'pathname') {
 		const parentNode = node.getParent();
 
 		if (Node.isVariableDeclaration(parentNode)) {
@@ -118,27 +114,21 @@ const handleRouterPropertyAccessExpression = (
 		}
 
 		onReplacedWithPathname();
-
-		return;
-	}
-
-	if (nodeName === 'isReady') {
+	} else if (nodeName === 'isReady') {
 		node.replaceWithText('true');
-
-		return;
-	}
-
-	if (nodeName === 'asPath') {
+	} else if (nodeName === 'asPath') {
 		node.replaceWithText('`${pathname}?${searchParams}`');
 
 		onReplacedWithSearchParams();
 		onReplacedWithPathname();
+	} else if (nodeName === 'href') {
+		node.replaceWithText('pathname');
 
-		return;
+		onReplacedWithPathname();
+	} else {
+		// unrecognized node names
+		usesRouter.set(() => true);
 	}
-
-	// unrecognized node names
-	usesRouter.set(() => true);
 };
 
 const handleQueryIdentifierNode = (
