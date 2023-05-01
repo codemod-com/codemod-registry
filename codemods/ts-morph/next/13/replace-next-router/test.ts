@@ -810,7 +810,7 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it('should transform usages within a JS default function (useRouter().query)', () => {
+	it('should replace useRouter().query with ...Object.fromEntries(searchParams)', () => {
 		const beforeText = `
 			import React from 'react'
 			import { useRouter } from 'next/router'
@@ -844,7 +844,7 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it('should transform usages within a JS default function (router.isPath', () => {
+	it('should replace router.isReady, router.asPath, router.href with proper replacements', () => {
 		const beforeText = `
 			import { useRouter } from 'next/router'
 			import { useEffect } from 'react'
@@ -901,7 +901,7 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it('should transform usages within a JS default function (router.isPath', () => {
+	it('should replace useRouter().isFallback with false', () => {
 		const beforeText = `
 			import { useRouter } from 'next/router';
 
@@ -929,7 +929,7 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it('should transform usages within a JS default function (router.isPath', () => {
+	it('should replace router.isFallback with false', () => {
 		const beforeText = `
 			import { useRouter } from 'next/router'
 		
