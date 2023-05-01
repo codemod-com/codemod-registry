@@ -3,14 +3,27 @@ import { handleSourceFile } from '.';
 import { Project } from 'ts-morph';
 import { deepStrictEqual } from 'node:assert';
 
-const transform = (beforeText: string, afterText: string) => {
-	const project = new Project({ useInMemoryFileSystem: true });
+const transform = (
+	beforeText: string,
+	afterText: string,
+	extension: '.js' | '.tsx',
+) => {
+	const project = new Project({
+		useInMemoryFileSystem: true,
+		skipFileDependencyResolution: true,
+		compilerOptions: {
+			allowJs: true,
+		},
+	});
 
-	const actualSourceFile = project.createSourceFile('actual.tsx', beforeText);
+	const actualSourceFile = project.createSourceFile(
+		`actual${extension}`,
+		beforeText,
+	);
 	const actual = handleSourceFile(actualSourceFile);
 
 	const expected = project
-		.createSourceFile('expected.tsx', afterText)
+		.createSourceFile(`expected${extension}`, afterText)
 		.print();
 
 	return {
@@ -40,7 +53,7 @@ describe.only('next 13 replace-next-router', function () {
         }
         `;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -63,7 +76,7 @@ describe.only('next 13 replace-next-router', function () {
 			}
         `;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -88,7 +101,7 @@ describe.only('next 13 replace-next-router', function () {
 			}
         `;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -113,7 +126,7 @@ describe.only('next 13 replace-next-router', function () {
 			}
 			`;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -139,7 +152,7 @@ describe.only('next 13 replace-next-router', function () {
 			}
 			`;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -165,7 +178,7 @@ describe.only('next 13 replace-next-router', function () {
 			}
         `;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -188,7 +201,7 @@ describe.only('next 13 replace-next-router', function () {
 			}
 			`;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -218,7 +231,7 @@ describe.only('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -256,7 +269,7 @@ describe.only('next 13 replace-next-router', function () {
 
 		// TODO useMemo second parameter -> searchParams if at all
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -283,7 +296,7 @@ describe.only('next 13 replace-next-router', function () {
 			}
         `;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -302,7 +315,7 @@ describe.only('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -322,7 +335,7 @@ describe.only('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -342,7 +355,7 @@ describe.only('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -356,7 +369,7 @@ describe.only('next 13 replace-next-router', function () {
 			import './index.css';
 		`;
 
-		const { actual } = transform(beforeText, afterText);
+		const { actual } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, undefined);
 	});
@@ -382,7 +395,7 @@ describe.only('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -403,7 +416,7 @@ describe.only('next 13 replace-next-router', function () {
             }
         `;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -426,7 +439,7 @@ describe.only('next 13 replace-next-router', function () {
             }
         `;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -448,7 +461,7 @@ describe.only('next 13 replace-next-router', function () {
             }
 	    `;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -472,7 +485,7 @@ describe.only('next 13 replace-next-router', function () {
             }
         `;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -494,7 +507,7 @@ describe.only('next 13 replace-next-router', function () {
             }
         `;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -514,7 +527,7 @@ describe.only('next 13 replace-next-router', function () {
             }
         `;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -533,7 +546,7 @@ describe.only('next 13 replace-next-router', function () {
             }
         `;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -554,7 +567,7 @@ describe.only('next 13 replace-next-router', function () {
             }
         `;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -568,7 +581,7 @@ describe.only('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual } = transform(beforeText, beforeText);
+		const { actual } = transform(beforeText, beforeText, '.tsx');
 
 		deepStrictEqual(actual, undefined);
 	});
@@ -598,7 +611,7 @@ describe.only('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -625,7 +638,7 @@ describe.only('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -652,7 +665,7 @@ describe.only('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -675,7 +688,7 @@ describe.only('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -701,7 +714,7 @@ describe.only('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -729,7 +742,7 @@ describe.only('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
@@ -759,8 +772,128 @@ describe.only('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText);
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
 	});
+
+	it('should transform usages within a JS default function', () => {
+		const beforeText = `
+			import { useRouter } from 'next/router';
+
+			export default function DynamicRoutes() {
+				const { query } = useRouter();
+				return (
+					<main>
+						{query.routeName}
+					</main>
+				)
+			}
+		`;
+
+		const afterText = `
+			import { useSearchParams } from "next/navigation";	
+
+			export default function DynamicRoutes() {
+				const searchParams = useSearchParams();
+
+				return (
+					<main>
+						{searchParams.get('routeName')}
+					</main>
+				)
+			}
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.js');
+
+		deepStrictEqual(actual, expected);
+	});
+
+	it('should transform usages within a JS default function (useRouter().query)', () => {
+		const beforeText = `
+			import React from 'react'
+			import { useRouter } from 'next/router'
+
+			export default () => {
+				return (
+					<>
+						<div>{JSON.stringify(useRouter().query)}</div>
+					</>
+				)
+			}
+		`;
+
+		const afterText = `
+			import { useSearchParams } from "next/navigation";
+			import React from 'react'
+
+			export default () => {
+				const searchParams = useSearchParams();
+
+				return (
+					<>
+						<div>{JSON.stringify(...Object.fromEntries(searchParams)}</div>
+					</>
+				)
+			}
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.js');
+
+		deepStrictEqual(actual, expected);
+	});
+
+	// 		```
+	// import { useRouter } from 'next/router'
+	// import { useEffect } from 'react'
+	// import { useState } from 'react'
+	// export default function Page(props) {
+	//   const router = useRouter()
+	//   const [asPath, setAsPath] = useState(router.isReady ? router.asPath : router.href)
+	//   useEffect(() => {
+	//     if (router.isReady) {
+	//       setAsPath(router.asPath)
+	//     }
+	//   }, [router.asPath, router.isReady])
+	//   return (
+	//     <>
+	//       <p id="ssg">/blog/[slug]</p>
+	//       <p id="query">{JSON.stringify(router.query)}</p>
+	//       <p id="pathname">{router.pathname}</p>
+	//       <p id="as-path">{asPath}</p>
+	//       <p id="props">{JSON.stringify(props)}</p>
+	//     </>
+	//   )
+	// }
+	// ```;
+
+	// 		```export default function Page(props) {
+	// 	if (useRouter().isFallback) {
+	// 	  return <p>Loading...</p>
+	// 	}
+	// 	return (
+	// 	  <>
+	// 		<p id="props">{JSON.stringify(props)}</p>
+	// 		<Link href="/fallback-true-blog/first?hello=world" shallow id="to-query-shallow">
+	// 		  to /fallback-true-blog/first?hello=world
+	// 		</Link>
+	// 		<br />
+	// 		<Link href="/fallback-true-blog/second" shallow id="to-no-query-shallow">
+	// 		  to /fallback-true-blog/second
+	// 		</Link>
+	// 		<br />
+	// 	  </>
+	// 	)
+	//   }```;
+
+	// 		```
+	//   import { useRouter } from 'next/router'
+	// import Link from 'next/link'
+	// const Show = ({ show, time }) => {
+	//   const router = useRouter()
+	//   if (router.isFallback) {
+	//     return <div>Loading...</div>
+	//   }
+	//   ```;
 });

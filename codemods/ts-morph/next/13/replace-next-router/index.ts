@@ -325,6 +325,7 @@ const handleUseRouterCallExpression = (
 
 	if (Node.isPropertyAccessExpression(parent)) {
 		const nameNode = parent.getNameNode();
+		const grandparent = parent.getParent();
 
 		if (Node.isIdentifier(nameNode) && nameNode.getText() === 'isReady') {
 			parent.replaceWithText('true');
@@ -344,71 +345,77 @@ const handleUseRouterCallExpression = (
 			return;
 		}
 
-		const grandparent = parent.getParent();
-
-		if (Node.isElementAccessExpression(grandparent)) {
-			const argumentExpression = grandparent.getArgumentExpression();
-
-			grandparent.replaceWithText(
-				`searchParams.get(${argumentExpression?.print()})`,
-			);
-
+		if (Node.isIdentifier(nameNode) && nameNode.getText() === 'query') {
 			requiresSearchParams.set(() => true);
 
-			return;
-		}
+			if (Node.isCallExpression(grandparent)) {
+				parent.replaceWithText(`...Object.fromEntries(searchParams)`);
 
-		if (Node.isPropertyAccessExpression(grandparent)) {
-			const nameNode = grandparent.getNameNode();
+				requiresSearchParams.set(() => true);
+			} else if (Node.isElementAccessExpression(grandparent)) {
+				const argumentExpression = grandparent.getArgumentExpression();
 
-			if (Node.isIdentifier(nameNode)) {
 				grandparent.replaceWithText(
-					`searchParams.get("${nameNode.getText()}")`,
+					`searchParams.get(${argumentExpression?.print()})`,
 				);
-			}
 
-			requiresSearchParams.set(() => true);
-			return;
-		}
+				requiresSearchParams.set(() => true);
 
-		if (Node.isAsExpression(grandparent)) {
-			const greatgrandparent = grandparent.getParent();
+				return;
+			} else if (Node.isPropertyAccessExpression(grandparent)) {
+				const nameNode = grandparent.getNameNode();
 
-			if (Node.isVariableDeclaration(greatgrandparent)) {
-				const bindingName = greatgrandparent.getNameNode();
-
-				if (Node.isObjectBindingPattern(bindingName)) {
-					const elements = bindingName.getElements();
-
-					const properties: { name: string; propertyName: string }[] =
-						[];
-
-					for (const element of elements) {
-						const nameNode = element.getNameNode();
-						const propertyNameNode =
-							element.getPropertyNameNode() ?? nameNode;
-
-						if (
-							Node.isIdentifier(nameNode) &&
-							Node.isIdentifier(propertyNameNode)
-						) {
-							properties.push({
-								name: nameNode.getText(),
-								propertyName: propertyNameNode.getText(),
-							});
-						}
-					}
-
-					requiresSearchParams.set(() => true);
-
-					const text = properties
-						.map(({ name, propertyName }) => {
-							return `${name} = searchParams.get("${propertyName}")`;
-						})
-						.join(',\n');
-
-					greatgrandparent.replaceWithText(text);
+				if (Node.isIdentifier(nameNode)) {
+					grandparent.replaceWithText(
+						`searchParams.get("${nameNode.getText()}")`,
+					);
 				}
+
+				requiresSearchParams.set(() => true);
+				return;
+			} else if (Node.isAsExpression(grandparent)) {
+				const greatgrandparent = grandparent.getParent();
+
+				if (Node.isVariableDeclaration(greatgrandparent)) {
+					const bindingName = greatgrandparent.getNameNode();
+
+					if (Node.isObjectBindingPattern(bindingName)) {
+						const elements = bindingName.getElements();
+
+						const properties: {
+							name: string;
+							propertyName: string;
+						}[] = [];
+
+						for (const element of elements) {
+							const nameNode = element.getNameNode();
+							const propertyNameNode =
+								element.getPropertyNameNode() ?? nameNode;
+
+							if (
+								Node.isIdentifier(nameNode) &&
+								Node.isIdentifier(propertyNameNode)
+							) {
+								properties.push({
+									name: nameNode.getText(),
+									propertyName: propertyNameNode.getText(),
+								});
+							}
+						}
+
+						requiresSearchParams.set(() => true);
+
+						const text = properties
+							.map(({ name, propertyName }) => {
+								return `${name} = searchParams.get("${propertyName}")`;
+							})
+							.join(',\n');
+
+						greatgrandparent.replaceWithText(text);
+					}
+				}
+			} else {
+				parent.replaceWithText('searchParams');
 			}
 		}
 	}
