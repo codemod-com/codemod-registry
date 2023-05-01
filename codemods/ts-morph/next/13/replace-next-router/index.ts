@@ -309,20 +309,16 @@ const handleUseRouterCallExpression = (
 			requiresPathname,
 			labelContainer,
 		);
-		return;
-	}
-
-	if (Node.isPropertyAccessExpression(parent)) {
+	} else if (Node.isPropertyAccessExpression(parent)) {
 		const nameNode = parent.getNameNode();
 		const grandparent = parent.getParent();
 
 		if (Node.isIdentifier(nameNode) && nameNode.getText() === 'isReady') {
 			parent.replaceWithText('true');
-
-			return;
-		}
-
-		if (Node.isIdentifier(nameNode) && nameNode.getText() === 'pathname') {
+		} else if (
+			Node.isIdentifier(nameNode) &&
+			nameNode.getText() === 'pathname'
+		) {
 			requiresPathname.set((set) => set.add('pathname'));
 
 			const grandparent = parent.getParent();
@@ -330,11 +326,10 @@ const handleUseRouterCallExpression = (
 			if (Node.isVariableDeclaration(grandparent)) {
 				grandparent.remove();
 			}
-
-			return;
-		}
-
-		if (Node.isIdentifier(nameNode) && nameNode.getText() === 'query') {
+		} else if (
+			Node.isIdentifier(nameNode) &&
+			nameNode.getText() === 'query'
+		) {
 			requiresSearchParams.set(() => true);
 
 			if (Node.isCallExpression(grandparent)) {
@@ -408,15 +403,11 @@ const handleUseRouterCallExpression = (
 			}
 
 			return;
-		}
-
-		if (
+		} else if (
 			Node.isIdentifier(nameNode) &&
 			nameNode.getText() === 'isFallback'
 		) {
 			parent.replaceWithText('false');
-
-			return;
 		}
 	}
 };
