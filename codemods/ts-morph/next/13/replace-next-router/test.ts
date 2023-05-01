@@ -844,7 +844,7 @@ describe.only('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it.only('should transform usages within a JS default function (router.isPath', () => {
+	it('should transform usages within a JS default function (router.isPath', () => {
 		const beforeText = `
 			import { useRouter } from 'next/router'
 			import { useEffect } from 'react'

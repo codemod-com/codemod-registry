@@ -64,17 +64,11 @@ const handleRouterPropertyAccessExpression = (
 			parentNode.replaceWithText(`searchParams.get("${parentNodeName}")`);
 
 			onReplacedWithSearchParams();
-			return;
-		}
-
-		if (Node.isSpreadAssignment(parentNode)) {
+		} else if (Node.isSpreadAssignment(parentNode)) {
 			parentNode.replaceWithText(`...Object.fromEntries(searchParams)`);
 
 			onReplacedWithSearchParams();
-			return;
-		}
-
-		if (Node.isVariableDeclaration(parentNode)) {
+		} else if (Node.isVariableDeclaration(parentNode)) {
 			const bindingName = parentNode.getNameNode();
 
 			if (Node.isObjectBindingPattern(bindingName)) {
@@ -98,18 +92,13 @@ const handleRouterPropertyAccessExpression = (
 				parentNode.remove();
 
 				onReplacedWithSearchParams();
-				return;
 			}
-		}
-
-		if (Node.isCallExpression(parentNode)) {
+		} else if (Node.isCallExpression(parentNode)) {
 			node.replaceWithText('...Object.fromEntries(searchParams)');
-
-			return;
+		} else {
+			node.replaceWithText('searchParams');
+			onReplacedWithSearchParams();
 		}
-
-		node.replaceWithText('searchParams');
-		onReplacedWithSearchParams();
 	} else if (nodeName === 'pathname') {
 		const parentNode = node.getParent();
 
