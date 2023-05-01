@@ -311,12 +311,15 @@ const handleUseRouterCallExpression = (
 		const nameNode = parent.getNameNode();
 		const grandparent = parent.getParent();
 
-		if (Node.isIdentifier(nameNode) && nameNode.getText() === 'isReady') {
+		if (!Node.isIdentifier(nameNode)) {
+			return;
+		}
+
+		const text = nameNode.getText();
+
+		if (text === 'isReady') {
 			parent.replaceWithText('true');
-		} else if (
-			Node.isIdentifier(nameNode) &&
-			nameNode.getText() === 'pathname'
-		) {
+		} else if (text === 'pathname') {
 			requiresPathname.set((set) => set.add('pathname'));
 
 			const grandparent = parent.getParent();
@@ -324,10 +327,7 @@ const handleUseRouterCallExpression = (
 			if (Node.isVariableDeclaration(grandparent)) {
 				grandparent.remove();
 			}
-		} else if (
-			Node.isIdentifier(nameNode) &&
-			nameNode.getText() === 'query'
-		) {
+		} else if (text === 'query') {
 			requiresSearchParams.set(() => true);
 
 			if (Node.isCallExpression(grandparent)) {
@@ -401,10 +401,7 @@ const handleUseRouterCallExpression = (
 			}
 
 			return;
-		} else if (
-			Node.isIdentifier(nameNode) &&
-			nameNode.getText() === 'isFallback'
-		) {
+		} else if (text === 'isFallback') {
 			parent.replaceWithText('false');
 		}
 	}

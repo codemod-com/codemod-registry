@@ -857,9 +857,11 @@ describe.only('next 13 replace-next-router', function () {
 				);
 
 				useEffect(() => {
-					if (router.isReady) {
-						setPath(router.asPath)
+					if (!router.isReady) {
+						return;
 					}
+
+					setPath(router.asPath)
 				}, [router.asPath, router.isReady])
 				return (
 					<>
@@ -882,9 +884,11 @@ describe.only('next 13 replace-next-router', function () {
 				const [path, setPath] = useState(true ? \`\${pathname}?\${searchParams}\` : pathname);
 
 				useEffect(() => {
-					if (true) {
-						setPath(\`\${pathname}?\${searchParams}\`);
+					if (!true) {
+						return;
 					}
+
+					setPath(\`\${pathname}?\${searchParams}\`);
 				}, [\`\${pathname}?\${searchParams}\`, true]);
 
 				return (
