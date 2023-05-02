@@ -1,4 +1,4 @@
-import { API, FileInfo, Options, Transform } from 'jscodeshift';
+import { API, FileInfo, Options } from 'jscodeshift';
 import { join, parse } from 'node:path';
 
 export default function transformer(
@@ -27,6 +27,24 @@ export default function transformer(
 			return;
 		}
 
+		let cssSource: string = '';
+
+		j(jsxElementPath)
+			.find(j.TemplateElement)
+			.forEach((templateElementPath) => {
+				cssSource += templateElementPath.value.value.raw;
+			});
+
+		j(jsxElementPath)
+			.find(j.StringLiteral)
+			.forEach((literalPath) => {
+				cssSource += literalPath.value.value;
+			});
+
+		if (cssSource === '') {
+			return;
+		}
+
 		parentPath.node.openingElement.attributes =
 			parentPath.node.openingElement.attributes ?? [];
 
@@ -41,19 +59,6 @@ export default function transformer(
 				),
 			),
 		);
-
-		// const cssSource = j(jsxElementPath.value.children ?? [])
-		// 	.toSource()
-		// 	.replace('{`', '')
-		// 	.replace('`}', '');
-
-		let cssSource: string = '';
-
-		j(jsxElementPath)
-			.find(j.TemplateElement)
-			.forEach((x) => {
-				cssSource += x.value.value.raw;
-			});
 
 		jsxElementPath.replace();
 
@@ -95,4 +100,4 @@ export default function transformer(
 	return root.toSource();
 }
 
-transformer satisfies Transform;
+// transformer satisfies Transform;
