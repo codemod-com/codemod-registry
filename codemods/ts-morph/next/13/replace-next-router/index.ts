@@ -227,10 +227,10 @@ const handleVariableDeclaration = (
 				);
 
 				return;
-			}
-
-			if (Node.isVariableDeclaration(parent)) {
+			} else if (Node.isVariableDeclaration(parent)) {
 				handleVariableDeclarationWithRouter(parent, requiresPathname);
+			} else if (Node.isArrayLiteralExpression(parent)) {
+				usesRouter.set(() => true);
 			}
 		});
 
