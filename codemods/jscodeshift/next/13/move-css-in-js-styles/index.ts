@@ -1,4 +1,4 @@
-import { API, FileInfo, Options } from 'jscodeshift';
+import { API, FileInfo, Options, Transform } from 'jscodeshift';
 import { join, parse } from 'node:path';
 
 export default function transformer(
@@ -100,4 +100,4 @@ export default function transformer(
 	return root.toSource();
 }
 
-// transformer satisfies Transform;
+transformer satisfies Transform;
