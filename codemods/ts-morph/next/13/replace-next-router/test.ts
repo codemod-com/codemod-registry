@@ -32,7 +32,7 @@ const transform = (
 	};
 };
 
-describe.only('next 13 replace-next-router', function () {
+describe('next 13 replace-next-router', function () {
 	it('should add useSearchParams import because of "router.query"', async function (this: Context) {
 		const beforeText = `
 			import { useRouter } from 'next/router';
@@ -931,6 +931,51 @@ describe.only('next 13 replace-next-router', function () {
 
 				return null;
 			}
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.js');
+
+		deepStrictEqual(actual, expected);
+	});
+
+	it('should retain the useRouter import when router is in use', () => {
+		const beforeText = `
+			import { useRouter } from 'next/router'
+		
+			const Component = () => {
+		  		const router = useRouter()
+				
+				React.useEffect(
+					() => {
+				
+					},
+					[router]
+				)
+				
+				const a = router.pathname.includes('a')
+
+				return null;
+			}
+		`;
+
+		const afterText = `
+			import { usePathname } from "next/navigation";
+			import { useRouter } from "next/navigation"
+			
+			const Component = () => {
+	   			const pathname = usePathname();
+	   			const router = useRouter();
+	   
+				React.useEffect(
+					() => {
+					},
+					[router]
+				);
+
+	   			const a = pathname.includes('a');
+			return null;
+		};
+ 
 		`;
 
 		const { actual, expected } = transform(beforeText, afterText, '.js');

@@ -105,8 +105,6 @@ export const findRevalidateObjectProperty: ModFunction<any, 'read'> = (
 			type: 'NumericLiteral',
 		},
 	}).forEach((objectPropertyPath) => {
-		console.log(objectPropertyPath.value);
-
 		const objectPropertyCollection = j(objectPropertyPath);
 
 		objectPropertyCollection
