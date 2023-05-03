@@ -141,11 +141,7 @@ const handleQueryIdentifierNode = (
 		parent.replaceWithText(`searchParams.get('${name}')`);
 
 		requiresSearchParams.set(() => true);
-
-		return;
-	}
-
-	if (Node.isVariableDeclaration(parent)) {
+	} else if (Node.isVariableDeclaration(parent)) {
 		const variableDeclaration = parent;
 
 		const nameNode = variableDeclaration.getNameNode();
@@ -168,9 +164,11 @@ const handleQueryIdentifierNode = (
 
 			labelContainer.set(() => labels);
 			requiresSearchParams.set(() => true);
-
-			return;
 		}
+	} else if (Node.isCallExpression(parent)) {
+		node.replaceWithText('searchParams');
+
+		requiresSearchParams.set(() => true);
 	}
 };
 
@@ -264,15 +262,13 @@ const handleVariableDeclaration = (
 					});
 
 					++count;
-				}
-
-				if (text === 'pathname' || text === 'route') {
+				} else if (text === 'locale') {
+					++count;
+				} else if (text === 'pathname' || text === 'route') {
 					requiresPathname.set((set) => set.add(text));
 
 					++count;
-				}
-
-				if (text === 'isReady') {
+				} else if (text === 'isReady') {
 					nameNode.findReferencesAsNodes().forEach((node) => {
 						node.replaceWithText('true');
 					});
