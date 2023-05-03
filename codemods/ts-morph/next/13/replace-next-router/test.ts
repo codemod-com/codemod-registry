@@ -982,4 +982,29 @@ describe('next 13 replace-next-router', function () {
 
 		deepStrictEqual(actual, expected);
 	});
+
+	it('should use searchParams when dealing with function(query)', () => {
+		const beforeText = `
+			import { useRouter } from 'next/router'
+		
+			const Component = () => {
+		  		const { query } = useRouter()
+
+				return JSON.stringify(query);
+			}
+		`;
+
+		const afterText = `
+			import { useSearchParams } from "next/navigation";
+			
+			const Component = () => {
+				const searchParams = useSearchParams();
+				return JSON.stringify(searchParams);
+			}
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.js');
+
+		deepStrictEqual(actual, expected);
+	});
 });

@@ -141,11 +141,7 @@ const handleQueryIdentifierNode = (
 		parent.replaceWithText(`searchParams.get('${name}')`);
 
 		requiresSearchParams.set(() => true);
-
-		return;
-	}
-
-	if (Node.isVariableDeclaration(parent)) {
+	} else if (Node.isVariableDeclaration(parent)) {
 		const variableDeclaration = parent;
 
 		const nameNode = variableDeclaration.getNameNode();
@@ -168,9 +164,11 @@ const handleQueryIdentifierNode = (
 
 			labelContainer.set(() => labels);
 			requiresSearchParams.set(() => true);
-
-			return;
 		}
+	} else if (Node.isCallExpression(parent)) {
+		node.replaceWithText('searchParams');
+
+		requiresSearchParams.set(() => true);
 	}
 };
 
