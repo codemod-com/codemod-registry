@@ -262,15 +262,13 @@ const handleVariableDeclaration = (
 					});
 
 					++count;
-				}
-
-				if (text === 'pathname' || text === 'route') {
+				} else if (text === 'locale') {
+					++count;
+				} else if (text === 'pathname' || text === 'route') {
 					requiresPathname.set((set) => set.add(text));
 
 					++count;
-				}
-
-				if (text === 'isReady') {
+				} else if (text === 'isReady') {
 					nameNode.findReferencesAsNodes().forEach((node) => {
 						node.replaceWithText('true');
 					});
