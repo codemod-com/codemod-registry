@@ -1008,7 +1008,7 @@ describe('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it.only('should use searchParams when dealing with function(query)', () => {
+	it('should use searchParams when dealing with function(query)', () => {
 		const beforeText = `
 			import { useRouter } from 'next/router'
 		
