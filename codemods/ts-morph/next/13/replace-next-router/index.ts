@@ -122,6 +122,20 @@ const handleRouterPropertyAccessExpression = (
 		onReplacedWithPathname();
 	} else if (nodeName === 'isFallback') {
 		node.replaceWithText('false');
+	} else if (nodeName === 'push') {
+		const parentNode = node.getParent();
+
+		if (Node.isCallExpression(parentNode)) {
+			const [firstArgument] = parentNode.getArguments();
+
+			if (Node.isObjectLiteralExpression(firstArgument)) {
+				const text = firstArgument.getFullText();
+
+				firstArgument.replaceWithText(`JSON.stringify(${text})`);
+			}
+		}
+
+		usesRouter.set(() => true);
 	} else {
 		// unrecognized node names
 		usesRouter.set(() => true);
@@ -223,8 +237,6 @@ const handleVariableDeclaration = (
 					() =>
 						requiresPathname.set((array) => array.add('pathname')),
 				);
-
-				return;
 			} else if (Node.isVariableDeclaration(parent)) {
 				handleVariableDeclarationWithRouter(parent, requiresPathname);
 			} else if (Node.isArrayLiteralExpression(parent)) {
