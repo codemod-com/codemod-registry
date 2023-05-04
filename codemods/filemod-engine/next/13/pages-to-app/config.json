@@ -1,6 +1,7 @@
 {
     "schemaVersion": "1.0.0",
     "name": "next/13/pages-to-app",
+    "description": "The codemod moves pages to the app directory",
     "engine": "filemod-engine",
     "dependencyVersionLowerThan": [
         "next",
