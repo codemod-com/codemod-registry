@@ -1,11 +1,11 @@
 {
-    "tabWidth": 4,
-    "useTabs": true,
-    "semi": true,
-    "singleQuote": true,
-    "quoteProps": "as-needed",
-    "trailingComma": "all",
-    "bracketSpacing": true,
-    "arrowParens": "always",
-    "endOfLine": "lf"
+	"tabWidth": 4,
+	"useTabs": true,
+	"semi": true,
+	"singleQuote": true,
+	"quoteProps": "as-needed",
+	"trailingComma": "all",
+	"bracketSpacing": true,
+	"arrowParens": "always",
+	"endOfLine": "lf"
 }
