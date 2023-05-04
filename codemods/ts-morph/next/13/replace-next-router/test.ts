@@ -1029,4 +1029,46 @@ describe('next 13 replace-next-router', function () {
 
 		deepStrictEqual(actual, expected);
 	});
+
+	it('should use JSON.stringify for objects passed to router.push', () => {
+		const beforeText = `
+			import { useRouter } from 'next/router'
+		
+			const Component = () => {
+		  		const router = useRouter();
+
+				useEffect(() => {
+					router.push({
+						a: 1,
+						b: 2,
+						c: 3,
+					});
+				}, [router])
+
+				return null;
+			}
+		`;
+
+		const afterText = `
+			import { useRouter } from "next/navigation";
+			
+			const Component = () => {
+				const router = useRouter();
+
+				useEffect(() => {
+					router.push(JSON.stringify({
+						a: 1,
+						b: 2,
+						c: 3,
+					}));
+				}, [router])
+
+				return null;
+			}
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.js');
+
+		deepStrictEqual(actual, expected);
+	});
 });
