@@ -934,7 +934,7 @@ describe('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it.only('should retain the useRouter import when router is in use', () => {
+	it('should retain the useRouter import when router is in use', () => {
 		const beforeText = `
 			import { useRouter } from 'next/router'
 		

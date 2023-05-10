@@ -110,6 +110,10 @@ const handleRouterPropertyAccessExpression = (
 
 		if (Node.isVariableDeclaration(parentNode)) {
 			parentNode.remove();
+		} else if (Node.isPropertyAccessExpression(parentNode)) {
+			const rightNode = parentNode.getName();
+
+			parentNode.replaceWithText(`pathname?.${rightNode}`);
 		} else {
 			node.replaceWithText('pathname');
 		}
