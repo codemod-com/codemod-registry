@@ -8,6 +8,9 @@ import {
 import { PropertyAccessExpression, SourceFile, ts } from 'ts-morph';
 import { Node } from 'ts-morph';
 
+// how to fix router events (manually)
+// https://nextjs.org/docs/app/api-reference/functions/use-router#router-events
+
 export const buildContainer = <T>(initialValue: T) => {
 	let currentValue: T = initialValue;
 
@@ -289,6 +292,24 @@ const handleVariableDeclaration = (
 					});
 
 					++count;
+				} else if (text === 'asPath') {
+					++count;
+
+					nameNode.findReferencesAsNodes().forEach((node) => {
+						const parentNode = node.getParent();
+
+						if (Node.isPropertyAccessExpression(parentNode)) {
+							const rightNode = parentNode.getName();
+
+							parentNode.replaceWithText(
+								`pathname?.${rightNode}`,
+							);
+						} else {
+							node.replaceWithText('pathname');
+						}
+					});
+
+					requiresPathname.set((set) => set.add('pathname'));
 				}
 			}
 		}

@@ -1071,4 +1071,67 @@ describe('next 13 replace-next-router', function () {
 
 		deepStrictEqual(actual, expected);
 	});
+
+	it('should replace "{ asPath } = useRouter()" with "pathname = usePathname()"', () => {
+		const beforeText = `
+			import { useRouter } from "next/router";
+			
+			export default function Component() {
+				const { asPath } = useRouter();
+		
+				const a = asPath.startsWith("a");
+			
+				return null;
+			}
+		`;
+
+		const afterText = `
+			import { usePathname } from "next/navigation";
+			
+			export default function Component() {
+				const pathname = usePathname();
+		
+				const a = pathname?.startsWith("a");
+			
+				return null;
+			}
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(actual, expected);
+	});
+
+	it.only('should replace "path = useRouter().asPath" with "path = usePathname()"', () => {
+		const beforeText = `
+			import { useRouter } from "next/router";
+			
+			export default function Component() {
+				const path = useRouter().asPath;
+		
+				const a = path.startsWith("a");
+			
+				return null;
+			}
+		`;
+
+		const afterText = `
+			import { usePathname } from "next/navigation";
+			
+			export default function Component() {
+				const path = usePathname();
+		
+				const a = path?.startsWith("a");
+			
+				return null;
+			}
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(actual, expected);
+	});
+
+	// BreadcrumbContainer
+	// AppCard
 });
