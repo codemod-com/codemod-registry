@@ -49,7 +49,7 @@ describe('next 13 replace-next-router', function () {
 
         function Component() {
             const searchParams = useSearchParams();
-            const x = searchParams.get("a");
+            const x = searchParams?.get("a");
         }
         `;
 
@@ -72,7 +72,7 @@ describe('next 13 replace-next-router', function () {
 
 			function Component() {
                 const searchParams = useSearchParams();
-				const a = searchParams.get("a");
+				const a = searchParams?.get("a");
 			}
         `;
 
@@ -97,7 +97,7 @@ describe('next 13 replace-next-router', function () {
 
 			function Component() {
                 const searchParams = useSearchParams();
-                const a = searchParams.get('a');
+                const a = searchParams?.get('a');
 			}
         `;
 
@@ -122,7 +122,7 @@ describe('next 13 replace-next-router', function () {
 
 			function Component() {
 				const searchParams = useSearchParams();
-				const a = searchParams.get('a');
+				const a = searchParams?.get('a');
 			}
 			`;
 
@@ -131,7 +131,7 @@ describe('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it('should replace "...?.query" with "...searchParams.entries()."', async function (this: Context) {
+	it('should replace "...?.query" with "Object.fromEntries(...)"', async function (this: Context) {
 		const beforeText = `
 			import { useRouter } from 'next/router';
 
@@ -148,7 +148,7 @@ describe('next 13 replace-next-router', function () {
 			function Component() {
 				const searchParams = useSearchParams();
 
-				const shallowCopiedQuery = { ...Object.fromEntries(searchParams) };
+				const shallowCopiedQuery = { ...Object.fromEntries(searchParams ?? new URLSearchParams()) };
 			}
 			`;
 
@@ -174,7 +174,7 @@ describe('next 13 replace-next-router', function () {
 			function Component() {
 				const searchParams = useSearchParams();
 
-				const a = searchParams.get("a");
+				const a = searchParams?.get("a");
 			}
         `;
 
@@ -197,7 +197,7 @@ describe('next 13 replace-next-router', function () {
 
 			function Component() {
 				const searchParams = useSearchParams();
-                const a = searchParams.get("a");
+                const a = searchParams?.get("a");
 			}
 			`;
 
@@ -225,9 +225,9 @@ describe('next 13 replace-next-router', function () {
 			function Component() {
 				const searchParams = useSearchParams();
 
-				const x = searchParams.get("a");
+				const x = searchParams?.get("a");
 
-				const z = { ...Object.fromEntries(searchParams), b: 1 };
+				const z = { ...Object.fromEntries(searchParams ?? new URLSearchParams()), b: 1 };
 			}
 		`;
 
@@ -236,7 +236,7 @@ describe('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it('should replace router.query.a with searchParams.get("a")', async function (this: Context) {
+	it('should replace router.query.a with searchParams?.get("a")', async function (this: Context) {
 		const beforeText = `
 			import { useRouter } from 'next/router';
 
@@ -261,8 +261,8 @@ describe('next 13 replace-next-router', function () {
 				const searchParams = useSearchParams()
 
 				const nextA = useMemo(
-					() => (searchParams.get("a") ? null : searchParams.get("b")),
-					[searchParams.get("a"), searchParams.get("b"), c],
+					() => (searchParams?.get("a") ? null : searchParams?.get("b")),
+					[searchParams?.get("a"), searchParams?.get("b"), c],
 				) ?? a;
 			}
 		`;
@@ -290,9 +290,9 @@ describe('next 13 replace-next-router', function () {
 			function Component() {
                 const searchParams = useSearchParams();
 
-				const a = searchParams.get("a"),
-                    b = searchParams.get("b"),
-                    c = searchParams.get("c");
+				const a = searchParams?.get("a"),
+                    b = searchParams?.get("b"),
+                    c = searchParams?.get("c");
 			}
         `;
 
@@ -374,7 +374,7 @@ describe('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, undefined);
 	});
 
-	it('should replace { a } = query with a = searchParams.get("a")', async function (this: Context) {
+	it('should replace { a } = query with a = searchParams?.get("a")', async function (this: Context) {
 		const beforeText = `
 			import { useRouter } from 'next/router';
 
@@ -389,9 +389,9 @@ describe('next 13 replace-next-router', function () {
 
 			function Component() {
 				const searchParams = useSearchParams();
-				const a = searchParams.get("a");
-				const b = searchParams.get("b");
-				const c = searchParams.get("c");
+				const a = searchParams?.get("a");
+				const b = searchParams?.get("b");
+				const c = searchParams?.get("c");
 			}
 		`;
 
@@ -605,7 +605,7 @@ describe('next 13 replace-next-router', function () {
 			export function Component() {
 				const searchParams = useSearchParams();
 
-				if (searchParams.get('a') && searchParams.get('b')) {
+				if (searchParams?.get('a') && searchParams?.get('b')) {
 
 				}
 			}
@@ -661,7 +661,7 @@ describe('next 13 replace-next-router', function () {
 
 			export function Component() {
 				const searchParams = useSearchParams();
-				const a = searchParams.get(A);
+				const a = searchParams?.get(A);
 			}
 		`;
 
@@ -684,7 +684,7 @@ describe('next 13 replace-next-router', function () {
 
 			export function Component() {
 				const searchParams = useSearchParams();
-				const b = searchParams.get("a");
+				const b = searchParams?.get("a");
 			}
 		`;
 
@@ -797,7 +797,7 @@ describe('next 13 replace-next-router', function () {
 
 				return (
 					<div>
-						{searchParams.get('a')}
+						{searchParams?.get('a')}
 					</div>
 				)
 			}
@@ -808,7 +808,7 @@ describe('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it('should replace useRouter().query with ...Object.fromEntries(searchParams)', () => {
+	it('should replace useRouter().query with ...Object.fromEntries(searchParams ?? new URLSearchParams())', () => {
 		const beforeText = `
 			import React from 'react'
 			import { useRouter } from 'next/router'
@@ -831,7 +831,7 @@ describe('next 13 replace-next-router', function () {
 
 				return (
 					<>
-						<div>{JSON.stringify(...Object.fromEntries(searchParams)}</div>
+						<div>{JSON.stringify(...Object.fromEntries(searchParams ?? new URLSearchParams())}</div>
 					</>
 				)
 			}
@@ -968,7 +968,7 @@ describe('next 13 replace-next-router', function () {
 					[router]
 				);
 
-	   			const a = pathname.includes('a');
+	   			const a = pathname?.includes('a');
 			return null;
 		};
  
