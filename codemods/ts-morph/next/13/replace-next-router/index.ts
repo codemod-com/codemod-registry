@@ -122,7 +122,15 @@ const handleRouterPropertyAccessExpression = (
 	} else if (nodeName === 'isReady') {
 		node.replaceWithText('true');
 	} else if (nodeName === 'asPath') {
-		node.replaceWithText('pathname');
+		const parentNode = node.getParent();
+
+		if (Node.isPropertyAccessExpression(parentNode)) {
+			const rightNode = parentNode.getName();
+
+			parentNode.replaceWithText(`pathname?.${rightNode}`);
+		} else {
+			node.replaceWithText('pathname');
+		}
 
 		onReplacedWithPathname();
 	} else if (nodeName === 'href') {

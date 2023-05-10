@@ -1025,4 +1025,50 @@ describe('next 13 replace-next-router', function () {
 
 		deepStrictEqual(actual, expected);
 	});
+
+	it('should replace router.asPath.startsWith with pathname?.startsWith', () => {
+		const beforeText = `
+			import { useRouter } from "next/router";
+		
+			export default function Component() {
+		  		const router = useRouter();
+		
+				useEffect(
+					() => {
+						router.replace("a");
+					},
+					[router]
+				);
+		
+				const a = router.asPath.startsWith("a");
+			
+				return null;
+			}
+		`;
+
+		const afterText = `
+			import { usePathname } from "next/navigation";
+			import { useRouter } from "next/navigation";
+			
+			export default function Component() {
+				const pathname = usePathname();
+				const router = useRouter();
+		
+				useEffect(
+					() => {
+						router.replace("a");
+					},
+					[router]
+				);
+		
+				const a = pathname?.startsWith("a");
+			
+				return null;
+			}
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(actual, expected);
+	});
 });
