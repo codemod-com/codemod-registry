@@ -719,7 +719,7 @@ describe('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it('should replace router.asPath with pathname and searchParams', async function (this: Context) {
+	it('should replace router.asPath with pathname', async function (this: Context) {
 		const beforeText = `
 			import { useRouter } from 'next/router';
 
@@ -732,13 +732,11 @@ describe('next 13 replace-next-router', function () {
 
 		const afterText = `
 			import { usePathname } from "next/navigation";
-			import { useSearchParams } from "next/navigation";
 
 			export function Component() {
-				const searchParams = useSearchParams();
 				const pathname = usePathname();
 
-				return <b>{\`\${pathname}?\${searchParams}\`}</b>;
+				return <b>{pathname}</b>;
 			}
 		`;
 
@@ -862,14 +860,12 @@ describe('next 13 replace-next-router', function () {
 
 		const afterText = `
 			import { usePathname } from "next/navigation";
-			import { useSearchParams } from "next/navigation";
 			import { useEffect } from 'react';
 
 			function Component() {
-				const searchParams = useSearchParams();
 				const pathname = usePathname();
 
-				const [path,] = useState(true ? \`\${pathname}?\${searchParams}\` : pathname);
+				const [path,] = useState(true ? pathname : pathname);
 
 				return null;
 			}

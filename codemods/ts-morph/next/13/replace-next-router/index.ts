@@ -112,9 +112,8 @@ const handleRouterPropertyAccessExpression = (
 	} else if (nodeName === 'isReady') {
 		node.replaceWithText('true');
 	} else if (nodeName === 'asPath') {
-		node.replaceWithText('`${pathname}?${searchParams}`');
+		node.replaceWithText('pathname');
 
-		onReplacedWithSearchParams();
 		onReplacedWithPathname();
 	} else if (nodeName === 'href') {
 		node.replaceWithText('pathname');
