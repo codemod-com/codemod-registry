@@ -442,8 +442,6 @@ const handleUseRouterCallExpression = (
 				const vdName = grandparent.getName();
 
 				grandparent.findReferencesAsNodes().forEach((reference) => {
-					console.log(reference.getText());
-
 					if (Node.isIdentifier(reference)) {
 						const parentNode = reference.getParent();
 
