@@ -437,6 +437,30 @@ const handleUseRouterCallExpression = (
 			return;
 		} else if (text === 'isFallback') {
 			parent.replaceWithText('false');
+		} else if (text === 'asPath') {
+			if (Node.isVariableDeclaration(grandparent)) {
+				const vdName = grandparent.getName();
+
+				grandparent.findReferencesAsNodes().forEach((reference) => {
+					console.log(reference.getText());
+
+					if (Node.isIdentifier(reference)) {
+						const parentNode = reference.getParent();
+
+						if (Node.isPropertyAccessExpression(parentNode)) {
+							const parentNodeName = parentNode.getName();
+
+							parentNode.replaceWithText(
+								`${vdName}?.${parentNodeName}`,
+							);
+						}
+					}
+				});
+
+				grandparent.remove();
+
+				requiresPathname.set((set) => set.add(vdName));
+			}
 		}
 	}
 };

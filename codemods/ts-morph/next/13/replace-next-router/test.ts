@@ -1102,7 +1102,7 @@ describe('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it.only('should replace "path = useRouter().asPath" with "path = usePathname()"', () => {
+	it('should replace "path = useRouter().asPath" with "path = usePathname()"', () => {
 		const beforeText = `
 			import { useRouter } from "next/router";
 			
