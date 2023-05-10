@@ -8,6 +8,9 @@ import {
 import { PropertyAccessExpression, SourceFile, ts } from 'ts-morph';
 import { Node } from 'ts-morph';
 
+// how to fix router events (manually)
+// https://nextjs.org/docs/app/api-reference/functions/use-router#router-events
+
 export const buildContainer = <T>(initialValue: T) => {
 	let currentValue: T = initialValue;
 
@@ -61,11 +64,15 @@ const handleRouterPropertyAccessExpression = (
 			// e.g. router.query.a
 			const parentNodeName = parentNode.getName();
 
-			parentNode.replaceWithText(`searchParams.get("${parentNodeName}")`);
+			parentNode.replaceWithText(
+				`searchParams?.get("${parentNodeName}")`,
+			);
 
 			onReplacedWithSearchParams();
 		} else if (Node.isSpreadAssignment(parentNode)) {
-			parentNode.replaceWithText(`...Object.fromEntries(searchParams)`);
+			parentNode.replaceWithText(
+				`...Object.fromEntries(searchParams ?? new URLSearchParams())`,
+			);
 
 			onReplacedWithSearchParams();
 		} else if (Node.isVariableDeclaration(parentNode)) {
@@ -85,7 +92,7 @@ const handleRouterPropertyAccessExpression = (
 				for (const name of names) {
 					vdl?.addDeclaration({
 						name,
-						initializer: `searchParams.get("${name}")`,
+						initializer: `searchParams?.get("${name}")`,
 					});
 				}
 
@@ -94,7 +101,9 @@ const handleRouterPropertyAccessExpression = (
 				onReplacedWithSearchParams();
 			}
 		} else if (Node.isCallExpression(parentNode)) {
-			node.replaceWithText('...Object.fromEntries(searchParams)');
+			node.replaceWithText(
+				'...Object.fromEntries(searchParams ?? new URLSearchParams())',
+			);
 		} else {
 			node.replaceWithText('searchParams');
 			onReplacedWithSearchParams();
@@ -104,6 +113,10 @@ const handleRouterPropertyAccessExpression = (
 
 		if (Node.isVariableDeclaration(parentNode)) {
 			parentNode.remove();
+		} else if (Node.isPropertyAccessExpression(parentNode)) {
+			const rightNode = parentNode.getName();
+
+			parentNode.replaceWithText(`pathname?.${rightNode}`);
 		} else {
 			node.replaceWithText('pathname');
 		}
@@ -112,9 +125,16 @@ const handleRouterPropertyAccessExpression = (
 	} else if (nodeName === 'isReady') {
 		node.replaceWithText('true');
 	} else if (nodeName === 'asPath') {
-		node.replaceWithText('`${pathname}?${searchParams}`');
+		const parentNode = node.getParent();
 
-		onReplacedWithSearchParams();
+		if (Node.isPropertyAccessExpression(parentNode)) {
+			const rightNode = parentNode.getName();
+
+			parentNode.replaceWithText(`pathname?.${rightNode}`);
+		} else {
+			node.replaceWithText('pathname');
+		}
+
 		onReplacedWithPathname();
 	} else if (nodeName === 'href') {
 		node.replaceWithText('pathname');
@@ -122,20 +142,6 @@ const handleRouterPropertyAccessExpression = (
 		onReplacedWithPathname();
 	} else if (nodeName === 'isFallback') {
 		node.replaceWithText('false');
-	} else if (nodeName === 'push') {
-		const parentNode = node.getParent();
-
-		if (Node.isCallExpression(parentNode)) {
-			const [firstArgument] = parentNode.getArguments();
-
-			if (Node.isObjectLiteralExpression(firstArgument)) {
-				const text = firstArgument.getFullText();
-
-				firstArgument.replaceWithText(`JSON.stringify(${text})`);
-			}
-		}
-
-		usesRouter.set(() => true);
 	} else {
 		// unrecognized node names
 		usesRouter.set(() => true);
@@ -152,7 +158,7 @@ const handleQueryIdentifierNode = (
 	if (Node.isPropertyAccessExpression(parent)) {
 		const name = parent.getName();
 
-		parent.replaceWithText(`searchParams.get('${name}')`);
+		parent.replaceWithText(`searchParams?.get('${name}')`);
 
 		requiresSearchParams.set(() => true);
 	} else if (Node.isVariableDeclaration(parent)) {
@@ -286,6 +292,24 @@ const handleVariableDeclaration = (
 					});
 
 					++count;
+				} else if (text === 'asPath') {
+					++count;
+
+					nameNode.findReferencesAsNodes().forEach((node) => {
+						const parentNode = node.getParent();
+
+						if (Node.isPropertyAccessExpression(parentNode)) {
+							const rightNode = parentNode.getName();
+
+							parentNode.replaceWithText(
+								`pathname?.${rightNode}`,
+							);
+						} else {
+							node.replaceWithText('pathname');
+						}
+					});
+
+					requiresPathname.set((set) => set.add('pathname'));
 				}
 			}
 		}
@@ -339,14 +363,16 @@ const handleUseRouterCallExpression = (
 			requiresSearchParams.set(() => true);
 
 			if (Node.isCallExpression(grandparent)) {
-				parent.replaceWithText(`...Object.fromEntries(searchParams)`);
+				parent.replaceWithText(
+					`...Object.fromEntries(searchParams ?? new URLSearchParams())`,
+				);
 
 				requiresSearchParams.set(() => true);
 			} else if (Node.isElementAccessExpression(grandparent)) {
 				const argumentExpression = grandparent.getArgumentExpression();
 
 				grandparent.replaceWithText(
-					`searchParams.get(${argumentExpression?.print()})`,
+					`searchParams?.get(${argumentExpression?.print()})`,
 				);
 
 				requiresSearchParams.set(() => true);
@@ -357,7 +383,7 @@ const handleUseRouterCallExpression = (
 
 				if (Node.isIdentifier(nameNode)) {
 					grandparent.replaceWithText(
-						`searchParams.get("${nameNode.getText()}")`,
+						`searchParams?.get("${nameNode.getText()}")`,
 					);
 				}
 
@@ -397,7 +423,7 @@ const handleUseRouterCallExpression = (
 
 						const text = properties
 							.map(({ name, propertyName }) => {
-								return `${name} = searchParams.get("${propertyName}")`;
+								return `${name} = searchParams?.get("${propertyName}")`;
 							})
 							.join(',\n');
 
@@ -411,6 +437,28 @@ const handleUseRouterCallExpression = (
 			return;
 		} else if (text === 'isFallback') {
 			parent.replaceWithText('false');
+		} else if (text === 'asPath') {
+			if (Node.isVariableDeclaration(grandparent)) {
+				const vdName = grandparent.getName();
+
+				grandparent.findReferencesAsNodes().forEach((reference) => {
+					if (Node.isIdentifier(reference)) {
+						const parentNode = reference.getParent();
+
+						if (Node.isPropertyAccessExpression(parentNode)) {
+							const parentNodeName = parentNode.getName();
+
+							parentNode.replaceWithText(
+								`${vdName}?.${parentNodeName}`,
+							);
+						}
+					}
+				});
+
+				grandparent.remove();
+
+				requiresPathname.set((set) => set.add(vdName));
+			}
 		}
 	}
 };
@@ -469,7 +517,7 @@ const handleUseRouterIdentifier = (
 		const labels = labelContainer.get();
 
 		for (const label of labels) {
-			statements.push(`const ${label} = searchParams.get("${label}")`);
+			statements.push(`const ${label} = searchParams?.get("${label}")`);
 		}
 	}
 
