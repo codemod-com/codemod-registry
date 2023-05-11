@@ -1,7 +1,7 @@
 # Codemod Registry
 This repo contains an organized and maintained collection of codemods that can be used to help you upgrade several frameworks and libraries for your projects.
 
-The codemods included in this repository are built on top of existing codemod engines such as jscodeshift and ts-morph. Intuita is working on supporting more codemod engines. If you would like to see a specific engine supported, please [leave us a feature request →](https://feedback.intuita.io/feature-requests-and-bugs)
+The codemods included in this repository are built on top of existing codemod engines such as jscodeshift and ts-morph. Intuita is working on supporting more codemod engines. If you would like to see a specific engine supported, please [leave us a feature request →](https://feedback.intuita.io/feature-requests-and-bugs).
 
 ## Why
 Using Intuita’s Codemod Registry helps provide a better experience with upgrading codebases using codemods. Using existing codemods or integrating your codemods into the registry allows for:
