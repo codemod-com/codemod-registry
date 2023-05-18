@@ -50,7 +50,7 @@ export default function NotFound() {
 `;
 
 const ROOT_PAGE_CONTENT = `
-export default function Page(
+export default function RootPage(
     {
         params,
         searchParams,
@@ -70,13 +70,26 @@ export const metadata: Metadata = {
 	description: '',
 };
 
-export default function Layout(
+export default function RouteLayout(
 	{ children, params }: {
 		children: React.ReactNode;
 		params: {};
 	}
 ) {
 	return <>{children}</>;
+}
+`;
+
+const ROUTE_PAGE_CONTENT = `
+export default function RoutePage() {
+	{
+        params,
+        searchParams,
+    }: {
+        params: { slug: string };
+        searchParams: { [key: string]: string | string[] | undefined };
+    }) {
+        return null;
 }
 `;
 
@@ -88,6 +101,7 @@ enum FilePurpose {
 	ROOT_NOT_FOUND = 'ROOT_NOT_FOUND',
 	// route directories
 	ROUTE_LAYOUT = 'ROUTE_LAYOUT',
+	ROUTE_PAGE = 'ROUTE_PAGE',
 }
 
 const map = new Map([
@@ -96,6 +110,7 @@ const map = new Map([
 	[FilePurpose.ROOT_NOT_FOUND, ROOT_NOT_FOUND_CONTENT],
 	[FilePurpose.ROOT_PAGE, ROOT_PAGE_CONTENT],
 	[FilePurpose.ROUTE_LAYOUT, ROUTE_LAYOUT_CONTENT],
+	[FilePurpose.ROUTE_PAGE, ROUTE_PAGE_CONTENT],
 ]);
 
 const EXTENSION = '.tsx';
@@ -103,7 +118,7 @@ const EXTENSION = '.tsx';
 export const repomod: Repomod<Dependencies> = {
 	includePatterns: ['**/pages/**/*.{js,jsx,ts,tsx}'],
 	excludePatterns: ['**/node_modules/**', '**/pages/api/**'],
-	handleFile: async (api, path, options) => {
+	handleFile: async (_, path, options) => {
 		const parsedPath = posix.parse(path);
 		const directoryNames = parsedPath.dir.split(posix.sep);
 		const endsWithPages =
@@ -112,12 +127,12 @@ export const repomod: Repomod<Dependencies> = {
 
 		const nameIsIndex = parsedPath.name === 'index';
 
-		const newDir = directoryNames
-			.slice(0, -1)
-			.concat('app')
-			.join(posix.sep);
-
 		if (endsWithPages && nameIsIndex) {
+			const newDir = directoryNames
+				.slice(0, -1)
+				.concat('app')
+				.join(posix.sep);
+
 			const rootLayoutPath = posix.format({
 				root: parsedPath.root,
 				dir: newDir,
@@ -177,6 +192,46 @@ export const repomod: Repomod<Dependencies> = {
 					options: {
 						...options,
 						filePurpose: FilePurpose.ROOT_PAGE,
+					},
+				},
+			];
+		}
+
+		if (!endsWithPages) {
+			const newDir = directoryNames
+				.map((name) => name.replace('pages', 'app'))
+				.concat(parsedPath.name)
+				.join(posix.sep);
+
+			const routePagePath = posix.format({
+				root: parsedPath.root,
+				dir: newDir,
+				ext: EXTENSION,
+				name: 'page',
+			});
+
+			const routeLayoutPath = posix.format({
+				root: parsedPath.root,
+				dir: newDir,
+				ext: EXTENSION,
+				name: 'layout',
+			});
+
+			return [
+				{
+					kind: 'upsertFile',
+					path: routePagePath,
+					options: {
+						...options,
+						filePurpose: FilePurpose.ROUTE_PAGE,
+					},
+				},
+				{
+					kind: 'upsertFile',
+					path: routeLayoutPath,
+					options: {
+						...options,
+						filePurpose: FilePurpose.ROUTE_LAYOUT,
 					},
 				},
 			];

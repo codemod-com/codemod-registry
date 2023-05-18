@@ -1,5 +1,5 @@
 import { Context } from 'mocha';
-import { ok } from 'node:assert';
+import { deepStrictEqual, ok } from 'node:assert';
 import { Volume } from 'memfs';
 import {
 	FileSystemManager,
@@ -38,6 +38,8 @@ describe.only('next 13 app-directory-boilerplate', function () {
 	it('should return correct files', async function (this: Context) {
 		const externalFileCommands = await transform();
 
+		// deepStrictEqual(externalFileCommands.length, 6);
+
 		ok(
 			externalFileCommands.some(
 				(command) => command.path === '/opt/project/app/layout.tsx',
@@ -59,6 +61,19 @@ describe.only('next 13 app-directory-boilerplate', function () {
 		ok(
 			externalFileCommands.some(
 				(command) => command.path === '/opt/project/app/page.tsx',
+			),
+		);
+
+		ok(
+			externalFileCommands.some(
+				(command) =>
+					command.path === '/opt/project/app/[a]/[b]/page.tsx',
+			),
+		);
+
+		ok(
+			externalFileCommands.some(
+				(command) => command.path === '/opt/project/app/[a]/c/page.tsx',
 			),
 		);
 	});
