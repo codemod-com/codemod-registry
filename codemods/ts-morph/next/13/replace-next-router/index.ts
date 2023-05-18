@@ -104,6 +104,22 @@ const handleRouterPropertyAccessExpression = (
 			node.replaceWithText(
 				'...Object.fromEntries(searchParams ?? new URLSearchParams())',
 			);
+		} else if (Node.isElementAccessExpression(parentNode)) {
+			// e.g. router.query["param"]
+
+			const argumentExpressionAsText = parentNode
+				.getArgumentExpression()
+				?.getText();
+
+			if (!argumentExpressionAsText) {
+				return;
+			}
+
+			const replacerText = `searchParams?.get(${argumentExpressionAsText})`;
+
+			parentNode.replaceWithText(replacerText);
+
+			onReplacedWithSearchParams();
 		} else {
 			node.replaceWithText('searchParams');
 			onReplacedWithSearchParams();
@@ -330,7 +346,6 @@ const handleUseRouterCallExpression = (
 	labelContainer: Container<ReadonlyArray<string>>,
 ) => {
 	const parent = node.getParent();
-
 	if (Node.isVariableDeclaration(parent)) {
 		handleVariableDeclaration(
 			parent,
