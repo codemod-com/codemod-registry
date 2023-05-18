@@ -169,27 +169,29 @@ const handleRouterPropertyAccessExpression = (
 				const pathnameNode = arg.getProperty('pathname');
 				const queryNode = arg.getProperty('query');
 
-				if (Node.isPropertyAssignment(pathnameNode)) {
-					const pathNameValue =
-						pathnameNode.getInitializer()?.getText() ?? '';
-					if (!Node.isPropertyAssignment(queryNode)) {
-						parentNode.replaceWithText(
-							`router.${nodeName}(${pathNameValue})`,
-						);
-						return;
-					}
-
-					const queryValue =
-						queryNode.getInitializer()?.getText() ?? '{}';
-
-					parentNode.replaceWithText(
-						`const urlSearchParams = new URLSearchParams(${queryValue});\n
-							router.${nodeName}(\`${pathNameValue.replace(
-							/"/g,
-							'',
-						)}?\${urlSearchParams.toString()}\`);`,
-					);
+				if (!Node.isPropertyAssignment(pathnameNode)) {
+					return;
 				}
+
+				const pathNameValue =
+					pathnameNode.getInitializer()?.getText() ?? '';
+				if (!Node.isPropertyAssignment(queryNode)) {
+					parentNode.replaceWithText(
+						`router.${nodeName}(${pathNameValue})`,
+					);
+					return;
+				}
+
+				const queryValue =
+					queryNode.getInitializer()?.getText() ?? '{}';
+
+				parentNode.replaceWithText(
+					`const urlSearchParams = new URLSearchParams(${queryValue});\n
+							router.${nodeName}(\`${pathNameValue.replace(
+						/"/g,
+						'',
+					)}?\${urlSearchParams.toString()}\`);`,
+				);
 			}
 		}
 	} else {
