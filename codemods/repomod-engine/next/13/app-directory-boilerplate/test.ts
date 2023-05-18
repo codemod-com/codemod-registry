@@ -10,10 +10,6 @@ import {
 import { repomod } from './index.js';
 
 const transform = async () => {
-	`import glob from 'glob';
-import { promisify } from 'node:util';
-const promisifiedGlob = promisify(glob);`;
-
 	const volume = Volume.fromJSON({
 		'/opt/project/pages/index.js': '',
 	});

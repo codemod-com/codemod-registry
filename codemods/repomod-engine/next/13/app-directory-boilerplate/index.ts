@@ -83,40 +83,34 @@ export const repomod: Repomod<Dependencies> = {
 
 		const nameIsIndex = parsedPath.name === 'index';
 
-		console.log(
-			directoryNames,
-			directoryNames.lastIndexOf('pages'),
-			directoryNames.length,
-			endsWithPages,
-			nameIsIndex,
-		);
+		const newDirectoryNames = directoryNames.slice(0, -1).concat('app');
 
 		if (endsWithPages && nameIsIndex) {
 			const rootLayoutPath = posix.format({
 				root: parsedPath.root,
-				dir: directoryNames.join(posix.sep),
-				ext: 'tsx',
+				dir: newDirectoryNames.join(posix.sep),
+				ext: '.tsx',
 				name: 'layout',
 			});
 
 			const rootErrorPath = posix.format({
 				root: parsedPath.root,
-				dir: directoryNames.join(posix.sep),
-				ext: 'tsx',
+				dir: newDirectoryNames.join(posix.sep),
+				ext: '.tsx',
 				name: 'error',
 			});
 
 			const rootNotFoundPath = posix.format({
 				root: parsedPath.root,
-				dir: directoryNames.join(posix.sep),
-				ext: 'tsx',
+				dir: newDirectoryNames.join(posix.sep),
+				ext: '.tsx',
 				name: 'not-found',
 			});
 
 			const rootPagePath = posix.format({
 				root: parsedPath.root,
-				dir: directoryNames.join(posix.sep),
-				ext: 'tsx',
+				dir: newDirectoryNames.join(posix.sep),
+				ext: '.tsx',
 				name: 'page',
 			});
 
