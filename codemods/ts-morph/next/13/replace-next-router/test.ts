@@ -1305,6 +1305,62 @@ describe('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
+	it('should remove await from "await router.push(href: string)"', () => {
+		const beforeText = `
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				const router = useRouter();
+				const handleRouting = async () => {
+					await router.push('/auth/login');
+				};
+			}
+	  	`;
+
+		const afterText = `
+	  		import { useRouter } from "next/navigation";
+		
+			function Component() {
+				const router = useRouter();
+				const handleRouting = async () => {
+					router.push('/auth/login');
+				};
+			}
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(actual, expected);
+	});
+
+	it('should remove await from "await router.replace(href: string)"', () => {
+		const beforeText = `
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				const router = useRouter();
+				const handleRouting = async () => {
+					await router.replace('/auth/login');
+				};
+			}
+	  	`;
+
+		const afterText = `
+	  		import { useRouter } from "next/navigation";
+		
+			function Component() {
+				const router = useRouter();
+				const handleRouting = async () => {
+					router.replace('/auth/login');
+				};
+			}
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(actual, expected);
+	});
+
 	it('should replace NextRouter with AppRouterInstance', () => {
 		const beforeText = `
 			import type { NextRouter } from "next/router"; 
@@ -1319,7 +1375,8 @@ describe('next 13 replace-next-router', function () {
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
-	});
+	})
+
 	// BreadcrumbContainer
 	// AppCard
 });
