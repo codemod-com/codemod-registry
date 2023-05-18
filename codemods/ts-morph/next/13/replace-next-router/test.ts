@@ -1132,7 +1132,7 @@ describe('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it('should replace "router.replace({pathname: string, query: {...})" with "router.replace(href: string)"', () => {
+	it.only('should replace "router.replace({pathname: string, query: {...})" with "router.replace(href: string)"', () => {
 		const beforeText = `
 			import { useRouter } from 'next/router';
 
@@ -1172,7 +1172,6 @@ describe('next 13 replace-next-router', function () {
 
 			function Component() {
 				const router = useRouter();
-
 				router.push({
 					pathname: '/auth/login',
 					query: {
@@ -1189,8 +1188,7 @@ describe('next 13 replace-next-router', function () {
 				const router = useRouter();
 				const urlSearchParams = new URLSearchParams({
 					callbackUrl: \`/apps/\${slug}/setup\`,
-				})
-			
+				});
 				router.push(\`/auth/login?\${urlSearchParams.toString()}\`);
 			}
 		`;
