@@ -1375,7 +1375,7 @@ describe('next 13 replace-next-router', function () {
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
 		deepStrictEqual(actual, expected);
-	})
+	});
 
 	// BreadcrumbContainer
 	// AppCard
