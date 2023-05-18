@@ -165,52 +165,47 @@ const handleRouterPropertyAccessExpression = (
 		if (Node.isCallExpression(parentNode)) {
 			const arg = parentNode.getArguments()[0];
 			if (Node.isStringLiteral(arg)) {
+				// arg is already string. no action required.
 				return;
 			}
-			if (Node.isObjectLiteralExpression(arg)) {
-				const pathnameNode = arg.getProperty('pathname');
-				const queryNode = arg.getProperty('query');
-
-				if (!Node.isPropertyAssignment(pathnameNode)) {
-					return;
-				}
-
-				const pathNameValue =
-					pathnameNode.getInitializer()?.getText() ?? '';
-				if (!Node.isPropertyAssignment(queryNode)) {
-					parentNode.replaceWithText(
-						`router.${nodeName}(${pathNameValue})`,
-					);
-					return;
-				}
-
-				const queryValue =
-					queryNode.getInitializer()?.getText() ?? '{}';
-
-				const prevSiblingNodeCount =
-					parentNode.getPreviousSiblings().length;
-
-				const block = parentNode.getFirstAncestorByKind(
-					ts.SyntaxKind.Block,
-				);
-
-				if (block) {
-					block.insertStatements(
-						prevSiblingNodeCount + 1,
-						`const urlSearchParams = new URLSearchParams(${queryValue});\n
-					router.${nodeName}(\`${pathNameValue.replace(
-							/("|')/g,
-							'',
-						)}?\${urlSearchParams.toString()}\`);`,
-					);
-				}
-
-				const grandparentNode = parentNode.getParent();
-
-				if (Node.isExpressionStatement(grandparentNode)) {
-					grandparentNode.remove();
-				}
+			if (!Node.isObjectLiteralExpression(arg)) {
+				return;
 			}
+
+			const block = parentNode.getFirstAncestorByKind(
+				ts.SyntaxKind.Block,
+			);
+			const grandParentNode = parentNode.getParent();
+			const pathnameNode = arg.getProperty('pathname');
+
+			if (
+				!block ||
+				!Node.isExpressionStatement(grandParentNode) ||
+				!Node.isPropertyAssignment(pathnameNode) // `pathname` is required
+			) {
+				return;
+			}
+
+			const pathNameValue =
+				pathnameNode.getInitializer()?.getText() ?? '';
+			const prevSiblingNodeCount =
+				parentNode.getPreviousSiblings().length;
+			const queryNode = arg.getProperty('query');
+
+			const newText = Node.isPropertyAssignment(queryNode)
+				? `const urlSearchParams = new URLSearchParams(${
+						queryNode.getInitializer()?.getText() ?? '{}'
+				  });\n
+					router.${nodeName}(\`${pathNameValue.replace(
+						/("|')/g,
+						'',
+				  )}?\${urlSearchParams.toString()}\`);`
+				: `router.${nodeName}(${pathNameValue})`;
+
+			block.insertStatements(prevSiblingNodeCount + 1, newText);
+
+			// remove `router.replace(...)` or `router.push(...)`
+			grandParentNode.remove();
 		}
 	} else {
 		// unrecognized node names
