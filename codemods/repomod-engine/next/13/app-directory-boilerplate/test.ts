@@ -1,5 +1,5 @@
 import { Context } from 'mocha';
-// import { deepStrictEqual } from "node:assert";
+import { ok } from 'node:assert';
 import { Volume } from 'memfs';
 import {
 	FileSystemManager,
@@ -29,10 +29,14 @@ const transform = async () => {
 	return executeRepomod(api, repomod, '/', {});
 };
 
-describe.only('next 13 replace-next-router', function () {
-	it('', async function (this: Context) {
+describe.only('next 13 app-directory-boilerplate', function () {
+	it('should return correct files', async function (this: Context) {
 		const externalFileCommands = await transform();
 
-		console.log(externalFileCommands);
+		ok(
+			externalFileCommands.some(
+				(command) => command.path === '/opt/project/app/layout.tsx',
+			),
+		);
 	});
 });

@@ -71,6 +71,12 @@ enum FilePurpose {
 	ROUTE_LAYOUT = 'ROUTE_LAYOUT',
 }
 
+const map = new Map([
+	[FilePurpose.ROOT_LAYOUT, ROOT_LAYOUT_CONTENT],
+	[FilePurpose.ROOT_ERROR, ROOT_ERROR_CONTENT],
+	[FilePurpose.ROUTE_LAYOUT, ROUTE_LAYOUT_CONTENT],
+]);
+
 export const repomod: Repomod<Dependencies> = {
 	includePatterns: ['**/pages/**/*.{js,jsx,ts,tsx}'],
 	excludePatterns: ['**/node_modules/**', '**/pages/api/**'],
@@ -153,34 +159,26 @@ export const repomod: Repomod<Dependencies> = {
 		return [];
 	},
 	handleData: async (api, path, data, options) => {
-		const filePurpose = options.filePurpose;
+		const filePurpose = (options.filePurpose ?? null) as FilePurpose | null;
 
-		if (filePurpose === FilePurpose.ROOT_LAYOUT) {
+		if (filePurpose === null) {
 			return {
-				kind: 'upsertData',
-				path,
-				data: ROOT_LAYOUT_CONTENT,
+				kind: 'noop',
 			};
 		}
 
-		if (filePurpose === FilePurpose.ROUTE_LAYOUT) {
-			return {
-				kind: 'upsertData',
-				path,
-				data: ROUTE_LAYOUT_CONTENT,
-			};
-		}
+		const content = map.get(filePurpose) ?? null;
 
-		if (filePurpose === FilePurpose.ROOT_ERROR) {
+		if (content === null) {
 			return {
-				kind: 'upsertData',
-				path,
-				data: ROOT_ERROR_CONTENT,
+				kind: 'noop',
 			};
 		}
 
 		return {
-			kind: 'noop',
+			kind: 'upsertData',
+			path,
+			data: content,
 		};
 	},
 };
