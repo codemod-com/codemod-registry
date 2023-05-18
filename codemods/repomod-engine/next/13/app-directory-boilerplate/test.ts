@@ -67,7 +67,21 @@ describe.only('next 13 app-directory-boilerplate', function () {
 		ok(
 			externalFileCommands.some(
 				(command) =>
+					command.path === '/opt/project/app/[a]/[b]/layout.tsx',
+			),
+		);
+
+		ok(
+			externalFileCommands.some(
+				(command) =>
 					command.path === '/opt/project/app/[a]/[b]/page.tsx',
+			),
+		);
+
+		ok(
+			externalFileCommands.some(
+				(command) =>
+					command.path === '/opt/project/app/[a]/c/layout.tsx',
 			),
 		);
 
