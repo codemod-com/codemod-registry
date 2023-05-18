@@ -1277,6 +1277,33 @@ describe('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
+	it('should handle "const { query: { rescheduleUid } = {} } = router;"', () => {
+		const beforeText = `
+			import { useRouter } from "next/router";
+			
+			export default function Component() {
+				const { query: { param1, param2 } = {} } = useRouter();
+				
+				return null;
+			}
+		`;
+
+		const afterText = `
+			import { useSearchParams } from "next/navigation";
+			
+			export default function Component() {
+				const searchParams = useSearchParams();
+		
+				const param1 = searchParams?.get("param1");
+				const param2 = searchParams?.get("param2");
+				
+				return null;}
+				`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(actual, expected);
+	});
 	// BreadcrumbContainer
 	// AppCard
 });
