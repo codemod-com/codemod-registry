@@ -34,11 +34,11 @@ const transform = async () => {
 	return executeRepomod(api, repomod, '/', {});
 };
 
-describe.only('next 13 app-directory-boilerplate', function () {
-	it('should return correct files', async function (this: Context) {
+describe('next 13 app-directory-boilerplate', function () {
+	it('should build correct files', async function (this: Context) {
 		const externalFileCommands = await transform();
 
-		// deepStrictEqual(externalFileCommands.length, 6);
+		deepStrictEqual(externalFileCommands.length, 4 + 3 * 2);
 
 		ok(
 			externalFileCommands.some(
@@ -67,6 +67,14 @@ describe.only('next 13 app-directory-boilerplate', function () {
 		ok(
 			externalFileCommands.some(
 				(command) =>
+					command.path ===
+					'/opt/project/app/[a]/[b]/client-component.tsx',
+			),
+		);
+
+		ok(
+			externalFileCommands.some(
+				(command) =>
 					command.path === '/opt/project/app/[a]/[b]/layout.tsx',
 			),
 		);
@@ -75,6 +83,14 @@ describe.only('next 13 app-directory-boilerplate', function () {
 			externalFileCommands.some(
 				(command) =>
 					command.path === '/opt/project/app/[a]/[b]/page.tsx',
+			),
+		);
+
+		ok(
+			externalFileCommands.some(
+				(command) =>
+					command.path ===
+					'/opt/project/app/[a]/c/client-component.tsx',
 			),
 		);
 
