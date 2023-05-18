@@ -1132,6 +1132,36 @@ describe('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
+	it('should replace "router.query[name]" with "searchParams?.get(name)"', () => {
+		const beforeText = `
+			import { useRouter } from "next/router";
+			
+			export default function Component() {
+				const router = useRouter();
+		
+				const param = router.query["param"];
+				
+				return null;
+			}
+		`;
+
+		const afterText = `
+			import { useSearchParams } from "next/navigation";
+			
+			export default function Component() {
+				const searchParams = useSearchParams();
+		
+				const param = searchParams?.get("param");
+				
+				return null;
+			}
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(actual, expected);
+	});
+
 	// BreadcrumbContainer
 	// AppCard
 });
