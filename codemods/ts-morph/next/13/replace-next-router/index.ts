@@ -159,6 +159,8 @@ const handleRouterPropertyAccessExpression = (
 	} else if (nodeName === 'isFallback') {
 		node.replaceWithText('false');
 	} else if (nodeName === 'replace' || nodeName === 'push') {
+		usesRouter.set(() => true);
+
 		const parentNode = node.getParent();
 		if (Node.isCallExpression(parentNode)) {
 			const arg = parentNode.getArguments()[0];
@@ -185,13 +187,29 @@ const handleRouterPropertyAccessExpression = (
 				const queryValue =
 					queryNode.getInitializer()?.getText() ?? '{}';
 
-				parentNode.replaceWithText(
-					`const urlSearchParams = new URLSearchParams(${queryValue});\n
-							router.${nodeName}(\`${pathNameValue.replace(
-						/"/g,
-						'',
-					)}?\${urlSearchParams.toString()}\`);`,
+				const prevSiblingNodeCount =
+					parentNode.getPreviousSiblings().length;
+
+				const block = parentNode.getFirstAncestorByKind(
+					ts.SyntaxKind.Block,
 				);
+
+				if (block) {
+					block.insertStatements(
+						prevSiblingNodeCount + 1,
+						`const urlSearchParams = new URLSearchParams(${queryValue});\n
+					router.${nodeName}(\`${pathNameValue.replace(
+							/("|')/g,
+							'',
+						)}?\${urlSearchParams.toString()}\`);`,
+					);
+				}
+
+				const grandparentNode = parentNode.getParent();
+
+				if (Node.isExpressionStatement(grandparentNode)) {
+					grandparentNode.remove();
+				}
 			}
 		}
 	} else {
