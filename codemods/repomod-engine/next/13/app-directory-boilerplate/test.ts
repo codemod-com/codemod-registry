@@ -38,5 +38,17 @@ describe.only('next 13 app-directory-boilerplate', function () {
 				(command) => command.path === '/opt/project/app/layout.tsx',
 			),
 		);
+
+		ok(
+			externalFileCommands.some(
+				(command) => command.path === '/opt/project/app/error.tsx',
+			),
+		);
+
+		ok(
+			externalFileCommands.some(
+				(command) => command.path === '/opt/project/app/not-found.tsx',
+			),
+		);
 	});
 });

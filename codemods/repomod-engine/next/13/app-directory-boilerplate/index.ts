@@ -43,6 +43,12 @@ export default function Error({
 }
 `;
 
+const ROOT_NOT_FOUND_CONTENT = `
+export default function NotFound() {
+    return null;
+}
+`;
+
 const ROUTE_LAYOUT_CONTENT = `
 import { Metadata } from 'next';
  
@@ -74,6 +80,7 @@ enum FilePurpose {
 const map = new Map([
 	[FilePurpose.ROOT_LAYOUT, ROOT_LAYOUT_CONTENT],
 	[FilePurpose.ROOT_ERROR, ROOT_ERROR_CONTENT],
+	[FilePurpose.ROOT_NOT_FOUND, ROOT_NOT_FOUND_CONTENT],
 	[FilePurpose.ROUTE_LAYOUT, ROUTE_LAYOUT_CONTENT],
 ]);
 
@@ -163,7 +170,7 @@ export const repomod: Repomod<Dependencies> = {
 
 		return [];
 	},
-	handleData: async (api, path, data, options) => {
+	handleData: async (_, path, __, options) => {
 		const filePurpose = (options.filePurpose ?? null) as FilePurpose | null;
 
 		if (filePurpose === null) {
