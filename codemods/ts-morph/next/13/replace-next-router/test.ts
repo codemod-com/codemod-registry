@@ -1201,7 +1201,6 @@ describe('next 13 replace-next-router', function () {
 
 			function Component() {
 				const router = useRouter();
-
 				router.push({
 					pathname: '/auth/login',
 					query: {
@@ -1218,8 +1217,7 @@ describe('next 13 replace-next-router', function () {
 				const router = useRouter();
 				const urlSearchParams = new URLSearchParams({
 					callbackUrl: \`/apps/\${slug}/setup\`,
-				})
-			
+				});
 				router.push(\`/auth/login?\${urlSearchParams.toString()}\`);
 			}
 		`;
