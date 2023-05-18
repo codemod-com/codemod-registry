@@ -11,7 +11,12 @@ import { repomod } from './index.js';
 
 const transform = async () => {
 	const volume = Volume.fromJSON({
-		'/opt/project/pages/index.js': '',
+		'/opt/project/pages/index.jsx': '',
+		'/opt/project/pages/_app.jsx': '',
+		'/opt/project/pages/_document.jsx': '',
+		'/opt/project/pages/_error.jsx': '',
+		'/opt/project/pages/[a]/[b].tsx': '',
+		'/opt/project/pages/[a]/c.tsx': '',
 	});
 
 	const fileSystemManager = new FileSystemManager(
