@@ -171,6 +171,7 @@ const handleRouterPropertyAccessExpression = (
 					const text = grandParentNode.getText();
 					grandParentNode.replaceWithText(text.replace('await', ''));
 				}
+				// arg is already string. no further action required.
 				return;
 			}
 			if (!Node.isObjectLiteralExpression(arg)) {
