@@ -1153,7 +1153,122 @@ describe('next 13 replace-next-router', function () {
 		
 				const param = searchParams?.get("param");
 				
-				return null;
+				return null;}
+				`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(actual, expected);
+	});
+
+	it('should replace "router.replace({pathname: string})" with "router.replace(href: string)"', () => {
+		const beforeText = `
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				const router = useRouter();
+				router.replace({
+					pathname: "/auth/login",
+				});
+			}
+	  	`;
+
+		const afterText = `
+	  		import { useRouter } from "next/navigation";
+		
+			function Component() {
+				const router = useRouter();
+				router.replace("/auth/login");
+			}
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(actual, expected);
+	});
+
+	it('should replace "router.replace({pathname: string, query: {...})" with "router.replace(href: string)"', () => {
+		const beforeText = `
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				const router = useRouter();
+				router.replace({
+					pathname: "/auth/login",
+					query: {
+					  callbackUrl: \`/apps/\${slug}/setup\`,
+					},
+				});
+			}
+	  	`;
+
+		const afterText = `
+	  		import { useRouter } from "next/navigation";
+		
+			function Component() {
+				const router = useRouter();
+				const urlSearchParams = new URLSearchParams({
+					callbackUrl: \`/apps/\${slug}/setup\`,
+				})
+				router.replace(\`/auth/login?\${urlSearchParams.toString()}\`);
+			}
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(actual, expected);
+	});
+
+	it('should replace "router.push({pathname: string})" with "router.push(href: string)"', () => {
+		const beforeText = `
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				const router = useRouter();
+				router.push({
+					pathname: "/auth/login",
+				});
+			}
+	  	`;
+
+		const afterText = `
+	  		import { useRouter } from "next/navigation";
+		
+			function Component() {
+				const router = useRouter();
+				router.push("/auth/login");
+			}
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(actual, expected);
+	});
+
+	it('should replace "router.push({pathname: string, query: {...})" with "router.push(href: string)"', () => {
+		const beforeText = `
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				const router = useRouter();
+				router.push({
+					pathname: '/auth/login',
+					query: {
+					  callbackUrl: \`/apps/\${slug}/setup\`,
+					},
+				});
+			}
+	  	`;
+
+		const afterText = `
+	  		import { useRouter } from "next/navigation";
+		
+			function Component() {
+				const router = useRouter();
+				const urlSearchParams = new URLSearchParams({
+					callbackUrl: \`/apps/\${slug}/setup\`,
+				});
+				router.push(\`/auth/login?\${urlSearchParams.toString()}\`);
 			}
 		`;
 

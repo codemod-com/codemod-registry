@@ -158,6 +158,55 @@ const handleRouterPropertyAccessExpression = (
 		onReplacedWithPathname();
 	} else if (nodeName === 'isFallback') {
 		node.replaceWithText('false');
+	} else if (nodeName === 'replace' || nodeName === 'push') {
+		usesRouter.set(() => true);
+
+		const parentNode = node.getParent();
+		if (Node.isCallExpression(parentNode)) {
+			const arg = parentNode.getArguments()[0];
+			if (Node.isStringLiteral(arg)) {
+				// arg is already string. no action required.
+				return;
+			}
+			if (!Node.isObjectLiteralExpression(arg)) {
+				return;
+			}
+
+			const block = parentNode.getFirstAncestorByKind(
+				ts.SyntaxKind.Block,
+			);
+			const grandParentNode = parentNode.getParent();
+			const pathnameNode = arg.getProperty('pathname');
+
+			if (
+				!block ||
+				!Node.isExpressionStatement(grandParentNode) ||
+				!Node.isPropertyAssignment(pathnameNode) // `pathname` is required
+			) {
+				return;
+			}
+
+			const pathNameValue =
+				pathnameNode.getInitializer()?.getText() ?? '';
+			const prevSiblingNodeCount =
+				parentNode.getPreviousSiblings().length;
+			const queryNode = arg.getProperty('query');
+
+			const newText = Node.isPropertyAssignment(queryNode)
+				? `const urlSearchParams = new URLSearchParams(${
+						queryNode.getInitializer()?.getText() ?? '{}'
+				  });\n
+					router.${nodeName}(\`${pathNameValue.replace(
+						/("|')/g,
+						'',
+				  )}?\${urlSearchParams.toString()}\`);`
+				: `router.${nodeName}(${pathNameValue})`;
+
+			block.insertStatements(prevSiblingNodeCount + 1, newText);
+
+			// remove original `router.replace(...)` or `router.push(...)`
+			grandParentNode.remove();
+		}
 	} else {
 		// unrecognized node names
 		usesRouter.set(() => true);
