@@ -163,9 +163,15 @@ const handleRouterPropertyAccessExpression = (
 
 		const parentNode = node.getParent();
 		if (Node.isCallExpression(parentNode)) {
+			const grandParentNode = parentNode.getParent();
 			const arg = parentNode.getArguments()[0];
 			if (Node.isStringLiteral(arg)) {
-				// arg is already string. no action required.
+				// remove `await` if it exists
+				if (Node.isAwaitExpression(grandParentNode)) {
+					const text = grandParentNode.getText();
+					grandParentNode.replaceWithText(text.replace('await', ''));
+				}
+				// arg is already string. no further action required.
 				return;
 			}
 			if (!Node.isObjectLiteralExpression(arg)) {
@@ -175,7 +181,6 @@ const handleRouterPropertyAccessExpression = (
 			const block = parentNode.getFirstAncestorByKind(
 				ts.SyntaxKind.Block,
 			);
-			const grandParentNode = parentNode.getParent();
 			const pathnameNode = arg.getProperty('pathname');
 
 			if (
