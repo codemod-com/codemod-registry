@@ -78,9 +78,18 @@ export const repomod: Repomod<Dependencies> = {
     const parsedPath = posix.parse(path);
     const directoryNames = parsedPath.dir.split(posix.sep);
     const endsWithPages =
-      directoryNames.lastIndexOf("pages") === directoryNames.length;
+      directoryNames.length > 0 &&
+      directoryNames.lastIndexOf("pages") === directoryNames.length - 1;
 
     const nameIsIndex = parsedPath.name === "index";
+
+    console.log(
+      directoryNames,
+      directoryNames.lastIndexOf("pages"),
+      directoryNames.length,
+      endsWithPages,
+      nameIsIndex
+    );
 
     if (endsWithPages && nameIsIndex) {
       const rootLayoutPath = posix.format({
