@@ -158,6 +158,40 @@ const handleRouterPropertyAccessExpression = (
 		onReplacedWithPathname();
 	} else if (nodeName === 'isFallback') {
 		node.replaceWithText('false');
+	} else if (nodeName === 'replace' || nodeName === 'push') {
+		const parentNode = node.getParent();
+		if (Node.isCallExpression(parentNode)) {
+			const arg = parentNode.getArguments()[0];
+			if (Node.isStringLiteral(arg)) {
+				return;
+			}
+			if (Node.isObjectLiteralExpression(arg)) {
+				const pathnameNode = arg.getProperty('pathname');
+				const queryNode = arg.getProperty('query');
+
+				if (Node.isPropertyAssignment(pathnameNode)) {
+					const pathNameValue =
+						pathnameNode.getInitializer()?.getText() ?? '';
+					if (!Node.isPropertyAssignment(queryNode)) {
+						parentNode.replaceWithText(
+							`router.${nodeName}(${pathNameValue})`,
+						);
+						return;
+					}
+
+					const queryValue =
+						queryNode.getInitializer()?.getText() ?? '{}';
+
+					parentNode.replaceWithText(
+						`const urlSearchParams = new URLSearchParams(${queryValue});\n
+							router.${nodeName}(\`${pathNameValue.replace(
+							/"/g,
+							'',
+						)}?\${urlSearchParams.toString()}\`);`,
+					);
+				}
+			}
+		}
 	} else {
 		// unrecognized node names
 		usesRouter.set(() => true);

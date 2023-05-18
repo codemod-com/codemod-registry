@@ -1167,7 +1167,6 @@ describe('next 13 replace-next-router', function () {
 
 			function Component() {
 				const router = useRouter();
-
 				router.replace({
 					pathname: "/auth/login",
 					query: {
@@ -1178,14 +1177,13 @@ describe('next 13 replace-next-router', function () {
 	  	`;
 
 		const afterText = `
-	  		import { useRouter } from 'next/router';
+	  		import { useRouter } from "next/navigation";
 		
 			function Component() {
 				const router = useRouter();
 				const urlSearchParams = new URLSearchParams({
 					callbackUrl: \`/apps/\${slug}/setup\`,
 				})
-			
 				router.replace(\`/auth/login?\${urlSearchParams.toString()}\`);
 			}
 		`;
@@ -1211,7 +1209,7 @@ describe('next 13 replace-next-router', function () {
 	  	`;
 
 		const afterText = `
-	  		import { useRouter } from 'next/navigation';
+	  		import { useRouter } from "next/navigation";
 		
 			function Component() {
 				const router = useRouter();
