@@ -45,13 +45,13 @@ describe('next 13 replace-next-router', function () {
 		`;
 
 		const afterText = `
-        import { useSearchParams } from "next/navigation";
+	      import { useSearchParams } from "next/navigation";
 
-        function Component() {
-            const searchParams = useSearchParams();
-            const x = searchParams?.get("a");
-        }
-        `;
+	      function Component() {
+	          const searchParams = useSearchParams();
+	          const x = searchParams?.get("a");
+	      }
+	      `;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
@@ -71,10 +71,10 @@ describe('next 13 replace-next-router', function () {
 			import { useSearchParams } from "next/navigation";
 
 			function Component() {
-                const searchParams = useSearchParams();
+	              const searchParams = useSearchParams();
 				const a = searchParams?.get("a");
 			}
-        `;
+	      `;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
@@ -88,18 +88,18 @@ describe('next 13 replace-next-router', function () {
 			function Component() {
 				const { query } = useRouter();
 
-                const a = query.a;
+	              const a = query.a;
 			}
 		`;
 
 		const afterText = `
-            import { useSearchParams } from "next/navigation";
+	          import { useSearchParams } from "next/navigation";
 
 			function Component() {
-                const searchParams = useSearchParams();
-                const a = searchParams?.get('a');
+	              const searchParams = useSearchParams();
+	              const a = searchParams?.get('a');
 			}
-        `;
+	      `;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
@@ -113,12 +113,12 @@ describe('next 13 replace-next-router', function () {
 			function Component() {
 				const { query } = useRouter();
 
-                const a = query.a;
+	              const a = query.a;
 			}
 		`;
 
 		const afterText = `
-            import { useSearchParams } from "next/navigation";
+	          import { useSearchParams } from "next/navigation";
 
 			function Component() {
 				const searchParams = useSearchParams();
@@ -143,7 +143,7 @@ describe('next 13 replace-next-router', function () {
 		`;
 
 		const afterText = `
-            import { useSearchParams } from "next/navigation";
+	          import { useSearchParams } from "next/navigation";
 
 			function Component() {
 				const searchParams = useSearchParams();
@@ -169,14 +169,14 @@ describe('next 13 replace-next-router', function () {
 		`;
 
 		const afterText = `
-            import { useSearchParams } from "next/navigation";
+	          import { useSearchParams } from "next/navigation";
 
 			function Component() {
 				const searchParams = useSearchParams();
 
 				const a = searchParams?.get("a");
 			}
-        `;
+	      `;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
@@ -193,11 +193,11 @@ describe('next 13 replace-next-router', function () {
 		`;
 
 		const afterText = `
-            import { useSearchParams } from "next/navigation";
+	          import { useSearchParams } from "next/navigation";
 
 			function Component() {
 				const searchParams = useSearchParams();
-                const a = searchParams?.get("a");
+	              const a = searchParams?.get("a");
 			}
 			`;
 
@@ -220,7 +220,7 @@ describe('next 13 replace-next-router', function () {
 		`;
 
 		const afterText = `
-            import { useSearchParams } from "next/navigation";
+	          import { useSearchParams } from "next/navigation";
 
 			function Component() {
 				const searchParams = useSearchParams();
@@ -279,7 +279,7 @@ describe('next 13 replace-next-router', function () {
 			import { useRouter } from 'next/router';
 
 			function Component() {
-                const router = useRouter();
+	              const router = useRouter();
 				const { a, b, c } = router.query;
 			}
 		`;
@@ -288,13 +288,13 @@ describe('next 13 replace-next-router', function () {
 			import { useSearchParams } from "next/navigation";
 
 			function Component() {
-                const searchParams = useSearchParams();
+	              const searchParams = useSearchParams();
 
 				const a = searchParams?.get("a"),
-                    b = searchParams?.get("b"),
-                    c = searchParams?.get("c");
+	                  b = searchParams?.get("b"),
+	                  c = searchParams?.get("c");
 			}
-        `;
+	      `;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
@@ -402,19 +402,19 @@ describe('next 13 replace-next-router', function () {
 
 	it('should replace useRouter().pathname with usePathname()', async function (this: Context) {
 		const beforeText = `
-            import { useRouter } from 'next/router';
-            
-            function Component() {
-                const pathname = useRouter().pathname;
-            }
-        `;
+	          import { useRouter } from 'next/router';
+
+	          function Component() {
+	              const pathname = useRouter().pathname;
+	          }
+	      `;
 		const afterText = `
-            import { usePathname} from "next/navigation";
-            
-            function Component() {
-                const pathname = usePathname();
-            }
-        `;
+	          import { usePathname} from "next/navigation";
+
+	          function Component() {
+	              const pathname = usePathname();
+	          }
+	      `;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
@@ -423,21 +423,21 @@ describe('next 13 replace-next-router', function () {
 
 	it('should replace router.pathname with usePathname()', async function (this: Context) {
 		const beforeText = `
-            import { useRouter } from 'next/router';
+	          import { useRouter } from 'next/router';
 
-            function Component() {
-                const router = useRouter();
-                const pathname = router.pathname;
-            }
-        `;
+	          function Component() {
+	              const router = useRouter();
+	              const pathname = router.pathname;
+	          }
+	      `;
 
 		const afterText = `
 			import { usePathname } from "next/navigation";
-            
-            function Component() {
-                const pathname = usePathname();
-            }
-        `;
+
+	          function Component() {
+	              const pathname = usePathname();
+	          }
+	      `;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
@@ -446,19 +446,19 @@ describe('next 13 replace-next-router', function () {
 
 	it('should replace { pathname } destructed from useRouter() with usePathname()', async function (this: Context) {
 		const beforeText = `
-            import { useRouter } from 'next/router';
+	          import { useRouter } from 'next/router';
 
-            function Component() {
-                const { pathname } = useRouter();
-            }
-        `;
+	          function Component() {
+	              const { pathname } = useRouter();
+	          }
+	      `;
 
 		const afterText = `
 			import { usePathname } from "next/navigation";
 
-            function Component() {
-                const pathname = usePathname();
-            }
+	          function Component() {
+	              const pathname = usePathname();
+	          }
 	    `;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
@@ -468,22 +468,22 @@ describe('next 13 replace-next-router', function () {
 
 	it('should replace { pathname } destructed from router with usePathname()', async function (this: Context) {
 		const beforeText = `
-            import { useRouter } from 'next/router';
-            
-            function Component() {
-                const router = useRouter();
+	          import { useRouter } from 'next/router';
 
-                const { pathname } = router;
-            }
-        `;
+	          function Component() {
+	              const router = useRouter();
+
+	              const { pathname } = router;
+	          }
+	      `;
 
 		const afterText = `
 			import { usePathname } from "next/navigation";
 
-            function Component() {
-                const pathname = usePathname();
-            }
-        `;
+	          function Component() {
+	              const pathname = usePathname();
+	          }
+	      `;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
@@ -492,20 +492,20 @@ describe('next 13 replace-next-router', function () {
 
 	it('should replace { pathname: p } destructed from router with const p = usePathname()', async function (this: Context) {
 		const beforeText = `
-            import { useRouter } from 'next/router';
+	          import { useRouter } from 'next/router';
 
-            function Component() {
-                const router = useRouter();
-                const { pathname: p } = router;
-            }
-        `;
+	          function Component() {
+	              const router = useRouter();
+	              const { pathname: p } = router;
+	          }
+	      `;
 		const afterText = `
-            import { usePathname } from "next/navigation";
-            
-            function Component() {
-                const p = usePathname();
-            }
-        `;
+	          import { usePathname } from "next/navigation";
+
+	          function Component() {
+	              const p = usePathname();
+	          }
+	      `;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
@@ -514,18 +514,18 @@ describe('next 13 replace-next-router', function () {
 
 	it('should replace router.isReady with true', async function (this: Context) {
 		const beforeText = `
-            import { useRouter } from 'next/router';
+	          import { useRouter } from 'next/router';
 
-            function Component() {
-                const router = useRouter();
-                const ready = router.isReady;
-            }
-        `;
+	          function Component() {
+	              const router = useRouter();
+	              const ready = router.isReady;
+	          }
+	      `;
 		const afterText = `
-            function Component() {
-                const ready = true;
-            }
-        `;
+	          function Component() {
+	              const ready = true;
+	          }
+	      `;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
@@ -534,17 +534,17 @@ describe('next 13 replace-next-router', function () {
 
 	it('should replace useRouter().isReady with true', async function (this: Context) {
 		const beforeText = `
-            import { useRouter } from 'next/router';
+	          import { useRouter } from 'next/router';
 
-            function Component() {
-                const ready = useRouter().isReady;
-            }
-        `;
+	          function Component() {
+	              const ready = useRouter().isReady;
+	          }
+	      `;
 		const afterText = `
-            function Component() {
-                const ready = true;
-            }
-        `;
+	          function Component() {
+	              const ready = true;
+	          }
+	      `;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
@@ -553,19 +553,19 @@ describe('next 13 replace-next-router', function () {
 
 	it('should remove { isReady } and replace usages with true', async function (this: Context) {
 		const beforeText = `
-            import { useRouter } from 'next/router';
+	          import { useRouter } from 'next/router';
 
-            function Component() {
-                const { isReady } = useRouter();
+	          function Component() {
+	              const { isReady } = useRouter();
 				const ready = isReady;
-            }
-        `;
+	          }
+	      `;
 
 		const afterText = `
-            function Component() {
-                const ready = true;
-            }
-        `;
+	          function Component() {
+	              const ready = true;
+	          }
+	      `;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
@@ -790,7 +790,7 @@ describe('next 13 replace-next-router', function () {
 		`;
 
 		const afterText = `
-			import { useSearchParams } from "next/navigation";	
+			import { useSearchParams } from "next/navigation";
 
 			export default function DynamicRoutes() {
 				const searchParams = useSearchParams();
@@ -846,10 +846,10 @@ describe('next 13 replace-next-router', function () {
 		const beforeText = `
 			import { useRouter } from 'next/router'
 			import { useEffect } from 'react'
-			
+
 			function Component() {
 				const router = useRouter();
-				
+
 				const [path,] = useState(
 					router.isReady ? router.asPath : router.href
 				);
@@ -907,7 +907,7 @@ describe('next 13 replace-next-router', function () {
 	it('should replace router.isFallback with false', () => {
 		const beforeText = `
 			import { useRouter } from 'next/router'
-		
+
 			const Component = () => {
 		  		const router = useRouter()
 
@@ -937,17 +937,17 @@ describe('next 13 replace-next-router', function () {
 	it('should retain the useRouter import when router is in use', () => {
 		const beforeText = `
 			import { useRouter } from 'next/router'
-		
+
 			const Component = () => {
 		  		const router = useRouter()
-				
+
 				React.useEffect(
 					() => {
-				
+
 					},
 					[router]
 				)
-				
+
 				const a = router.pathname.includes('a')
 
 				return null;
@@ -957,11 +957,11 @@ describe('next 13 replace-next-router', function () {
 		const afterText = `
 			import { usePathname } from "next/navigation";
 			import { useRouter } from "next/navigation"
-			
+
 			const Component = () => {
 	   			const pathname = usePathname();
 	   			const router = useRouter();
-	   
+
 				React.useEffect(
 					() => {
 					},
@@ -971,7 +971,7 @@ describe('next 13 replace-next-router', function () {
 	   			const a = pathname?.includes('a');
 			return null;
 		};
- 
+
 		`;
 
 		const { actual, expected } = transform(beforeText, afterText, '.js');
@@ -982,7 +982,7 @@ describe('next 13 replace-next-router', function () {
 	it('should use searchParams when dealing with function(query)', () => {
 		const beforeText = `
 			import { useRouter } from 'next/router'
-		
+
 			const Component = () => {
 		  		const { query } = useRouter()
 
@@ -992,7 +992,7 @@ describe('next 13 replace-next-router', function () {
 
 		const afterText = `
 			import { useSearchParams } from "next/navigation";
-			
+
 			const Component = () => {
 				const searchParams = useSearchParams();
 				return JSON.stringify(searchParams);
@@ -1007,7 +1007,7 @@ describe('next 13 replace-next-router', function () {
 	it('should use searchParams when dealing with function(query)', () => {
 		const beforeText = `
 			import { useRouter } from 'next/router'
-		
+
 			const Component = () => {
 		  		const { locale } = useRouter()
 
@@ -1029,19 +1029,19 @@ describe('next 13 replace-next-router', function () {
 	it('should replace router.asPath.startsWith with pathname?.startsWith', () => {
 		const beforeText = `
 			import { useRouter } from "next/router";
-		
+
 			export default function Component() {
 		  		const router = useRouter();
-		
+
 				useEffect(
 					() => {
 						router.replace("a");
 					},
 					[router]
 				);
-		
+
 				const a = router.asPath.startsWith("a");
-			
+
 				return null;
 			}
 		`;
@@ -1049,20 +1049,20 @@ describe('next 13 replace-next-router', function () {
 		const afterText = `
 			import { usePathname } from "next/navigation";
 			import { useRouter } from "next/navigation";
-			
+
 			export default function Component() {
 				const pathname = usePathname();
 				const router = useRouter();
-		
+
 				useEffect(
 					() => {
 						router.replace("a");
 					},
 					[router]
 				);
-		
+
 				const a = pathname?.startsWith("a");
-			
+
 				return null;
 			}
 		`;
@@ -1075,24 +1075,24 @@ describe('next 13 replace-next-router', function () {
 	it('should replace "{ asPath } = useRouter()" with "pathname = usePathname()"', () => {
 		const beforeText = `
 			import { useRouter } from "next/router";
-			
+
 			export default function Component() {
 				const { asPath } = useRouter();
-		
+
 				const a = asPath.startsWith("a");
-			
+
 				return null;
 			}
 		`;
 
 		const afterText = `
 			import { usePathname } from "next/navigation";
-			
+
 			export default function Component() {
 				const pathname = usePathname();
-		
+
 				const a = pathname?.startsWith("a");
-			
+
 				return null;
 			}
 		`;
@@ -1105,24 +1105,24 @@ describe('next 13 replace-next-router', function () {
 	it('should replace "path = useRouter().asPath" with "path = usePathname()"', () => {
 		const beforeText = `
 			import { useRouter } from "next/router";
-			
+
 			export default function Component() {
 				const path = useRouter().asPath;
-		
+
 				const a = path.startsWith("a");
-			
+
 				return null;
 			}
 		`;
 
 		const afterText = `
 			import { usePathname } from "next/navigation";
-			
+
 			export default function Component() {
 				const path = usePathname();
-		
+
 				const a = path?.startsWith("a");
-			
+
 				return null;
 			}
 		`;
@@ -1135,24 +1135,24 @@ describe('next 13 replace-next-router', function () {
 	it('should replace "router.query[name]" with "searchParams?.get(name)"', () => {
 		const beforeText = `
 			import { useRouter } from "next/router";
-			
+
 			export default function Component() {
 				const router = useRouter();
-		
+
 				const param = router.query["param"];
-				
+
 				return null;
 			}
 		`;
 
 		const afterText = `
 			import { useSearchParams } from "next/navigation";
-			
+
 			export default function Component() {
 				const searchParams = useSearchParams();
-		
+
 				const param = searchParams?.get("param");
-				
+
 				return null;}
 				`;
 
@@ -1175,7 +1175,7 @@ describe('next 13 replace-next-router', function () {
 
 		const afterText = `
 	  		import { useRouter } from "next/navigation";
-		
+
 			function Component() {
 				const router = useRouter();
 				router.replace("/auth/login");
@@ -1204,7 +1204,7 @@ describe('next 13 replace-next-router', function () {
 
 		const afterText = `
 	  		import { useRouter } from "next/navigation";
-		
+
 			function Component() {
 				const router = useRouter();
 				const urlSearchParams = new URLSearchParams({
@@ -1233,7 +1233,7 @@ describe('next 13 replace-next-router', function () {
 
 		const afterText = `
 	  		import { useRouter } from "next/navigation";
-		
+
 			function Component() {
 				const router = useRouter();
 				router.push("/auth/login");
@@ -1262,7 +1262,7 @@ describe('next 13 replace-next-router', function () {
 
 		const afterText = `
 	  		import { useRouter } from "next/navigation";
-		
+
 			function Component() {
 				const router = useRouter();
 				const urlSearchParams = new URLSearchParams({
@@ -1277,28 +1277,44 @@ describe('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it('should handle "const { query: { rescheduleUid } = {} } = router;"', () => {
+	it('should handle "const { query: { rescheduleUid } = {} } = useRouter();"', () => {
 		const beforeText = `
 			import { useRouter } from "next/router";
-			
+
 			export default function Component() {
 				const { query: { param1, param2 } = {} } = useRouter();
-				
+
 				return null;
 			}
 		`;
 
 		const afterText = `
 			import { useSearchParams } from "next/navigation";
-			
+
 			export default function Component() {
 				const searchParams = useSearchParams();
-		
+
 				const param1 = searchParams?.get("param1");
 				const param2 = searchParams?.get("param2");
-				
+
 				return null;}
 				`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(actual, expected);
+	});
+
+	it('should replace NextRouter with AppRouterInstance', () => {
+		const beforeText = `
+			import type { NextRouter } from "next/router"; 
+			function(router: NextRouter) {}
+		`;
+
+		const afterText = `
+			import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context";
+			function(router: AppRouterInstance) {}
+		`;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
