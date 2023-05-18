@@ -3,6 +3,7 @@ import {
 	EmitHint,
 	Identifier,
 	ImportDeclaration,
+	ImportSpecifier,
 	VariableDeclaration,
 } from 'ts-morph';
 import { PropertyAccessExpression, SourceFile, ts } from 'ts-morph';
@@ -609,6 +610,17 @@ const handleUseRouterIdentifier = (
 	block.insertStatements(0, statements);
 };
 
+const handleNextRouterNamedImport = (namedImport: ImportSpecifier): void => {
+	namedImport
+		.getNameNode()
+		.findReferencesAsNodes()
+		.forEach((node) => {
+			if (Node.isIdentifier(node)) {
+				node.replaceWithText('AppRouterInstance');
+			}
+		});
+};
+
 const handleImportDeclaration = (
 	importDeclaration: ImportDeclaration,
 	useRouterReferenceCount: Container<number>,
@@ -623,25 +635,27 @@ const handleImportDeclaration = (
 	}
 
 	importDeclaration.getNamedImports().forEach((namedImport) => {
-		if (namedImport.getName() !== 'useRouter') {
-			return;
+		if (namedImport.getName() === 'NextRouter') {
+			handleNextRouterNamedImport(namedImport);
 		}
 
-		namedImport
-			.getNameNode()
-			.findReferencesAsNodes()
-			.forEach((node) => {
-				if (!Node.isIdentifier(node)) {
-					return;
-				}
+		if (namedImport.getName() === 'useRouter') {
+			namedImport
+				.getNameNode()
+				.findReferencesAsNodes()
+				.forEach((node) => {
+					if (!Node.isIdentifier(node)) {
+						return;
+					}
 
-				handleUseRouterIdentifier(
-					node,
-					usesRoute,
-					usesSearchParams,
-					usesPathname,
-				);
-			});
+					handleUseRouterIdentifier(
+						node,
+						usesRoute,
+						usesSearchParams,
+						usesPathname,
+					);
+				});
+		}
 
 		const referenceCount = namedImport
 			.getNameNode()
@@ -665,7 +679,6 @@ export const handleSourceFile = (
 	const usesSearchParams = buildContainer<boolean>(false);
 	const usesRouter = buildContainer<boolean>(false);
 	const usesPathname = buildContainer<boolean>(false);
-
 	const importDeclarations = sourceFile.getImportDeclarations();
 
 	const hasUseRouterImport = hasImport(
@@ -674,7 +687,13 @@ export const handleSourceFile = (
 		'useRouter',
 	);
 
-	if (!hasUseRouterImport) {
+	const hasNextRouterTypeImport = hasImport(
+		importDeclarations,
+		'next/router',
+		'NextRouter',
+	);
+
+	if (!hasUseRouterImport && !hasNextRouterTypeImport) {
 		return undefined;
 	}
 
@@ -720,6 +739,13 @@ export const handleSourceFile = (
 		sourceFile.insertStatements(
 			0,
 			'import { usePathname } from "next/navigation";',
+		);
+	}
+
+	if (hasNextRouterTypeImport) {
+		sourceFile.insertStatements(
+			0,
+			'import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context";',
 		);
 	}
 
