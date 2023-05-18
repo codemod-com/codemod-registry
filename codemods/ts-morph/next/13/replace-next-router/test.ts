@@ -1203,7 +1203,7 @@ describe('next 13 replace-next-router', function () {
 				const router = useRouter();
 
 				router.push({
-					pathname: "/auth/login",
+					pathname: '/auth/login',
 					query: {
 					  callbackUrl: \`/apps/\${slug}/setup\`,
 					},
@@ -1212,7 +1212,7 @@ describe('next 13 replace-next-router', function () {
 	  	`;
 
 		const afterText = `
-	  		import { useRouter } from 'next/router';
+	  		import { useRouter } from 'next/navigation';
 		
 			function Component() {
 				const router = useRouter();
