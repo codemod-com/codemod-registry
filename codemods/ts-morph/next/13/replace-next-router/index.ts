@@ -204,7 +204,7 @@ const handleRouterPropertyAccessExpression = (
 
 			block.insertStatements(prevSiblingNodeCount + 1, newText);
 
-			// remove `router.replace(...)` or `router.push(...)`
+			// remove original `router.replace(...)` or `router.push(...)`
 			grandParentNode.remove();
 		}
 	} else {
