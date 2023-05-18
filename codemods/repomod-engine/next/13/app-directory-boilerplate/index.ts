@@ -24,24 +24,6 @@ export default function RootLayout({
 }
 `;
 
-const ROUTE_LAYOUT_CONTENT = `
-import { Metadata } from 'next';
- 
-export const metadata: Metadata = {
-	title: '',
-	description: '',
-};
-
-export default function Layout(
-	{ children, params }: {
-		children: React.ReactNode;
-		params: {};
-	}
-) {
-	return <>{children}</>;
-}
-`;
-
 const ROOT_ERROR_CONTENT = `
 'use client';
 import { useEffect } from 'react';
@@ -61,6 +43,24 @@ export default function Error({
 }
 `;
 
+const ROUTE_LAYOUT_CONTENT = `
+import { Metadata } from 'next';
+ 
+export const metadata: Metadata = {
+	title: '',
+	description: '',
+};
+
+export default function Layout(
+	{ children, params }: {
+		children: React.ReactNode;
+		params: {};
+	}
+) {
+	return <>{children}</>;
+}
+`;
+
 enum FilePurpose {
 	// root directory
 	ROOT_LAYOUT = 'ROOT_LAYOUT',
@@ -77,6 +77,8 @@ const map = new Map([
 	[FilePurpose.ROUTE_LAYOUT, ROUTE_LAYOUT_CONTENT],
 ]);
 
+const EXTENSION = '.tsx';
+
 export const repomod: Repomod<Dependencies> = {
 	includePatterns: ['**/pages/**/*.{js,jsx,ts,tsx}'],
 	excludePatterns: ['**/node_modules/**', '**/pages/api/**'],
@@ -89,34 +91,37 @@ export const repomod: Repomod<Dependencies> = {
 
 		const nameIsIndex = parsedPath.name === 'index';
 
-		const newDirectoryNames = directoryNames.slice(0, -1).concat('app');
+		const newDir = directoryNames
+			.slice(0, -1)
+			.concat('app')
+			.join(posix.sep);
 
 		if (endsWithPages && nameIsIndex) {
 			const rootLayoutPath = posix.format({
 				root: parsedPath.root,
-				dir: newDirectoryNames.join(posix.sep),
-				ext: '.tsx',
+				dir: newDir,
+				ext: EXTENSION,
 				name: 'layout',
 			});
 
 			const rootErrorPath = posix.format({
 				root: parsedPath.root,
-				dir: newDirectoryNames.join(posix.sep),
-				ext: '.tsx',
+				dir: newDir,
+				ext: EXTENSION,
 				name: 'error',
 			});
 
 			const rootNotFoundPath = posix.format({
 				root: parsedPath.root,
-				dir: newDirectoryNames.join(posix.sep),
-				ext: '.tsx',
+				dir: newDir,
+				ext: EXTENSION,
 				name: 'not-found',
 			});
 
 			const rootPagePath = posix.format({
 				root: parsedPath.root,
-				dir: newDirectoryNames.join(posix.sep),
-				ext: '.tsx',
+				dir: newDir,
+				ext: EXTENSION,
 				name: 'page',
 			});
 
