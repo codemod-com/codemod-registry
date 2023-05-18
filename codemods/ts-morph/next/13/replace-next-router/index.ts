@@ -376,6 +376,22 @@ const handleVariableDeclaration = (
 
 					requiresPathname.set((set) => set.add('pathname'));
 				}
+			} else if (Node.isObjectBindingPattern(nameNode)) {
+				const elements = nameNode.getElements();
+
+				const labels: string[] = [];
+
+				elements.forEach((element) => {
+					const nameNode = element.getNameNode();
+
+					if (Node.isIdentifier(nameNode)) {
+						labels.push(nameNode.getText());
+					}
+				});
+
+				labelContainer.set(() => labels);
+				requiresSearchParams.set(() => true);
+				++count;
 			}
 		}
 
