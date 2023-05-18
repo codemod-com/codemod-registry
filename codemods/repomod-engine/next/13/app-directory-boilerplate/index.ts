@@ -49,6 +49,19 @@ export default function NotFound() {
 }
 `;
 
+const ROOT_PAGE_CONTENT = `
+export default function Page(
+    {
+        params,
+        searchParams,
+    }: {
+        params: { slug: string };
+        searchParams: { [key: string]: string | string[] | undefined };
+    }) {
+        return null;
+}
+`;
+
 const ROUTE_LAYOUT_CONTENT = `
 import { Metadata } from 'next';
  
@@ -81,6 +94,7 @@ const map = new Map([
 	[FilePurpose.ROOT_LAYOUT, ROOT_LAYOUT_CONTENT],
 	[FilePurpose.ROOT_ERROR, ROOT_ERROR_CONTENT],
 	[FilePurpose.ROOT_NOT_FOUND, ROOT_NOT_FOUND_CONTENT],
+	[FilePurpose.ROOT_PAGE, ROOT_PAGE_CONTENT],
 	[FilePurpose.ROUTE_LAYOUT, ROUTE_LAYOUT_CONTENT],
 ]);
 
