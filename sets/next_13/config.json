@@ -2,7 +2,6 @@
     "schemaVersion": "1.0.0",
     "name": "next_13",
     "codemods": [
-        "filemod-engine/next/13/pages-to-app",
         "jscodeshift/next/13/move-css-in-js-styles",
         "jscodeshift/next/13/new-image-experimental",
         "jscodeshift/next/13/new-link",
