@@ -33,7 +33,7 @@ const transform = (
 };
 
 describe('next 13 replace-next-head', function () {
-	it('should replace Head with Metadata', function (this: Context) {
+	it('should replace title tag', function (this: Context) {
 		const beforeText = `
     import Head from 'next/head';
     export default function Page() {
@@ -49,17 +49,19 @@ describe('next 13 replace-next-head', function () {
 
 		const afterText = `
     import { Metadata } from "next";
-    export const metadata: Metadata = { "title": "My Page Title" };
+    export const metadata: Metadata = { "title": "My page title" };
     export default function Page() {
       return (
-				<>
-				</>
-			)
+        <>
+          <Head>
+            
+          </Head>
+        </>
+      );
     }
-	      `;
+	  `;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
-
 		deepStrictEqual(actual, expected);
 	});
 });

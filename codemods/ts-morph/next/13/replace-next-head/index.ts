@@ -23,14 +23,18 @@ const handleTitleJsxElement = (titleJsxElement: JsxElement) => {
 
   children.forEach((node) => {
     if(Node.isJsxText(node)) {
+      
       ctx.push({
         tag: 'title', 
         attributes: {
           children: children[0]?.getText() ?? '', 
         }
       })
+
     }
   })
+
+  titleJsxElement.replaceWithText('');
 }
 
 const handleMetaJsxElement = (metaJsxElement: JsxElement) => {
@@ -58,15 +62,28 @@ const handleHeadJsxElement = (headJsxElement: JsxElement) => {
 }
 
 const handleHeadIdentifier = (headIdentifier: Identifier) => {
+  let jsxHeadElement: JsxElement | undefined;
+
 	headIdentifier
 		.findReferencesAsNodes()
 		.forEach((node) => {
-      const headJsxElement = node.getFirstAncestorByKind(SyntaxKind.JsxElement);
+      const parent = node.getParent();
+    
+      if(Node.isJsxOpeningElement(parent)) {
+        const grandparent = parent.getParent();
 
-			if (headJsxElement) {
-        handleHeadJsxElement(headJsxElement)
-			}
+        if(Node.isJsxElement(grandparent)) {
+          jsxHeadElement = grandparent;
+          handleHeadJsxElement(grandparent);
+        }
+      }
 		});
+
+  
+    if(!jsxHeadElement) {
+      return;
+    }
+
 }
 
 const handleImportDeclaration = (importDeclaration: ImportDeclaration)  => {
@@ -84,13 +101,24 @@ const handleImportDeclaration = (importDeclaration: ImportDeclaration)  => {
   }
 
   handleHeadIdentifier(headIdentifier);
-
+ 
   importDeclaration.remove();
 }
 
 const getMetadataObject = () => {
-  return  { title: 'My Page Title'};
+  const metadataObject: Record<string, string> = {};
+
+  ctx.forEach(({ tag, attributes}) => {
+
+    if(tag === 'title') {
+      metadataObject[tag] = attributes.children ?? ''
+    }
+
+  });
+
+  return metadataObject;
 }
+
 export const handleSourceFile = (sourceFile: SourceFile): string | undefined => {
 	const importDeclarations = sourceFile.getImportDeclarations();
 
