@@ -187,33 +187,98 @@ const handleImportDeclaration = (
 	importDeclaration.remove();
 };
 
-const metadataFlatProps: Record<string, string> = {
-	title: 'title',
-	description: 'description',
-	'application-name': 'applicationName',
-	author: 'authors',
-	generator: 'generator',
-	keywords: 'keywords',
-	referrer: 'referrer',
-	'theme-color': 'themeColor',
-	'color-scheme': 'colorScheme',
-	viewport: 'viewport',
-	creator: 'creator',
-	publisher: 'publisher',
-};
+// @TODO fix code duplication
+const resolveProperty = (propertyName: string) => {
+	const map: Record<string, string> = {
+		title: 'title',
+		description: 'description',
+		'application-name': 'applicationName',
+		author: 'authors',
+		generator: 'generator',
+		keywords: 'keywords',
+		referrer: 'referrer',
+		'theme-color': 'themeColor',
+		'color-scheme': 'colorScheme',
+		viewport: 'viewport',
+		creator: 'creator',
+		publisher: 'publisher',
+	};
+	
+	return map[propertyName] ?? null;
+}
 
-// const openGraphMetadata: Record<string, string> = {
-// 	'og:type': 'type',
-// 	'og:url': 'url',
-// 	'og:site_name': 'siteName',
-// 	'og:title': 'title',
-// 	'og:description': 'description',
-// };
+const resolveOpenGraphProperty = (propertyName: string): string | null  => {
+	const map: Record<string, string> = {
+		'og:type': 'type',
+		'og:url': 'url',
+		'og:site_name': 'siteName',
+		'og:title': 'title',
+		'og:description': 'description',
+	}
+	
+	return map[propertyName] ?? null;
+}
+
+const resolveTwitterProperty = (propertyName: string): string | null  => {
+	
+	const map: Record<string, string> = {
+		'twitter:card': 'card',
+		'twitter:site': 'site',
+		'twitter:creator': 'creator',
+		'twitter:title': 'title',
+		'twitter:description': 'description',
+	}
+	
+	return map[propertyName] ?? null;
+}
+
+
+const handleOpenGraphAttribute = (metadataObject: Record<string, any>, name: string, content: string) => {
+	
+	if(!metadataObject.openGraph) {
+		metadataObject.openGraph = {};
+	}
+	
+	const resolvedPropertyName = resolveOpenGraphProperty(name);
+	
+	if(resolvedPropertyName === null) {
+		return;
+	}
+	
+	metadataObject.openGraph[resolvedPropertyName] = content;
+}
+
+const handleTwitterAttribute = (metadataObject: Record<string, any>, name: string, content: string) => {
+	
+	if(!metadataObject.twitter) {
+		metadataObject.twitter = {};
+	}
+	
+	const resolvedPropertyName = resolveTwitterProperty(name);
+	
+	if(resolvedPropertyName === null) {
+		return;
+	}
+	
+	metadataObject.twitter[resolvedPropertyName] = content;
+}
+
+
+const handleBaseAttribute = (metadataObject: Record<string, any>, name: string, content: string) => {
+	
+	const resolvedPropertyName = resolveProperty(name);
+	
+	if(resolvedPropertyName === null) {
+		return;
+	}
+	
+	metadataObject[resolvedPropertyName] = content;
+}
 
 const getMetadataObject = (
 	metadataContainer: Container<ReadonlyArray<ParsedMetadataTag>>,
 ) => {
-	const metadataObject: Record<string, string> = {};
+	const metadataObject: Record<string, any> = {};
 	const parsedMetadataTags = metadataContainer.get();
 
 	parsedMetadataTags.forEach(({ HTMLTagName, HTMLAttributes }) => {
@@ -221,27 +286,27 @@ const getMetadataObject = (
 			metadataObject[HTMLTagName] = HTMLAttributes.children ?? '';
 		}
 
+		const nameAttribute = (HTMLAttributes.name ?? HTMLAttributes.property)?.replace(/\"/g, '') ?? '';
+		
+		if(!nameAttribute) {
+			return;
+		}
+		
+		const contentAttribute = HTMLAttributes.content ?? '';
+		const isOpenGraphAttribute = nameAttribute.startsWith('og:');
+		const isTwitterAttribute = nameAttribute.startsWith('twitter:');			
+		
 		if (
 			HTMLTagName === 'meta' &&
-			HTMLAttributes.name &&
-			metadataFlatProps[HTMLAttributes.name.replace(/\"/g, '')] !==
-				undefined
+			isOpenGraphAttribute
 		) {
-			// @TODO fix hacks
-			metadataObject[HTMLAttributes.name.replace(/\"/g, '')!] =
-				HTMLAttributes.content ?? '';
+			handleOpenGraphAttribute(metadataObject, nameAttribute, contentAttribute);
+		} else if(HTMLTagName === 'meta' && isTwitterAttribute) {
+			handleTwitterAttribute(metadataObject, nameAttribute, contentAttribute);
+		} else {
+			handleBaseAttribute(metadataObject, nameAttribute, contentAttribute);
 		}
 
-		// if (
-		// 	HTMLTagName === 'meta' &&
-		// 	HTMLAttributes.name &&
-		// 	openGraphMetadata[HTMLAttributes.name] !== undefined
-		// ) {
-		// 	metadataObject[openGraphMetadata[HTMLAttributes.name]!] =
-		// 		HTMLAttributes.content ?? '';
-		// }
-
-		// @TODO twitter meta
 		// @TODO verification
 		// @TODO others
 
@@ -255,7 +320,8 @@ const buildMetadataObjectStr = (metadataObject: Record<string, string>) => {
 	let str = '{';
 
 	Object.keys(metadataObject).forEach((key) => {
-		const value = metadataObject[key];
+		const val = metadataObject[key];
+		const value = typeof val === 'string' ? val :  typeof val === 'object' && val !== null ? buildMetadataObjectStr(val) : '';
 		str += `\n ["${key}"]: ${value},`;
 	});
 
