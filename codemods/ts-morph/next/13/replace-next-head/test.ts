@@ -86,6 +86,38 @@ describe('next 13 replace-next-head', function () {
       return (
         <>
           <Head>
+
+          </Head>
+        </>
+      );
+    }
+	  `;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		deepStrictEqual(actual, expected);
+	});
+
+	it('should replace meta tags properly when content is passed as variable', function (this: Context) {
+		const beforeText = `
+    import Head from 'next/head';
+    export default function Page() {
+      return (
+        <>
+          <Head>
+						<meta name="viewport" content={process.env.VARIABLE} />
+          </Head>
+        </>
+      );
+    }
+		`;
+
+		const afterText = `
+    import { Metadata } from "next";
+    export const metadata: Metadata = { "viewport": process.env.VARIABLE };
+		export default function Page() {
+      return (
+        <>
+          <Head>
 						
           </Head>
         </>

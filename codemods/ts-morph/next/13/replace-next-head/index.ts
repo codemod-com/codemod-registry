@@ -62,11 +62,13 @@ const handleMetaJsxSelfClosingElement = (metaJsxElement: JsxSelfClosingElement, 
 
   attributes.forEach((attribute) => {
     if(Node.isJsxAttribute(attribute)) {
-      const name = attribute.getName();
+      const name = attribute.getName().replace(/\"/g, '');
       const initializer = attribute.getInitializer();
 
       if(Node.isStringLiteral(initializer)){
-        attributesObject[name] = initializer.getText().replace(/\"/g, '');
+        attributesObject[name] = initializer.getText();
+      } else if(Node.isJsxExpression(initializer)) {
+        attributesObject[name] = initializer.getExpression()?.getText() ?? ''
       }
     }
   })
@@ -150,22 +152,36 @@ const handleImportDeclaration = (importDeclaration: ImportDeclaration, metadataC
   importDeclaration.remove();
 }
 
+const metaNameToPropertyMap: Record<string, string> = {
+  'title': 'title',
+  'description': 'description', 
+  'application-name': 'applicationName', 
+  'author': 'authors',
+  'generator': 'generator', 
+  'keywords': 'keywords', 
+  'referrer': 'referrer', 
+  'theme-color': 'themeColor', 
+  'color-scheme': 'colorScheme', 
+  'viewport': 'viewport', 
+  'creator': 'creator',
+  'publisher': 'publisher', 
+}
+
 const getMetadataObject = (metadataContainer: Container<ReadonlyArray<ParsedMetadataTag>>) => {
   const metadataObject: Record<string, string> = {};
   const parsedMetadataTags = metadataContainer.get();
-  console.log(parsedMetadataTags);
+  
   parsedMetadataTags.forEach(({ HTMLTagName, HTMLAttributes}) => {
 
     if(HTMLTagName === 'title') {
       metadataObject[HTMLTagName] = HTMLAttributes.children ?? ''
     }
 
-    if(HTMLTagName === 'meta' && HTMLAttributes.name !== undefined) {
+    if(HTMLTagName === 'meta' &&  HTMLAttributes.name && metaNameToPropertyMap[HTMLAttributes.name] !== undefined) {
       metadataObject[HTMLAttributes.name] = HTMLAttributes.content ?? '';
     }
 
   });
-
   return metadataObject;
 }
 
