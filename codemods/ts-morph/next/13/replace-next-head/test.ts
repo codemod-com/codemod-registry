@@ -36,7 +36,6 @@ describe('next 13 replace-next-head', function () {
 	it('should replace Head with Metadata', function (this: Context) {
 		const beforeText = `
     import Head from 'next/head';
- 
     export default function Page() {
       return (
         <>
@@ -49,14 +48,13 @@ describe('next 13 replace-next-head', function () {
 		`;
 
 		const afterText = `
-    import { Metadata } from 'next';
- 
-    export const metadata: Metadata = {
-      title: 'My Page Title',
-    };
-     
+    import { Metadata } from "next";
+    export const metadata: Metadata = { "title": "My Page Title" };
     export default function Page() {
-      return '...';
+      return (
+				<>
+				</>
+			)
     }
 	      `;
 

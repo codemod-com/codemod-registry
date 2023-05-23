@@ -1,3 +1,4 @@
+import { EmitHint } from "ts-morph";
 import { SyntaxKind } from "ts-morph";
 import { Identifier, ImportDeclaration, JsxElement, Node, SourceFile } from "ts-morph";
 
@@ -20,10 +21,14 @@ const isMetaJsxElement = (jsxElement: JsxElement) => {
 const handleTitleJsxElement = (titleJsxElement: JsxElement) => {
   const children = titleJsxElement.getJsxChildren();
 
-  ctx.push({
-    tag: 'title', 
-    attributes: {
-      children: children[0]?.getText() ?? '', 
+  children.forEach((node) => {
+    if(Node.isJsxText(node)) {
+      ctx.push({
+        tag: 'title', 
+        attributes: {
+          children: children[0]?.getText() ?? '', 
+        }
+      })
     }
   })
 }
@@ -49,6 +54,7 @@ const handleHeadJsxElement = (headJsxElement: JsxElement) => {
       handleHeadChildJsxElement(child)
     }
   })
+
 }
 
 const handleHeadIdentifier = (headIdentifier: Identifier) => {
@@ -70,7 +76,7 @@ const handleImportDeclaration = (importDeclaration: ImportDeclaration)  => {
 		return;
 	}
 
-  const headIdentifier  = importDeclaration.getDefaultImport() ?? null;
+  const headIdentifier = importDeclaration.getDefaultImport() ?? null;
 
 
   if(headIdentifier === null) {
@@ -78,8 +84,13 @@ const handleImportDeclaration = (importDeclaration: ImportDeclaration)  => {
   }
 
   handleHeadIdentifier(headIdentifier);
+
+  importDeclaration.remove();
 }
 
+const getMetadataObject = () => {
+  return  { title: 'My Page Title'};
+}
 export const handleSourceFile = (sourceFile: SourceFile): string | undefined => {
 	const importDeclarations = sourceFile.getImportDeclarations();
 
@@ -87,7 +98,21 @@ export const handleSourceFile = (sourceFile: SourceFile): string | undefined => 
     handleImportDeclaration(importDeclaration)
   );
 
-  console.log(ctx); 
+  const hasHeadImports = true;
+  const metadataObject = getMetadataObject();
 
-  return undefined;
+
+  sourceFile.insertStatements(
+    0,
+    `export const metadata: Metadata = ${JSON.stringify(metadataObject)}`,
+  );
+
+  if(hasHeadImports) {
+    sourceFile.insertStatements(
+			0,
+			'import { Metadata } from "next";',
+		);
+  }
+
+ return sourceFile.print({ emitHint: EmitHint.SourceFile });;
 }
