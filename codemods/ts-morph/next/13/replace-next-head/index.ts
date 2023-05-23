@@ -53,7 +53,8 @@ const handleTitleJsxElement = (
 
 	let text = '';
 	if (Node.isJsxText(firstChild)) {
-		text = firstChild.getText();
+		// @TODO
+		text = `"${firstChild.getText()}"`;
 	} else if (Node.isJsxExpression(firstChild)) {
 		text = firstChild.getExpression()?.getText() ?? '';
 	}
@@ -81,9 +82,8 @@ const handleMetaJsxSelfClosingElement = (
 
 	attributes.forEach((attribute) => {
 		if (Node.isJsxAttribute(attribute)) {
-			const name = attribute.getName().replace(/\"/g, '');
+			const name = attribute.getName();
 			const initializer = attribute.getInitializer();
-
 			if (Node.isStringLiteral(initializer)) {
 				attributesObject[name] = initializer.getText();
 			} else if (Node.isJsxExpression(initializer)) {
@@ -202,13 +202,13 @@ const metadataFlatProps: Record<string, string> = {
 	publisher: 'publisher',
 };
 
-const openGraphMetadata: Record<string, string> = {
-	'og:type': 'type',
-	'og:url': 'url',
-	'og:site_name': 'siteName',
-	'og:title': 'title',
-	'og:description': 'description',
-};
+// const openGraphMetadata: Record<string, string> = {
+// 	'og:type': 'type',
+// 	'og:url': 'url',
+// 	'og:site_name': 'siteName',
+// 	'og:title': 'title',
+// 	'og:description': 'description',
+// };
 
 const getMetadataObject = (
 	metadataContainer: Container<ReadonlyArray<ParsedMetadataTag>>,
@@ -224,20 +224,22 @@ const getMetadataObject = (
 		if (
 			HTMLTagName === 'meta' &&
 			HTMLAttributes.name &&
-			metadataFlatProps[HTMLAttributes.name] !== undefined
+			metadataFlatProps[HTMLAttributes.name.replace(/\"/g, '')] !==
+				undefined
 		) {
-			metadataObject[metadataFlatProps[HTMLAttributes.name]!] =
+			// @TODO fix hacks
+			metadataObject[HTMLAttributes.name.replace(/\"/g, '')!] =
 				HTMLAttributes.content ?? '';
 		}
 
-		if (
-			HTMLTagName === 'meta' &&
-			HTMLAttributes.name &&
-			openGraphMetadata[HTMLAttributes.name] !== undefined
-		) {
-			metadataObject[openGraphMetadata[HTMLAttributes.name]!] =
-				HTMLAttributes.content ?? '';
-		}
+		// if (
+		// 	HTMLTagName === 'meta' &&
+		// 	HTMLAttributes.name &&
+		// 	openGraphMetadata[HTMLAttributes.name] !== undefined
+		// ) {
+		// 	metadataObject[openGraphMetadata[HTMLAttributes.name]!] =
+		// 		HTMLAttributes.content ?? '';
+		// }
 
 		// @TODO twitter meta
 		// @TODO verification
@@ -245,7 +247,27 @@ const getMetadataObject = (
 
 		// @TODO <link>
 	});
+
 	return metadataObject;
+};
+
+const buildMetadataObjectStr = (metadataObject: Record<string, string>) => {
+	let str = '{';
+
+	Object.keys(metadataObject).forEach((key) => {
+		const value = metadataObject[key];
+		str += `\n ["${key}"]: ${value},`;
+	});
+
+	str += '}';
+
+	return str;
+};
+
+const buildMetadataStatement = (metadataObject: Record<string, string>) => {
+	return `export const metadata: Metadata = ${buildMetadataObjectStr(
+		metadataObject,
+	)}`;
 };
 
 export const handleSourceFile = (
@@ -263,10 +285,7 @@ export const handleSourceFile = (
 	const hasHeadImports = true;
 	const metadataObject = getMetadataObject(metadataContainer);
 
-	sourceFile.insertStatements(
-		0,
-		`export const metadata: Metadata = ${JSON.stringify(metadataObject)}`,
-	);
+	sourceFile.insertStatements(0, buildMetadataStatement(metadataObject));
 
 	if (hasHeadImports) {
 		sourceFile.insertStatements(0, 'import { Metadata } from "next";');
