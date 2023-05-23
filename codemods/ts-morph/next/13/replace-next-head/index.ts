@@ -1,8 +1,29 @@
-import { EmitHint } from "ts-morph";
+import { EmitHint, JsxSelfClosingElement } from "ts-morph";
 import { SyntaxKind } from "ts-morph";
 import { Identifier, ImportDeclaration, JsxElement, Node, SourceFile } from "ts-morph";
 
-const ctx: { tag: 'title' | 'meta', attributes: Record<string, string>}[] = [];
+type HTMLTagName = 'title' | 'meta';
+type HTMLAttributes = Record<string, string>;
+type ParsedMetadataTag =  { HTMLTagName: HTMLTagName, HTMLAttributes: HTMLAttributes };
+
+export const buildContainer = <T>(initialValue: T) => {
+	let currentValue: T = initialValue;
+
+	const get = (): T => {
+		return currentValue;
+	};
+
+	const set = (callback: (previousValue: T) => T): void => {
+		currentValue = callback(currentValue);
+	};
+
+	return {
+		get,
+		set,
+	};
+};
+
+type Container<T> = ReturnType<typeof buildContainer<T>>;
 
 const isTitleJsxElement  = (jsxElement: JsxElement) => {
   const openingElement = jsxElement.getOpeningElement();
@@ -11,57 +32,81 @@ const isTitleJsxElement  = (jsxElement: JsxElement) => {
   return tagNameNode.getText() === 'title'
 } 
 
-const isMetaJsxElement = (jsxElement: JsxElement) => {
-  const openingElement = jsxElement.getOpeningElement();
-  const tagNameNode = openingElement.getTagNameNode()
-
-  return tagNameNode.getText() === 'meta'; 
+const isMetaJsxElement = (jsxElement: JsxSelfClosingElement) => {
+  return jsxElement.getTagNameNode().getText() === 'meta'; 
 }
 
-const handleTitleJsxElement = (titleJsxElement: JsxElement) => {
+const handleTitleJsxElement = (titleJsxElement: JsxElement, metadataContainer: Container<ReadonlyArray<ParsedMetadataTag>>) => {
   const children = titleJsxElement.getJsxChildren();
 
   children.forEach((node) => {
     if(Node.isJsxText(node)) {
       
-      ctx.push({
-        tag: 'title', 
-        attributes: {
-          children: children[0]?.getText() ?? '', 
-        }
+      metadataContainer.set((prevMetadata) => {
+        return [...prevMetadata, {
+          HTMLTagName: 'title', 
+          HTMLAttributes: {
+            children: node.getText() ?? '', 
+          }
+        }]
       })
-
     }
   })
 
   titleJsxElement.replaceWithText('');
 }
 
-const handleMetaJsxElement = (metaJsxElement: JsxElement) => {
+const handleMetaJsxSelfClosingElement = (metaJsxElement: JsxSelfClosingElement, metadataContainer: Container<ReadonlyArray<ParsedMetadataTag>>) => {
+  const attributes = metaJsxElement.getAttributes();
+  const attributesObject: Record<string, string> = {};
 
+  attributes.forEach((attribute) => {
+    if(Node.isJsxAttribute(attribute)) {
+      const name = attribute.getName();
+      const initializer = attribute.getInitializer();
+
+      if(Node.isStringLiteral(initializer)){
+        attributesObject[name] = initializer.getText().replace(/\"/g, '');
+      }
+    }
+  })
+
+  metadataContainer.set((prevMetadata) => {
+    return [...prevMetadata, {
+      HTMLTagName: 'meta', 
+      HTMLAttributes: attributesObject
+    }]
+  })
+
+  metaJsxElement.replaceWithText('');
 }
 
-const handleHeadChildJsxElement = (headChildJsxElement: JsxElement) => {
+const handleHeadChildJsxElement = (headChildJsxElement: JsxElement, metadataContainer: Container<ReadonlyArray<ParsedMetadataTag>>) => {
   if(isTitleJsxElement(headChildJsxElement)) {
-    handleTitleJsxElement(headChildJsxElement);
-  } else if(isMetaJsxElement(headChildJsxElement)) {
-    handleMetaJsxElement(headChildJsxElement);
-  }
+    handleTitleJsxElement(headChildJsxElement, metadataContainer);
+  } 
 };
 
+const handleHeadChildJsxSelfClosingElement = (headChildJsxSelfClosingElement: JsxSelfClosingElement, metadataContainer: Container<ReadonlyArray<ParsedMetadataTag>>) => {
+  if(isMetaJsxElement(headChildJsxSelfClosingElement)) {
+    handleMetaJsxSelfClosingElement(headChildJsxSelfClosingElement, metadataContainer);
+  }
+}
 
-const handleHeadJsxElement = (headJsxElement: JsxElement) => {
+const handleHeadJsxElement = (headJsxElement: JsxElement, metadataContainer: Container<ReadonlyArray<ParsedMetadataTag>>) => {
   const jsxChildren = headJsxElement.getJsxChildren();
 
   jsxChildren.forEach((child) => {
     if(Node.isJsxElement(child)) {
-      handleHeadChildJsxElement(child)
+      handleHeadChildJsxElement(child, metadataContainer)
+    } else if(Node.isJsxSelfClosingElement(child)) {
+      handleHeadChildJsxSelfClosingElement(child, metadataContainer)
     }
   })
 
 }
 
-const handleHeadIdentifier = (headIdentifier: Identifier) => {
+const handleHeadIdentifier = (headIdentifier: Identifier, metadataContainer: Container<ReadonlyArray<ParsedMetadataTag>>) => {
   let jsxHeadElement: JsxElement | undefined;
 
 	headIdentifier
@@ -74,7 +119,7 @@ const handleHeadIdentifier = (headIdentifier: Identifier) => {
 
         if(Node.isJsxElement(grandparent)) {
           jsxHeadElement = grandparent;
-          handleHeadJsxElement(grandparent);
+          handleHeadJsxElement(grandparent, metadataContainer);
         }
       }
 		});
@@ -86,7 +131,7 @@ const handleHeadIdentifier = (headIdentifier: Identifier) => {
 
 }
 
-const handleImportDeclaration = (importDeclaration: ImportDeclaration)  => {
+const handleImportDeclaration = (importDeclaration: ImportDeclaration, metadataContainer: Container<ReadonlyArray<ParsedMetadataTag>>)  => {
   const moduleSpecifier = importDeclaration.getModuleSpecifier();
 
 	if (moduleSpecifier.getLiteralText() !== 'next/head') {
@@ -100,18 +145,23 @@ const handleImportDeclaration = (importDeclaration: ImportDeclaration)  => {
     return;
   }
 
-  handleHeadIdentifier(headIdentifier);
+  handleHeadIdentifier(headIdentifier, metadataContainer);
  
   importDeclaration.remove();
 }
 
-const getMetadataObject = () => {
+const getMetadataObject = (metadataContainer: Container<ReadonlyArray<ParsedMetadataTag>>) => {
   const metadataObject: Record<string, string> = {};
+  const parsedMetadataTags = metadataContainer.get();
+  console.log(parsedMetadataTags);
+  parsedMetadataTags.forEach(({ HTMLTagName, HTMLAttributes}) => {
 
-  ctx.forEach(({ tag, attributes}) => {
+    if(HTMLTagName === 'title') {
+      metadataObject[HTMLTagName] = HTMLAttributes.children ?? ''
+    }
 
-    if(tag === 'title') {
-      metadataObject[tag] = attributes.children ?? ''
+    if(HTMLTagName === 'meta' && HTMLAttributes.name !== undefined) {
+      metadataObject[HTMLAttributes.name] = HTMLAttributes.content ?? '';
     }
 
   });
@@ -120,14 +170,15 @@ const getMetadataObject = () => {
 }
 
 export const handleSourceFile = (sourceFile: SourceFile): string | undefined => {
+  const metadataContainer = buildContainer<ReadonlyArray<ParsedMetadataTag>>([]);
 	const importDeclarations = sourceFile.getImportDeclarations();
 
   importDeclarations.forEach((importDeclaration) =>
-    handleImportDeclaration(importDeclaration)
+    handleImportDeclaration(importDeclaration, metadataContainer)
   );
 
   const hasHeadImports = true;
-  const metadataObject = getMetadataObject();
+  const metadataObject = getMetadataObject(metadataContainer);
 
 
   sourceFile.insertStatements(

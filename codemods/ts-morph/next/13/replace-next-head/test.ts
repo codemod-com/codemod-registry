@@ -64,4 +64,36 @@ describe('next 13 replace-next-head', function () {
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 		deepStrictEqual(actual, expected);
 	});
+
+	it('should replace meta tags', function (this: Context) {
+		const beforeText = `
+    import Head from 'next/head';
+    export default function Page() {
+      return (
+        <>
+          <Head>
+						<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+          </Head>
+        </>
+      );
+    }
+		`;
+
+		const afterText = `
+    import { Metadata } from "next";
+    export const metadata: Metadata = { "viewport": "width=device-width, initial-scale=1, viewport-fit=cover" };
+		export default function Page() {
+      return (
+        <>
+          <Head>
+						
+          </Head>
+        </>
+      );
+    }
+	  `;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		deepStrictEqual(actual, expected);
+	});
 });
