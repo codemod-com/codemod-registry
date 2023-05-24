@@ -254,6 +254,8 @@ export const findComponentFunctionDefinition: ModFunction<File, 'read'> = (
 ) => {
 	const lazyModFunctions: LazyModFunction[] = [];
 
+	// @TODO component can be arrow function
+	// @TODO get Component from the DefaultExport (more reliable)
 	root.find(j.FunctionDeclaration, {
 		id: {
 			type: 'Identifier',
@@ -307,6 +309,10 @@ export const addVariableDeclarations: ModFunction<
 
 	root.find(j.BlockStatement).forEach((blockStatementPath) => {
 		const blockStatement = blockStatementPath.value;
+		// only add variableDeclaration to blackStatement if its direct child of the FunctionDeclaration
+		if (blockStatementPath.parentPath !== root.paths()[0]) {
+			return;
+		}
 
 		blockStatement.body.unshift(variableDeclaration);
 	});

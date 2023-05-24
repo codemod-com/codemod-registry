@@ -118,4 +118,64 @@ describe('next 13 remove-get-static-props', function () {
 			OUTPUT.replace(/\W/gm, ''),
 		);
 	});
+
+	it('should add data hooks on the top level of the component ', function () {
+		const INPUT = `
+			export async function getStaticProps() {
+				const users = await promise;
+				const groups = await anotherPromise;
+			  
+				return { props: { users, groups }, revalidate: 1 };
+			}
+			  
+			export default function Component({ users, groups }) {
+				return <C prop={(a) => {
+					return a;
+				}}
+        />
+			}
+        `;
+
+		const OUTPUT = `
+			// TODO: implement this function
+			async function getGroups() {
+			}
+
+			// TODO: implement this function
+			async function getUsers() {
+			}
+
+			export // TODO: remove this function
+			async function getStaticProps() {
+				const users = await promise;
+				const groups = await anotherPromise;
+			
+				return { props: { users, groups }, revalidate: 1 };
+			}
+
+			export default function Component({}) {
+				const groups = await getGroups();
+        const users = await getUsers();
+
+
+				return <C prop={(a) => {
+					return a;
+				}} />
+			}
+
+			export const revalidate = 1;
+		`;
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT?.replace(/\W/gm, ''),
+		);
+	});
 });
