@@ -47,11 +47,24 @@ const transform = async () => {
 	return executeRepomod(api, repomod, '/', {});
 };
 
+const A_B_DATA = `import RouteClientComponent from './client-component';
+import { X } from "../../testABC";
+export default function RoutePage({ params, }: {
+    params: {};
+}) {
+    return <RouteClientComponent />;
+}
+export const getServerSideProps = () => {
+};
+`;
+
 describe('next 13 app-directory-boilerplate', function () {
 	it('should build correct files', async function (this: Context) {
 		const externalFileCommands = await transform();
 
 		deepStrictEqual(externalFileCommands.length, 8);
+
+		console.log(externalFileCommands);
 
 		ok(
 			externalFileCommands.some(
@@ -103,5 +116,11 @@ describe('next 13 app-directory-boilerplate', function () {
 				(command) => command.path === '/opt/project/app/[a]/c/page.tsx',
 			),
 		);
+
+		deepStrictEqual(externalFileCommands[0], {
+			kind: 'upsertFile',
+			path: '/opt/project/app/[a]/[b]/page.tsx',
+			data: A_B_DATA,
+		});
 	});
 });
