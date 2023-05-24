@@ -1,7 +1,11 @@
 import { posix } from 'node:path';
+import tsmorph from 'ts-morph';
 import type { Repomod } from '@intuita-inc/repomod-engine-api';
 
-type Dependencies = Readonly<{}>;
+// eslint-disable-next-line @typescript-eslint/ban-types
+type Dependencies = Readonly<{
+	tsmorph: typeof tsmorph;
+}>;
 
 const ROOT_LAYOUT_CONTENT = `
 import { Metadata } from 'next';
@@ -83,23 +87,14 @@ export default function RouteLayout(
 const ROUTE_PAGE_CONTENT = `
 import RouteClientComponent from './client-component';
 
-export default function RoutePage() {
+export default function RoutePage(
 	{
-        params,
-        searchParams,
-    }: {
-        params: { slug: string };
-        searchParams: { [key: string]: string | string[] | undefined };
-    }) {
-        return <RouteClientComponent />;
-}
-`;
-
-const ROUTE_CLIENT_COMPONENT_CONTENT = `
-'use client';
-
-export default function RouteClientComponent({}: {}) {
-	return null;
+		params,
+	}: {
+		params: {},
+	}
+) {
+    return <RouteClientComponent />;
 }
 `;
 
@@ -112,7 +107,6 @@ enum FilePurpose {
 	// route directories
 	ROUTE_LAYOUT = 'ROUTE_LAYOUT',
 	ROUTE_PAGE = 'ROUTE_PAGE',
-	ROUTE_CLIENT_COMPONENT = 'ROUTE_CLIENT_COMPONENT',
 }
 
 const map = new Map([
@@ -122,7 +116,6 @@ const map = new Map([
 	[FilePurpose.ROOT_PAGE, ROOT_PAGE_CONTENT],
 	[FilePurpose.ROUTE_LAYOUT, ROUTE_LAYOUT_CONTENT],
 	[FilePurpose.ROUTE_PAGE, ROUTE_PAGE_CONTENT],
-	[FilePurpose.ROUTE_CLIENT_COMPONENT, ROUTE_CLIENT_COMPONENT_CONTENT],
 ]);
 
 const EXTENSION = '.tsx';
@@ -130,7 +123,7 @@ const EXTENSION = '.tsx';
 export const repomod: Repomod<Dependencies> = {
 	includePatterns: ['**/pages/**/*.{js,jsx,ts,tsx}'],
 	excludePatterns: ['**/node_modules/**', '**/pages/api/**'],
-	handleFile: async (_, path, options) => {
+	handleFile: async (api, path, options) => {
 		const parsedPath = posix.parse(path);
 		const directoryNames = parsedPath.dir.split(posix.sep);
 		const endsWithPages =
@@ -229,12 +222,7 @@ export const repomod: Repomod<Dependencies> = {
 				name: 'layout',
 			});
 
-			const routeClientComponentPath = posix.format({
-				root: parsedPath.root,
-				dir: newDir,
-				ext: EXTENSION,
-				name: 'client-component',
-			});
+			const oldData = await api.readFile(path);
 
 			return [
 				{
@@ -243,6 +231,8 @@ export const repomod: Repomod<Dependencies> = {
 					options: {
 						...options,
 						filePurpose: FilePurpose.ROUTE_PAGE,
+						oldPath: path,
+						oldData,
 					},
 				},
 				{
@@ -253,20 +243,12 @@ export const repomod: Repomod<Dependencies> = {
 						filePurpose: FilePurpose.ROUTE_LAYOUT,
 					},
 				},
-				{
-					kind: 'upsertFile',
-					path: routeClientComponentPath,
-					options: {
-						...options,
-						filePurpose: FilePurpose.ROUTE_CLIENT_COMPONENT,
-					},
-				},
 			];
 		}
 
 		return [];
 	},
-	handleData: async (_, path, __, options) => {
+	handleData: async (api, path, __, options) => {
 		const filePurpose = (options.filePurpose ?? null) as FilePurpose | null;
 
 		if (filePurpose === null) {
@@ -280,6 +262,49 @@ export const repomod: Repomod<Dependencies> = {
 		if (content === null) {
 			return {
 				kind: 'noop',
+			};
+		}
+
+		if (filePurpose === FilePurpose.ROUTE_PAGE && options.oldPath) {
+			const { tsmorph } = api.getDependencies();
+
+			const project = new tsmorph.Project({
+				useInMemoryFileSystem: true,
+				skipFileDependencyResolution: true,
+				compilerOptions: {
+					allowJs: true,
+				},
+			});
+
+			const newSourceFile = project.createSourceFile(path, content);
+
+			const oldSourceFile = project.createSourceFile(
+				options.oldPath,
+				options.oldData ?? '',
+			);
+
+			oldSourceFile.getStatementsWithComments().forEach((statement) => {
+				if (tsmorph.Node.isImportDeclaration(statement)) {
+					const structure = statement.getStructure();
+
+					if (structure.moduleSpecifier.startsWith('..')) {
+						structure.moduleSpecifier = `../${structure.moduleSpecifier}`;
+					}
+
+					newSourceFile.addImportDeclaration(
+						statement.getStructure(),
+					);
+
+					return;
+				}
+
+				newSourceFile.addStatements(statement.print());
+			});
+
+			return {
+				kind: 'upsertData',
+				path,
+				data: newSourceFile.print(),
 			};
 		}
 
