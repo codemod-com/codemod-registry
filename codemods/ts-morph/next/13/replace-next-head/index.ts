@@ -368,14 +368,22 @@ export const handleSourceFile = (
 		handleImportDeclaration(importDeclaration, metadataContainer),
 	);
 
-	const hasHeadImports = true;
+	const hasChanges = metadataContainer.get().length !== 0;
+
+	if (!hasChanges) {
+		return undefined;
+	}
+
 	const metadataObject = getMetadataObject(metadataContainer);
 
-	sourceFile.insertStatements(0, buildMetadataStatement(metadataObject));
+	const declaration = [...importDeclarations].pop();
 
-	if (hasHeadImports) {
-		sourceFile.insertStatements(0, 'import { Metadata } from "next";');
-	}
+	const pos = declaration?.wasForgotten()
+		? 0
+		: (declaration?.getChildIndex() ?? 0) + 1;
+
+	sourceFile.insertStatements(pos, buildMetadataStatement(metadataObject));
+	sourceFile.insertStatements(0, 'import { Metadata } from "next";');
 
 	return sourceFile.print({ emitHint: EmitHint.SourceFile });
 };
