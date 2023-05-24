@@ -58,6 +58,36 @@ export const findGetStaticPropsFunctions: ModFunction<File, 'read'> = (
 		);
 	});
 
+	const variableDeclaratorCollection = root.find(j.VariableDeclarator, {
+		id: {
+			type: 'Identifier',
+			name: 'getStaticProps',
+		},
+	});
+
+	variableDeclaratorCollection
+		.find(j.ArrowFunctionExpression)
+		.forEach((arrowFunctionPath) => {
+			const arrowFunctionCollection = j(arrowFunctionPath);
+
+			// only direct child of variableDeclarator
+			if (
+				arrowFunctionPath.parent?.value?.id?.name !== 'getStaticProps'
+			) {
+				return;
+			}
+
+			// @TODO handle arrow fn without explicit return
+			lazyModFunctions.push(
+				[findReturnStatements, arrowFunctionCollection, settings],
+				[
+					addCommentOnFunctionDeclaration,
+					variableDeclaratorCollection,
+					settings,
+				],
+			);
+		});
+
 	return [false, lazyModFunctions];
 };
 
@@ -430,6 +460,7 @@ export default function transform(
 		return undefined;
 	}
 
+	console.log(root.toSource());
 	return root.toSource();
 }
 
