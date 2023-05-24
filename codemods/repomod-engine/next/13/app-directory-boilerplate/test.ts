@@ -13,7 +13,7 @@ import tsmorph from 'ts-morph';
 const A_B_CONTENT = `
 import { X } from "../../testABC";
 
-export const getServerSideProps = () => {
+export const getStaticProps = () => {
 
 }
 `;
@@ -47,14 +47,15 @@ const transform = async () => {
 	return executeRepomod(api, repomod, '/', {});
 };
 
-const A_B_DATA = `import RouteClientComponent from './client-component';
+const A_B_DATA = `// This file has been sourced from: /opt/project/pages/[a]/[b].tsx
+// TODO replace getStaticProps with generateStaticParams
 import { X } from "../../testABC";
 export default function RoutePage({ params, }: {
     params: {};
 }) {
     return <RouteClientComponent />;
 }
-export const getServerSideProps = () => {
+export const getStaticProps = () => {
 };
 `;
 
@@ -63,8 +64,6 @@ describe('next 13 app-directory-boilerplate', function () {
 		const externalFileCommands = await transform();
 
 		deepStrictEqual(externalFileCommands.length, 8);
-
-		console.log(externalFileCommands);
 
 		ok(
 			externalFileCommands.some(

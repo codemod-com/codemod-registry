@@ -85,8 +85,6 @@ export default function RouteLayout(
 `;
 
 const ROUTE_PAGE_CONTENT = `
-import RouteClientComponent from './client-component';
-
 export default function RoutePage(
 	{
 		params,
@@ -298,8 +296,27 @@ export const repomod: Repomod<Dependencies> = {
 					return;
 				}
 
+				if (tsmorph.Node.isVariableStatement(statement)) {
+					const x = statement
+						.getDeclarationList()
+						.getDeclarations()
+						.some((declaration) => {
+							return declaration.getName() === 'getStaticProps';
+						});
+
+					newSourceFile.insertStatements(
+						0,
+						`// TODO replace getStaticProps with generateStaticParams`,
+					);
+				}
+
 				newSourceFile.addStatements(statement.print());
 			});
+
+			newSourceFile.insertStatements(
+				0,
+				`// This file has been sourced from: ${options.oldPath}`,
+			);
 
 			return {
 				kind: 'upsertData',
