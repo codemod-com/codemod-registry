@@ -8,6 +8,15 @@ import {
 	executeRepomod,
 } from '@intuita-inc/repomod-engine-api';
 import { repomod } from './index.js';
+import tsmorph from 'ts-morph';
+
+const A_B_CONTENT = `
+import { X } from "../../testABC";
+
+export const getServerSideProps = () => {
+
+}
+`;
 
 const transform = async () => {
 	const volume = Volume.fromJSON({
@@ -15,7 +24,7 @@ const transform = async () => {
 		'/opt/project/pages/_app.jsx': '',
 		'/opt/project/pages/_document.jsx': '',
 		'/opt/project/pages/_error.jsx': '',
-		'/opt/project/pages/[a]/[b].tsx': '',
+		'/opt/project/pages/[a]/[b].tsx': A_B_CONTENT,
 		'/opt/project/pages/[a]/c.tsx': '',
 	});
 
@@ -29,7 +38,11 @@ const transform = async () => {
 		fileSystemManager,
 	);
 
-	const api = buildApi<{}>(unifiedFileSystem, () => ({}));
+	const api = buildApi<{
+		tsmorph: typeof tsmorph;
+	}>(unifiedFileSystem, () => ({
+		tsmorph,
+	}));
 
 	return executeRepomod(api, repomod, '/', {});
 };
@@ -38,7 +51,7 @@ describe('next 13 app-directory-boilerplate', function () {
 	it('should build correct files', async function (this: Context) {
 		const externalFileCommands = await transform();
 
-		deepStrictEqual(externalFileCommands.length, 4 + 3 * 2);
+		deepStrictEqual(externalFileCommands.length, 8);
 
 		ok(
 			externalFileCommands.some(
@@ -67,14 +80,6 @@ describe('next 13 app-directory-boilerplate', function () {
 		ok(
 			externalFileCommands.some(
 				(command) =>
-					command.path ===
-					'/opt/project/app/[a]/[b]/client-component.tsx',
-			),
-		);
-
-		ok(
-			externalFileCommands.some(
-				(command) =>
 					command.path === '/opt/project/app/[a]/[b]/layout.tsx',
 			),
 		);
@@ -83,14 +88,6 @@ describe('next 13 app-directory-boilerplate', function () {
 			externalFileCommands.some(
 				(command) =>
 					command.path === '/opt/project/app/[a]/[b]/page.tsx',
-			),
-		);
-
-		ok(
-			externalFileCommands.some(
-				(command) =>
-					command.path ===
-					'/opt/project/app/[a]/c/client-component.tsx',
 			),
 		);
 

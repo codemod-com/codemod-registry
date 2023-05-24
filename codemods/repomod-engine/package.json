@@ -21,6 +21,7 @@
 	},
 	"dependencies": {
 		"@intuita-inc/repomod-engine-api": "^1.0.1",
-		"memfs": "^3.5.1"
+		"memfs": "^3.5.1",
+		"ts-morph": "^18.0.0"
 	}
 }
