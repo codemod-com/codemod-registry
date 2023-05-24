@@ -59,6 +59,14 @@ export const getStaticProps = () => {
 };
 `;
 
+const A_C_DATA = `// This file has been sourced from: /opt/project/pages/[a]/c.tsx
+export default function RoutePage({ params, }: {
+    params: {};
+}) {
+    return <RouteClientComponent />;
+}
+`;
+
 describe('next 13 app-directory-boilerplate', function () {
 	it('should build correct files', async function (this: Context) {
 		const externalFileCommands = await transform();
@@ -120,6 +128,12 @@ describe('next 13 app-directory-boilerplate', function () {
 			kind: 'upsertFile',
 			path: '/opt/project/app/[a]/[b]/page.tsx',
 			data: A_B_DATA,
+		});
+
+		deepStrictEqual(externalFileCommands[2], {
+			kind: 'upsertFile',
+			path: '/opt/project/app/[a]/c/page.tsx',
+			data: A_C_DATA,
 		});
 	});
 });
