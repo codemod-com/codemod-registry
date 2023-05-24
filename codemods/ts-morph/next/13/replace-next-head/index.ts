@@ -160,10 +160,6 @@ const handleHeadIdentifier = (
 			}
 		}
 	});
-
-	if (!jsxHeadElement) {
-		return;
-	}
 };
 
 const handleImportDeclaration = (
