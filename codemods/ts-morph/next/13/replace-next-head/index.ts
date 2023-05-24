@@ -292,9 +292,9 @@ const getMetadataObject = (
 			(HTMLAttributes.name ?? HTMLAttributes.property)?.replace(
 				/\"/g,
 				'',
-			) ?? '';
+			) ?? null;
 
-		if (!nameAttribute) {
+		if (nameAttribute === null) {
 			return;
 		}
 
