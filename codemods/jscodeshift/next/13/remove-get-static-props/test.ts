@@ -178,7 +178,7 @@ describe('next 13 remove-get-static-props', function () {
 			OUTPUT?.replace(/\W/gm, ''),
 		);
 	});
-	
+
 	it('should add generated code after import statements', function () {
 		const INPUT = `
 			import x from "y";

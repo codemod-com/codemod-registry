@@ -21,12 +21,14 @@ type LazyModFunction = [
 	Partial<Record<string, string>>,
 ];
 
-// @TODO  
-function findLastIndex<T>(array: Array<T>, predicate: (value: T, index: number, obj: T[]) => boolean): number {
+// @TODO
+function findLastIndex<T>(
+	array: Array<T>,
+	predicate: (value: T, index: number, obj: T[]) => boolean,
+): number {
 	let l = array.length;
 	while (l--) {
-			if (predicate(array[l]!, l, array))
-					return l;
+		if (predicate(array[l]!, l, array)) return l;
 	}
 	return -1;
 }
@@ -250,11 +252,17 @@ export const addGetXFunctionDefinition: ModFunction<File, 'write'> = (
 
 	root.find(j.Program).forEach((program) => {
 		dirtyFlag = true;
-		
-		const lastImportDeclarationIndex = findLastIndex(program.value.body, (node) => node.type === 'ImportDeclaration');
-		
-		const insertPosition = lastImportDeclarationIndex === -1 ? 0 : lastImportDeclarationIndex + 1;
-		program.value.body.splice(insertPosition, 0, functionDeclaration)
+
+		const lastImportDeclarationIndex = findLastIndex(
+			program.value.body,
+			(node) => node.type === 'ImportDeclaration',
+		);
+
+		const insertPosition =
+			lastImportDeclarationIndex === -1
+				? 0
+				: lastImportDeclarationIndex + 1;
+		program.value.body.splice(insertPosition, 0, functionDeclaration);
 	});
 
 	return [dirtyFlag, []];
