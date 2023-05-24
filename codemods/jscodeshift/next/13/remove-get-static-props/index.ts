@@ -460,7 +460,6 @@ export default function transform(
 		return undefined;
 	}
 
-	console.log(root.toSource());
 	return root.toSource();
 }
 
