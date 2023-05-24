@@ -297,17 +297,33 @@ export const repomod: Repomod<Dependencies> = {
 				}
 
 				if (tsmorph.Node.isVariableStatement(statement)) {
-					const getStaticPropsUsed = statement
+					const declarations = statement
 						.getDeclarationList()
-						.getDeclarations()
-						.some((declaration) => {
+						.getDeclarations();
+
+					const getStaticPropsUsed = declarations.some(
+						(declaration) => {
 							return declaration.getName() === 'getStaticProps';
-						});
+						},
+					);
 
 					if (getStaticPropsUsed) {
-						newSourceFile.insertStatements(
-							0,
-							`// TODO replace getStaticProps with generateStaticParams`,
+						newSourceFile.addStatements(
+							`// TODO reimplement getStaticProps as generateStaticParams\n`,
+						);
+					}
+
+					const getServerSidePropsUsed = declarations.some(
+						(declaration) => {
+							return (
+								declaration.getName() === 'getServerSideProps'
+							);
+						},
+					);
+
+					if (getServerSidePropsUsed) {
+						newSourceFile.addStatements(
+							`// TODO reimplement getServerSideProps with custom logic\n`,
 						);
 					}
 				}

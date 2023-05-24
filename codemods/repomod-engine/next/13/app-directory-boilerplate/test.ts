@@ -18,6 +18,12 @@ export const getStaticProps = () => {
 }
 `;
 
+const A_C_CONTENT = `
+export const getServerSideProps = () => {
+
+}
+`;
+
 const transform = async () => {
 	const volume = Volume.fromJSON({
 		'/opt/project/pages/index.jsx': '',
@@ -25,7 +31,7 @@ const transform = async () => {
 		'/opt/project/pages/_document.jsx': '',
 		'/opt/project/pages/_error.jsx': '',
 		'/opt/project/pages/[a]/[b].tsx': A_B_CONTENT,
-		'/opt/project/pages/[a]/c.tsx': '',
+		'/opt/project/pages/[a]/c.tsx': A_C_CONTENT,
 	});
 
 	const fileSystemManager = new FileSystemManager(
@@ -48,13 +54,13 @@ const transform = async () => {
 };
 
 const A_B_DATA = `// This file has been sourced from: /opt/project/pages/[a]/[b].tsx
-// TODO replace getStaticProps with generateStaticParams
 import { X } from "../../testABC";
 export default function RoutePage({ params, }: {
     params: {};
 }) {
     return <RouteClientComponent />;
 }
+// TODO reimplement getStaticProps as generateStaticParams
 export const getStaticProps = () => {
 };
 `;
@@ -65,6 +71,9 @@ export default function RoutePage({ params, }: {
 }) {
     return <RouteClientComponent />;
 }
+// TODO reimplement getServerSideProps with custom logic
+export const getServerSideProps = () => {
+};
 `;
 
 describe('next 13 app-directory-boilerplate', function () {
