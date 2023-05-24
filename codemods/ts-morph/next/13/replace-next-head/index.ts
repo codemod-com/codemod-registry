@@ -203,77 +203,83 @@ const resolveProperty = (propertyName: string) => {
 		creator: 'creator',
 		publisher: 'publisher',
 	};
-	
-	return map[propertyName] ?? null;
-}
 
-const resolveOpenGraphProperty = (propertyName: string): string | null  => {
+	return map[propertyName] ?? null;
+};
+
+const resolveOpenGraphProperty = (propertyName: string): string | null => {
 	const map: Record<string, string> = {
 		'og:type': 'type',
 		'og:url': 'url',
 		'og:site_name': 'siteName',
 		'og:title': 'title',
 		'og:description': 'description',
-	}
-	
-	return map[propertyName] ?? null;
-}
+	};
 
-const resolveTwitterProperty = (propertyName: string): string | null  => {
-	
+	return map[propertyName] ?? null;
+};
+
+const resolveTwitterProperty = (propertyName: string): string | null => {
 	const map: Record<string, string> = {
 		'twitter:card': 'card',
 		'twitter:site': 'site',
 		'twitter:creator': 'creator',
 		'twitter:title': 'title',
 		'twitter:description': 'description',
-	}
-	
+	};
+
 	return map[propertyName] ?? null;
-}
+};
 
-
-const handleOpenGraphAttribute = (metadataObject: Record<string, any>, name: string, content: string) => {
-	
-	if(!metadataObject.openGraph) {
+const handleOpenGraphAttribute = (
+	metadataObject: Record<string, any>,
+	name: string,
+	content: string,
+) => {
+	if (!metadataObject.openGraph) {
 		metadataObject.openGraph = {};
 	}
-	
+
 	const resolvedPropertyName = resolveOpenGraphProperty(name);
-	
-	if(resolvedPropertyName === null) {
+
+	if (resolvedPropertyName === null) {
 		return;
 	}
-	
-	metadataObject.openGraph[resolvedPropertyName] = content;
-}
 
-const handleTwitterAttribute = (metadataObject: Record<string, any>, name: string, content: string) => {
-	
-	if(!metadataObject.twitter) {
+	metadataObject.openGraph[resolvedPropertyName] = content;
+};
+
+const handleTwitterAttribute = (
+	metadataObject: Record<string, any>,
+	name: string,
+	content: string,
+) => {
+	if (!metadataObject.twitter) {
 		metadataObject.twitter = {};
 	}
-	
+
 	const resolvedPropertyName = resolveTwitterProperty(name);
-	
-	if(resolvedPropertyName === null) {
+
+	if (resolvedPropertyName === null) {
 		return;
 	}
-	
+
 	metadataObject.twitter[resolvedPropertyName] = content;
-}
+};
 
-
-const handleBaseAttribute = (metadataObject: Record<string, any>, name: string, content: string) => {
-	
+const handleBaseAttribute = (
+	metadataObject: Record<string, any>,
+	name: string,
+	content: string,
+) => {
 	const resolvedPropertyName = resolveProperty(name);
-	
-	if(resolvedPropertyName === null) {
+
+	if (resolvedPropertyName === null) {
 		return;
 	}
-	
+
 	metadataObject[resolvedPropertyName] = content;
-}
+};
 
 const getMetadataObject = (
 	metadataContainer: Container<ReadonlyArray<ParsedMetadataTag>>,
@@ -286,25 +292,38 @@ const getMetadataObject = (
 			metadataObject[HTMLTagName] = HTMLAttributes.children ?? '';
 		}
 
-		const nameAttribute = (HTMLAttributes.name ?? HTMLAttributes.property)?.replace(/\"/g, '') ?? '';
-		
-		if(!nameAttribute) {
+		const nameAttribute =
+			(HTMLAttributes.name ?? HTMLAttributes.property)?.replace(
+				/\"/g,
+				'',
+			) ?? '';
+
+		if (!nameAttribute) {
 			return;
 		}
-		
+
 		const contentAttribute = HTMLAttributes.content ?? '';
 		const isOpenGraphAttribute = nameAttribute.startsWith('og:');
-		const isTwitterAttribute = nameAttribute.startsWith('twitter:');			
-		
-		if (
-			HTMLTagName === 'meta' &&
-			isOpenGraphAttribute
-		) {
-			handleOpenGraphAttribute(metadataObject, nameAttribute, contentAttribute);
-		} else if(HTMLTagName === 'meta' && isTwitterAttribute) {
-			handleTwitterAttribute(metadataObject, nameAttribute, contentAttribute);
+		const isTwitterAttribute = nameAttribute.startsWith('twitter:');
+
+		if (HTMLTagName === 'meta' && isOpenGraphAttribute) {
+			handleOpenGraphAttribute(
+				metadataObject,
+				nameAttribute,
+				contentAttribute,
+			);
+		} else if (HTMLTagName === 'meta' && isTwitterAttribute) {
+			handleTwitterAttribute(
+				metadataObject,
+				nameAttribute,
+				contentAttribute,
+			);
 		} else {
-			handleBaseAttribute(metadataObject, nameAttribute, contentAttribute);
+			handleBaseAttribute(
+				metadataObject,
+				nameAttribute,
+				contentAttribute,
+			);
 		}
 
 		// @TODO verification
@@ -321,7 +340,12 @@ const buildMetadataObjectStr = (metadataObject: Record<string, string>) => {
 
 	Object.keys(metadataObject).forEach((key) => {
 		const val = metadataObject[key];
-		const value = typeof val === 'string' ? val :  typeof val === 'object' && val !== null ? buildMetadataObjectStr(val) : '';
+		const value =
+			typeof val === 'string'
+				? val
+				: typeof val === 'object' && val !== null
+				? buildMetadataObjectStr(val)
+				: '';
 		str += `\n ["${key}"]: ${value},`;
 	});
 

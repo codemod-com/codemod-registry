@@ -135,7 +135,7 @@ describe('next 13 replace-next-head', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it('should replace meta tags', function (this: Context) {
+	it('should replace meta tags - stringLiteral', function (this: Context) {
 		const beforeText = `
 	  import Head from 'next/head';
 	  export default function Page() {
@@ -153,6 +153,40 @@ describe('next 13 replace-next-head', function () {
 	  import { Metadata } from "next";
 	  export const metadata: Metadata = { 
 			["viewport"]: "width=device-width, initial-scale=1, viewport-fit=cover",
+		};
+		export default function Page() {
+	    return (
+	      <>
+	        <Head>
+						
+	        </Head>
+	      </>
+	    );
+	  }
+	  `;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		deepStrictEqual(actual, expected);
+	});
+
+	it('should replace meta tags - expression', function (this: Context) {
+		const beforeText = `
+	  import Head from 'next/head';
+	  export default function Page() {
+	    return (
+	      <>
+	        <Head>
+						<meta name="description" content={process.env.VAR} />
+	        </Head>
+	      </>
+	    );
+	  }
+		`;
+
+		const afterText = `
+	  import { Metadata } from "next";
+	  export const metadata: Metadata = { 
+			["description"]: process.env.VAR,
 		};
 		export default function Page() {
 	    return (
