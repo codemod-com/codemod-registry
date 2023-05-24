@@ -288,10 +288,24 @@ export const addGetXFunctionDefinition: ModFunction<File, 'write'> = (
 			(node) => node.type === 'ImportDeclaration',
 		);
 
+		const functionDeclarationAlreadyExists =
+			program.value.body.findIndex((node) => {
+				return (
+					node.type === 'FunctionDeclaration' &&
+					node.id?.type === 'Identifier' &&
+					node.id?.name === `get${identifierName}`
+				);
+			}) !== -1;
+
+		if (functionDeclarationAlreadyExists) {
+			return;
+		}
+
 		const insertPosition =
 			lastImportDeclarationIndex === -1
 				? 0
 				: lastImportDeclarationIndex + 1;
+
 		program.value.body.splice(insertPosition, 0, functionDeclaration);
 	});
 
@@ -362,6 +376,20 @@ export const addVariableDeclarations: ModFunction<
 		const blockStatement = blockStatementPath.value;
 		// only add variableDeclaration to blackStatement if its direct child of the FunctionDeclaration
 		if (blockStatementPath.parentPath !== root.paths()[0]) {
+			return;
+		}
+
+		const variableDeclarationAlreadyExists =
+			blockStatement.body.findIndex((node) => {
+				return (
+					node.type === 'VariableDeclaration' &&
+					node.declarations[0]?.type === 'VariableDeclarator' &&
+					node.declarations[0]?.id?.type === 'Identifier' &&
+					node.declarations[0]?.id.name === name
+				);
+			}) !== -1;
+
+		if (variableDeclarationAlreadyExists) {
 			return;
 		}
 
