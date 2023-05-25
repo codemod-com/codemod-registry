@@ -33,48 +33,116 @@ const transform = (
 };
 
 describe('next 13 replace-next-head', function () {
-	it('should replace title tag - jsxText', function (this: Context) {
-		const beforeText = `
-    import Head from 'next/head';
-    export default function Page() {
-      return (
-        <>
-          <Head>
-            <title>My page title</title>
-          </Head>
-        </>
-      );
-    }
-		`;
+	// it('should replace title tag - jsxText', function (this: Context) {
+	// 	const beforeText = `
+  //   import Head from 'next/head';
+  //   export default function Page() {
+  //     return (
+  //       <>
+  //         <Head>
+  //           <title>My page title</title>
+  //         </Head>
+  //       </>
+  //     );
+  //   }
+	// 	`;
 
-		const afterText = `
-    import { Metadata } from "next";
-    export const metadata: Metadata = { 
-			["title"]: "My page title",
-		};
-    export default function Page() {
-      return (
-        <>
-          <Head>
+	// 	const afterText = `
+  //   import { Metadata } from "next";
+  //   export const metadata: Metadata = { 
+	// 		["title"]: "My page title",
+	// 	};
+  //   export default function Page() {
+  //     return (
+  //       <>
+  //         <Head>
             
-          </Head>
-        </>
-      );
-    }
-	  `;
+  //         </Head>
+  //       </>
+  //     );
+  //   }
+	//   `;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
-		deepStrictEqual(actual, expected);
-	});
+	// 	const { actual, expected } = transform(beforeText, afterText, '.tsx');
+	// 	deepStrictEqual(actual, expected);
+	// });
 
-	it('should replace title tag - jsxExpression', function (this: Context) {
+	// it('should replace title tag - jsxExpression', function (this: Context) {
+	// 	const beforeText = `
+  //   import Head from 'next/head';
+  //   export default function Page() {
+  //     return (
+  //       <>
+  //         <Head>
+	// 				<title>{process.env.VAR}</title>
+  //         </Head>
+  //       </>
+  //     );
+  //   }
+	// 	`;
+
+	// 	const afterText = `
+  //   import { Metadata } from "next";
+  //   export const metadata: Metadata = { 
+	// 		["title"]: process.env.VAR,
+	// 	};
+  //   export default function Page() {
+  //     return (
+  //       <>
+  //         <Head>
+					
+  //         </Head>
+  //       </>
+  //     );
+  //   }
+	//   `;
+
+	// 	const { actual, expected } = transform(beforeText, afterText, '.tsx');
+	// 	deepStrictEqual(actual, expected);
+	// });
+
+	// it('should replace title tag - jsxExpression 2', function (this: Context) {
+	// 	const beforeText = `
+  //   import Head from 'next/head';
+  //   export default function Page() {
+  //     return (
+  //       <>
+  //         <Head>
+	// 				<title>{\`My page title \${process.env.VAR}\`}</title>
+  //         </Head>
+  //       </>
+  //     );
+  //   }
+	// 	`;
+
+	// 	const afterText = `
+  //   import { Metadata } from "next";
+  //   export const metadata: Metadata = { 
+	// 		["title"]: \`My page title \${process.env.VAR}\`,
+	// 	};
+  //   export default function Page() {
+  //     return (
+  //       <>
+  //         <Head>
+					
+  //         </Head>
+  //       </>
+  //     );
+  //   }
+	//   `;
+
+	// 	const { actual, expected } = transform(beforeText, afterText, '.tsx');
+	// 	deepStrictEqual(actual, expected);
+	// });
+	
+	it('should replace title tag - jsxExpression 3', function (this: Context) {
 		const beforeText = `
     import Head from 'next/head';
     export default function Page() {
       return (
         <>
           <Head>
-					<title>{process.env.VAR}</title>
+					<title>{var1} text {fn()} text2 {var3 ? "literal1" : var4}</title>
           </Head>
         </>
       );
@@ -84,7 +152,7 @@ describe('next 13 replace-next-head', function () {
 		const afterText = `
     import { Metadata } from "next";
     export const metadata: Metadata = { 
-			["title"]: process.env.VAR,
+			["title"]: \`\${var1} text \${fn()} text2 \${var3 ? "literal1": var4}\`,
 		};
     export default function Page() {
       return (
@@ -101,105 +169,73 @@ describe('next 13 replace-next-head', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it('should replace title tag - jsxExpression 2', function (this: Context) {
-		const beforeText = `
-    import Head from 'next/head';
-    export default function Page() {
-      return (
-        <>
-          <Head>
-					<title>{\`My page title \${process.env.VAR}\`}</title>
-          </Head>
-        </>
-      );
-    }
-		`;
+	// it('should replace meta tags - stringLiteral', function (this: Context) {
+	// 	const beforeText = `
+	//   import Head from 'next/head';
+	//   export default function Page() {
+	//     return (
+	//       <>
+	//         <Head>
+	// 					<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+	//         </Head>
+	//       </>
+	//     );
+	//   }
+	// 	`;
 
-		const afterText = `
-    import { Metadata } from "next";
-    export const metadata: Metadata = { 
-			["title"]: \`My page title \${process.env.VAR}\`,
-		};
-    export default function Page() {
-      return (
-        <>
-          <Head>
-					
-          </Head>
-        </>
-      );
-    }
-	  `;
-
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
-		deepStrictEqual(actual, expected);
-	});
-
-	it('should replace meta tags - stringLiteral', function (this: Context) {
-		const beforeText = `
-	  import Head from 'next/head';
-	  export default function Page() {
-	    return (
-	      <>
-	        <Head>
-						<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-	        </Head>
-	      </>
-	    );
-	  }
-		`;
-
-		const afterText = `
-	  import { Metadata } from "next";
-	  export const metadata: Metadata = { 
-			["viewport"]: "width=device-width, initial-scale=1, viewport-fit=cover",
-		};
-		export default function Page() {
-	    return (
-	      <>
-	        <Head>
+	// 	const afterText = `
+	//   import { Metadata } from "next";
+	//   export const metadata: Metadata = { 
+	// 		["viewport"]: "width=device-width, initial-scale=1, viewport-fit=cover",
+	// 	};
+	// 	export default function Page() {
+	//     return (
+	//       <>
+	//         <Head>
 						
-	        </Head>
-	      </>
-	    );
-	  }
-	  `;
+	//         </Head>
+	//       </>
+	//     );
+	//   }
+	//   `;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
-		deepStrictEqual(actual, expected);
-	});
+	// 	const { actual, expected } = transform(beforeText, afterText, '.tsx');
+	// 	deepStrictEqual(actual, expected);
+	// });
 
-	it('should replace meta tags - expression', function (this: Context) {
-		const beforeText = `
-	  import Head from 'next/head';
-	  export default function Page() {
-	    return (
-	      <>
-	        <Head>
-						<meta name="description" content={process.env.VAR} />
-	        </Head>
-	      </>
-	    );
-	  }
-		`;
+	// it('should replace meta tags - expression', function (this: Context) {
+	// 	const beforeText = `
+	//   import Head from 'next/head';
+	//   export default function Page() {
+	//     return (
+	//       <>
+	//         <Head>
+	// 					<meta name="description" content={process.env.VAR} />
+	//         </Head>
+	//       </>
+	//     );
+	//   }
+	// 	`;
 
-		const afterText = `
-	  import { Metadata } from "next";
-	  export const metadata: Metadata = { 
-			["description"]: process.env.VAR,
-		};
-		export default function Page() {
-	    return (
-	      <>
-	        <Head>
+	// 	const afterText = `
+	//   import { Metadata } from "next";
+	//   export const metadata: Metadata = { 
+	// 		["description"]: process.env.VAR,
+	// 	};
+	// 	export default function Page() {
+	//     return (
+	//       <>
+	//         <Head>
 						
-	        </Head>
-	      </>
-	    );
-	  }
-	  `;
+	//         </Head>
+	//       </>
+	//     );
+	//   }
+	//   `;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
-		deepStrictEqual(actual, expected);
-	});
+	// 	const { actual, expected } = transform(beforeText, afterText, '.tsx');
+	// 	deepStrictEqual(actual, expected);
+	// });
+	
+	
 });

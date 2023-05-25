@@ -49,15 +49,19 @@ const handleTitleJsxElement = (
 	metadataContainer: Container<ReadonlyArray<ParsedMetadataTag>>,
 ) => {
 	const children = titleJsxElement.getJsxChildren();
-	const firstChild = children[0];
+	
+	let text = '\`';
+	
+	children.forEach(child => {
+		if(Node.isJsxText(child))	{
+			const t = child.getFullText();
+			text += t;
+		} else if(Node.isJsxExpression(child)) {
+			text += `\${${child.getExpression()?.getText()}}`
+		}
+	})
 
-	let text = '';
-	if (Node.isJsxText(firstChild)) {
-		// @TODO
-		text = `"${firstChild.getText()}"`;
-	} else if (Node.isJsxExpression(firstChild)) {
-		text = firstChild.getExpression()?.getText() ?? '';
-	}
+	text += '\`';
 
 	const parsedTag = {
 		HTMLTagName: 'title' as const,
