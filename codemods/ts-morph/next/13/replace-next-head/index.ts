@@ -50,7 +50,7 @@ const handleTitleJsxElement = (
 ) => {
 	const children = titleJsxElement.getJsxChildren();
 
-	let text = '`';
+	let text = '';
 
 	children.forEach((child) => {
 		if (Node.isJsxText(child)) {
@@ -64,16 +64,20 @@ const handleTitleJsxElement = (
 				return;
 			}
 
-			text += `\${${expression?.getText()}}`;
+			const expressionText = expression?.getText() ?? null;
+
+			if (expressionText === null) {
+				return;
+			}
+
+			text += `\${${expressionText}}`;
 		}
 	});
-
-	text += '`';
 
 	const parsedTag = {
 		HTMLTagName: 'title' as const,
 		HTMLAttributes: {
-			children: text,
+			children: `\`${text}\``,
 		},
 	};
 
