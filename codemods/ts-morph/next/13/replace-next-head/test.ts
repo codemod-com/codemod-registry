@@ -50,7 +50,7 @@ describe('next 13 replace-next-head', function () {
 		const afterText = `
     import { Metadata } from "next";
     export const metadata: Metadata = { 
-			["title"]: "My page title",
+			["title"]: \`My page title\`,
 		};
     export default function Page() {
       return (
@@ -84,7 +84,7 @@ describe('next 13 replace-next-head', function () {
 		const afterText = `
     import { Metadata } from "next";
     export const metadata: Metadata = { 
-			["title"]: process.env.VAR,
+			["title"]: \`\${process.env.VAR}\`,
 		};
     export default function Page() {
       return (
@@ -119,6 +119,40 @@ describe('next 13 replace-next-head', function () {
     import { Metadata } from "next";
     export const metadata: Metadata = { 
 			["title"]: \`My page title \${process.env.VAR}\`,
+		};
+    export default function Page() {
+      return (
+        <>
+          <Head>
+					
+          </Head>
+        </>
+      );
+    }
+	  `;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		deepStrictEqual(actual, expected);
+	});
+
+	it('should replace title tag - jsxExpression 3', function (this: Context) {
+		const beforeText = `
+    import Head from 'next/head';
+    export default function Page() {
+      return (
+        <>
+          <Head>
+					<title>{var1} text {fn()} text2 {var3 ? "literal1" : var4}</title>
+          </Head>
+        </>
+      );
+    }
+		`;
+
+		const afterText = `
+    import { Metadata } from "next";
+    export const metadata: Metadata = { 
+			["title"]: \`\${var1} text \${fn()} text2 \${var3 ? "literal1": var4}\`,
 		};
     export default function Page() {
       return (
