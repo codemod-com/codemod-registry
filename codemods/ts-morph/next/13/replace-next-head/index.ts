@@ -14,8 +14,8 @@ export type ParsedMetadataTag = {
 	HTMLAttributes: HTMLAttributes;
 };
 
-export const hyphensToCamelCase = (str: string) =>
-	str.replace(/-([a-z])/g, function (g) {
+export const camelize = (str: string) =>
+	str.replace(/[-_]([a-z])/g, function (g) {
 		return (g[1] ?? '').toUpperCase();
 	});
 
@@ -197,7 +197,6 @@ export const getMetadataObject = (
 	parsedMetadataTags: readonly ParsedMetadataTag[],
 ) => {
 	const metadataObject: Record<string, any> = {};
-
 	parsedMetadataTags.forEach(({ HTMLTagName, HTMLAttributes }) => {
 		if (HTMLTagName === 'title') {
 			metadataObject[HTMLTagName] = HTMLAttributes.children ?? '';
@@ -234,167 +233,180 @@ export const getMetadataObject = (
 				return;
 			}
 
-			// @TODO support arrays 
-			if(name === 'theme-color') {
+			// @TODO support arrays
+			if (name === 'theme-color') {
 				const { content, media } = HTMLAttributes;
-				
+
 				metadataObject.themeColor = {
-					color: content, 
+					color: content,
 					media,
-				}
+				};
 				return;
 			}
-			
-			if(name.startsWith('og:')) {
-				const n = hyphensToCamelCase(name.replace('og:', ''));
-				
-				if(!metadataObject.openGraph) {
-					metadataObject.openGraph = {}
+
+			if (name.startsWith('og:')) {
+				const n = camelize(name.replace('og:', ''));
+
+				if (!metadataObject.openGraph) {
+					metadataObject.openGraph = {};
 				}
-				
-				if(name.startsWith('og:image')) {
-					const n = hyphensToCamelCase(name.replace('og:image', ''));
-					
+
+				if (name.startsWith('og:image')) {
+					const n = camelize(name.replace('og:image', ''));
+
 					// @TODO support arrays
-					if(!metadataObject.openGraph.images) {
-						metadataObject.openGraph.images = {}
+					if (!metadataObject.openGraph.images) {
+						metadataObject.openGraph.images = {};
 					}
-					
+
+					if (name === 'og:image') {
+						metadataObject.openGraph.images.url = content;
+						return;
+					}
+
 					metadataObject.openGraph.images[n] = content;
+					return;
 				}
-				
+
 				metadataObject.openGraph[n] = content;
 				return;
 			}
-			
-			if(name.startsWith('twitter:')) {
-				const n = hyphensToCamelCase(name.replace('twitter:', ''));
-				
-				if(!metadataObject.twitter) {
-					metadataObject.twitter = {}
+
+			if (name.startsWith('twitter:')) {
+				const n = camelize(name.replace('twitter:', ''));
+
+				if (!metadataObject.twitter) {
+					metadataObject.twitter = {};
 				}
-				
+
+				if (name === 'twitter:site:id') {
+					metadataObject.twitter.siteId = content;
+					return;
+				}
+
+				if (name === 'twitter:creator:id') {
+					metadataObject.twitter.creatorId = content;
+					return;
+				}
+
 				metadataObject.twitter[n] = content;
 				return;
 			}
-			
-			const verification: Record<string, string> = {'google-site-verification': 'google', 'yandex-verification': 'yandex', 'me': 'me' };
-			
-			if(Object.keys(verification).includes(name)) {
-				if(!metadataObject.verification) {
-					metadataObject.verification = {}
+
+			const verification: Record<string, string> = {
+				'google-site-verification': 'google',
+				'yandex-verification': 'yandex',
+				me: 'me',
+				y_key: 'yahoo',
+			};
+
+			if (Object.keys(verification).includes(name)) {
+				if (!metadataObject.verification) {
+					metadataObject.verification = {};
 				}
-				
+
 				const propName = verification[name];
-				
-				if(!propName) {
+
+				if (!propName) {
 					return;
 				}
-				
+
 				metadataObject.verification[propName] = content;
 				return;
 			}
-			
-			if(name === 'format-detection') {
+
+			if (name === 'format-detection') {
 				// @TODO
 				metadataObject.formatDetection = {};
 				return;
 			}
-			
-			const propertyName = hyphensToCamelCase(name);
+
+			const propertyName = camelize(name);
 			metadataObject[propertyName] = content;
 		}
-		
-		if(HTMLTagName === 'link') {
-			const name = HTMLAttributes.rel?.replace(
-					/\"/g,
-					'',
-				) ?? null;
+
+		if (HTMLTagName === 'link') {
+			const name = HTMLAttributes.rel?.replace(/\"/g, '') ?? null;
 
 			if (name === null) {
 				return;
 			}
 
 			const content = HTMLAttributes.href;
-		
+
 			// @TODO support arrays
-			if(name === 'author') {
-				
+			if (name === 'author') {
 				return;
 			}
-			
-			if(name === 'canonical' || name === 'alternate') {
-				
-				if(!metadataObject.alternates) {
-					metadataObject.alternates = {}
+
+			if (name === 'canonical' || name === 'alternate') {
+				if (!metadataObject.alternates) {
+					metadataObject.alternates = {};
 				}
-				
-				if(name === 'canonical') {
+
+				if (name === 'canonical') {
 					metadataObject.alternates[name] = content;
 				}
-				
-				const { hreflang, media, type,  href } = HTMLAttributes;
-				
-				if(hreflang) {
-					if(!metadataObject.alternates.languages) {
-						metadataObject.alternates.languages = {}
+
+				const { hreflang, media, type, href } = HTMLAttributes;
+
+				if (hreflang) {
+					if (!metadataObject.alternates.languages) {
+						metadataObject.alternates.languages = {};
 					}
-					
+
 					metadataObject.alternates.languages[hreflang] = href;
 				}
-				
-				if(media) {
-					if(!metadataObject.alternates.media) {
-						metadataObject.alternates.media = {}
+
+				if (media) {
+					if (!metadataObject.alternates.media) {
+						metadataObject.alternates.media = {};
 					}
-					
+
 					metadataObject.alternates.media[media] = href;
 				}
-				
-				if(type) {
-					if(!metadataObject.alternates.types) {
-						metadataObject.alternates.types = {}
+
+				if (type) {
+					if (!metadataObject.alternates.types) {
+						metadataObject.alternates.types = {};
 					}
-					
+
 					metadataObject.alternates.types[type] = href;
 				}
-				
+
 				return;
 			}
-			
+
 			const icons: Record<string, string> = {
-				'shortcut icon': 'shortcut', 
-				'icon': 'icon', 
-				'apple-touch-icon': 'apple'
-			}
-			
-			if(Object.keys(icons).includes(name)) {
-					const n = icons[name];
-					
-					if(!n) {
-						return;
-					}
-					
-					if(!metadataObject.icons) {
-						metadataObject.icons = {}
-					}
-					
-					metadataObject.icons[n] = content;
+				'shortcut icon': 'shortcut',
+				icon: 'icon',
+				'apple-touch-icon': 'apple',
+			};
+
+			if (Object.keys(icons).includes(name)) {
+				const n = icons[name];
+
+				if (!n) {
 					return;
-			}
-			
-			if(name.startsWith('al:')) {
-				metadataObject.appLinks = {
-					
-				} 
-				
+				}
+
+				if (!metadataObject.icons) {
+					metadataObject.icons = {};
+				}
+
+				metadataObject.icons[n] = content;
 				return;
 			}
-			
-			const propertyName = hyphensToCamelCase(name);
+
+			if (name.startsWith('al:')) {
+				metadataObject.appLinks = {};
+
+				return;
+			}
+
+			const propertyName = camelize(name);
 			metadataObject[propertyName] = content;
 		}
-		
 	});
 
 	return metadataObject;

@@ -299,4 +299,198 @@ describe('next 13 replace-next-head', function () {
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 		deepStrictEqual(actual, expected);
 	});
+
+	it('should support icons', function (this: Context) {
+		const beforeText = `
+	  import Head from 'next/head';
+	  export default function Page() {
+	    return (
+	      <>
+	        <Head>
+						<link rel="shortcut icon" href="/shortcut-icon.png" />
+						<link rel="icon" href="/icon.png" />
+						<link rel="apple-touch-icon" href="/apple-icon.png" />
+	        </Head>
+	      </>
+	    );
+	  }
+		`;
+
+		const afterText = `
+	  import { Metadata } from "next";
+	  export const metadata: Metadata = { 
+			icons: {
+				shortcut: "/shortcut-icon.png",
+				icon: "/icon.png",
+				apple: "/apple-icon.png",
+			},
+		};
+		
+		export default function Page() {
+	    return (
+	      <>
+	        <Head>
+						
+						
+						
+	        </Head>
+	      </>
+	    );
+	  }
+	  `;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		deepStrictEqual(actual, expected);
+	});
+
+	it('should support verification', function (this: Context) {
+		const beforeText = `
+	  import Head from 'next/head';
+	  export default function Page() {
+	    return (
+	      <>
+	        <Head>
+						<meta name="google-site-verification" content="google" />
+						<meta name="yandex-verification" content="yandex" />
+						<meta name="y_key" content="yahoo" />
+	        </Head>
+	      </>
+	    );
+	  }
+		`;
+
+		const afterText = `
+	  import { Metadata } from "next";
+	  export const metadata: Metadata = { 
+			verification: {
+				google: "google",
+				yandex: "yandex",
+				yahoo: "yahoo",
+			},
+		};
+		
+		export default function Page() {
+	    return (
+	      <>
+	        <Head>
+						
+						
+						
+	        </Head>
+	      </>
+	    );
+	  }
+	  `;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		deepStrictEqual(actual, expected);
+	});
+
+	it('should support openGraph', function (this: Context) {
+		const beforeText = `
+	  import Head from 'next/head';
+	  export default function Page() {
+	    return (
+	      <>
+	        <Head>
+						<meta property="og:title" content="Next.js" />
+						<meta property="og:description" content="The React Framework for the Web" />
+						<meta property="og:url" content="https://nextjs.org/" />
+						<meta property="og:site_name" content="Next.js" />
+						<meta property="og:locale" content="en_US" />
+						<meta property="og:type" content="website" />
+						<meta property="og:image" content="https://nextjs.org/og.png" />
+	        </Head>
+	      </>
+	    );
+	  }
+		`;
+
+		const afterText = `
+	  import { Metadata } from "next";
+	  export const metadata: Metadata = { 
+			openGraph: {
+				title: "Next.js",
+				description: "The React Framework for the Web",
+				url: "https://nextjs.org/",
+				siteName: "Next.js",
+				locale: "en_US",
+				type: "website",
+				images: {
+					url: "https://nextjs.org/og.png",
+				},
+			},
+		};
+		
+		export default function Page() {
+	    return (
+	      <>
+	        <Head>
+						
+						
+						
+						
+						
+						
+	        </Head>
+	      </>
+	    );
+	  }
+	  `;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		deepStrictEqual(actual, expected);
+	});
+
+	it('should support twitter', function (this: Context) {
+		const beforeText = `
+	  import Head from 'next/head';
+	  export default function Page() {
+	    return (
+	      <>
+	        <Head>
+						<meta name="twitter:card" content="summary_large_image" />
+						<meta name="twitter:title" content="Next.js" />
+						<meta name="twitter:description" content="The React Framework for the Web" />
+						<meta name="twitter:site:id" content="1467726470533754880" />
+						<meta name="twitter:creator" content="@nextjs" />
+						<meta name="twitter:creator:id" content="1467726470533754880" />
+	        </Head>
+	      </>
+	    );
+	  }
+		`;
+
+		const afterText = `
+	  import { Metadata } from "next";
+	  export const metadata: Metadata = { 
+			twitter: {
+				card: "summary_large_image",
+				title: "Next.js",
+				description: "The React Framework for the Web",
+				siteId: "1467726470533754880",
+				creator: "@nextjs",
+				creatorId: "1467726470533754880",
+			},
+		};
+		
+		export default function Page() {
+	    return (
+	      <>
+	        <Head>
+						
+						
+						
+						
+						
+						
+	        </Head>
+	      </>
+	    );
+	  }
+	  `;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		deepStrictEqual(actual, expected);
+	});
 });
