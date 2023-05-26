@@ -9,10 +9,15 @@ import {
 
 type HTMLTagName = 'title' | 'meta' | 'link';
 type HTMLAttributes = Record<string, string>;
-type ParsedMetadataTag = {
+export type ParsedMetadataTag = {
 	HTMLTagName: HTMLTagName;
 	HTMLAttributes: HTMLAttributes;
 };
+
+export const camelize = (str: string) =>
+	str.replace(/[-_]([a-z])/g, function (g) {
+		return (g[1] ?? '').toUpperCase();
+	});
 
 export const buildContainer = <T>(initialValue: T) => {
 	let currentValue: T = initialValue;
@@ -38,10 +43,6 @@ const isTitleJsxElement = (jsxElement: JsxElement) => {
 	const tagNameNode = openingElement.getTagNameNode();
 
 	return tagNameNode.getText() === 'title';
-};
-
-const isMetaJsxElement = (jsxElement: JsxSelfClosingElement) => {
-	return jsxElement.getTagNameNode().getText() === 'meta';
 };
 
 const handleTitleJsxElement = (
@@ -88,11 +89,17 @@ const handleTitleJsxElement = (
 	titleJsxElement.replaceWithText('');
 };
 
-const handleMetaJsxSelfClosingElement = (
-	metaJsxElement: JsxSelfClosingElement,
+const handleJsxSelfClosingElement = (
+	jsxSelfClosingElement: JsxSelfClosingElement,
 	metadataContainer: Container<ReadonlyArray<ParsedMetadataTag>>,
 ) => {
-	const attributes = metaJsxElement.getAttributes();
+	const tagName = jsxSelfClosingElement.getTagNameNode().getText();
+
+	if (tagName !== 'link' && tagName !== 'meta') {
+		return;
+	}
+
+	const attributes = jsxSelfClosingElement.getAttributes();
 	const attributesObject: Record<string, string> = {};
 
 	attributes.forEach((attribute) => {
@@ -112,13 +119,13 @@ const handleMetaJsxSelfClosingElement = (
 		return [
 			...prevMetadata,
 			{
-				HTMLTagName: 'meta',
+				HTMLTagName: tagName,
 				HTMLAttributes: attributesObject,
 			},
 		];
 	});
 
-	metaJsxElement.replaceWithText('');
+	jsxSelfClosingElement.replaceWithText('');
 };
 
 const handleHeadChildJsxElement = (
@@ -127,18 +134,6 @@ const handleHeadChildJsxElement = (
 ) => {
 	if (isTitleJsxElement(headChildJsxElement)) {
 		handleTitleJsxElement(headChildJsxElement, metadataContainer);
-	}
-};
-
-const handleHeadChildJsxSelfClosingElement = (
-	headChildJsxSelfClosingElement: JsxSelfClosingElement,
-	metadataContainer: Container<ReadonlyArray<ParsedMetadataTag>>,
-) => {
-	if (isMetaJsxElement(headChildJsxSelfClosingElement)) {
-		handleMetaJsxSelfClosingElement(
-			headChildJsxSelfClosingElement,
-			metadataContainer,
-		);
 	}
 };
 
@@ -152,7 +147,7 @@ const handleHeadJsxElement = (
 		if (Node.isJsxElement(child)) {
 			handleHeadChildJsxElement(child, metadataContainer);
 		} else if (Node.isJsxSelfClosingElement(child)) {
-			handleHeadChildJsxSelfClosingElement(child, metadataContainer);
+			handleJsxSelfClosingElement(child, metadataContainer);
 		}
 	});
 };
@@ -198,157 +193,218 @@ const handleImportDeclaration = (
 	importDeclaration.remove();
 };
 
-// @TODO fix code duplication
-const resolveProperty = (propertyName: string) => {
-	const map: Record<string, string> = {
-		title: 'title',
-		description: 'description',
-		'application-name': 'applicationName',
-		author: 'authors',
-		generator: 'generator',
-		keywords: 'keywords',
-		referrer: 'referrer',
-		'theme-color': 'themeColor',
-		'color-scheme': 'colorScheme',
-		viewport: 'viewport',
-		creator: 'creator',
-		publisher: 'publisher',
-	};
-
-	return map[propertyName] ?? null;
-};
-
-const resolveOpenGraphProperty = (propertyName: string): string | null => {
-	const map: Record<string, string> = {
-		'og:type': 'type',
-		'og:url': 'url',
-		'og:site_name': 'siteName',
-		'og:title': 'title',
-		'og:description': 'description',
-	};
-
-	return map[propertyName] ?? null;
-};
-
-const resolveTwitterProperty = (propertyName: string): string | null => {
-	const map: Record<string, string> = {
-		'twitter:card': 'card',
-		'twitter:site': 'site',
-		'twitter:creator': 'creator',
-		'twitter:title': 'title',
-		'twitter:description': 'description',
-	};
-
-	return map[propertyName] ?? null;
-};
-
-const handleOpenGraphAttribute = (
-	metadataObject: Record<string, any>,
-	name: string,
-	content: string,
-) => {
-	if (!metadataObject.openGraph) {
-		metadataObject.openGraph = {};
-	}
-
-	const resolvedPropertyName = resolveOpenGraphProperty(name);
-
-	if (resolvedPropertyName === null) {
-		return;
-	}
-
-	metadataObject.openGraph[resolvedPropertyName] = content;
-};
-
-const handleTwitterAttribute = (
-	metadataObject: Record<string, any>,
-	name: string,
-	content: string,
-) => {
-	if (!metadataObject.twitter) {
-		metadataObject.twitter = {};
-	}
-
-	const resolvedPropertyName = resolveTwitterProperty(name);
-
-	if (resolvedPropertyName === null) {
-		return;
-	}
-
-	metadataObject.twitter[resolvedPropertyName] = content;
-};
-
-const handleBaseAttribute = (
-	metadataObject: Record<string, any>,
-	name: string,
-	content: string,
-) => {
-	const resolvedPropertyName = resolveProperty(name);
-
-	if (resolvedPropertyName === null) {
-		return;
-	}
-
-	metadataObject[resolvedPropertyName] = content;
-};
-
-const getMetadataObject = (
-	metadataContainer: Container<ReadonlyArray<ParsedMetadataTag>>,
+export const getMetadataObject = (
+	parsedMetadataTags: readonly ParsedMetadataTag[],
 ) => {
 	const metadataObject: Record<string, any> = {};
-	const parsedMetadataTags = metadataContainer.get();
-
 	parsedMetadataTags.forEach(({ HTMLTagName, HTMLAttributes }) => {
 		if (HTMLTagName === 'title') {
 			metadataObject[HTMLTagName] = HTMLAttributes.children ?? '';
 		}
 
-		const nameAttribute =
-			(HTMLAttributes.name ?? HTMLAttributes.property)?.replace(
-				/\"/g,
-				'',
-			) ?? null;
+		if (HTMLTagName === 'meta') {
+			const name =
+				(HTMLAttributes.name ?? HTMLAttributes.property)?.replace(
+					/\"/g,
+					'',
+				) ?? null;
 
-		if (nameAttribute === null) {
-			return;
+			if (name === null) {
+				return;
+			}
+
+			const content = HTMLAttributes.content;
+
+			if (name === 'author') {
+				if (!metadataObject.authors) {
+					metadataObject.authors = [];
+				}
+
+				metadataObject['authors'].push({ name: content });
+				return;
+			}
+
+			// @TODO support arrays
+			if (name === 'theme-color') {
+				const { content, media } = HTMLAttributes;
+
+				metadataObject.themeColor = {
+					color: content,
+					media,
+				};
+				return;
+			}
+
+			if (name.startsWith('og:')) {
+				const n = camelize(name.replace('og:', ''));
+
+				if (!metadataObject.openGraph) {
+					metadataObject.openGraph = {};
+				}
+
+				if (name.startsWith('og:image')) {
+					const n = camelize(name.replace('og:image', ''));
+
+					// @TODO support arrays
+					if (!metadataObject.openGraph.images) {
+						metadataObject.openGraph.images = {};
+					}
+
+					if (name === 'og:image') {
+						metadataObject.openGraph.images.url = content;
+						return;
+					}
+
+					metadataObject.openGraph.images[n] = content;
+					return;
+				}
+
+				metadataObject.openGraph[n] = content;
+				return;
+			}
+
+			if (name.startsWith('twitter:')) {
+				const n = camelize(name.replace('twitter:', ''));
+
+				if (!metadataObject.twitter) {
+					metadataObject.twitter = {};
+				}
+
+				if (name === 'twitter:site:id') {
+					metadataObject.twitter.siteId = content;
+					return;
+				}
+
+				if (name === 'twitter:creator:id') {
+					metadataObject.twitter.creatorId = content;
+					return;
+				}
+
+				metadataObject.twitter[n] = content;
+				return;
+			}
+
+			const verification: Record<string, string> = {
+				'google-site-verification': 'google',
+				'yandex-verification': 'yandex',
+				me: 'me',
+				y_key: 'yahoo',
+			};
+
+			if (Object.keys(verification).includes(name)) {
+				if (!metadataObject.verification) {
+					metadataObject.verification = {};
+				}
+
+				const propName = verification[name];
+
+				if (!propName) {
+					return;
+				}
+
+				metadataObject.verification[propName] = content;
+				return;
+			}
+
+			if (name === 'format-detection') {
+				// @TODO
+				metadataObject.formatDetection = {};
+				return;
+			}
+
+			const propertyName = camelize(name);
+			metadataObject[propertyName] = content;
 		}
 
-		const contentAttribute = HTMLAttributes.content ?? '';
-		const isOpenGraphAttribute = nameAttribute.startsWith('og:');
-		const isTwitterAttribute = nameAttribute.startsWith('twitter:');
+		if (HTMLTagName === 'link') {
+			const name = HTMLAttributes.rel?.replace(/\"/g, '') ?? null;
 
-		if (HTMLTagName === 'meta' && isOpenGraphAttribute) {
-			handleOpenGraphAttribute(
-				metadataObject,
-				nameAttribute,
-				contentAttribute,
-			);
-		} else if (HTMLTagName === 'meta' && isTwitterAttribute) {
-			handleTwitterAttribute(
-				metadataObject,
-				nameAttribute,
-				contentAttribute,
-			);
-		} else {
-			handleBaseAttribute(
-				metadataObject,
-				nameAttribute,
-				contentAttribute,
-			);
+			if (name === null) {
+				return;
+			}
+
+			const content = HTMLAttributes.href;
+
+			// @TODO support arrays
+			if (name === 'author') {
+				return;
+			}
+
+			if (name === 'canonical' || name === 'alternate') {
+				if (!metadataObject.alternates) {
+					metadataObject.alternates = {};
+				}
+
+				if (name === 'canonical') {
+					metadataObject.alternates[name] = content;
+				}
+
+				const { hreflang, media, type, href } = HTMLAttributes;
+
+				if (hreflang) {
+					if (!metadataObject.alternates.languages) {
+						metadataObject.alternates.languages = {};
+					}
+
+					metadataObject.alternates.languages[hreflang] = href;
+				}
+
+				if (media) {
+					if (!metadataObject.alternates.media) {
+						metadataObject.alternates.media = {};
+					}
+
+					metadataObject.alternates.media[media] = href;
+				}
+
+				if (type) {
+					if (!metadataObject.alternates.types) {
+						metadataObject.alternates.types = {};
+					}
+
+					metadataObject.alternates.types[type] = href;
+				}
+
+				return;
+			}
+
+			const icons: Record<string, string> = {
+				'shortcut icon': 'shortcut',
+				icon: 'icon',
+				'apple-touch-icon': 'apple',
+			};
+
+			if (Object.keys(icons).includes(name)) {
+				const n = icons[name];
+
+				if (!n) {
+					return;
+				}
+
+				if (!metadataObject.icons) {
+					metadataObject.icons = {};
+				}
+
+				metadataObject.icons[n] = content;
+				return;
+			}
+
+			if (name.startsWith('al:')) {
+				metadataObject.appLinks = {};
+
+				return;
+			}
+
+			const propertyName = camelize(name);
+			metadataObject[propertyName] = content;
 		}
-
-		// @TODO verification
-		// @TODO others
-
-		// @TODO <link>
 	});
 
 	return metadataObject;
 };
 
-const buildMetadataObjectStr = (metadataObject: Record<string, string>) => {
+const buildMetadataObjectStr = (metadataObject: Record<string, any>) => {
 	let str = '{';
-
 	Object.keys(metadataObject).forEach((key) => {
 		const val = metadataObject[key];
 		const value =
@@ -357,7 +413,7 @@ const buildMetadataObjectStr = (metadataObject: Record<string, string>) => {
 				: typeof val === 'object' && val !== null
 				? buildMetadataObjectStr(val)
 				: '';
-		str += `\n ["${key}"]: ${value},`;
+		str += `\n ${key}: ${value},`;
 	});
 
 	str += '}';
@@ -389,7 +445,7 @@ export const handleSourceFile = (
 		return undefined;
 	}
 
-	const metadataObject = getMetadataObject(metadataContainer);
+	const metadataObject = getMetadataObject(metadataContainer.get());
 
 	const declaration = [...importDeclarations].pop();
 
