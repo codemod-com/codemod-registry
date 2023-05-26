@@ -224,15 +224,6 @@ export const getMetadataObject = (
 				return;
 			}
 
-			// @TODO
-			if (name === 'format-detection') {
-				if (!metadataObject.formatDetection) {
-					metadataObject.formatDetection = {};
-				}
-
-				return;
-			}
-
 			// @TODO support arrays
 			if (name === 'theme-color') {
 				const { content, media } = HTMLAttributes;
