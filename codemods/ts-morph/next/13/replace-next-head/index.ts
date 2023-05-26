@@ -93,9 +93,9 @@ const handleJsxSelfClosingElement = (
 	jsxSelfClosingElement: JsxSelfClosingElement,
 	metadataContainer: Container<ReadonlyArray<ParsedMetadataTag>>,
 ) => {
-	const name = jsxSelfClosingElement.getTagNameNode().getText();
+	const tagName = jsxSelfClosingElement.getTagNameNode().getText();
 
-	if (name !== 'link' && name !== 'meta') {
+	if (tagName !== 'link' && tagName !== 'meta') {
 		return;
 	}
 
@@ -119,7 +119,7 @@ const handleJsxSelfClosingElement = (
 		return [
 			...prevMetadata,
 			{
-				HTMLTagName: name,
+				HTMLTagName: tagName,
 				HTMLAttributes: attributesObject,
 			},
 		];

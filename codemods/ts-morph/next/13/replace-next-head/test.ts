@@ -237,7 +237,7 @@ describe('next 13 replace-next-head', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it('should support alternates', function (this: Context) {
+	it('should support alternates meta tags', function (this: Context) {
 		const beforeText = `
 	  import Head from 'next/head';
 	  export default function Page() {
@@ -300,7 +300,7 @@ describe('next 13 replace-next-head', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it('should support icons', function (this: Context) {
+	it('should support icons meta tags', function (this: Context) {
 		const beforeText = `
 	  import Head from 'next/head';
 	  export default function Page() {
@@ -343,7 +343,7 @@ describe('next 13 replace-next-head', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it('should support verification', function (this: Context) {
+	it('should support verification meta tags', function (this: Context) {
 		const beforeText = `
 	  import Head from 'next/head';
 	  export default function Page() {
@@ -386,7 +386,7 @@ describe('next 13 replace-next-head', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it('should support openGraph', function (this: Context) {
+	it('should support openGraph meta tags', function (this: Context) {
 		const beforeText = `
 	  import Head from 'next/head';
 	  export default function Page() {
@@ -442,7 +442,7 @@ describe('next 13 replace-next-head', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it('should support twitter', function (this: Context) {
+	it('should support twitter meta tags', function (this: Context) {
 		const beforeText = `
 	  import Head from 'next/head';
 	  export default function Page() {
