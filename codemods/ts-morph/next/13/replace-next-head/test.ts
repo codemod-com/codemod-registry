@@ -50,7 +50,7 @@ describe('next 13 replace-next-head', function () {
 		const afterText = `
     import { Metadata } from "next";
     export const metadata: Metadata = { 
-			["title"]: \`My page title\`,
+			title: \`My page title\`,
 		};
     export default function Page() {
       return (
@@ -84,7 +84,7 @@ describe('next 13 replace-next-head', function () {
 		const afterText = `
     import { Metadata } from "next";
     export const metadata: Metadata = { 
-			["title"]: \`\${process.env.VAR}\`,
+			title: \`\${process.env.VAR}\`,
 		};
     export default function Page() {
       return (
@@ -118,7 +118,7 @@ describe('next 13 replace-next-head', function () {
 		const afterText = `
     import { Metadata } from "next";
     export const metadata: Metadata = { 
-			["title"]: \`My page title \${process.env.VAR}\`,
+			title: \`My page title \${process.env.VAR}\`,
 		};
     export default function Page() {
       return (
@@ -152,7 +152,7 @@ describe('next 13 replace-next-head', function () {
 		const afterText = `
     import { Metadata } from "next";
     export const metadata: Metadata = { 
-			["title"]: \`\${var1} text \${fn()} text2 \${var3 ? "literal1": var4}\`,
+			title: \`\${var1} text \${fn()} text2 \${var3 ? "literal1": var4}\`,
 		};
     export default function Page() {
       return (
@@ -186,7 +186,7 @@ describe('next 13 replace-next-head', function () {
 		const afterText = `
 	  import { Metadata } from "next";
 	  export const metadata: Metadata = { 
-			["viewport"]: "width=device-width, initial-scale=1, viewport-fit=cover",
+			viewport: "width=device-width, initial-scale=1, viewport-fit=cover",
 		};
 		export default function Page() {
 	    return (
@@ -220,13 +220,76 @@ describe('next 13 replace-next-head', function () {
 		const afterText = `
 	  import { Metadata } from "next";
 	  export const metadata: Metadata = { 
-			["description"]: process.env.VAR,
+			description: process.env.VAR,
 		};
 		export default function Page() {
 	    return (
 	      <>
 	        <Head>
 						
+	        </Head>
+	      </>
+	    );
+	  }
+	  `;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		deepStrictEqual(actual, expected);
+	});
+
+	it('should support alternates', function (this: Context) {
+		const beforeText = `
+	  import Head from 'next/head';
+	  export default function Page() {
+	    return (
+	      <>
+	        <Head>
+						<link rel="canonical" href="https://nextjs.org" />
+						<link rel="alternate" hreflang="en-US" href="https://nextjs.org/en-US" />
+						<link rel="alternate" hreflang="de-DE" href="https://nextjs.org/de-DE" />
+						<link
+							rel="alternate"
+							media="only screen and (max-width: 600px)"
+							href="https://nextjs.org/mobile"
+						/>
+						<link
+							rel="alternate"
+							type="application/rss+xml"
+							href="https://nextjs.org/rss"
+						/>	
+	        </Head>
+	      </>
+	    );
+	  }
+		`;
+
+		const afterText = `
+	  import { Metadata } from "next";
+	  export const metadata: Metadata = { 
+			alternates: {
+				canonical: "https://nextjs.org",
+				languages: {
+					"en-US": "https://nextjs.org/en-US",
+					"de-DE": "https://nextjs.org/de-DE",
+				},
+				media: {
+					"only screen and (max-width: 600px)": "https://nextjs.org/mobile",
+				},
+				types: {
+					"application/rss+xml": "https://nextjs.org/rss",
+				},
+			},
+		};
+		
+		export default function Page() {
+	    return (
+	      <>
+	        <Head>
+						
+						
+						
+						
+							
 	        </Head>
 	      </>
 	    );
