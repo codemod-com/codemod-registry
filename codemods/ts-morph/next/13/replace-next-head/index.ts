@@ -1,4 +1,4 @@
-import { EmitHint, JsxSelfClosingElement } from 'ts-morph';
+import { EmitHint, JsxSelfClosingElement, ts } from 'ts-morph';
 import {
 	Identifier,
 	ImportDeclaration,
@@ -37,57 +37,6 @@ export const buildContainer = <T>(initialValue: T) => {
 };
 
 type Container<T> = ReturnType<typeof buildContainer<T>>;
-
-const isTitleJsxElement = (jsxElement: JsxElement) => {
-	const openingElement = jsxElement.getOpeningElement();
-	const tagNameNode = openingElement.getTagNameNode();
-
-	return tagNameNode.getText() === 'title';
-};
-
-const handleTitleJsxElement = (
-	titleJsxElement: JsxElement,
-	metadataContainer: Container<ReadonlyArray<ParsedMetadataTag>>,
-) => {
-	const children = titleJsxElement.getJsxChildren();
-
-	let text = '';
-
-	children.forEach((child) => {
-		if (Node.isJsxText(child)) {
-			const t = child.getFullText();
-			text += t;
-		} else if (Node.isJsxExpression(child)) {
-			const expression = child.getExpression();
-			if (Node.isTemplateExpression(expression)) {
-				const t = expression.getFullText().replace(/\`/g, '');
-				text += t;
-				return;
-			}
-
-			const expressionText = expression?.getText() ?? null;
-
-			if (expressionText === null) {
-				return;
-			}
-
-			text += `\${${expressionText}}`;
-		}
-	});
-
-	const parsedTag = {
-		HTMLTagName: 'title' as const,
-		HTMLAttributes: {
-			children: `\`${text}\``,
-		},
-	};
-
-	metadataContainer.set((prevMetadata) => {
-		return [...prevMetadata, parsedTag];
-	});
-
-	titleJsxElement.replaceWithText('');
-};
 
 const handleJsxSelfClosingElement = (
 	jsxSelfClosingElement: JsxSelfClosingElement,
@@ -129,12 +78,51 @@ const handleJsxSelfClosingElement = (
 };
 
 const handleHeadChildJsxElement = (
-	headChildJsxElement: JsxElement,
+	jsxElement: JsxElement,
 	metadataContainer: Container<ReadonlyArray<ParsedMetadataTag>>,
 ) => {
-	if (isTitleJsxElement(headChildJsxElement)) {
-		handleTitleJsxElement(headChildJsxElement, metadataContainer);
+	if (jsxElement.getOpeningElement().getTagNameNode().getText() !== 'title') {
+		return;
 	}
+
+	const children = jsxElement.getJsxChildren();
+
+	let text = '';
+
+	children.forEach((child) => {
+		if (Node.isJsxText(child)) {
+			const t = child.getFullText();
+			text += t;
+		} else if (Node.isJsxExpression(child)) {
+			const expression = child.getExpression();
+			if (Node.isTemplateExpression(expression)) {
+				const t = expression.getFullText().replace(/\`/g, '');
+				text += t;
+				return;
+			}
+
+			const expressionText = expression?.getText() ?? null;
+
+			if (expressionText === null) {
+				return;
+			}
+
+			text += `\${${expressionText}}`;
+		}
+	});
+
+	const parsedTag = {
+		HTMLTagName: 'title' as const,
+		HTMLAttributes: {
+			children: `\`${text}\``,
+		},
+	};
+
+	metadataContainer.set((prevMetadata) => {
+		return [...prevMetadata, parsedTag];
+	});
+
+	jsxElement.replaceWithText('');
 };
 
 const handleHeadJsxElement = (
@@ -170,6 +158,12 @@ const handleHeadIdentifier = (
 			}
 		}
 	});
+
+	const children = jsxHeadElement?.getJsxChildren() ?? [];
+	const withoutJsxText = children.filter((c) => !Node.isJsxText(c));
+	const text = withoutJsxText.reduce((t, c) => (t += c.getFullText()), '');
+
+	jsxHeadElement?.setBodyTextInline(text);
 };
 
 const handleImportDeclaration = (
@@ -189,8 +183,6 @@ const handleImportDeclaration = (
 	}
 
 	handleHeadIdentifier(headIdentifier, metadataContainer);
-
-	importDeclaration.remove();
 };
 
 export const getMetadataObject = (
@@ -455,6 +447,5 @@ export const handleSourceFile = (
 
 	sourceFile.insertStatements(pos, buildMetadataStatement(metadataObject));
 	sourceFile.insertStatements(0, 'import { Metadata } from "next";');
-
 	return sourceFile.print({ emitHint: EmitHint.SourceFile });
 };
