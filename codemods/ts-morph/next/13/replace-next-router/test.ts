@@ -1375,7 +1375,7 @@ describe('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it('should support rest operator "{ p1, p2, ...r } = router.query"', async function (this: Context) {
+	it('should support rest operator "{ p1, p2, ...r } = r.query"', async function (this: Context) {
 		const beforeText = `
 			import { useRouter } from 'next/router';
 
