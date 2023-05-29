@@ -201,10 +201,15 @@ export const repomod: Repomod<Dependencies> = {
 		}
 
 		if (!endsWithPages) {
-			const newDir = directoryNames
-				.map((name) => name.replace('pages', 'app'))
-				.concat(parsedPath.name)
-				.join(posix.sep);
+			const newDirArr = directoryNames.map((name) =>
+				name.replace('pages', 'app'),
+			);
+
+			if (!nameIsIndex) {
+				newDirArr.push(parsedPath.name);
+			}
+
+			const newDir = newDirArr.join(posix.sep);
 
 			const routePagePath = posix.format({
 				root: parsedPath.root,

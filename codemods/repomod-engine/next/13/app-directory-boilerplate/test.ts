@@ -32,6 +32,7 @@ const transform = async () => {
 		'/opt/project/pages/_error.jsx': '',
 		'/opt/project/pages/[a]/[b].tsx': A_B_CONTENT,
 		'/opt/project/pages/[a]/c.tsx': A_C_CONTENT,
+		'/opt/project/pages/a/index.tsx': '',
 	});
 
 	const fileSystemManager = new FileSystemManager(
@@ -80,7 +81,7 @@ describe('next 13 app-directory-boilerplate', function () {
 	it('should build correct files', async function (this: Context) {
 		const externalFileCommands = await transform();
 
-		deepStrictEqual(externalFileCommands.length, 8);
+		deepStrictEqual(externalFileCommands.length, 10);
 
 		ok(
 			externalFileCommands.some(
@@ -130,6 +131,18 @@ describe('next 13 app-directory-boilerplate', function () {
 		ok(
 			externalFileCommands.some(
 				(command) => command.path === '/opt/project/app/[a]/c/page.tsx',
+			),
+		);
+
+		ok(
+			externalFileCommands.some(
+				(command) => command.path === '/opt/project/app/a/page.tsx',
+			),
+		);
+
+		ok(
+			externalFileCommands.some(
+				(command) => command.path === '/opt/project/app/a/layout.tsx',
 			),
 		);
 
