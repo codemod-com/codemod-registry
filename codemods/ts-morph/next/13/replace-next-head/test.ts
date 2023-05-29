@@ -49,15 +49,48 @@ describe('next 13 replace-next-head', function () {
 
 		const afterText = `
     import { Metadata } from "next";
+		import Head from 'next/head';
     export const metadata: Metadata = { 
 			title: \`My page title\`,
 		};
     export default function Page() {
       return (
         <>
+          <Head></Head>
+        </>
+      );
+    }
+	  `;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		deepStrictEqual(actual, expected);
+	});
+
+	it('should not remove JSX comments', function (this: Context) {
+		const beforeText = `
+    import Head from 'next/head';
+    export default function Page() {
+      return (
+        <>
           <Head>
-            
+            <title>My page title</title>
+						{/* A JSX comment */}
           </Head>
+        </>
+      );
+    }
+		`;
+
+		const afterText = `
+    import { Metadata } from "next";
+		import Head from 'next/head';
+    export const metadata: Metadata = { 
+			title: \`My page title\`,
+		};
+    export default function Page() {
+      return (
+        <>
+          <Head>{/* A JSX comment */}</Head>
         </>
       );
     }
@@ -83,15 +116,14 @@ describe('next 13 replace-next-head', function () {
 
 		const afterText = `
     import { Metadata } from "next";
+		import Head from 'next/head';
     export const metadata: Metadata = { 
 			title: \`\${process.env.VAR}\`,
 		};
     export default function Page() {
       return (
         <>
-          <Head>
-					
-          </Head>
+          <Head></Head>
         </>
       );
     }
@@ -117,15 +149,14 @@ describe('next 13 replace-next-head', function () {
 
 		const afterText = `
     import { Metadata } from "next";
+		import Head from 'next/head';
     export const metadata: Metadata = { 
 			title: \`My page title \${process.env.VAR}\`,
 		};
     export default function Page() {
       return (
         <>
-          <Head>
-					
-          </Head>
+          <Head></Head>
         </>
       );
     }
@@ -151,15 +182,14 @@ describe('next 13 replace-next-head', function () {
 
 		const afterText = `
     import { Metadata } from "next";
+		import Head from 'next/head';
     export const metadata: Metadata = { 
 			title: \`\${var1} text \${fn()} text2 \${var3 ? "literal1": var4}\`,
 		};
     export default function Page() {
       return (
         <>
-          <Head>
-					
-          </Head>
+          <Head></Head>
         </>
       );
     }
@@ -185,15 +215,14 @@ describe('next 13 replace-next-head', function () {
 
 		const afterText = `
 	  import { Metadata } from "next";
+		import Head from 'next/head';
 	  export const metadata: Metadata = { 
 			viewport: "width=device-width, initial-scale=1, viewport-fit=cover",
 		};
 		export default function Page() {
 	    return (
 	      <>
-	        <Head>
-						
-	        </Head>
+	        <Head></Head>
 	      </>
 	    );
 	  }
@@ -219,15 +248,14 @@ describe('next 13 replace-next-head', function () {
 
 		const afterText = `
 	  import { Metadata } from "next";
+		import Head from 'next/head';
 	  export const metadata: Metadata = { 
 			description: process.env.VAR,
 		};
 		export default function Page() {
 	    return (
 	      <>
-	        <Head>
-						
-	        </Head>
+	        <Head></Head>
 	      </>
 	    );
 	  }
@@ -265,6 +293,7 @@ describe('next 13 replace-next-head', function () {
 
 		const afterText = `
 	  import { Metadata } from "next";
+		import Head from 'next/head';
 	  export const metadata: Metadata = { 
 			alternates: {
 				canonical: "https://nextjs.org",
@@ -284,13 +313,7 @@ describe('next 13 replace-next-head', function () {
 		export default function Page() {
 	    return (
 	      <>
-	        <Head>
-						
-						
-						
-						
-							
-	        </Head>
+	        <Head></Head>
 	      </>
 	    );
 	  }
@@ -318,6 +341,7 @@ describe('next 13 replace-next-head', function () {
 
 		const afterText = `
 	  import { Metadata } from "next";
+		import Head from 'next/head';
 	  export const metadata: Metadata = { 
 			icons: {
 				shortcut: "/shortcut-icon.png",
@@ -329,11 +353,7 @@ describe('next 13 replace-next-head', function () {
 		export default function Page() {
 	    return (
 	      <>
-	        <Head>
-						
-						
-						
-	        </Head>
+	        <Head></Head>
 	      </>
 	    );
 	  }
@@ -361,6 +381,7 @@ describe('next 13 replace-next-head', function () {
 
 		const afterText = `
 	  import { Metadata } from "next";
+		import Head from 'next/head';
 	  export const metadata: Metadata = { 
 			verification: {
 				google: "google",
@@ -372,11 +393,7 @@ describe('next 13 replace-next-head', function () {
 		export default function Page() {
 	    return (
 	      <>
-	        <Head>
-						
-						
-						
-	        </Head>
+	        <Head></Head>
 	      </>
 	    );
 	  }
@@ -408,6 +425,7 @@ describe('next 13 replace-next-head', function () {
 
 		const afterText = `
 	  import { Metadata } from "next";
+		import Head from 'next/head';
 	  export const metadata: Metadata = { 
 			openGraph: {
 				title: "Next.js",
@@ -425,14 +443,7 @@ describe('next 13 replace-next-head', function () {
 		export default function Page() {
 	    return (
 	      <>
-	        <Head>
-						
-						
-						
-						
-						
-						
-	        </Head>
+	        <Head></Head>
 	      </>
 	    );
 	  }
@@ -463,6 +474,7 @@ describe('next 13 replace-next-head', function () {
 
 		const afterText = `
 	  import { Metadata } from "next";
+		import Head from 'next/head';
 	  export const metadata: Metadata = { 
 			twitter: {
 				card: "summary_large_image",
@@ -477,14 +489,7 @@ describe('next 13 replace-next-head', function () {
 		export default function Page() {
 	    return (
 	      <>
-	        <Head>
-						
-						
-						
-						
-						
-						
-	        </Head>
+	        <Head></Head>
 	      </>
 	    );
 	  }
