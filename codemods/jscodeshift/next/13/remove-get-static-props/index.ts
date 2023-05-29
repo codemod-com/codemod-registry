@@ -184,7 +184,6 @@ export const addRevalidateVariableDeclaration: ModFunction<any, 'write'> = (
 						},
 					},
 				],
-				kind: 'const',
 			},
 		})?.length !== 0;
 
