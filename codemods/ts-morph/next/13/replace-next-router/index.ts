@@ -77,25 +77,19 @@ const handleRouterPropertyAccessExpression = (
 
 			onReplacedWithSearchParams();
 		} else if (Node.isVariableDeclaration(parentNode)) {
-			const bindingName = parentNode.getNameNode();
+			const variableDeclarationName = parentNode.getNameNode();
 
-			if (Node.isObjectBindingPattern(bindingName)) {
-				const bindingElements = bindingName.getElements();
-
-				const names = bindingElements.map((bindingElement) => {
-					return bindingElement.getName();
-				});
+			if (Node.isObjectBindingPattern(variableDeclarationName)) {
+				const bindingPatternText = variableDeclarationName.getText();
 
 				const vdl = parentNode.getFirstAncestorByKind(
 					ts.SyntaxKind.VariableDeclarationList,
 				);
 
-				for (const name of names) {
-					vdl?.addDeclaration({
-						name,
-						initializer: `searchParams?.get("${name}")`,
-					});
-				}
+				vdl?.addDeclaration({
+					name: bindingPatternText,
+					initializer: `Object.fromEntries(searchParams?.entries() ?? [])`,
+				});
 
 				parentNode.remove();
 

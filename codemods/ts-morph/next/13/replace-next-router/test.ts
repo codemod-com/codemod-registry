@@ -290,9 +290,7 @@ describe('next 13 replace-next-router', function () {
 			function Component() {
 	              const searchParams = useSearchParams();
 
-				const a = searchParams?.get("a"),
-	                  b = searchParams?.get("b"),
-	                  c = searchParams?.get("c");
+				const { a, b, c } = Object.fromEntries(searchParams?.entries() ?? []);
 			}
 	      `;
 
@@ -1371,6 +1369,32 @@ describe('next 13 replace-next-router', function () {
 			import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context";
 			function(router: AppRouterInstance) {}
 		`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(actual, expected);
+	});
+
+	it('should support rest operator "{ p1, p2, ...r } = router.query"', async function (this: Context) {
+		const beforeText = `
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				const r = useRouter();
+				const { p1: param1, p2, ...r } = r.query;
+				
+			}
+		`;
+
+		const afterText = `
+	    import { useSearchParams } from "next/navigation";
+
+			function Component() {
+				const searchParams = useSearchParams();
+
+				const { p1: param1, p2, ...r} = Object.fromEntries(searchParams?.entries() ?? []);
+			}
+	  `;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
