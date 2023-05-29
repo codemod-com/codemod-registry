@@ -66,6 +66,40 @@ describe('next 13 replace-next-head', function () {
 		deepStrictEqual(actual, expected);
 	});
 
+	it('should not remove JSX comments', function (this: Context) {
+		const beforeText = `
+    import Head from 'next/head';
+    export default function Page() {
+      return (
+        <>
+          <Head>
+            <title>My page title</title>
+						{/* A JSX comment */}
+          </Head>
+        </>
+      );
+    }
+		`;
+
+		const afterText = `
+    import { Metadata } from "next";
+		import Head from 'next/head';
+    export const metadata: Metadata = { 
+			title: \`My page title\`,
+		};
+    export default function Page() {
+      return (
+        <>
+          <Head>{/* A JSX comment */}</Head>
+        </>
+      );
+    }
+	  `;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		deepStrictEqual(actual, expected);
+	});
+
 	it('should replace title tag - jsxExpression', function (this: Context) {
 		const beforeText = `
     import Head from 'next/head';

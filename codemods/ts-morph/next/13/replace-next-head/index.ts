@@ -160,7 +160,9 @@ const handleHeadIdentifier = (
 	});
 
 	const children = jsxHeadElement?.getJsxChildren() ?? [];
-	const withoutJsxText = children.filter((c) => !Node.isJsxText(c));
+	const withoutJsxText = children.filter(
+		(c) => !(Node.isJsxText(c) && c.containsOnlyTriviaWhiteSpaces()),
+	);
 	const text = withoutJsxText.reduce((t, c) => (t += c.getFullText()), '');
 
 	jsxHeadElement?.setBodyTextInline(text);
