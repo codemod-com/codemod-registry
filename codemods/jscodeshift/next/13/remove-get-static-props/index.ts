@@ -172,24 +172,25 @@ export const addRevalidateVariableDeclaration: ModFunction<any, 'write'> = (
 	root,
 	settings,
 ) => {
-	const exportNamedDeclarationAlreadyExists = root.find(j.ExportNamedDeclaration, {
-    declaration: {
-        declarations: [
-            {
-                type: 'VariableDeclarator',
-                id: {
-                    type: 'Identifier',
-                    name: 'revalidate',
-                },
-            },
-        ],
-        kind: 'const',
-    },
-})?.length !== 0;
+	const exportNamedDeclarationAlreadyExists =
+		root.find(j.ExportNamedDeclaration, {
+			declaration: {
+				declarations: [
+					{
+						type: 'VariableDeclarator',
+						id: {
+							type: 'Identifier',
+							name: 'revalidate',
+						},
+					},
+				],
+				kind: 'const',
+			},
+		})?.length !== 0;
 
-if(exportNamedDeclarationAlreadyExists) {
-	return [false, []];
-}
+	if (exportNamedDeclarationAlreadyExists) {
+		return [false, []];
+	}
 
 	const revalidate = parseInt(settings.revalidate ?? '0', 10);
 
@@ -206,7 +207,7 @@ if(exportNamedDeclarationAlreadyExists) {
 
 	root.find(j.Program).forEach((program) => {
 		dirtyFlag = true;
-		
+
 		program.value.body.push(exportNamedDeclaration);
 	});
 

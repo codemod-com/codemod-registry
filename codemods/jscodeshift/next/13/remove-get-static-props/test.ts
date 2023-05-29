@@ -371,7 +371,7 @@ describe('next 13 remove-get-static-props', function () {
 			OUTPUT?.replace(/\W/gm, ''),
 		);
 	});
-	
+
 	it('should not duplicate revalidate prop', function () {
 		const INPUT = `
 			import x from "y";
