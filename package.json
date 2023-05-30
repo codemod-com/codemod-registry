@@ -1,0 +1,14 @@
+{
+  "name": "codemod-registry",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "build": "ts-node build.ts"
+  },
+  "dependencies": {
+    "@types/node": "20.2.5",
+    "ts-node": "10.9.1",
+    "typescript": "5.0.4"
+  },
+  "author": "Intuita"
+}
