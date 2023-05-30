@@ -3,5 +3,6 @@
 	"name": "next/13/app-directory-boilerplate",
 	"description": "This codemod provides boilerplate for the app directory.",
 	"engine": "repomod-engine",
-	"dependencyVersionLowerThan": ["next", "13.0.0"]
+	"dependencyVersionLowerThan": ["next", "13.0.0"],
+	"owner": "intuita"
 }
