@@ -1205,9 +1205,8 @@ describe('next 13 replace-next-router', function () {
 
 			function Component() {
 				const router = useRouter();
-				const urlSearchParams = new URLSearchParams({
-					callbackUrl: \`/apps/\${slug}/setup\`,
-				})
+				const urlSearchParams = new URLSearchParams()
+				urlSearchParams.set('callbackUrl', \`/apps/\${slug}/setup\`);
 				router.replace(\`/auth/login?\${urlSearchParams.toString()}\`);
 			}
 		`;
@@ -1253,6 +1252,8 @@ describe('next 13 replace-next-router', function () {
 					pathname: '/auth/login',
 					query: {
 					  callbackUrl: \`/apps/\${slug}/setup\`,
+						param: var1, 
+						param1: fn(),
 					},
 				});
 			}
@@ -1263,9 +1264,10 @@ describe('next 13 replace-next-router', function () {
 
 			function Component() {
 				const router = useRouter();
-				const urlSearchParams = new URLSearchParams({
-					callbackUrl: \`/apps/\${slug}/setup\`,
-				});
+				const urlSearchParams = new URLSearchParams();
+				urlSearchParams.set('callbackUrl', \`/apps/\${slug}/setup\`);
+				urlSearchParams.set('param', var1);
+				urlSearchParams.set('param1', fn());
 				router.push(\`/auth/login?\${urlSearchParams.toString()}\`);
 			}
 		`;
