@@ -1,5 +1,6 @@
 To migrate to the app router, the new `useRouter` hook is imported from `next/navigation` and has different behavior to the `useRouter` hook in pages which is imported from `next/router`.
-This codemod allows you to migrate the `useRouter` hook to the new `useRouter` hook imported from `next/navigation`.
+
+This codemod allows you to migrate the `useRouter` hook to the new `useRouter` hook imported from `next/navigation`. This includes all  usages of the useRouter() calls which may be replaced with useSearchParams and usePathname.
 
 For example:
 ```jsx
