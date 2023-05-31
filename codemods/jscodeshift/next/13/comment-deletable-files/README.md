@@ -1,4 +1,4 @@
-This codemod adds a comment indicating which files should be deleted and migrated to different files during the migration porcess.
+This codemod adds a comment indicating which files should be deleted and migrated to different files during the migration process.
 
 For example:
 

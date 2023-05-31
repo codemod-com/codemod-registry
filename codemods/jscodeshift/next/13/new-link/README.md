@@ -1,4 +1,4 @@
-Safely removes `<a>` from `next/link` or adds `legacyBehavior` prop.
+Safely removes `<a>` from `Link` components imported from `next/link` or adds the `legacyBehavior` prop on the component level.
 
 For example:
 

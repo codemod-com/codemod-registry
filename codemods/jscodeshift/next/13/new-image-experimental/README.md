@@ -1,4 +1,4 @@
-This codemod dangerously migrates from `next/legacy/image` to the new `next/image` by adding inline styles and removing unused props. Please note this codemod is experimental and only covers static usage (such as `<Image src={img} layout="responsive" />`) but not dynamic usage (such as `<Image {...props} />`).
+This codemod dangerously migrates from `next/legacy/image` to the new `next/image` imports/usages by adding inline styles and removing unused props. Please note this codemod is experimental and only covers static usage (such as `<Image src={img} layout="responsive" />`) but not dynamic usage (such as `<Image {...props} />`).
 
 - Removes `layout` prop and adds `style`
 - Removes `objectFit` prop and adds `style`
