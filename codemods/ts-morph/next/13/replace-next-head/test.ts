@@ -438,55 +438,55 @@ describe('next 13 replace-next-head', function () {
 		);
 	});
 
-	// it('should support verification meta tags', function (this: Context) {
-	// 	const beforeText = `
-	//   import Head from 'next/head';
-	//   export default function Page() {
-	//     return (
-	//       <>
-	//         <Head>
-	// 					<meta name="google-site-verification" content="google" />
-	// 					<meta name="yandex-verification" content="yandex" />
-	// 					<meta name="y_key" content="yahoo" />
-	//         </Head>
-	//       </>
-	//     );
-	//   }
-	// 	`;
+	it('should support verification meta tags', function (this: Context) {
+		const beforeText = `
+	  import Head from 'next/head';
+	  export default function Page() {
+	    return (
+	      <>
+	        <Head>
+						<meta name="google-site-verification" content="google" />
+						<meta name="yandex-verification" content="yandex" />
+						<meta name="y_key" content="yahoo" />
+	        </Head>
+	      </>
+	    );
+	  }
+		`;
 
-	// 	const afterText = `
-	//   import { Metadata } from "next";
-	// 	import Head from 'next/head';
-	//   export const metadata: Metadata = {
-	// 		verification: {
-	// 			google: "google",
-	// 			yandex: "yandex",
-	// 			yahoo: "yahoo",
-	// 		},
-	// 	};
+		const afterText = `
+	  import { Metadata } from "next";
+		import Head from 'next/head';
+	  export const metadata: Metadata = {
+			verification: {
+				google: "google",
+				yandex: "yandex",
+				yahoo: "yahoo",
+			},
+		};
 
-	// 	export default function Page() {
-	//     return (
-	//       <>
-	//         <Head>
-	// 					{/* this tag can be removed */}
-	// 					<meta name="google-site-verification" content="google" />
-	// 					{/* this tag can be removed */}
-	// 					<meta name="yandex-verification" content="yandex" />
-	// 					{/* this tag can be removed */}
-	// 					<meta name="y_key" content="yahoo" />
-	// 				</Head>
-	//       </>
-	//     );
-	//   }
-	//   `;
+		export default function Page() {
+	    return (
+	      <>
+	        <Head>
+						{/* this tag can be removed */}
+						<meta name="google-site-verification" content="google" />
+						{/* this tag can be removed */}
+						<meta name="yandex-verification" content="yandex" />
+						{/* this tag can be removed */}
+						<meta name="y_key" content="yahoo" />
+					</Head>
+	      </>
+	    );
+	  }
+	  `;
 
-	// 	const { actual, expected } = transform(beforeText, afterText, '.tsx');
-	// 	deepStrictEqual(
-	// 		actual?.replace(/\s/gm, ''),
-	// 		expected?.replace(/\s/gm, ''),
-	// 	);
-	// });
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected?.replace(/\s/gm, ''),
+		);
+	});
 
 	it('should support openGraph meta tags', function (this: Context) {
 		const beforeText = `

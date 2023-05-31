@@ -72,7 +72,11 @@ const basicTags = [
 const iTunesMeta = ['apple-itunes-app'];
 const formatDetectionTags = ['format-detection'];
 // @TODO AppleWebAppMeta
-// @TODO Verification
+const verificationTags = [
+	'google-site-verification',
+	'y_key',
+	'yandex-verification',
+];
 const iconTags = ['icon', 'apple-touch-icon', 'shortcut icon'];
 
 const knownNames = [
@@ -82,6 +86,7 @@ const knownNames = [
 	...basicTags,
 	...iTunesMeta,
 	...formatDetectionTags,
+	...verificationTags,
 	...iconTags,
 ];
 
