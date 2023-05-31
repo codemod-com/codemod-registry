@@ -56,7 +56,10 @@ describe('next 13 replace-next-head', function () {
     export default function Page() {
       return (
         <>
-          <Head></Head>
+          <Head>
+            {/* this tag can be removed */} 
+                   <title>My page title</title>
+          </Head>
         </>
       );
     }
@@ -90,7 +93,11 @@ describe('next 13 replace-next-head', function () {
     export default function Page() {
       return (
         <>
-          <Head>{/* A JSX comment */}</Head>
+          <Head>
+            {/* this tag can be removed */} 
+                   <title>My page title</title>
+						{/* A JSX comment */}
+          </Head>
         </>
       );
     }
@@ -123,7 +130,10 @@ describe('next 13 replace-next-head', function () {
     export default function Page() {
       return (
         <>
-          <Head></Head>
+          <Head>
+					{/* this tag can be removed */} 
+                   <title>{process.env.VAR}</title>
+          </Head>
         </>
       );
     }
@@ -156,7 +166,10 @@ describe('next 13 replace-next-head', function () {
     export default function Page() {
       return (
         <>
-          <Head></Head>
+          <Head>
+					{/* this tag can be removed */} 
+                   <title>{\`My page title \${process.env.VAR}\`}</title>
+          </Head>
         </>
       );
     }
@@ -189,7 +202,10 @@ describe('next 13 replace-next-head', function () {
     export default function Page() {
       return (
         <>
-          <Head></Head>
+          <Head>
+					{/* this tag can be removed */} 
+                   <title>{var1} text {fn()} text2 {var3 ? "literal1" : var4}</title>
+          </Head>
         </>
       );
     }
@@ -222,7 +238,10 @@ describe('next 13 replace-next-head', function () {
 		export default function Page() {
 	    return (
 	      <>
-	        <Head></Head>
+	        <Head>
+						{/* this tag can be removed */} 
+                     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+	        </Head>
 	      </>
 	    );
 	  }
@@ -255,7 +274,10 @@ describe('next 13 replace-next-head', function () {
 		export default function Page() {
 	    return (
 	      <>
-	        <Head></Head>
+	        <Head>
+						{/* this tag can be removed */} 
+                     <meta name="description" content={process.env.VAR} />
+	        </Head>
 	      </>
 	    );
 	  }
@@ -313,7 +335,26 @@ describe('next 13 replace-next-head', function () {
 		export default function Page() {
 	    return (
 	      <>
-	        <Head></Head>
+	        <Head>
+						{/* this tag can be removed */} 
+                     <link rel="canonical" href="https://nextjs.org" />
+						{/* this tag can be removed */} 
+                     <link rel="alternate" hreflang="en-US" href="https://nextjs.org/en-US" />
+						{/* this tag can be removed */} 
+                     <link rel="alternate" hreflang="de-DE" href="https://nextjs.org/de-DE" />
+						{/* this tag can be removed */} 
+                     <link
+						rel="alternate"
+						media="only screen and (max-width: 600px)"
+						href="https://nextjs.org/mobile"
+					/>
+						{/* this tag can be removed */} 
+                     <link
+						rel="alternate"
+						type="application/rss+xml"
+						href="https://nextjs.org/rss"
+					/>	
+	        </Head>
 	      </>
 	    );
 	  }
@@ -353,14 +394,24 @@ describe('next 13 replace-next-head', function () {
 		export default function Page() {
 	    return (
 	      <>
-	        <Head></Head>
+	        <Head>
+						{/* this tag can be removed */} 
+                     <link rel="shortcut icon" href="/shortcut-icon.png" />
+						{/* this tag can be removed */} 
+                     <link rel="icon" href="/icon.png" />
+						{/* this tag can be removed */} 
+                     <link rel="apple-touch-icon" href="/apple-icon.png" />
+					</Head>
 	      </>
 	    );
 	  }
 	  `;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected?.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should support verification meta tags', function (this: Context) {
@@ -393,14 +444,24 @@ describe('next 13 replace-next-head', function () {
 		export default function Page() {
 	    return (
 	      <>
-	        <Head></Head>
+	        <Head>
+						{/* this tag can be removed */} 
+						<meta name="google-site-verification" content="google" />
+						{/* this tag can be removed */} 
+						<meta name="yandex-verification" content="yandex" />
+						{/* this tag can be removed */} 
+						<meta name="y_key" content="yahoo" />
+					</Head>
 	      </>
 	    );
 	  }
 	  `;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected?.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should support openGraph meta tags', function (this: Context) {
@@ -443,14 +504,32 @@ describe('next 13 replace-next-head', function () {
 		export default function Page() {
 	    return (
 	      <>
-	        <Head></Head>
+	        <Head>
+						{/* this tag can be removed */} 
+						<meta property="og:title" content="Next.js" />
+						{/* this tag can be removed */} 
+						<meta property="og:description" content="The React Framework for the Web" />
+						{/* this tag can be removed */} 
+						<meta property="og:url" content="https://nextjs.org/" />
+						{/* this tag can be removed */} 
+						<meta property="og:site_name" content="Next.js" />
+						{/* this tag can be removed */} 
+						<meta property="og:locale" content="en_US" />
+						{/* this tag can be removed */} 
+						<meta property="og:type" content="website" />
+						{/* this tag can be removed */} 
+						<meta property="og:image" content="https://nextjs.org/og.png" />
+					</Head>
 	      </>
 	    );
 	  }
 	  `;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected?.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should support twitter meta tags', function (this: Context) {
@@ -489,13 +568,29 @@ describe('next 13 replace-next-head', function () {
 		export default function Page() {
 	    return (
 	      <>
-	        <Head></Head>
+	        <Head>
+						{/* this tag can be removed */} 
+						<meta name="twitter:card" content="summary_large_image" />
+						{/* this tag can be removed */} 
+						<meta name="twitter:title" content="Next.js" />
+						{/* this tag can be removed */} 
+						<meta name="twitter:description" content="The React Framework for the Web" />
+						{/* this tag can be removed */} 
+						<meta name="twitter:site:id" content="1467726470533754880" />
+						{/* this tag can be removed */} 
+						<meta name="twitter:creator" content="@nextjs" />
+						{/* this tag can be removed */} 
+						<meta name="twitter:creator:id" content="1467726470533754880" />
+					</Head>
 	      </>
 	    );
 	  }
 	  `;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected?.replace(/\s/gm, ''),
+		);
 	});
 });

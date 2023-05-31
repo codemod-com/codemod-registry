@@ -74,7 +74,9 @@ const handleJsxSelfClosingElement = (
 		];
 	});
 
-	jsxSelfClosingElement.replaceWithText('');
+	jsxSelfClosingElement.replaceWithText(
+		`{/* this tag can be removed */} \n ${jsxSelfClosingElement.getText()}`,
+	);
 };
 
 const handleHeadChildJsxElement = (
@@ -122,7 +124,9 @@ const handleHeadChildJsxElement = (
 		return [...prevMetadata, parsedTag];
 	});
 
-	jsxElement.replaceWithText('');
+	jsxElement.replaceWithText(
+		`{/* this tag can be removed */} \n ${jsxElement.getText()}`,
+	);
 };
 
 const handleHeadJsxElement = (
@@ -158,14 +162,6 @@ const handleHeadIdentifier = (
 			}
 		}
 	});
-
-	const children = jsxHeadElement?.getJsxChildren() ?? [];
-	const withoutJsxText = children.filter(
-		(c) => !(Node.isJsxText(c) && c.containsOnlyTriviaWhiteSpaces()),
-	);
-	const text = withoutJsxText.reduce((t, c) => (t += c.getFullText()), '');
-
-	jsxHeadElement?.setBodyTextInline(text);
 };
 
 const handleImportDeclaration = (
