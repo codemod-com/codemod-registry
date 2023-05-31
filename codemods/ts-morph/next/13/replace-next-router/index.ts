@@ -192,15 +192,31 @@ const handleRouterPropertyAccessExpression = (
 				parentNode.getPreviousSiblings().length;
 			const queryNode = arg.getProperty('query');
 
-			const newText = Node.isPropertyAssignment(queryNode)
-				? `const urlSearchParams = new URLSearchParams(${
-						queryNode.getInitializer()?.getText() ?? '{}'
-				  });\n
-					router.${nodeName}(\`${pathNameValue.replace(
+			let newText = ``;
+
+			if (Node.isPropertyAssignment(queryNode)) {
+				newText += `const urlSearchParams = new URLSearchParams();\n`;
+
+				const initializer = queryNode.getInitializer();
+				if (Node.isObjectLiteralExpression(initializer)) {
+					const properties = initializer.getProperties();
+
+					properties.forEach((property) => {
+						if (Node.isPropertyAssignment(property)) {
+							const name = property.getNameNode();
+							const initializer = property.getInitializer();
+							newText += `\n urlSearchParams.set('${name.getText()}', ${initializer?.getText()});`;
+						}
+					});
+
+					newText += `\n router.${nodeName}(\`${pathNameValue.replace(
 						/("|')/g,
 						'',
-				  )}?\${urlSearchParams.toString()}\`);`
-				: `router.${nodeName}(${pathNameValue})`;
+					)}?\${urlSearchParams.toString()}\`);`;
+				}
+			} else {
+				newText += `router.${nodeName}(${pathNameValue})`;
+			}
 
 			block.insertStatements(prevSiblingNodeCount + 1, newText);
 
