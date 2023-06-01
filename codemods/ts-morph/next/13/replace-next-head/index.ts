@@ -165,9 +165,9 @@ const handleJsxSelfClosingElement = (
 	});
 
 	const parsedTag = {
-		HTMLTagName: tagName,
+		HTMLTagName: tagName as HTMLTagName,
 		HTMLAttributes: attributesObject,
-	} as ParsedMetadataTag;
+	};
 
 	const name = getTagPropertyName(
 		parsedTag.HTMLTagName,
@@ -222,7 +222,7 @@ const handleHeadChildJsxElement = (
 		HTMLAttributes: {
 			children: `\`${text}\``,
 		},
-	} as ParsedMetadataTag;
+	};
 
 	const name = getTagPropertyName(
 		parsedTag.HTMLTagName,
