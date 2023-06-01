@@ -1,7 +1,7 @@
 # remove-get-static-props
 In the `pages` directory, the `getStaticProps` function is used to pre-render a page at build time by fetching data passing it down to the entire page as it is being generated during the build. However, the `app` directory data fetching will default to `cache: 'force-cache'`, which will cache the request data until manually invalidated.
 
-The `remove-get-static-props` codemod migrates the data fetching usage with `getStaticProps()` in the `pages` directory to the new data fetching usage in the `app` directory.
+The `remove-get-static-props` codemod replaces the `getStaticProps()` data fetching function in the `pages` directory with the new data fetching API in the `app` directory.
 
 For example:
 ```jsx
