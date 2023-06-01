@@ -1,16 +1,18 @@
+# move-css-in-js-styles
+
 This codemod moves CSS to CSS-in-JS styles.
 
 For example:
 
 ```jsx
-import RawHtml from "./RawHtml";
+import RawHtml from './RawHtml';
 
-const EmailHead = ({ title = "" }) => {
-  return (
-    <head>
-      <title>{title}</title>
-      <style type="text/css">
-        {`
+const EmailHead = ({ title = '' }) => {
+	return (
+		<head>
+			<title>{title}</title>
+			<style type="text/css">
+				{`
           #outlook a {
             padding: 0;
           }
@@ -43,10 +45,9 @@ const EmailHead = ({ title = "" }) => {
             margin: 13px 0;
           }
         `}
-      </style>
-      
-    </head>
-  );
+			</style>
+		</head>
+	);
 };
 
 export default EmailHead;
@@ -55,24 +56,23 @@ export default EmailHead;
 Transforms into:
 
 ```jsx
-import styles from "EmailHead.module.css";
+import styles from 'EmailHead.module.css';
 /* eslint-disable @next/next/no-head-element */
-import RawHtml from "./RawHtml";
+import RawHtml from './RawHtml';
 
-const EmailHead = ({ title = "" }) => {
-  return (
-    (<head
-      className={styles["wrapper"]}>
-      <title>{title}</title>
-
-    </head>)
-  );
+const EmailHead = ({ title = '' }) => {
+	return (
+		<head className={styles['wrapper']}>
+			<title>{title}</title>
+		</head>
+	);
 };
 
 export default EmailHead;
 ```
 
 And creates the new file `mailHead.module.css` which includes:
+
 ```jsx
   #outlook a {
     padding: 0;

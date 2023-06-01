@@ -1,0 +1,1 @@
+# remove-get-static-props
