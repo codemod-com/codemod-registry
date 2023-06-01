@@ -54,5 +54,6 @@ const handleDirectory = (rootDirectory: string) => {
 
 handleDirectory(join(__dirname, "./codemods/jscodeshift/next/13"));
 handleDirectory(join(__dirname, "./codemods/repomod-engine/next/13"));
+handleDirectory(join(__dirname, "./codemods/ts-morph/next/13"));
 
 writeFileSync(join(buildDirectoryPath, "index.json"), JSON.stringify(entries));
