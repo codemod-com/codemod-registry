@@ -4,5 +4,6 @@
 	"description": "Replaces metadata tags managed by next/head with static metadata object",
 	"engine": "ts-morph",
 	"extensions": ["js*", "ts*"],
-	"dependencyVersionLowerThan": ["next", "13.0.0"]
+	"dependencyVersionLowerThan": ["next", "13.0.0"],
+	"owner": "intuita"
 }
