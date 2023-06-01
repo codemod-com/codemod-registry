@@ -1,4 +1,4 @@
-import { EmitHint, JsxSelfClosingElement } from 'ts-morph';
+import { EmitHint, JsxSelfClosingElement, SyntaxKind } from 'ts-morph';
 import {
 	Identifier,
 	ImportDeclaration,
@@ -138,6 +138,11 @@ export const buildContainer = <T>(initialValue: T) => {
 
 type Container<T> = ReturnType<typeof buildContainer<T>>;
 
+const isGlobalIdentifier = (identifier: Identifier) => {
+	const refs = identifier.findReferencesAsNodes();
+	return refs.some(ref => ref.getFirstAncestorByKind(SyntaxKind.Block) === undefined);
+}
+
 const handleJsxSelfClosingElement = (
 	jsxSelfClosingElement: JsxSelfClosingElement,
 	metadataContainer: Container<Record<string, any>>,
@@ -150,14 +155,25 @@ const handleJsxSelfClosingElement = (
 
 	const attributes = jsxSelfClosingElement.getAttributes();
 	const attributesObject: Record<string, string> = {};
-
+	
+	let shouldReplaceTag = true;
 	attributes.forEach((attribute) => {
+		if(!shouldReplaceTag) {
+			return;
+		}
+		
 		if (Node.isJsxAttribute(attribute)) {
 			const name = attribute.getName();
 			const initializer = attribute.getInitializer();
 			if (Node.isStringLiteral(initializer)) {
 				attributesObject[name] = initializer.getText();
 			} else if (Node.isJsxExpression(initializer)) {
+				const identifiers = initializer.getDescendantsOfKind(SyntaxKind.Identifier);
+			
+				identifiers.forEach((identifier) => {
+					shouldReplaceTag = isGlobalIdentifier(identifier);
+				})
+			
 				attributesObject[name] =
 					initializer.getExpression()?.getText() ?? '';
 			}
@@ -174,7 +190,7 @@ const handleJsxSelfClosingElement = (
 		parsedTag.HTMLAttributes,
 	);
 
-	if (name && knownNames.includes(name)) {
+	if (name && knownNames.includes(name) && shouldReplaceTag) {
 		handleTag(parsedTag, metadataContainer);
 
 		jsxSelfClosingElement.replaceWithText(
@@ -194,13 +210,23 @@ const handleHeadChildJsxElement = (
 	const children = jsxElement.getJsxChildren();
 
 	let text = '';
-
+	let shouldReplaceTag = true;
 	children.forEach((child) => {
+		if(!shouldReplaceTag) {
+			return;
+		}
+		
 		if (Node.isJsxText(child)) {
 			const t = child.getFullText();
 			text += t;
 		} else if (Node.isJsxExpression(child)) {
 			const expression = child.getExpression();
+			const identifiers = child.getDescendantsOfKind(SyntaxKind.Identifier);
+			
+			identifiers.forEach((identifier) => {
+				shouldReplaceTag = isGlobalIdentifier(identifier);
+			})
+			
 			if (Node.isTemplateExpression(expression)) {
 				const t = expression.getFullText().replace(/\`/g, '');
 				text += t;
@@ -229,7 +255,7 @@ const handleHeadChildJsxElement = (
 		parsedTag.HTMLAttributes,
 	);
 
-	if (name && knownNames.includes(name)) {
+	if (name && knownNames.includes(name) && shouldReplaceTag) {
 		handleTag(parsedTag, metadataContainer);
 
 		jsxElement.replaceWithText(

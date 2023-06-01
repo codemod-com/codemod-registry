@@ -741,4 +741,48 @@ describe('next 13 replace-next-head', function () {
 			expected?.replace(/\s/gm, ''),
 		);
 	});
+	
+	it('should support basic metadata', function (this: Context) {
+		const beforeText = `
+	  import Head from 'next/head';
+		
+	  export default function Page() {
+			const { t } = useHook();
+	    return (
+	      <>
+	        <Head>
+						<title>{title}</title>
+						<meta name="description" content={t("quick_video_meeting")} />
+	        </Head>
+	      </>
+	    );
+	  }
+		`;
+
+		const afterText = `
+	  import { Metadata } from "next";
+		import Head from 'next/head';
+		
+	  export const metadata: Metadata = { 
+		};
+		
+		export default function Page() {
+			const { t } = useHook();
+	    return (
+	      <>
+				<Head>
+       	 	<title>{title}</title>
+       	 	<meta name="description" content={t("quick_video_meeting")} />
+     		</Head>
+	      </>
+	    );
+	  }
+	  `;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		deepStrictEqual(
+				actual?.replace(/\s/gm, ''),
+			 	expected?.replace(/\s/gm, ''),
+			);
+	});
 });
