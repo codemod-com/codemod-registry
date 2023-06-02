@@ -1,25 +1,36 @@
 # replace-next-router
 
-To migrate to the App Router, the new `useRouter` hook is imported from `next/navigation` and has different behavior compared to the `useRouter` hook in pages which is imported from `next/router`.
+Since Next.js 13.4, you can use the following hooks from the `next/navigation` module:
 
-This codemod allows you to migrate the `useRouter` hook to the new `useRouter` hook imported from `next/navigation`. This includes all usages of the useRouter() calls which may be replaced with useSearchParams and usePathname.
+-   `useRouter`,
+-   `useSearchParams`,
+-   `usePathname`,
+-   `useParams`.
 
-For example:
+These hooks replace the functionality available in the `useRouter` hook in the `next/hook` module, however, the behavior is distinct.
+
+This codemod allows you to migrate the `useRouter` hook to the new `useRouter` hook imported from `next/navigation`. This includes all usages of the `useRouter` hook which may be replaced with `useSearchParams` and `usePathname`.
+
+## Example:
 
 ```jsx
 import { useRouter } from 'next/router';
+
+function Component() {
+	const { query } = useRouter();
+	const { a, b, c } = query;
+}
 ```
 
-Can be transformed to:
+gets transformed to:
 
 ```jsx
-import { useRouter } from 'next/navigation';
-```
-
-And in some cases, it might get transformed any/some/all of the following:
-
-```jsx
-import { usePathname } from 'next/navigation';
 import { useSearchParams } from 'next/navigation';
-import { useRouter } from 'next/navigation';
+
+function Component() {
+	const searchParams = useSearchParams();
+	const a = searchParams?.get('a');
+	const b = searchParams?.get('b');
+	const c = searchParams?.get('c');
+}
 ```

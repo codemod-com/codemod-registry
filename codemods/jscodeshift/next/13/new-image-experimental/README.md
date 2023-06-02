@@ -1,6 +1,11 @@
 # new-image-experimental
 
-This codemod dangerously migrates from `next/legacy/image` to the new `next/image` imports/usages by adding inline styles and removing unused props. Please note this codemod is experimental and only covers static usage (such as `<Image src={img} layout="responsive" />`) but not dynamic usage (such as `<Image {...props} />`).
+This codemod **dangerously** migrates the usages of the `Image` component from the `next/legacy/image` module to the `next/image` module.
+This is achieved by adding inline styles and removing unused props.
+
+Please note this codemod is experimental and only covers static usage (such as `<Image src={img} layout="responsive" />`) but not dynamic usage (such as `<Image {...props} />`).
+
+Functionality:
 
 -   Removes `layout` prop and adds `style`
 -   Removes `objectFit` prop and adds `style`
@@ -8,6 +13,8 @@ This codemod dangerously migrates from `next/legacy/image` to the new `next/imag
 -   Removes `lazyBoundary` prop
 -   Removes `lazyRoot` prop
 -   Changes next.config.js `loader` to "custom", removes `path`, and sets `loaderFile` to a new file.
+
+## Examples
 
 #### Before: intrinsic
 

@@ -1,109 +1,45 @@
 # move-css-in-js-styles
 
-This codemod moves CSS to CSS-in-JS styles.
+This codemod moves the CSS-in-JS styles into the CSS Modules.
 
-For example:
+## Example
 
 ```jsx
-import RawHtml from './RawHtml';
-
-const EmailHead = ({ title = '' }) => {
+const Head = () => {
 	return (
 		<head>
-			<title>{title}</title>
 			<style type="text/css">
 				{`
-          #outlook a {
-            padding: 0;
-          }
-
-          body {
-            margin: 0;
-            padding: 0;
-            -webkit-text-size-adjust: 100%;
-            -ms-text-size-adjust: 100%;
-          }
-
-          table,
-          td {
-            border-collapse: collapse;
-            mso-table-lspace: 0pt;
-            mso-table-rspace: 0pt;
-          }
-
-          img {
-            border: 0;
-            height: auto;
-            line-height: 100%;
-            outline: none;
-            text-decoration: none;
-            -ms-interpolation-mode: bicubic;
-          }
-
-          p {
-            display: block;
-            margin: 13px 0;
-          }
-        `}
+        body {
+          margin: 0;
+          padding: 0;
+        }
+      `}
 			</style>
 		</head>
 	);
 };
 
-export default EmailHead;
+export default Head;
 ```
 
-Transforms into:
+gets transformed into:
 
 ```jsx
-import styles from 'EmailHead.module.css';
-/* eslint-disable @next/next/no-head-element */
-import RawHtml from './RawHtml';
+import styles from 'Head.module.css';
 
-const EmailHead = ({ title = '' }) => {
-	return (
-		<head className={styles['wrapper']}>
-			<title>{title}</title>
-		</head>
-	);
+const Head = () => {
+	return <head className={styles['wrapper']}></head>;
 };
 
-export default EmailHead;
+export default Head;
 ```
 
-And creates the new file `mailHead.module.css` which includes:
+And the codemods creates the new file `Head.module.css` which contains:
 
-```jsx
-  #outlook a {
-    padding: 0;
-  }
-
-  body {
-    margin: 0;
-    padding: 0;
-    -webkit-text-size-adjust: 100%;
-    -ms-text-size-adjust: 100%;
-  }
-
-  table,
-  td {
-    border-collapse: collapse;
-    mso-table-lspace: 0pt;
-    mso-table-rspace: 0pt;
-  }
-
-  img {
-    border: 0;
-    height: auto;
-    line-height: 100%;
-    outline: none;
-    text-decoration: none;
-    -ms-interpolation-mode: bicubic;
-  }
-
-  p {
-    display: block;
-    margin: 13px 0;
-  }
-text/css
+```css
+body {
+	margin: 0;
+	padding: 0;
+}
 ```
