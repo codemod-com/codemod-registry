@@ -683,20 +683,14 @@ const collectImportDeclaration = (
 
 	const namespaceImport = importDeclaration.getNamespaceImport()?.getParent();
 
-	if (namespaceImport) {
-		topLevelVariablesContainer.set((prev) => [
-			...prev,
-			namespaceImport as NamespaceImport,
-		]);
+	if (Node.isNamespaceImport(namespaceImport)) {
+		topLevelVariablesContainer.set((prev) => [...prev, namespaceImport]);
 	}
 
 	const defaultImport = importDeclaration.getDefaultImport()?.getParent();
 
-	if (defaultImport) {
-		topLevelVariablesContainer.set((prev) => [
-			...prev,
-			defaultImport as ImportClause,
-		]);
+	if (Node.isImportClause(defaultImport)) {
+		topLevelVariablesContainer.set((prev) => [...prev, defaultImport]);
 	}
 };
 
