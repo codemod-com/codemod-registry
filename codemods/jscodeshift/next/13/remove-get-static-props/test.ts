@@ -441,4 +441,74 @@ describe('next 13 remove-get-static-props', function () {
 			OUTPUT?.replace(/\W/gm, ''),
 		);
 	});
+
+	it('should replace getServerSideProps', function () {
+		const INPUT = `
+		export async function getServerSideProps() {
+			const res = await fetch(\`https://...\`);
+			const projects = await res.json();
+		 
+			return { props: { projects } };
+		}
+		 
+		export default function Dashboard({ projects }) {
+			return (
+				<ul>
+					{projects.map((project) => (
+						<li key={project.id}>{project.name}</li>
+					))}
+				</ul>
+			);
+		} `;
+
+		const OUTPUT = `
+			// TODO: implement this function
+			async function getProjects() {}
+
+			export // TODO: remove this function
+			async function getServerSideProps {
+				const res = await fetch(\`https://...\`);
+				const projects = await res.json();
+			
+				return { props: { projects } };
+			}
+
+			export default function Dashboard({}) {
+				const projects = await getProjects();
+				return (
+					<ul>
+						{projects.map((project) => (
+							<li key={project.id}>{project.name}</li>
+						))}
+					</ul>
+				);
+			}
+		`;
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+
+		const a = actualOutput?.replace(/\W/gm, '');
+		const b = OUTPUT.replace(/\W/gm, '');
+
+		for (let i = 0; i < actualOutput!.length; i++) {
+			if (a![i] !== b[i]) {
+				console.log(
+					i,
+					a?.substring(i - 15, i + 15),
+					b.substring(i - 15, i + 15),
+				);
+				break;
+			}
+		}
+
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
 });
