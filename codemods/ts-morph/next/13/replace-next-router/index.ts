@@ -134,7 +134,8 @@ const handleRouterPropertyAccessExpression = (
 
 		onReplacedWithPathname();
 	} else if (nodeName === 'isReady') {
-		node.replaceWithText('true');
+		onReplacedWithSearchParams();
+		node.replaceWithText('searchParams !== null');
 	} else if (nodeName === 'asPath') {
 		const parentNode = node.getParent();
 
@@ -368,8 +369,10 @@ const handleVariableDeclaration = (
 
 					++count;
 				} else if (text === 'isReady') {
+					requiresSearchParams.set(() => true);
+
 					nameNode.findReferencesAsNodes().forEach((node) => {
-						node.replaceWithText('true');
+						node.replaceWithText('searchParams !== null');
 					});
 
 					++count;
@@ -446,7 +449,8 @@ const handleUseRouterCallExpression = (
 		const text = nameNode.getText();
 
 		if (text === 'isReady') {
-			parent.replaceWithText('true');
+			requiresSearchParams.set(() => true);
+			parent.replaceWithText('searchParams !== null');
 		} else if (text === 'pathname') {
 			requiresPathname.set((set) => set.add('pathname'));
 
