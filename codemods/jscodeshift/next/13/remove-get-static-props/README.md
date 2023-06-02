@@ -4,6 +4,8 @@ The `getStaticProps` function is no longer available in the `app` directory.
 
 This codemod creates comments indicating where to remove the deprecated `getStaticProps()` functions.
 
+Additionally, it attemps to create boileplate functions for retrieving static properties.
+
 ## Example:
 
 ```jsx
