@@ -1,14 +1,16 @@
 # build-in-next-font
 
-This codemod uninstalls `@next/font` and transforms `@next/font` imports into the built-in `next/font`.
+This codemod transforms the module specifier `@next/font/*` in import statements into `next/font/*`.
 
-For example:
+Using the `@next/font/*` modules is deprecated since Next.js v13.2.
+
+## Example:
 
 ```jsx
 import { Inter } from '@next/font/google';
 ```
 
-Transforms into:
+gets transformed into:
 
 ```jsx
 import { Inter } from 'next/font/google';
