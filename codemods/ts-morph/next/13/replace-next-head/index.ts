@@ -164,6 +164,8 @@ const isDefinedOnTheTopLevel = (
 	identifier: Identifier,
 	topLevelVariablesContainer: Container<Definition[]>,
 ) => {
+	//  alternative
+	//  return definition.getFirstAncestorByKind(SyntaxKind.Block) === undefined;
 	const definitions = identifier.getDefinitionNodes() as Definition[];
 	const topLevelDefinitions = topLevelVariablesContainer.get();
 	const parent = identifier.getParent();
