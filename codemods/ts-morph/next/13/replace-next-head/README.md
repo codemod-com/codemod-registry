@@ -4,7 +4,7 @@ Generates a static metadata object based on meta tags managed by next/head. Mark
 
 ## Example:
 
-```
+```jsx
 import Head from 'next/head';
 export default function Page() {
   return (
@@ -19,7 +19,7 @@ export default function Page() {
 
 gets transformed to
 
-```
+```jsx
 import { Metadata } from "next";
 import Head from 'next/head';
 export const metadata: Metadata = {
