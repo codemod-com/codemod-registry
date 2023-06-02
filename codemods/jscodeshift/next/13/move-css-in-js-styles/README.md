@@ -1,6 +1,6 @@
 # move-css-in-js-styles
 
-This codemod moves CSS to CSS-in-JS styles.
+This codemod moves the CSS-in-JS styles into the CSS Modules.
 
 ## Example
 
