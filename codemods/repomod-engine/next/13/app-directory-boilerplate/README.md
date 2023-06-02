@@ -1,22 +1,28 @@
 # app-directory-boilerplate
 
-This codemod helps with the `pages-to-app` migration by creating a boilerplate of the `app` directory, corresponding to the current files in the `pages` directory.
+The first step to migrate your pages to the `app` directory is to provide a structure of files.
+
+This is attempted by this codemod, which reads the content of your `pages` directory and creates the placeholder files.
 
 The boilerplate includes the following:
 
--   Placeholder `page.tsx` files which define a UI unique to a route.
--   Placeholder `app/layout.tsx` root layout files which replace `pages/_app.tsx` and `pages/_document.tsx` files.
--   Placeholder `error.tsx` files which replace `pages/_error.tsx` files.
--   Placeholder `not-found.tsx` files which replace `pages/404.tsx` files.
+-   placeholder `page.tsx` files which define a UI unique to a route.
+-   the placeholder `app/layout.tsx` file which replaces `pages/_app.tsx` and `pages/_document.tsx` files.
+-   the placeholder `error.tsx` file which replaces `pages/_error.tsx` files.
+-   the placeholder `not-found.tsx` file which replaces `pages/404.tsx` files.
 
-For example:
+## Example
+
 If you have the following directory:
 
       pages
       ├── _app.tsx
       ├── _document.tsx
       ├── _error.tsx
-      └── 404.tsx
+      ├── 404.tsx
+      ├── a.tsx
+      └── b
+            └── c.tsx
 
 The codemod will generate the following corresponding directory:
 
@@ -24,4 +30,11 @@ The codemod will generate the following corresponding directory:
       ├── page.tsx
       ├── layout.tsx
       ├── error.tsx
-      └── not-found.tsx
+      ├── not-found.tsx
+      ├── a
+            ├── page.tsx
+            ├── layout.tsx
+      └── b
+            └── c
+                  ├── page.tsx
+                  └── layout.tsx

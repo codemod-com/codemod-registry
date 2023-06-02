@@ -4,19 +4,19 @@ To migrate to the App Router, the new `useRouter` hook is imported from `next/na
 
 This codemod allows you to migrate the `useRouter` hook to the new `useRouter` hook imported from `next/navigation`. This includes all usages of the useRouter() calls which may be replaced with useSearchParams and usePathname.
 
-For example:
+## Example:
 
 ```jsx
 import { useRouter } from 'next/router';
 ```
 
-Can be transformed to:
+gets transformed to:
 
 ```jsx
 import { useRouter } from 'next/navigation';
 ```
 
-And in some cases, it might get transformed any/some/all of the following:
+And in some cases, it might get transformed to any/some/all of the following:
 
 ```jsx
 import { usePathname } from 'next/navigation';
