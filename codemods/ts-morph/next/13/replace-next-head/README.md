@@ -23,7 +23,7 @@ gets transformed to
 import { Metadata } from "next";
 import Head from 'next/head';
 export const metadata: Metadata = {
-	title: \`My page title\`,
+	title: `My page title`,
 };
 export default function Page() {
   return (
