@@ -1,12 +1,14 @@
 # app-directory-boilerplate
 
-The first step to migrate your pages to the `app` directory is to provide a structure of files.
+The first step to migrate your pages to the `app` directory is to provide a new file structure, respected by the App router.
 
-This is attempted by this codemod, which reads the content of your `pages` directory and creates the placeholder files.
+This is attempted by this codemod, which reads the contents of your `pages` directory and creates the placeholder files.
+
+The placeholder files define the basic layout and page structure.
 
 The boilerplate includes the following:
 
--   placeholder `page.tsx` files which define a UI unique to a route.
+-   placeholder `page.tsx` and `layout.tsx` files which define a UI unique to a route.
 -   the placeholder `app/layout.tsx` file which replaces `pages/_app.tsx` and `pages/_document.tsx` files.
 -   the placeholder `error.tsx` file which replaces `pages/_error.tsx` files.
 -   the placeholder `not-found.tsx` file which replaces `pages/404.tsx` files.
