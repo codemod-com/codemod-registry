@@ -1,4 +1,18 @@
-import { EmitHint, JsxSelfClosingElement } from 'ts-morph';
+import {
+	BindingElement,
+	FunctionDeclaration,
+	ImportClause,
+	NamedImports,
+	NamespaceImport,
+} from 'ts-morph';
+import { ImportSpecifier } from 'ts-morph';
+import {
+	EmitHint,
+	JsxSelfClosingElement,
+	SyntaxKind,
+	VariableDeclaration,
+	VariableStatement,
+} from 'ts-morph';
 import {
 	Identifier,
 	ImportDeclaration,
@@ -13,6 +27,14 @@ export type ParsedMetadataTag = {
 	HTMLTagName: HTMLTagName;
 	HTMLAttributes: HTMLAttributes;
 };
+
+type Definition =
+	| VariableDeclaration
+	| FunctionDeclaration
+	| ImportClause
+	| ImportSpecifier
+	| NamespaceImport
+	| BindingElement;
 
 const openGraphTags = [
 	'og:type',
@@ -138,9 +160,44 @@ export const buildContainer = <T>(initialValue: T) => {
 
 type Container<T> = ReturnType<typeof buildContainer<T>>;
 
+const isDefinedOnTheTopLevel = (
+	identifier: Identifier,
+	topLevelVariablesContainer: Container<Definition[]>,
+) => {
+	//  alternative
+	//  return definition.getFirstAncestorByKind(SyntaxKind.Block) === undefined;
+	const definitions = identifier.getDefinitionNodes() as Definition[];
+	const topLevelDefinitions = topLevelVariablesContainer.get();
+	const parent = identifier.getParent();
+	const identifierChildIndex = identifier.getChildIndex();
+
+	// if identifier is within property access expression "obj.a.b", check only for its root "obj"
+	if (
+		(Node.isPropertyAccessExpression(parent) ||
+			Node.isElementAccessExpression(parent)) &&
+		identifierChildIndex !== 0
+	) {
+		return true;
+	}
+
+	// @TODO
+	if (identifier.getText() === 'process') {
+		return true;
+	}
+
+	if (definitions.length === 0) {
+		return false;
+	}
+
+	return definitions.every((definition) =>
+		topLevelDefinitions.includes(definition),
+	);
+};
+
 const handleJsxSelfClosingElement = (
 	jsxSelfClosingElement: JsxSelfClosingElement,
 	metadataContainer: Container<Record<string, any>>,
+	topLevelVariablesContainer: Container<Definition[]>,
 ) => {
 	const tagName = jsxSelfClosingElement.getTagNameNode().getText();
 
@@ -151,13 +208,32 @@ const handleJsxSelfClosingElement = (
 	const attributes = jsxSelfClosingElement.getAttributes();
 	const attributesObject: Record<string, string> = {};
 
+	let shouldReplaceTag = true;
 	attributes.forEach((attribute) => {
+		if (!shouldReplaceTag) {
+			return;
+		}
+
 		if (Node.isJsxAttribute(attribute)) {
 			const name = attribute.getName();
 			const initializer = attribute.getInitializer();
 			if (Node.isStringLiteral(initializer)) {
 				attributesObject[name] = initializer.getText();
 			} else if (Node.isJsxExpression(initializer)) {
+				const identifiers = initializer.getDescendantsOfKind(
+					SyntaxKind.Identifier,
+				);
+
+				identifiers.forEach((identifier) => {
+					const definedOnTopLevel = isDefinedOnTheTopLevel(
+						identifier,
+						topLevelVariablesContainer,
+					);
+					if (!definedOnTopLevel) {
+						shouldReplaceTag = false;
+					}
+				});
+
 				attributesObject[name] =
 					initializer.getExpression()?.getText() ?? '';
 			}
@@ -175,17 +251,28 @@ const handleJsxSelfClosingElement = (
 	);
 
 	if (name && knownNames.includes(name)) {
-		handleTag(parsedTag, metadataContainer);
+		const comment = `{/* ${
+			shouldReplaceTag
+				? 'this tag can be removed'
+				: 'this tag cannot be removed, because it uses variables from inner scope'
+		}*/}`;
 
 		jsxSelfClosingElement.replaceWithText(
-			`{/* this tag can be removed */} \n ${jsxSelfClosingElement.getText()}`,
+			`${comment} \n ${jsxSelfClosingElement.getText()}`,
 		);
+
+		if (!shouldReplaceTag) {
+			return;
+		}
+
+		handleTag(parsedTag, metadataContainer);
 	}
 };
 
 const handleHeadChildJsxElement = (
 	jsxElement: JsxElement,
 	metadataContainer: Container<Record<string, any>>,
+	topLevelVariablesContainer: Container<Definition[]>,
 ) => {
 	if (jsxElement.getOpeningElement().getTagNameNode().getText() !== 'title') {
 		return;
@@ -194,13 +281,31 @@ const handleHeadChildJsxElement = (
 	const children = jsxElement.getJsxChildren();
 
 	let text = '';
-
+	let shouldReplaceTag = true;
 	children.forEach((child) => {
+		if (!shouldReplaceTag) {
+			return;
+		}
+
 		if (Node.isJsxText(child)) {
 			const t = child.getFullText();
 			text += t;
 		} else if (Node.isJsxExpression(child)) {
 			const expression = child.getExpression();
+			const identifiers = child.getDescendantsOfKind(
+				SyntaxKind.Identifier,
+			);
+
+			identifiers.forEach((identifier) => {
+				const definedOnTopLevel = isDefinedOnTheTopLevel(
+					identifier,
+					topLevelVariablesContainer,
+				);
+				if (!definedOnTopLevel) {
+					shouldReplaceTag = false;
+				}
+			});
+
 			if (Node.isTemplateExpression(expression)) {
 				const t = expression.getFullText().replace(/\`/g, '');
 				text += t;
@@ -230,25 +335,42 @@ const handleHeadChildJsxElement = (
 	);
 
 	if (name && knownNames.includes(name)) {
-		handleTag(parsedTag, metadataContainer);
+		const comment = `{/* ${
+			shouldReplaceTag
+				? 'this tag can be removed'
+				: 'this tag cannot be removed, because it uses variables from inner scope'
+		}*/}`;
 
-		jsxElement.replaceWithText(
-			`{/* this tag can be removed */} \n ${jsxElement.getText()}`,
-		);
+		jsxElement.replaceWithText(`${comment} \n ${jsxElement.getText()}`);
+
+		if (!shouldReplaceTag) {
+			return;
+		}
+
+		handleTag(parsedTag, metadataContainer);
 	}
 };
 
 const handleHeadJsxElement = (
 	headJsxElement: JsxElement,
 	metadataContainer: Container<Record<string, any>>,
+	topLevelVariablesContainer: Container<Definition[]>,
 ) => {
 	const jsxChildren = headJsxElement.getJsxChildren();
 
 	jsxChildren.forEach((child) => {
 		if (Node.isJsxElement(child)) {
-			handleHeadChildJsxElement(child, metadataContainer);
+			handleHeadChildJsxElement(
+				child,
+				metadataContainer,
+				topLevelVariablesContainer,
+			);
 		} else if (Node.isJsxSelfClosingElement(child)) {
-			handleJsxSelfClosingElement(child, metadataContainer);
+			handleJsxSelfClosingElement(
+				child,
+				metadataContainer,
+				topLevelVariablesContainer,
+			);
 		}
 	});
 };
@@ -256,6 +378,7 @@ const handleHeadJsxElement = (
 const handleHeadIdentifier = (
 	headIdentifier: Identifier,
 	metadataContainer: Container<Record<string, any>>,
+	topLevelVariablesContainer: Container<Definition[]>,
 ) => {
 	headIdentifier.findReferencesAsNodes().forEach((node) => {
 		const parent = node.getParent();
@@ -264,7 +387,11 @@ const handleHeadIdentifier = (
 			const grandparent = parent.getParent();
 
 			if (Node.isJsxElement(grandparent)) {
-				handleHeadJsxElement(grandparent, metadataContainer);
+				handleHeadJsxElement(
+					grandparent,
+					metadataContainer,
+					topLevelVariablesContainer,
+				);
 			}
 		}
 	});
@@ -273,6 +400,7 @@ const handleHeadIdentifier = (
 const handleImportDeclaration = (
 	importDeclaration: ImportDeclaration,
 	metadataContainer: Container<Record<string, any>>,
+	topLevelVariablesContainer: Container<Definition[]>,
 ) => {
 	const moduleSpecifier = importDeclaration.getModuleSpecifier();
 
@@ -286,7 +414,11 @@ const handleImportDeclaration = (
 		return;
 	}
 
-	handleHeadIdentifier(headIdentifier, metadataContainer);
+	handleHeadIdentifier(
+		headIdentifier,
+		metadataContainer,
+		topLevelVariablesContainer,
+	);
 };
 
 export const handleTag = (
@@ -528,19 +660,77 @@ const buildMetadataStatement = (metadataObject: Record<string, string>) => {
 	)}`;
 };
 
+const collectVariableDeclaration = (
+	variableStatement: VariableStatement,
+	topLevelVariablesContainer: Container<Definition[]>,
+) => {
+	const declarations = variableStatement.getDeclarations();
+
+	declarations.forEach((declaration) => {
+		topLevelVariablesContainer.set((prev) => [...prev, declaration]);
+	});
+};
+
+const collectImportDeclaration = (
+	importDeclaration: ImportDeclaration,
+	topLevelVariablesContainer: Container<Definition[]>,
+) => {
+	const namedImports = importDeclaration.getNamedImports();
+
+	namedImports.forEach((namedImport) => {
+		topLevelVariablesContainer.set((prev) => [...prev, namedImport]);
+	});
+
+	const namespaceImport = importDeclaration.getNamespaceImport()?.getParent();
+
+	if (Node.isNamespaceImport(namespaceImport)) {
+		topLevelVariablesContainer.set((prev) => [...prev, namespaceImport]);
+	}
+
+	const defaultImport = importDeclaration.getDefaultImport()?.getParent();
+
+	if (Node.isImportClause(defaultImport)) {
+		topLevelVariablesContainer.set((prev) => [...prev, defaultImport]);
+	}
+};
+
+const collectTopLevelDefinitions = (
+	sourceFile: SourceFile,
+	topLevelVariablesContainer: Container<Definition[]>,
+) => {
+	const importDeclarations = sourceFile.getImportDeclarations();
+	const variableStatements = sourceFile.getVariableStatements();
+
+	variableStatements.forEach((variableStatement) => {
+		collectVariableDeclaration(
+			variableStatement,
+			topLevelVariablesContainer,
+		);
+	});
+
+	importDeclarations.forEach((importDeclaration) => {
+		collectImportDeclaration(importDeclaration, topLevelVariablesContainer);
+	});
+};
 export const handleSourceFile = (
 	sourceFile: SourceFile,
 ): string | undefined => {
 	const metadataContainer = buildContainer<Record<string, any>>({});
+	const topLevelVariablesContainer = buildContainer<Definition[]>([]);
 	const importDeclarations = sourceFile.getImportDeclarations();
 
+	collectTopLevelDefinitions(sourceFile, topLevelVariablesContainer);
+
 	importDeclarations.forEach((importDeclaration) =>
-		handleImportDeclaration(importDeclaration, metadataContainer),
+		handleImportDeclaration(
+			importDeclaration,
+			metadataContainer,
+			topLevelVariablesContainer,
+		),
 	);
 
 	const metadataObject = metadataContainer.get();
 	const hasChanges = Object.keys(metadataObject).length !== 0;
-
 	if (!hasChanges) {
 		return undefined;
 	}
