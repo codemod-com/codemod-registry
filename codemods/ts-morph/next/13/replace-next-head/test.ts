@@ -194,6 +194,12 @@ describe('next 13 replace-next-head', function () {
 	it('should replace title tag - jsxExpression 3', function (this: Context) {
 		const beforeText = `
 	  import Head from 'next/head';
+		const var1 = 1;
+		const text2 = 1;
+		const text = 1;
+		const var3 = 1;
+		const var4 = 1;
+		const fn = () => {};
 	  export default function Page() {
 	    return (
 	      <>
@@ -211,6 +217,12 @@ describe('next 13 replace-next-head', function () {
 	  export const metadata: Metadata = {
 			title: \`\${var1} text \${fn()} text2 \${var3 ? "literal1": var4}\`,
 		};
+		const var1 = 1;
+		const text2 = 1;
+		const text = 1;
+		const var3 = 1;
+		const var4 = 1;
+		const fn = () => {};
 	  export default function Page() {
 	    return (
 	      <>
@@ -615,6 +627,30 @@ describe('next 13 replace-next-head', function () {
 	it('should support basic metadata', function (this: Context) {
 		const beforeText = `
 	  import Head from 'next/head';
+		const var1 = 1;
+		const var2 = 1;
+		const var3 = 1;
+		const var4 = 1;
+		const var5 = 1;
+		const var6 = 1;
+		const var7 = 1;
+		const var8 = 1;
+		const var9 = 1;
+		const var10 = 1;
+		const var11 = 1;
+		const var12 = 1;
+		const var13 = 1;
+		const var14 = 1;
+		const var15 = 1;
+		const var16 = 1;
+		const var17 = 1;
+		const var18 = 1;
+		const var19 = 1;
+		const var20 = 1;
+		const var21 = 1;
+		const var22 = 1;
+		const var23 = 1;
+		const var24 = 1;
 	  export default function Page() {
 	    return (
 	      <>
@@ -677,12 +713,36 @@ describe('next 13 replace-next-head', function () {
 			category: var23, 
 			classification: var24,
 		};
+		const var1 = 1;
+		const var2 = 1;
+		const var3 = 1;
+		const var4 = 1;
+		const var5 = 1;
+		const var6 = 1;
+		const var7 = 1;
+		const var8 = 1;
+		const var9 = 1;
+		const var10 = 1;
+		const var11 = 1;
+		const var12 = 1;
+		const var13 = 1;
+		const var14 = 1;
+		const var15 = 1;
+		const var16 = 1;
+		const var17 = 1;
+		const var18 = 1;
+		const var19 = 1;
+		const var20 = 1;
+		const var21 = 1;
+		const var22 = 1;
+		const var23 = 1;
+		const var24 = 1;
 		
 		export default function Page() {
 	    return (
 	      <>
 	        <Head>
-						{/* this tag can be removed */}	
+						{/* this tag can be removed */}
 						<title>{var1}</title>
 						{/* this tag can be removed */}
 						<meta name="description" content={var2} />
@@ -741,18 +801,29 @@ describe('next 13 replace-next-head', function () {
 			expected?.replace(/\s/gm, ''),
 		);
 	});
-	
-	it('should support basic metadata', function (this: Context) {
+
+	it('should not move tag, if its attributes has variables that are not defined in top level scope', function (this: Context) {
 		const beforeText = `
-	  import Head from 'next/head';
+	  import Head from "next/head";
+		import { var5 } from "module";
+		import * as var6 from "module";
+		import var7 from "module";
+		const var1 = 1;
+		const var2 = 2, var3 = 3;
+		const var4 = () => {};
+		const varobj1 = {}
 		
 	  export default function Page() {
 			const { t } = useHook();
+			const var1 = 1;
 	    return (
 	      <>
 	        <Head>
-						<title>{title}</title>
 						<meta name="description" content={t("quick_video_meeting")} />
+						<meta name="creator" content={var1} />
+						<meta name="description" content={var2 + var3} />
+						<meta name="creator" content={varobj.prop} />
+						<meta name="referrer" content={varobj1.prop} />
 	        </Head>
 	      </>
 	    );
@@ -761,18 +832,36 @@ describe('next 13 replace-next-head', function () {
 
 		const afterText = `
 	  import { Metadata } from "next";
-		import Head from 'next/head';
-		
-	  export const metadata: Metadata = { 
+		import Head from "next/head";
+		import { var5 } from "module";
+		import * as var6 from "module";
+		import var7 from "module";
+		export const metadata: Metadata = { 
+			description: var2 + var3, 
+			referrer: varobj1.prop,
 		};
 		
+		const var1 = 1;
+		const var2 = 2, var3 = 3;
+		const var4 = () => {};
+		const varobj1 = {}
+	 
 		export default function Page() {
 			const { t } = useHook();
+			const var1 = 1;
 	    return (
 	      <>
 				<Head>
-       	 	<title>{title}</title>
-       	 	<meta name="description" content={t("quick_video_meeting")} />
+					{/* this tag cannot be removed, because it uses variables from inner scope */}
+					<meta name="description" content={t("quick_video_meeting")} />
+					{/* this tag cannot be removed, because it uses variables from inner scope */}
+					<meta name="creator" content={var1} />
+					{/* this tag can be removed */}
+					<meta name="description" content={var2 + var3} />
+					{/* this tag cannot be removed, because it uses variables from inner scope */}
+					<meta name="creator" content={varobj.prop} />
+					{/* this tag can be removed */}
+					<meta name="referrer" content={varobj1.prop} />
      		</Head>
 	      </>
 	    );
@@ -780,9 +869,10 @@ describe('next 13 replace-next-head', function () {
 	  `;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
 		deepStrictEqual(
-				actual?.replace(/\s/gm, ''),
-			 	expected?.replace(/\s/gm, ''),
-			);
+			actual?.replace(/\s/gm, ''),
+			expected?.replace(/\s/gm, ''),
+		);
 	});
 });
