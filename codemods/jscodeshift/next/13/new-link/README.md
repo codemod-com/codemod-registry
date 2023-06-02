@@ -1,23 +1,23 @@
 # new-link
 
-Safely removes `<a>` from `Link` components imported from `next/link` or adds the `legacyBehavior` prop on the component level.
+Safely removes `<a>` from `Link` components imported from the `next/link` module or adds the `legacyBehavior` prop on the component level.
 
-For example:
+## Example
 
 ```jsx
-export default function Page() {
+export default function Component() {
 	return (
-		<Link href="/about">
-			<a>About Us</a>
+		<Link href="/a">
+			<a>Anchor</a>
 		</Link>
 	);
 }
 ```
 
-Transforms into:
+gets transformed into:
 
 ```jsx
-export default function Page() {
-	return <Link href="/about">About Us</Link>;
+export default function Component() {
+	return <Link href="/a">Anchor</Link>;
 }
 ```
