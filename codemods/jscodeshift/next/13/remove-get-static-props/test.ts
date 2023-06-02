@@ -492,20 +492,6 @@ describe('next 13 remove-get-static-props', function () {
 
 		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
 
-		const a = actualOutput?.replace(/\W/gm, '');
-		const b = OUTPUT.replace(/\W/gm, '');
-
-		for (let i = 0; i < actualOutput!.length; i++) {
-			if (a![i] !== b[i]) {
-				console.log(
-					i,
-					a?.substring(i - 15, i + 15),
-					b.substring(i - 15, i + 15),
-				);
-				break;
-			}
-		}
-
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),
