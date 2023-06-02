@@ -1,6 +1,6 @@
 # replace-next-head
 
-Generates static metadata object based on meta tags managed by next/head. Marks meta tags that can be deleted.
+Generates a static metadata object based on meta tags managed by next/head. Marks the meta tags that can be deleted.
 
 ## Example:
 
