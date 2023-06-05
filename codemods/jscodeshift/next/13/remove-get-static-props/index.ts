@@ -43,27 +43,53 @@ export const findGetStaticPropsFunctions: ModFunction<File, 'read'> = (
 	root.find(j.FunctionDeclaration, {
 		id: {
 			type: 'Identifier',
-			name: 'getStaticProps',
 		},
-	}).forEach((functionDeclarationPath) => {
-		const functionDeclarationCollection = j(functionDeclarationPath);
+	})
+		.filter((functionDeclarationPath) => {
+			const identifierName =
+				functionDeclarationPath.value.id?.name ?? null;
 
-		lazyModFunctions.push(
-			[findReturnStatements, functionDeclarationCollection, settings],
-			[
-				addCommentOnFunctionDeclaration,
-				functionDeclarationCollection,
-				settings,
-			],
-		);
-	});
+			if (identifierName === null) {
+				return false;
+			}
 
-	const variableDeclaratorCollection = root.find(j.VariableDeclarator, {
-		id: {
-			type: 'Identifier',
-			name: 'getStaticProps',
-		},
-	});
+			return ['getStaticProps', 'getServerSideProps'].includes(
+				identifierName,
+			);
+		})
+		.forEach((functionDeclarationPath) => {
+			const functionDeclarationCollection = j(functionDeclarationPath);
+
+			lazyModFunctions.push(
+				[findReturnStatements, functionDeclarationCollection, settings],
+				[
+					addCommentOnFunctionDeclaration,
+					functionDeclarationCollection,
+					settings,
+				],
+			);
+		});
+
+	const variableDeclaratorCollection = root
+		.find(j.VariableDeclarator, {
+			id: {
+				type: 'Identifier',
+			},
+		})
+		.filter((variableDeclaratorPath) => {
+			const identifierName =
+				variableDeclaratorPath.value.id.type === 'Identifier'
+					? variableDeclaratorPath.value.id.name
+					: null;
+
+			if (identifierName === null) {
+				return false;
+			}
+
+			return ['getStaticProps', 'getServerSideProps'].includes(
+				identifierName,
+			);
+		});
 
 	variableDeclaratorCollection
 		.find(j.ArrowFunctionExpression)
