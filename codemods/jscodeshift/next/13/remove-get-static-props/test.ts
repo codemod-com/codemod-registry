@@ -497,4 +497,55 @@ describe('next 13 remove-get-static-props', function () {
 			OUTPUT.replace(/\W/gm, ''),
 		);
 	});
+	
+	it('should handle getStaticPaths', function () {
+		const INPUT = `
+		import PostLayout from '@/components/post-layout';
+ 
+		export async function getStaticPaths() {
+			return {
+				paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
+			};
+		}
+		 
+		export async function getStaticProps({ params }) {
+			const res = await fetch(\`https://.../posts/\${params.id}\`);
+			const post = await res.json();
+		 
+			return { props: { post } };
+		}
+		 
+		export default function Post({ post }) {
+			return <PostLayout post={post} />;
+		}
+	`;
+
+		const OUTPUT = `
+		import PostLayout from '@/components/post-layout';
+ 
+		export async function generateStaticParams() {
+			return [{ id: '1' }, { id: '2' }];
+		}
+		 
+		// TODO: implement this function
+		async function getPost(params) {}
+		 
+		export default async function Post({ params }) {
+			const post = await getPost(params);
+		 
+			return <PostLayout post={post} />;
+		}
+		`;
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+
+		assert.deepEqual(
+			actualOutput,
+			OUTPUT,
+		);
 });
