@@ -44,7 +44,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { users } };
 			}
 
-			export default function Component({}) {
+			export default async function Component({}) {
 				const users = await getUsers();
 
 				return users.map(user => <b>user</b>)
@@ -95,7 +95,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { users, groups }, revalidate: 1 };
 			}
 
-			export default function Component({}) {
+			export default async function Component({}) {
 				const groups = await getGroups();
                 const users = await getUsers();
 
@@ -128,7 +128,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { users, groups }, revalidate: 1 };
 			}
 			  
-			export default function Component({ users, groups }) {
+			export default async function Component({ users, groups }) {
 				return <C prop={(a) => {
 					return a;
 				}}
@@ -153,7 +153,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { users, groups }, revalidate: 1 };
 			}
 
-			export default function Component({}) {
+			export default async function Component({}) {
 				const groups = await getGroups();
         const users = await getUsers();
 
@@ -215,7 +215,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { users, groups }, revalidate: 1 };
 			}
 
-			export default function Component({}) {
+			export default async function Component({}) {
 				const groups = await getGroups();
         const users = await getUsers();
 
@@ -276,7 +276,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { users, groups }, revalidate: 1 };
 			}
 
-			export default function Component({}) {
+			export default async function Component({}) {
 				const groups = await getGroups();
         const users = await getUsers();
 
@@ -346,7 +346,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { users, groups }, revalidate: 1 };
 			}
 
-			export default function Component({}) {
+			export default async function Component({}) {
 				const groups = await getGroups();
         const users = await getUsers();
 
@@ -386,7 +386,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { users, groups }, revalidate: 1 };
 			}
 			  
-			export default function Component({ users, groups }) {
+			export default async function Component({ users, groups }) {
 				return <C prop={(a) => {
 					return a;
 				}}
@@ -416,7 +416,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { users, groups }, revalidate: 1 };
 			}
 
-			export default function Component({}) {
+			export default async function Component({}) {
 				const groups = await getGroups();
         const users = await getUsers();
 
