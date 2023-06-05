@@ -1,4 +1,4 @@
-import type {
+import {
 	API,
 	Collection,
 	FileInfo,
@@ -391,6 +391,7 @@ export const addVariableDeclarations: ModFunction<
 		),
 	]);
 
+	let addedVariableDeclaration = false;
 	root.find(j.BlockStatement).forEach((blockStatementPath) => {
 		const blockStatement = blockStatementPath.value;
 		// only add variableDeclaration to blackStatement if its direct child of the FunctionDeclaration
@@ -413,6 +414,13 @@ export const addVariableDeclarations: ModFunction<
 		}
 
 		blockStatement.body.unshift(variableDeclaration);
+		addedVariableDeclaration = true;
+	});
+
+	root.forEach((functionDeclarationPath) => {
+		if (addedVariableDeclaration && !functionDeclarationPath.value.async) {
+			functionDeclarationPath.value.async = true;
+		}
 	});
 
 	return [true, []];
