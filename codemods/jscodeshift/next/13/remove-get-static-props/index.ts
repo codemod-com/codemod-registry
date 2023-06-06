@@ -85,6 +85,46 @@ const addGenerateStaticParamsFunctionDeclaration: ModFunction<File, 'write'> = (
 	return [true, []];
 };
 
+const addPageParamsTypeAlias: ModFunction<File, 'write'> = (j, root) => {
+	
+	const pageParamsType = j.tsTypeAliasDeclaration(
+    j.identifier('PageParams'),
+    j.tsTypeLiteral([])
+  );
+	
+	const pagePropsType = j.tsTypeAliasDeclaration(
+    j.identifier('PageProps'),
+    j.tsTypeLiteral([
+      j.tsPropertySignature(
+        j.identifier('params'),
+        j.tsTypeAnnotation(j.tsTypeReference(j.identifier('PageParams')))
+      )
+    ])
+  );
+
+
+root.find(j.Program).forEach((program) => {
+	const lastImportDeclarationIndex = findLastIndex(
+		program.value.body,
+		(node) => node.type === 'ImportDeclaration',
+	);
+
+	const insertPosition =
+		lastImportDeclarationIndex === -1
+			? 0
+			: lastImportDeclarationIndex + 1;
+
+	program.value.body.splice(
+		insertPosition,
+		0,
+		...[pageParamsType, pagePropsType],
+	);
+});
+
+return [true, []];
+
+}
+
 export const findGetStaticPropsFunctionDeclarations: ModFunction<
 	File,
 	'read'
@@ -236,6 +276,7 @@ export const findGetStaticPathsFunctionDeclarations: ModFunction<
 		lazyModFunctions.push(
 			[findReturnStatements, functionDeclarationCollection, newSettings],
 			[addGenerateStaticParamsFunctionDeclaration, root, newSettings],
+			[addPageParamsTypeAlias, root, newSettings],
 			[
 				addCommentOnFunctionDeclaration,
 				functionDeclarationCollection,
@@ -276,6 +317,7 @@ export const findGetStaticPathsArrowFunctions: ModFunction<File, 'read'> = (
 		lazyModFunctions.push(
 			[findReturnStatements, arrowFunctionCollection, newSettings],
 			[addGenerateStaticParamsFunctionDeclaration, root, newSettings],
+			[addPageParamsTypeAlias, root, newSettings],
 			[
 				addCommentOnFunctionDeclaration,
 				arrowFunctionCollection,
