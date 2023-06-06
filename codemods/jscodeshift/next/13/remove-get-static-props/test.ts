@@ -34,7 +34,7 @@ describe('next 13 remove-get-static-props', function () {
 
 		const OUTPUT = `
 			// TODO: implement this function
-			async function getUsers(params: any) {
+			async function getUsers() {
 			}
 
 			export // TODO: remove this function
@@ -57,7 +57,6 @@ describe('next 13 remove-get-static-props', function () {
 		};
 
 		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
-
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),
@@ -80,11 +79,11 @@ describe('next 13 remove-get-static-props', function () {
 
 		const OUTPUT = `
 			// TODO: implement this function
-			async function getGroups(params: any) {
+			async function getGroups() {
 			}
 
 			// TODO: implement this function
-			async function getUsers(params: any) {
+			async function getUsers() {
 			}
 
 			export // TODO: remove this function
@@ -136,11 +135,11 @@ describe('next 13 remove-get-static-props', function () {
 
 		const OUTPUT = `
 			// TODO: implement this function
-			async function getGroups(params: any) {
+			async function getGroups() {
 			}
 
 			// TODO: implement this function
-			async function getUsers(params: any) {
+			async function getUsers() {
 			}
 
 			export // TODO: remove this function
@@ -197,11 +196,11 @@ describe('next 13 remove-get-static-props', function () {
 		const OUTPUT = `
 			import x from "y";
 			// TODO: implement this function
-			async function getGroups(params: any) {
+			async function getGroups() {
 			}
 
 			// TODO: implement this function
-			async function getUsers(params: any) {
+			async function getUsers() {
 			}
 
 			export // TODO: remove this function
@@ -257,11 +256,11 @@ describe('next 13 remove-get-static-props', function () {
 		const OUTPUT = `
 			import x from "y";
 			// TODO: implement this function
-			async function getGroups(params: any) {
+			async function getGroups() {
 			}
 
 			// TODO: implement this function
-			async function getUsers(params: any) {
+			async function getUsers() {
 			}
 
 			export const getStaticProps = // TODO: remove this function
@@ -321,11 +320,11 @@ describe('next 13 remove-get-static-props', function () {
 		const OUTPUT = `
 			import x from "y";
 			// TODO: implement this function
-			async function getGroups(params: any) {
+			async function getGroups() {
 			}
 
 			// TODO: implement this function
-			async function getUsers(params: any) {
+			async function getUsers() {
 			}
 
 			export const getStaticProps = // TODO: remove this function
@@ -389,11 +388,11 @@ describe('next 13 remove-get-static-props', function () {
 		const OUTPUT = `
 			import x from "y";
 			// TODO: implement this function
-			async function getGroups(params: any) {
+			async function getGroups() {
 			}
 
 			// TODO: implement this function
-			async function getUsers(params: any) {
+			async function getUsers() {
 			}
 
 			export const getStaticProps = // TODO: remove this function
@@ -454,7 +453,7 @@ describe('next 13 remove-get-static-props', function () {
 
 		const OUTPUT = `
 			// TODO: implement this function
-			async function getProjects(params: any) {}
+			async function getProjects() {}
 
 			export // TODO: remove this function
 			async function getServerSideProps {
@@ -515,14 +514,13 @@ describe('next 13 remove-get-static-props', function () {
 		const OUTPUT = `
 		import PostLayout from '@/components/post-layout';
  
-		// TODO: implement this function
-		async function getPost(params: any) {}
-		
-	
 		export 	// TODO: implement this function
 		async function generateStaticParams() {
 			return [];
 		}
+		
+		// TODO: implement this function
+		async function getPost(params: PageParams) {}
 		
 		export // TODO: remove this function
     async function getStaticPaths() {
@@ -540,7 +538,7 @@ describe('next 13 remove-get-static-props', function () {
 			return { props: { post } };
 		}
 		 
-		export default async function Post({ params }) {
+		export default async function Post({ params }: PageProps) {
 			const post = await getPost(params);
 		 
 			return <PostLayout post={post} />;
@@ -555,7 +553,6 @@ describe('next 13 remove-get-static-props', function () {
 		};
 
 		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
-
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),
