@@ -546,7 +546,7 @@ describe('next 13 remove-get-static-props', function () {
 			return <PostLayout post={post} />;
 		}
 		
-		export const dynamicParams = true;
+		export const dynamicParams = true; 
 		`;
 
 		const fileInfo: FileInfo = {

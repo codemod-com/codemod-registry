@@ -192,20 +192,29 @@ export const findReturnStatements: ModFunction<FunctionDeclaration, 'read'> = (
 
 	root.find(j.ReturnStatement).forEach((returnStatementPath) => {
 		const returnStatementCollection = j(returnStatementPath);
-		
+
 		lazyModFunctions.push(
 			[findPropsObjectProperty, returnStatementCollection, settings],
 			[findRevalidateObjectProperty, returnStatementCollection, settings],
 		);
-		
-		const functionDeclarations = returnStatementCollection.closest(j.FunctionDeclaration);
-		const isWithinGetStaticPaths =  functionDeclarations.filter(f => f.value.id?.name === 'getStaticPaths').length !== 0;
-		
-		if(isWithinGetStaticPaths) {
-			lazyModFunctions.push([findFallbackObjectProperty, returnStatementCollection, settings]);
+
+		const functionDeclarations = returnStatementCollection.closest(
+			j.FunctionDeclaration,
+		);
+		const isWithinGetStaticPaths =
+			functionDeclarations.filter(
+				(f) => f.value.id?.name === 'getStaticPaths',
+			).length !== 0;
+
+		if (isWithinGetStaticPaths) {
+			lazyModFunctions.push([
+				findFallbackObjectProperty,
+				returnStatementCollection,
+				settings,
+			]);
 		}
 	});
-	
+
 	return [false, lazyModFunctions];
 };
 
@@ -215,8 +224,8 @@ export const findReturnStatements: ModFunction<FunctionDeclaration, 'read'> = (
  * }
  */
 export const findFallbackObjectProperty: ModFunction<any, 'read'> = (
-	j, 
-	root, 
+	j,
+	root,
 ) => {
 	const lazyModFunctions: LazyModFunction[] = [];
 
@@ -227,19 +236,21 @@ export const findFallbackObjectProperty: ModFunction<any, 'read'> = (
 			type: 'Identifier',
 			name: 'fallback',
 		},
-	})
-	.forEach((objectPropertyPath) => {
+	}).forEach((objectPropertyPath) => {
 		const objectPropertyValue = objectPropertyPath.value.value;
-		
-		if(objectPropertyValue.type !== 'BooleanLiteral' && !(
-			objectPropertyValue.type === 'StringLiteral' &&
-			objectPropertyValue.value === 'blocking'
-		)) {
+
+		if (
+			objectPropertyValue.type !== 'BooleanLiteral' &&
+			!(
+				objectPropertyValue.type === 'StringLiteral' &&
+				objectPropertyValue.value === 'blocking'
+			)
+		) {
 			return;
-		}	
-	
+		}
+
 		const fallback = objectPropertyValue.value;
-		
+
 		lazyModFunctions.push([
 			addFallbackVariableDeclaration,
 			fileCollection,
@@ -248,9 +259,11 @@ export const findFallbackObjectProperty: ModFunction<any, 'read'> = (
 	});
 
 	return [false, lazyModFunctions];
-	
-}
+};
 
+/**
+ * export const dynamicParams = true;
+ */
 export const addFallbackVariableDeclaration: ModFunction<any, 'write'> = (
 	j,
 	root,
