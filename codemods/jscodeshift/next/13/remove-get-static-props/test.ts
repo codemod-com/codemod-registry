@@ -496,6 +496,7 @@ describe('next 13 remove-get-static-props', function () {
 		export async function getStaticPaths() {
 			return {
 				paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
+				fallback: true, 
 			};
 		}
 		 
@@ -527,6 +528,7 @@ describe('next 13 remove-get-static-props', function () {
     async function getStaticPaths() {
       return {
               paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
+							fallback: true,
       };
     }
 		
@@ -543,6 +545,8 @@ describe('next 13 remove-get-static-props', function () {
 		 
 			return <PostLayout post={post} />;
 		}
+		
+		export const dynamicParams = true;
 		`;
 
 		const fileInfo: FileInfo = {

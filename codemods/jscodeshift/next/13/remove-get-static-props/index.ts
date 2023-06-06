@@ -192,14 +192,107 @@ export const findReturnStatements: ModFunction<FunctionDeclaration, 'read'> = (
 
 	root.find(j.ReturnStatement).forEach((returnStatementPath) => {
 		const returnStatementCollection = j(returnStatementPath);
-
+		
 		lazyModFunctions.push(
 			[findPropsObjectProperty, returnStatementCollection, settings],
 			[findRevalidateObjectProperty, returnStatementCollection, settings],
 		);
+		
+		const functionDeclarations = returnStatementCollection.closest(j.FunctionDeclaration);
+		const isWithinGetStaticPaths =  functionDeclarations.filter(f => f.value.id?.name === 'getStaticPaths').length !== 0;
+		
+		if(isWithinGetStaticPaths) {
+			lazyModFunctions.push([findFallbackObjectProperty, returnStatementCollection, settings]);
+		}
+	});
+	
+	return [false, lazyModFunctions];
+};
+
+/**
+ * {
+ *  fallback: boolean | 'blocking';
+ * }
+ */
+export const findFallbackObjectProperty: ModFunction<any, 'read'> = (
+	j, 
+	root, 
+) => {
+	const lazyModFunctions: LazyModFunction[] = [];
+
+	const fileCollection = root.closest(j.File);
+
+	root.find(j.ObjectProperty, {
+		key: {
+			type: 'Identifier',
+			name: 'fallback',
+		},
+	})
+	.forEach((objectPropertyPath) => {
+		const objectPropertyValue = objectPropertyPath.value.value;
+		
+		if(objectPropertyValue.type !== 'BooleanLiteral' && !(
+			objectPropertyValue.type === 'StringLiteral' &&
+			objectPropertyValue.value === 'blocking'
+		)) {
+			return;
+		}	
+	
+		const fallback = objectPropertyValue.value;
+		
+		lazyModFunctions.push([
+			addFallbackVariableDeclaration,
+			fileCollection,
+			{ fallback },
+		]);
 	});
 
 	return [false, lazyModFunctions];
+	
+}
+
+export const addFallbackVariableDeclaration: ModFunction<any, 'write'> = (
+	j,
+	root,
+	settings,
+) => {
+	const exportNamedDeclarationAlreadyExists =
+		root.find(j.ExportNamedDeclaration, {
+			declaration: {
+				declarations: [
+					{
+						type: 'VariableDeclarator',
+						id: {
+							type: 'Identifier',
+							name: 'dynamicParams',
+						},
+					},
+				],
+			},
+		})?.length !== 0;
+
+	if (exportNamedDeclarationAlreadyExists) {
+		return [false, []];
+	}
+
+	const exportNamedDeclaration = j.exportNamedDeclaration(
+		j.variableDeclaration('const', [
+			j.variableDeclarator(
+				j.identifier('dynamicParams'),
+				j.booleanLiteral(Boolean(settings.fallback)),
+			),
+		]),
+	);
+
+	let dirtyFlag = false;
+
+	root.find(j.Program).forEach((program) => {
+		dirtyFlag = true;
+
+		program.value.body.push(exportNamedDeclaration);
+	});
+
+	return [dirtyFlag, []];
 };
 
 export const findRevalidateObjectProperty: ModFunction<any, 'read'> = (
