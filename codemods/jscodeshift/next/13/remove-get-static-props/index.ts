@@ -86,44 +86,43 @@ const addGenerateStaticParamsFunctionDeclaration: ModFunction<File, 'write'> = (
 };
 
 const addPageParamsTypeAlias: ModFunction<File, 'write'> = (j, root) => {
-	
 	const pageParamsType = j.tsTypeAliasDeclaration(
-    j.identifier('PageParams'),
-    j.tsTypeLiteral([])
-  );
-	
+		j.identifier('PageParams'),
+		j.tsTypeLiteral([]),
+	);
+
 	const pagePropsType = j.tsTypeAliasDeclaration(
-    j.identifier('PageProps'),
-    j.tsTypeLiteral([
-      j.tsPropertySignature(
-        j.identifier('params'),
-        j.tsTypeAnnotation(j.tsTypeReference(j.identifier('PageParams')))
-      )
-    ])
-  );
-
-
-root.find(j.Program).forEach((program) => {
-	const lastImportDeclarationIndex = findLastIndex(
-		program.value.body,
-		(node) => node.type === 'ImportDeclaration',
+		j.identifier('PageProps'),
+		j.tsTypeLiteral([
+			j.tsPropertySignature(
+				j.identifier('params'),
+				j.tsTypeAnnotation(
+					j.tsTypeReference(j.identifier('PageParams')),
+				),
+			),
+		]),
 	);
 
-	const insertPosition =
-		lastImportDeclarationIndex === -1
-			? 0
-			: lastImportDeclarationIndex + 1;
+	root.find(j.Program).forEach((program) => {
+		const lastImportDeclarationIndex = findLastIndex(
+			program.value.body,
+			(node) => node.type === 'ImportDeclaration',
+		);
 
-	program.value.body.splice(
-		insertPosition,
-		0,
-		...[pageParamsType, pagePropsType],
-	);
-});
+		const insertPosition =
+			lastImportDeclarationIndex === -1
+				? 0
+				: lastImportDeclarationIndex + 1;
 
-return [true, []];
+		program.value.body.splice(
+			insertPosition,
+			0,
+			...[pageParamsType, pagePropsType],
+		);
+	});
 
-}
+	return [true, []];
+};
 
 export const findGetStaticPropsFunctionDeclarations: ModFunction<
 	File,
