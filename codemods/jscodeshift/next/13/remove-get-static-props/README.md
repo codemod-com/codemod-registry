@@ -1,10 +1,10 @@
 # remove-get-static-props
 
-The `getStaticProps` function is no longer available in the `app` directory.
+Data fetching methods such as `getStaticPaths`, `getServerSideProps`, `getStaticProps` are no longer available in the `app` directory.
 
-This codemod creates comments indicating where to remove the deprecated `getStaticProps()` functions.
+This codemod creates comments indicating where to remove the deprecated `getStaticPaths()`, `getServerSideProps()`, `getStaticProps()` methods.
 
-Additionally, it attemps to create boileplate functions for retrieving static properties.
+Additionally, it attempts to create boilerplate functions for retrieving server data and generating static params.
 
 ## Example:
 
