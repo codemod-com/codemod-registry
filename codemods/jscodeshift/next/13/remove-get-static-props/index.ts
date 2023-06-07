@@ -446,11 +446,14 @@ export const addFallbackVariableDeclaration: ModFunction<any, 'write'> = (
 		return [false, []];
 	}
 
+	const dynamicParams =
+		settings.fallback === true || settings.fallback === 'blocking';
+
 	const exportNamedDeclaration = j.exportNamedDeclaration(
 		j.variableDeclaration('const', [
 			j.variableDeclarator(
 				j.identifier('dynamicParams'),
-				j.booleanLiteral(Boolean(settings.fallback)),
+				j.booleanLiteral(dynamicParams),
 			),
 		]),
 	);
