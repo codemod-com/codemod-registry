@@ -1256,6 +1256,65 @@ describe('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
+	it('should replace useRouter import when push is destructured', () => {
+		const beforeText = `
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				const { push } = useRouter();
+				push("/auth/login");
+			}
+	  	`;
+
+		const afterText = `
+	  		import { useRouter } from "next/navigation";
+
+			function Component() {
+				const { push } = useRouter();
+				push("/auth/login");
+			}
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(actual, expected);
+	});
+
+	it('should replace useRouter import when push is destructured  2', () => {
+		const beforeText = `
+			import { useRouter } from 'next/router';
+
+			function Component() {
+				const { push } = useRouter();
+				push({
+					pathname: '/auth/login',
+					query: {
+					  callbackUrl: \`/apps/\${slug}/setup\`,
+						param: var1, 
+						param1: fn(),
+					},
+				});
+			}
+	  	`;
+
+		const afterText = `
+	  		import { useRouter } from "next/navigation";
+
+			function Component() {
+				const { push } = useRouter();
+				const urlSearchParams = new URLSearchParams();
+				urlSearchParams.set('callbackUrl', \`/apps/\${slug}/setup\`);
+				urlSearchParams.set('param', var1);
+				urlSearchParams.set('param1', fn());
+				push(\`/auth/login?\${urlSearchParams.toString()}\`);
+			}
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(actual, expected);
+	});
+
 	it('should replace "router.push({pathname: string, query: {...})" with "router.push(href: string)"', () => {
 		const beforeText = `
 			import { useRouter } from 'next/router';
