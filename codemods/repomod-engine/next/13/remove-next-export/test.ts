@@ -67,7 +67,7 @@ describe.only('next 13 remove-next-export', function () {
 	it('should build correct files', async function (this: Context) {
 		const externalFileCommands = await transform();
 
-		// deepStrictEqual(externalFileCommands.length, 10);
+		deepStrictEqual(externalFileCommands.length, 1);
 
 		// ok(
 		// 	externalFileCommands.some(

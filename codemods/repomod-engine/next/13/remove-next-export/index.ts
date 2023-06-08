@@ -12,9 +12,41 @@ type Dependencies = Readonly<{
 export const repomod: Repomod<Dependencies> = {
 	includePatterns: ['**/package.json', '**/*.{md,sh}'],
 	excludePatterns: ['**/node_modules/**'],
-	handleFile: async (api, path, options) => {
-		console.log(path);
+	handleData: async (api, path, data, options) => {
+		const extension = posix.extname(path);
 
-		return [];
+		if (extension === '.json') {
+			try {
+				const json = JSON.parse(data);
+				// follow a happy path, in the worse case it will throw an error
+				const entries = Object.entries(json.scripts);
+
+				for (const [key, value] of entries) {
+					if (typeof value !== 'string') {
+						continue;
+					}
+
+					if (value.includes('next export')) {
+						delete json.scripts[key];
+					}
+				}
+
+				const newData = JSON.stringify(json);
+
+				return {
+					kind: 'upsertData',
+					path,
+					data: newData,
+				};
+			} catch (error) {
+				return {
+					kind: 'noop',
+				};
+			}
+		}
+
+		return {
+			kind: 'noop',
+		};
 	},
 };
