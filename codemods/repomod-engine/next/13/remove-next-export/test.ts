@@ -97,6 +97,11 @@ describe.only('next 13 remove-next-export', function () {
 				data: '\nnode_modules/.bin/next build\n',
 			},
 			{
+				data: 'module.exports = {\n    distDir: \'out\',\n    output: "export"\n};\n',
+				kind: 'upsertFile',
+				path: '/opt/project/pages/next.config.js',
+			},
+			{
 				kind: 'upsertFile',
 				path: '/opt/project/pages/README.md',
 				data: '\n# Header\n',

@@ -1,5 +1,5 @@
 import { posix } from 'node:path';
-import tsmorph from 'ts-morph';
+import tsmorph, { BinaryExpression, ts } from 'ts-morph';
 import type { Repomod } from '@intuita-inc/repomod-engine-api';
 
 // eslint-disable-next-line @typescript-eslint/ban-types
@@ -8,10 +8,60 @@ type Dependencies = Readonly<{
 }>;
 
 export const repomod: Repomod<Dependencies> = {
-	includePatterns: ['**/package.json', '**/*.{md,sh}'],
+	includePatterns: ['**/package.json', '**/next.config.js', '**/*.{md,sh}'],
 	excludePatterns: ['**/node_modules/**'],
 	handleData: async (api, path, data, options) => {
 		const extension = posix.extname(path);
+		const basename = posix.basename(path);
+
+		if (basename === 'next.config.js') {
+			const { tsmorph } = api.getDependencies();
+
+			const project = new tsmorph.Project({
+				useInMemoryFileSystem: true,
+				skipFileDependencyResolution: true,
+				compilerOptions: {
+					allowJs: true,
+				},
+			});
+
+			const sourceFile = project.createSourceFile(path, data);
+
+			const binaryExpressions = sourceFile.getDescendantsOfKind(
+				tsmorph.SyntaxKind.BinaryExpression,
+			);
+
+			let dirtyFlag = false;
+
+			binaryExpressions.forEach((binaryExpression) => {
+				const left = binaryExpression.getLeft();
+
+				if (left.getText() !== 'module.exports') {
+					return;
+				}
+
+				const right = binaryExpression.getRight();
+
+				if (!tsmorph.Node.isObjectLiteralExpression(right)) {
+					return;
+				}
+
+				right.addPropertyAssignment({
+					name: 'output',
+					initializer: '"export"',
+				});
+
+				dirtyFlag = true;
+			});
+
+			if (dirtyFlag) {
+				return {
+					kind: 'upsertData',
+					path,
+					data: sourceFile.print(),
+				};
+			}
+		}
 
 		if (extension === '.json') {
 			try {
