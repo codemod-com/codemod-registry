@@ -17,6 +17,11 @@ const PACKAGE_JSON = JSON.stringify({
 	},
 });
 
+const NEXT_CONFIG_JSON = `
+module.exports = {
+	distDir: 'out',
+}`;
+
 const SCRIPT_SH_A = `
 node_modules/.bin/next build
 node_modules/.bin/next export
@@ -44,6 +49,7 @@ const transform = async () => {
 		'/opt/project/pages/script_c.sh': SCRIPT_SH_C,
 		'/opt/project/pages/README.md': README_MD,
 		'/opt/project/pages/README.notmd': README_MD,
+		'/opt/project/pages/next.config.js': NEXT_CONFIG_JSON,
 	});
 
 	const fileSystemManager = new FileSystemManager(
