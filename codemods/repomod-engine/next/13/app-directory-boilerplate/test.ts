@@ -1,6 +1,6 @@
 import { Context } from 'mocha';
 import { deepStrictEqual, ok } from 'node:assert';
-import { Volume } from 'memfs';
+import { Volume, createFsFromVolume } from 'memfs';
 import {
 	FileSystemManager,
 	UnifiedFileSystem,
@@ -41,7 +41,7 @@ const transform = async () => {
 		volume.promises.stat as any,
 	);
 	const unifiedFileSystem = new UnifiedFileSystem(
-		volume as any,
+		createFsFromVolume(volume) as any,
 		fileSystemManager,
 	);
 
@@ -146,13 +146,13 @@ describe('next 13 app-directory-boilerplate', function () {
 			),
 		);
 
-		deepStrictEqual(externalFileCommands[0], {
+		deepStrictEqual(externalFileCommands[8], {
 			kind: 'upsertFile',
 			path: '/opt/project/app/[a]/[b]/page.tsx',
 			data: A_B_DATA,
 		});
 
-		deepStrictEqual(externalFileCommands[2], {
+		deepStrictEqual(externalFileCommands[6], {
 			kind: 'upsertFile',
 			path: '/opt/project/app/[a]/c/page.tsx',
 			data: A_C_DATA,
