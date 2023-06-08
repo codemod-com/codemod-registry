@@ -146,13 +146,13 @@ describe('next 13 app-directory-boilerplate', function () {
 			),
 		);
 
-		deepStrictEqual(externalFileCommands[0], {
+		deepStrictEqual(externalFileCommands[8], {
 			kind: 'upsertFile',
 			path: '/opt/project/app/[a]/[b]/page.tsx',
 			data: A_B_DATA,
 		});
 
-		deepStrictEqual(externalFileCommands[2], {
+		deepStrictEqual(externalFileCommands[6], {
 			kind: 'upsertFile',
 			path: '/opt/project/app/[a]/c/page.tsx',
 			data: A_C_DATA,
