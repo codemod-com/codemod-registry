@@ -1,6 +1,6 @@
 import { Context } from 'mocha';
 import { deepStrictEqual, ok } from 'node:assert';
-import { Volume } from 'memfs';
+import { Volume, createFsFromVolume } from 'memfs';
 import {
 	FileSystemManager,
 	UnifiedFileSystem,
@@ -41,7 +41,7 @@ const transform = async () => {
 		volume.promises.stat as any,
 	);
 	const unifiedFileSystem = new UnifiedFileSystem(
-		volume as any,
+		createFsFromVolume(volume) as any,
 		fileSystemManager,
 	);
 

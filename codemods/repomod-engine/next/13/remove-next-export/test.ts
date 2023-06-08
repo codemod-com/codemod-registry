@@ -71,7 +71,7 @@ const transform = async () => {
 	return executeRepomod(api, repomod, '/', {});
 };
 
-describe.only('next 13 remove-next-export', function () {
+describe('next 13 remove-next-export', function () {
 	it('should build correct files', async function (this: Context) {
 		const externalFileCommands = await transform();
 
