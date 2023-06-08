@@ -12,6 +12,7 @@ import { deepStrictEqual, ok } from 'node:assert';
 
 const PACKAGE_JSON = JSON.stringify({
 	scripts: {
+		a: 'b',
 		export: 'rimraf a && next export --threads=3 -o export && yarn a',
 	},
 });
@@ -68,6 +69,14 @@ describe.only('next 13 remove-next-export', function () {
 		const externalFileCommands = await transform();
 
 		deepStrictEqual(externalFileCommands.length, 1);
+
+		deepStrictEqual(externalFileCommands, [
+			{
+				kind: 'upsertFile',
+				path: '/opt/project/package.json',
+				data: '{"scripts":{"a":"b"}}',
+			},
+		]);
 
 		// ok(
 		// 	externalFileCommands.some(
