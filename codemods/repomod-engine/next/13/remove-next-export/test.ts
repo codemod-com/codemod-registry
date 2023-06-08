@@ -32,6 +32,7 @@ npx next export
 `;
 
 const README_MD = `
+# Header
 next export -o public
 `;
 
@@ -73,6 +74,11 @@ describe.only('next 13 remove-next-export', function () {
 				kind: 'upsertFile',
 				path: '/opt/project/package.json',
 				data: '{"scripts":{"a":"b"}}',
+			},
+			{
+				data: '\n# Header\n',
+				kind: 'upsertFile',
+				path: '/opt/project/pages/README.md',
 			},
 		]);
 	});

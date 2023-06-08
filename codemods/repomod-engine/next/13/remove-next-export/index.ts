@@ -45,6 +45,25 @@ export const repomod: Repomod<Dependencies> = {
 			}
 		}
 
+		if (extension === '.md') {
+			const newData = data
+				.split('\n')
+				.filter((line) => !line.includes('next export'))
+				.join('\n');
+
+			if (newData === data) {
+				return {
+					kind: 'noop',
+				};
+			}
+
+			return {
+				kind: 'upsertData',
+				path,
+				data: newData,
+			};
+		}
+
 		return {
 			kind: 'noop',
 		};
