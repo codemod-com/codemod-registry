@@ -7,8 +7,6 @@ type Dependencies = Readonly<{
 	tsmorph: typeof tsmorph;
 }>;
 
-//
-
 export const repomod: Repomod<Dependencies> = {
 	includePatterns: ['**/package.json', '**/*.{md,sh}'],
 	excludePatterns: ['**/node_modules/**'],
