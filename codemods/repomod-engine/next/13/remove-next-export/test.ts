@@ -68,8 +68,6 @@ describe.only('next 13 remove-next-export', function () {
 	it('should build correct files', async function (this: Context) {
 		const externalFileCommands = await transform();
 
-		deepStrictEqual(externalFileCommands.length, 1);
-
 		deepStrictEqual(externalFileCommands, [
 			{
 				kind: 'upsertFile',
@@ -77,11 +75,5 @@ describe.only('next 13 remove-next-export', function () {
 				data: '{"scripts":{"a":"b"}}',
 			},
 		]);
-
-		// ok(
-		// 	externalFileCommands.some(
-		// 		(command) => command.path === '/opt/project/app/layout.tsx',
-		// 	),
-		// );
 	});
 });
