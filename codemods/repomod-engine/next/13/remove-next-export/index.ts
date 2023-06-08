@@ -45,7 +45,7 @@ export const repomod: Repomod<Dependencies> = {
 			}
 		}
 
-		if (extension === '.md') {
+		if (extension === '.md' || extension === '.sh') {
 			const newData = data
 				.split('\n')
 				.filter((line) => !line.includes('next export'))
