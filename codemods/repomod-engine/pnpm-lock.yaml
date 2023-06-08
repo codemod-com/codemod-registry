@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@intuita-inc/repomod-engine-api':
-    specifier: ^1.1.1
-    version: 1.1.1
+    specifier: ^1.1.2
+    version: 1.1.2
   memfs:
     specifier: ^3.5.1
     version: 3.5.1
@@ -56,8 +56,8 @@ packages:
       '@jridgewell/trace-mapping': 0.3.9
     dev: true
 
-  /@intuita-inc/repomod-engine-api@1.1.1:
-    resolution: {integrity: sha512-rYOX3iZYjDAmn4eC7jXdJz81PMYndF2WeLsLhJjuKUzUE6Rnk52cTjc31FArOfLVJ4Ff0b773tLmQ3RtUgx8zw==}
+  /@intuita-inc/repomod-engine-api@1.1.2:
+    resolution: {integrity: sha512-/yHLE7KqaQ2PGhZm0BwUhxW7t+u7RG0yanmRxRZQ79L0xkklO7JfVK/3/2Kp3HITwmBUOOKEVixVWq3aZh5Lvw==}
     dependencies:
       glob: 10.2.7
     dev: false
