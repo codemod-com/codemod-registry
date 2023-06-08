@@ -1,5 +1,5 @@
 import { posix } from 'node:path';
-import tsmorph, { BinaryExpression, ts } from 'ts-morph';
+import tsmorph from 'ts-morph';
 import type { Repomod } from '@intuita-inc/repomod-engine-api';
 
 // eslint-disable-next-line @typescript-eslint/ban-types
