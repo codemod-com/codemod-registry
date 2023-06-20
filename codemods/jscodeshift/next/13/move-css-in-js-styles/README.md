@@ -6,7 +6,7 @@ This codemod moves the CSS-in-JS styles into the CSS Modules.
 
 ## Example
 
-### Before running codemod:
+### Before
 
 ```jsx
 const Head = () => {
@@ -27,7 +27,7 @@ const Head = () => {
 export default Head;
 ```
 
-### After running codemod:
+### After
 
 The file gets transformed into:
 

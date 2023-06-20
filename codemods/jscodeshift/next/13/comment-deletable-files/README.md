@@ -14,7 +14,7 @@ Namely, such are the following files:
 
 ## Example
 
-### Before running codemod:
+### Before
 
 ```jsx
 import 'highlight.js/styles/default.css';
@@ -29,7 +29,7 @@ function MyApp({ Component, pageProps }) {
 export default MyApp;
 ```
 
-### After running codemod:
+### After
 
 ```jsx
 /*This file should be deleted. Please migrate its contents to appropriate files*/

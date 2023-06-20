@@ -10,7 +10,7 @@ Additionally, it attempts to create boilerplate functions for retrieving server 
 
 ## Example
 
-### Before running codemod:
+### Before
 
 ```jsx
 export const getStaticProps = async () => {
@@ -20,7 +20,7 @@ export const getStaticProps = async () => {
 };
 ```
 
-### After running codemod:
+### After
 
 ```jsx
 export const // TODO: remove this function

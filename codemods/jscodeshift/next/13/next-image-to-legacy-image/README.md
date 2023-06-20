@@ -6,7 +6,7 @@ This codemod safely migrates existing Next.js 10, 11, 12 applications importing 
 
 ## Example
 
-### Before running codemod:
+### Before
 
 ```jsx
 import Image from 'next/image';
@@ -22,7 +22,7 @@ export default function Home() {
 }
 ```
 
-### After running codemod:
+### After
 
 ```jsx
 import Image from 'next/legacy/image';

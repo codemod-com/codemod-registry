@@ -8,13 +8,13 @@ Using the `@next/font/*` modules is deprecated since Next.js v13.2.
 
 ## Example
 
-### Before running codemod:
+### Before
 
 ```jsx
 import { Inter } from '@next/font/google';
 ```
 
-### After running codemod:
+### After
 
 ```jsx
 import { Inter } from 'next/font/google';

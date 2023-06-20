@@ -15,7 +15,7 @@ This codemod allows you to migrate the `useRouter` hook to the new `useRouter` h
 
 ## Example
 
-### Before running codemod:
+### Before
 
 ```jsx
 import { useRouter } from 'next/router';
@@ -26,7 +26,7 @@ function Component() {
 }
 ```
 
-### After running codemod:
+### After
 
 ```jsx
 import { useSearchParams } from 'next/navigation';

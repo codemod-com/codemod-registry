@@ -6,7 +6,7 @@ Safely removes `<a>` from `Link` components imported from the `next/link` module
 
 ## Example
 
-### Before running codemod:
+### Before
 
 ```jsx
 export default function Component() {
@@ -18,7 +18,7 @@ export default function Component() {
 }
 ```
 
-### After running codemod:
+### After
 
 ```jsx
 export default function Component() {
