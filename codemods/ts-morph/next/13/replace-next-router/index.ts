@@ -49,6 +49,70 @@ const hasImport = (
 	});
 };
 
+const handlePushCallExpression = (node: CallExpression) => {
+	const grandParentNode = node.getParent();
+	const arg = node.getArguments()[0];
+
+	if (Node.isStringLiteral(arg)) {
+		// remove `await` if it exists
+		if (Node.isAwaitExpression(grandParentNode)) {
+			const text = grandParentNode.getText();
+			grandParentNode.replaceWithText(text.replace('await', ''));
+		}
+		// arg is already string. no further action required.
+		return;
+	}
+	if (!Node.isObjectLiteralExpression(arg)) {
+		return;
+	}
+
+	const block = node.getFirstAncestorByKind(ts.SyntaxKind.Block);
+	const pathnameNode = arg.getProperty('pathname');
+
+	if (
+		!block ||
+		!Node.isExpressionStatement(grandParentNode) ||
+		!Node.isPropertyAssignment(pathnameNode) // `pathname` is required
+	) {
+		return;
+	}
+
+	const pathNameValue = pathnameNode.getInitializer()?.getText() ?? '';
+	const prevSiblingNodeCount = node.getPreviousSiblings().length;
+	const queryNode = arg.getProperty('query');
+
+	let newText = ``;
+	let newArgText = ``;
+	if (Node.isPropertyAssignment(queryNode)) {
+		newText += `const urlSearchParams = new URLSearchParams();\n`;
+
+		const initializer = queryNode.getInitializer();
+		if (Node.isObjectLiteralExpression(initializer)) {
+			const properties = initializer.getProperties();
+
+			properties.forEach((property) => {
+				if (Node.isPropertyAssignment(property)) {
+					const name = property.getNameNode();
+					const initializer = property.getInitializer();
+					newText += `\n urlSearchParams.set('${name.getText()}', ${initializer?.getText()});`;
+				}
+			});
+
+			newArgText = `\`${pathNameValue.replace(
+				/("|')/g,
+				'',
+			)}?\${urlSearchParams.toString()}\``;
+		}
+	} else {
+		newArgText = pathNameValue;
+	}
+
+	block.insertStatements(prevSiblingNodeCount + 1, newText);
+	arg.replaceWithText(newArgText);
+	// remove original `router.replace(...)` or `router.push(...)`
+	// grandParentNode.remove();
+};
+
 // e.g. router.query
 const handleRouterPropertyAccessExpression = (
 	node: PropertyAccessExpression,
@@ -159,70 +223,7 @@ const handleRouterPropertyAccessExpression = (
 
 		const parentNode = node.getParent();
 		if (Node.isCallExpression(parentNode)) {
-			const grandParentNode = parentNode.getParent();
-			const arg = parentNode.getArguments()[0];
-			if (Node.isStringLiteral(arg)) {
-				// remove `await` if it exists
-				if (Node.isAwaitExpression(grandParentNode)) {
-					const text = grandParentNode.getText();
-					grandParentNode.replaceWithText(text.replace('await', ''));
-				}
-				// arg is already string. no further action required.
-				return;
-			}
-			if (!Node.isObjectLiteralExpression(arg)) {
-				return;
-			}
-
-			const block = parentNode.getFirstAncestorByKind(
-				ts.SyntaxKind.Block,
-			);
-			const pathnameNode = arg.getProperty('pathname');
-
-			if (
-				!block ||
-				!Node.isExpressionStatement(grandParentNode) ||
-				!Node.isPropertyAssignment(pathnameNode) // `pathname` is required
-			) {
-				return;
-			}
-
-			const pathNameValue =
-				pathnameNode.getInitializer()?.getText() ?? '';
-			const prevSiblingNodeCount =
-				parentNode.getPreviousSiblings().length;
-			const queryNode = arg.getProperty('query');
-
-			let newText = ``;
-
-			if (Node.isPropertyAssignment(queryNode)) {
-				newText += `const urlSearchParams = new URLSearchParams();\n`;
-
-				const initializer = queryNode.getInitializer();
-				if (Node.isObjectLiteralExpression(initializer)) {
-					const properties = initializer.getProperties();
-
-					properties.forEach((property) => {
-						if (Node.isPropertyAssignment(property)) {
-							const name = property.getNameNode();
-							const initializer = property.getInitializer();
-							newText += `\n urlSearchParams.set('${name.getText()}', ${initializer?.getText()});`;
-						}
-					});
-
-					newText += `\n router.${nodeName}(\`${pathNameValue.replace(
-						/("|')/g,
-						'',
-					)}?\${urlSearchParams.toString()}\`);`;
-				}
-			} else {
-				newText += `router.${nodeName}(${pathNameValue})`;
-			}
-
-			block.insertStatements(prevSiblingNodeCount + 1, newText);
-
-			// remove original `router.replace(...)` or `router.push(...)`
-			grandParentNode.remove();
+			handlePushCallExpression(parentNode);
 		}
 	} else {
 		// unrecognized node names
@@ -394,6 +395,16 @@ const handleVariableDeclaration = (
 					});
 
 					requiresPathname.set((set) => set.add('pathname'));
+				} else if (text === 'push' || text === 'replace') {
+					nameNode.findReferencesAsNodes().forEach((node) => {
+						const parent = node.getParent();
+
+						if (Node.isCallExpression(parent)) {
+							handlePushCallExpression(parent);
+						}
+					});
+
+					usesRouter.set(() => true);
 				}
 			} else if (Node.isObjectBindingPattern(nameNode)) {
 				const elements = nameNode.getElements();

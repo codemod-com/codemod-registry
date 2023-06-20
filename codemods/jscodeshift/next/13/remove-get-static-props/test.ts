@@ -6,8 +6,8 @@ describe('next 13 remove-get-static-props', function () {
 	it('should not remove anything if getStaticProps', function () {
 		const INPUT = `
 			export default function Component() {
-            }
-        `;
+	          }
+	      `;
 
 		const fileInfo: FileInfo = {
 			path: 'index.js',
@@ -23,14 +23,14 @@ describe('next 13 remove-get-static-props', function () {
 		const INPUT = `
 			export async function getStaticProps() {
 				const users = await promise;
-			  
+
 				return { props: { users } };
 			}
-			  
+
 			export default function Component({ users }) {
 				return users.map(user => <b>user</b>)
-            }
-        `;
+	          }
+	      `;
 
 		const OUTPUT = `
 			// TODO: implement this function
@@ -40,7 +40,7 @@ describe('next 13 remove-get-static-props', function () {
 			export // TODO: remove this function
 			async function getStaticProps() {
 				const users = await promise;
-			
+
 				return { props: { users } };
 			}
 
@@ -57,7 +57,6 @@ describe('next 13 remove-get-static-props', function () {
 		};
 
 		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
-
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),
@@ -69,14 +68,14 @@ describe('next 13 remove-get-static-props', function () {
 			export async function getStaticProps() {
 				const users = await promise;
 				const groups = await anotherPromise;
-			  
+
 				return { props: { users, groups }, revalidate: 1 };
 			}
-			  
+
 			export default function Component({ users, groups }) {
 				return [...users, ...groups].map(obj => <b>{obj}</b>)
-            }
-        `;
+	          }
+	      `;
 
 		const OUTPUT = `
 			// TODO: implement this function
@@ -91,14 +90,13 @@ describe('next 13 remove-get-static-props', function () {
 			async function getStaticProps() {
 				const users = await promise;
 				const groups = await anotherPromise;
-			
+
 				return { props: { users, groups }, revalidate: 1 };
 			}
 
 			export default async function Component({}) {
 				const groups = await getGroups();
-                const users = await getUsers();
-
+	              const users = await getUsers();
 
 				return [...users, ...groups].map(obj => <b>{obj}</b>)
 			}
@@ -112,7 +110,6 @@ describe('next 13 remove-get-static-props', function () {
 		};
 
 		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
-
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),
@@ -124,17 +121,17 @@ describe('next 13 remove-get-static-props', function () {
 			export async function getStaticProps() {
 				const users = await promise;
 				const groups = await anotherPromise;
-			  
+
 				return { props: { users, groups }, revalidate: 1 };
 			}
-			  
+
 			export default async function Component({ users, groups }) {
 				return <C prop={(a) => {
 					return a;
 				}}
-        />
+	      />
 			}
-        `;
+	      `;
 
 		const OUTPUT = `
 			// TODO: implement this function
@@ -149,14 +146,13 @@ describe('next 13 remove-get-static-props', function () {
 			async function getStaticProps() {
 				const users = await promise;
 				const groups = await anotherPromise;
-			
+
 				return { props: { users, groups }, revalidate: 1 };
 			}
 
 			export default async function Component({}) {
 				const groups = await getGroups();
-        const users = await getUsers();
-
+	      const users = await getUsers();
 
 				return <C prop={(a) => {
 					return a;
@@ -185,17 +181,17 @@ describe('next 13 remove-get-static-props', function () {
 			export async function getStaticProps() {
 				const users = await promise;
 				const groups = await anotherPromise;
-			  
+
 				return { props: { users, groups }, revalidate: 1 };
 			}
-			  
+
 			export default function Component({ users, groups }) {
 				return <C prop={(a) => {
 					return a;
 				}}
-        />
+	      />
 			}
-        `;
+	      `;
 
 		const OUTPUT = `
 			import x from "y";
@@ -211,14 +207,13 @@ describe('next 13 remove-get-static-props', function () {
 			async function getStaticProps() {
 				const users = await promise;
 				const groups = await anotherPromise;
-			
+
 				return { props: { users, groups }, revalidate: 1 };
 			}
 
 			export default async function Component({}) {
 				const groups = await getGroups();
-        const users = await getUsers();
-
+	      const users = await getUsers();
 
 				return <C prop={(a) => {
 					return a;
@@ -246,17 +241,17 @@ describe('next 13 remove-get-static-props', function () {
 			export const getStaticProps = async () => {
 				const users = await promise;
 				const groups = await anotherPromise;
-			  
+
 				return { props: { users, groups }, revalidate: 1 };
 			}
-			  
+
 			export default function Component({ users, groups }) {
 				return <C prop={(a) => {
 					return a;
 				}}
-        />
+	      />
 			}
-        `;
+	      `;
 
 		const OUTPUT = `
 			import x from "y";
@@ -268,18 +263,17 @@ describe('next 13 remove-get-static-props', function () {
 			async function getUsers() {
 			}
 
-			export const // TODO: remove this function
-			getStaticProps = async () => {
+			export const getStaticProps = // TODO: remove this function
+			 async () => {
 				const users = await promise;
 				const groups = await anotherPromise;
-			
+
 				return { props: { users, groups }, revalidate: 1 };
 			}
 
 			export default async function Component({}) {
 				const groups = await getGroups();
-        const users = await getUsers();
-
+	      const users = await getUsers();
 
 				return <C prop={(a) => {
 					return a;
@@ -295,7 +289,6 @@ describe('next 13 remove-get-static-props', function () {
 		};
 
 		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
-
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT?.replace(/\W/gm, ''),
@@ -308,21 +301,21 @@ describe('next 13 remove-get-static-props', function () {
 			export const getStaticProps = async () => {
 				const users = await promise;
 				const groups = await anotherPromise;
-				
+
 				if(false) {
 					return { props: { users, groups }}
 				}
-			  
+
 				return { props: { users, groups }, revalidate: 1 };
 			}
-			  
+
 			export default function Component({ users, groups }) {
 				return <C prop={(a) => {
 					return a;
 				}}
-        />
+	      />
 			}
-        `;
+	      `;
 
 		const OUTPUT = `
 			import x from "y";
@@ -334,22 +327,21 @@ describe('next 13 remove-get-static-props', function () {
 			async function getUsers() {
 			}
 
-			export const // TODO: remove this function
-			getStaticProps = async () => {
+			export const getStaticProps = // TODO: remove this function
+			 async () => {
 				const users = await promise;
 				const groups = await anotherPromise;
-				
+
 				if(false) {
 					return { props: { users, groups }}
 				}
-			  
+
 				return { props: { users, groups }, revalidate: 1 };
 			}
 
 			export default async function Component({}) {
 				const groups = await getGroups();
-        const users = await getUsers();
-
+	      const users = await getUsers();
 
 				return <C prop={(a) => {
 					return a;
@@ -365,7 +357,6 @@ describe('next 13 remove-get-static-props', function () {
 		};
 
 		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
-
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT?.replace(/\W/gm, ''),
@@ -378,21 +369,21 @@ describe('next 13 remove-get-static-props', function () {
 			export const getStaticProps = async () => {
 				const users = await promise;
 				const groups = await anotherPromise;
-				
+
 				if(false) {
 					return { props: { users, groups }, revalidate: 1 }
 				}
-			  
+
 				return { props: { users, groups }, revalidate: 1 };
 			}
-			  
+
 			export default async function Component({ users, groups }) {
 				return <C prop={(a) => {
 					return a;
 				}}
-        />
+	      />
 			}
-        `;
+	      `;
 
 		const OUTPUT = `
 			import x from "y";
@@ -404,22 +395,21 @@ describe('next 13 remove-get-static-props', function () {
 			async function getUsers() {
 			}
 
-			export const // TODO: remove this function
-			getStaticProps = async () => {
+			export const getStaticProps = // TODO: remove this function
+			 async () => {
 				const users = await promise;
 				const groups = await anotherPromise;
-				
+
 				if(false) {
 					return { props: { users, groups }, revalidate: 1}
 				}
-			  
+
 				return { props: { users, groups }, revalidate: 1 };
 			}
 
 			export default async function Component({}) {
 				const groups = await getGroups();
-        const users = await getUsers();
-
+	      const users = await getUsers();
 
 				return <C prop={(a) => {
 					return a;
@@ -447,10 +437,10 @@ describe('next 13 remove-get-static-props', function () {
 		export async function getServerSideProps() {
 			const res = await fetch(\`https://...\`);
 			const projects = await res.json();
-		 
+
 			return { props: { projects } };
 		}
-		 
+
 		export default function Dashboard({ projects }) {
 			return (
 				<ul>
@@ -469,11 +459,11 @@ describe('next 13 remove-get-static-props', function () {
 			async function getServerSideProps {
 				const res = await fetch(\`https://...\`);
 				const projects = await res.json();
-			
+
 				return { props: { projects } };
 			}
 
-			export default function Dashboard({}) {
+			export default async function Dashboard({}) {
 				const projects = await getProjects();
 				return (
 					<ul>
@@ -492,6 +482,240 @@ describe('next 13 remove-get-static-props', function () {
 
 		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
 
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should handle getStaticPaths', function () {
+		const INPUT = `
+		import PostLayout from '@/components/post-layout';
+ 
+		export async function getStaticPaths() {
+			return {
+				paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
+				fallback: true, 
+			};
+		}
+		 
+		export async function getStaticProps({ params }) {
+			const res = await fetch(\`https://.../posts/\${params.id}\`);
+			const post = await res.json();
+		 
+			return { props: { post } };
+		}
+		 
+		export default function Post({ post }) {
+			return <PostLayout post={post} />;
+		}
+	`;
+
+		const OUTPUT = `
+		import PostLayout from '@/components/post-layout';
+ 
+		type PageParams = {};
+
+    type PageProps = {
+    	params: PageParams
+    };
+
+				
+		export 	// TODO: implement this function
+		async function generateStaticParams() {
+			return [];
+		}
+		
+		// TODO: implement this function
+		async function getPost(params: PageParams) {}
+		
+		export // TODO: remove this function
+    async function getStaticPaths() {
+      return {
+              paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
+							fallback: true,
+      };
+    }
+		
+		export // TODO: remove this function
+		async function getStaticProps({ params }) {
+			const res = await fetch(\`https://.../posts/\${params.id}\`);
+			const post = await res.json();
+		 
+			return { props: { post } };
+		}
+		 
+		export default async function Post({ params }: PageProps) {
+			const post = await getPost(params);
+		 
+			return <PostLayout post={post} />;
+		}
+		
+		export const dynamicParams = true; 
+		`;
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should transform fallback property correctly 2', function () {
+		const INPUT = `
+		import PostLayout from '@/components/post-layout';
+ 
+		export async function getStaticPaths() {
+			return {
+				paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
+				fallback: false, 
+			};
+		}
+		 
+		export async function getStaticProps({ params }) {
+			const res = await fetch(\`https://.../posts/\${params.id}\`);
+			const post = await res.json();
+		 
+			return { props: { post } };
+		}
+		 
+		export default function Post({ post }) {
+			return <PostLayout post={post} />;
+		}
+	`;
+
+		const OUTPUT = `
+		import PostLayout from '@/components/post-layout';
+ 
+		type PageParams = {};
+
+    type PageProps = {
+    	params: PageParams
+    };
+
+				
+		export 	// TODO: implement this function
+		async function generateStaticParams() {
+			return [];
+		}
+		
+		// TODO: implement this function
+		async function getPost(params: PageParams) {}
+		
+		export // TODO: remove this function
+    async function getStaticPaths() {
+      return {
+              paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
+							fallback: false,
+      };
+    }
+		
+		export // TODO: remove this function
+		async function getStaticProps({ params }) {
+			const res = await fetch(\`https://.../posts/\${params.id}\`);
+			const post = await res.json();
+		 
+			return { props: { post } };
+		}
+		 
+		export default async function Post({ params }: PageProps) {
+			const post = await getPost(params);
+		 
+			return <PostLayout post={post} />;
+		}
+		
+		export const dynamicParams = false; 
+		`;
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+	it('should transform fallback property correctly', function () {
+		const INPUT = `
+		import PostLayout from '@/components/post-layout';
+ 
+		export async function getStaticPaths() {
+			return {
+				paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
+				fallback: 'blocking', 
+			};
+		}
+		 
+		export async function getStaticProps({ params }) {
+			const res = await fetch(\`https://.../posts/\${params.id}\`);
+			const post = await res.json();
+		 
+			return { props: { post } };
+		}
+		 
+		export default function Post({ post }) {
+			return <PostLayout post={post} />;
+		}
+	`;
+
+		const OUTPUT = `
+		import PostLayout from '@/components/post-layout';
+ 
+		type PageParams = {};
+
+    type PageProps = {
+    	params: PageParams
+    };
+
+				
+		export 	// TODO: implement this function
+		async function generateStaticParams() {
+			return [];
+		}
+		
+		// TODO: implement this function
+		async function getPost(params: PageParams) {}
+		
+		export // TODO: remove this function
+    async function getStaticPaths() {
+      return {
+              paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
+							fallback: 'blocking',
+      };
+    }
+		
+		export // TODO: remove this function
+		async function getStaticProps({ params }) {
+			const res = await fetch(\`https://.../posts/\${params.id}\`);
+			const post = await res.json();
+		 
+			return { props: { post } };
+		}
+		 
+		export default async function Post({ params }: PageProps) {
+			const post = await getPost(params);
+		 
+			return <PostLayout post={post} />;
+		}
+		
+		export const dynamicParams = true; 
+		`;
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),
