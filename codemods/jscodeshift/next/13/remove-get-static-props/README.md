@@ -1,12 +1,16 @@
-# remove-get-static-props
+# Remove Get Static Props
 
-The `getStaticProps` function is no longer available in the `app` directory.
+## Description
 
-This codemod creates comments indicating where to remove the deprecated `getStaticProps()` functions.
+Data fetching methods such as `getStaticPaths`, `getServerSideProps`, `getStaticProps` are no longer available in the `app` directory.
 
-Additionally, it attemps to create boileplate functions for retrieving static properties.
+This codemod creates comments indicating where to remove the deprecated `getStaticPaths()`, `getServerSideProps()`, `getStaticProps()` methods.
 
-## Example:
+Additionally, it attempts to create boilerplate functions for retrieving server data and generating static params.
+
+## Example
+
+### Before running codemod:
 
 ```jsx
 export const getStaticProps = async () => {
@@ -16,7 +20,7 @@ export const getStaticProps = async () => {
 };
 ```
 
-gets transformed into:
+### After running codemod:
 
 ```jsx
 export const // TODO: remove this function
@@ -26,3 +30,9 @@ export const // TODO: remove this function
 		};
 	};
 ```
+
+## Applicability Criteria
+
+## Links for more info
+
+- https://nextjs.org/docs/app/building-your-application/upgrading/app-router-migration#static-site-generation-getstaticprops

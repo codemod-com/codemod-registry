@@ -1,8 +1,12 @@
-# next-image-to-legacy-image
+# Next Image to Legacy Image
+
+## Description
 
 This codemod safely migrates existing Next.js 10, 11, 12 applications importing `next/image` to the renamed `next/legacy/image` import in Next.js 13 by replacing `next/image` imports with `next/legacy/image` and replacing `next/future/image` imports with `next/image`.
 
-## Example:
+## Example
+
+### Before running codemod:
 
 ```jsx
 import Image from 'next/image';
@@ -18,7 +22,7 @@ export default function Home() {
 }
 ```
 
-gets transformed into:
+### After running codemod:
 
 ```jsx
 import Image from 'next/legacy/image';
@@ -33,3 +37,9 @@ export default function Home() {
 	);
 }
 ```
+
+## Applicability Criteria
+
+## Links for more info
+
+- https://nextjs.org/docs/pages/building-your-application/upgrading/codemods#next-image-to-legacy-image

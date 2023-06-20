@@ -1,4 +1,6 @@
-# new-image-experimental
+# New Image Experimental
+
+## Description
 
 This codemod **dangerously** migrates the usages of the `Image` component from the `next/legacy/image` module to the `next/image` module.
 This is achieved by adding inline styles and removing unused props.
@@ -7,16 +9,16 @@ Please note this codemod is experimental and only covers static usage (such as `
 
 Functionality:
 
--   Removes `layout` prop and adds `style`
--   Removes `objectFit` prop and adds `style`
--   Removes `objectPosition` prop and adds `style`
--   Removes `lazyBoundary` prop
--   Removes `lazyRoot` prop
--   Changes next.config.js `loader` to "custom", removes `path`, and sets `loaderFile` to a new file.
+- Removes `layout` prop and adds `style`
+- Removes `objectFit` prop and adds `style`
+- Removes `objectPosition` prop and adds `style`
+- Removes `lazyBoundary` prop
+- Removes `lazyRoot` prop
+- Changes next.config.js `loader` to "custom", removes `path`, and sets `loaderFile` to a new file.
 
 ## Examples
 
-#### Before: intrinsic
+### Before: intrinsic
 
 ```jsx
 import Image from 'next/image';
@@ -27,7 +29,7 @@ function Page() {
 }
 ```
 
-#### After: intrinsic
+### After: intrinsic
 
 ```jsx
 import Image from 'next/image';
@@ -39,7 +41,7 @@ function Page() {
 }
 ```
 
-#### Before: responsive
+### Before: responsive
 
 ```jsx
 import Image from 'next/image';
@@ -50,7 +52,7 @@ function Page() {
 }
 ```
 
-#### After: responsive
+### After: responsive
 
 ```jsx
 import Image from 'next/image';
@@ -62,7 +64,7 @@ function Page() {
 }
 ```
 
-#### Before: fill
+### Before: fill
 
 ```jsx
 import Image from 'next/image';
@@ -73,7 +75,7 @@ function Page() {
 }
 ```
 
-#### After: fill
+### After: fill
 
 ```jsx
 import Image from 'next/image';
@@ -84,7 +86,7 @@ function Page() {
 }
 ```
 
-#### Before: fixed
+### Before: fixed
 
 ```jsx
 import Image from 'next/image';
@@ -95,7 +97,7 @@ function Page() {
 }
 ```
 
-#### After: fixed
+### After: fixed
 
 ```jsx
 import Image from 'next/image';
@@ -105,3 +107,9 @@ function Page() {
 	return <Image src={img} />;
 }
 ```
+
+## Applicability Criteria
+
+## Links for more info
+
+- https://nextjs.org/docs/pages/building-your-application/upgrading/codemods#next-image-experimental

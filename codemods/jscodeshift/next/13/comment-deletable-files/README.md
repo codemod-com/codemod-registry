@@ -1,4 +1,6 @@
-# comment-deletable-files
+# Comment Deletable Files
+
+## Description
 
 This codemod is recommended when migrating from the `/pages` to the `/app` directory.
 
@@ -6,11 +8,13 @@ It adds a comment to files that should be deleted and migrated to different file
 
 Namely, such are the following files:
 
--   `_document.*`,
--   `_app.*`,
--   `_error.*`.
+- `_document.*`,
+- `_app.*`,
+- `_error.*`.
 
 ## Example
+
+### Before running codemod:
 
 ```jsx
 import 'highlight.js/styles/default.css';
@@ -25,7 +29,7 @@ function MyApp({ Component, pageProps }) {
 export default MyApp;
 ```
 
-get transformed into:
+### After running codemod:
 
 ```jsx
 /*This file should be deleted. Please migrate its contents to appropriate files*/
@@ -40,3 +44,5 @@ function MyApp({ Component, pageProps }) {
 
 export default MyApp;
 ```
+
+## Applicability Criteria
