@@ -23,7 +23,7 @@ import { Inter } from 'next/font/google';
 ## Applicability Criteria
 
 - Next.js version higher or equal to 13.2.
-- This codemod requires you to use `@next//font/*` module specifier in import statements.
+- This codemod requires you to use `@next/font/*` module specifier in import statements.
 
 ## Other Metadata
 
