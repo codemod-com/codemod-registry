@@ -40,3 +40,27 @@ function Component() {
 ```
 
 ## Applicability Criteria
+
+Next.js version is greater or equal to 13.4.
+
+## Other Metadata
+
+### Codemod Version
+
+v1.0.0
+
+### Change Mode
+
+**Assistive**: automation partially complete changes. human involvement is needed to make changes ready to be pushed and merged.
+
+### **Codemod Engine**
+
+[ts-morph](https://github.com/dsherret/ts-morph)
+
+### Estimated Time Saving
+
+~5 minutes per occurrence
+
+### Owner
+
+[Intuita](https://github.com/intuita-inc)
