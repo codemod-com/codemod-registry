@@ -46,3 +46,27 @@ export default MyApp;
 ```
 
 ## Applicability Criteria
+
+Next.js version higher or equal to 13.4
+
+## Other Metadata
+
+### Codemod Version
+
+v1.0.0
+
+### Change Mode
+
+**Assistive**: automation partially complete changes. human involvement is needed to make changes ready to be pushed and merged.
+
+### **Codemod Engine**
+
+jscodeshift
+
+### Estimated Time Saving
+
+The purpose of this codemod is to guide the user into the files that should be migrated away, which should equal ~5 minutes total of estimated time saving.
+
+### Owner
+
+[Intuita](https://github.com/intuita-inc)
