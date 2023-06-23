@@ -120,7 +120,7 @@ v1.0.0
 
 ### Change Mode
 
-**Assistive**: automation partially complete changes. human involvement is needed to make changes ready to be pushed and merged.
+**Assistive**: The automation partially completes changes. Human involvement is needed to make changes ready to be pushed and merged.
 
 ### **Codemod Engine**
 
