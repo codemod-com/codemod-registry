@@ -1,8 +1,12 @@
-# move-css-in-js-styles
+# Move CSS in JS Styles
 
-This codemod moves the CSS-in-JS styles into the CSS Modules.
+## Description
+
+This highly experimental codemod moves the CSS-in-JS styles into the CSS Modules.
 
 ## Example
+
+### Before
 
 ```jsx
 const Head = () => {
@@ -23,7 +27,9 @@ const Head = () => {
 export default Head;
 ```
 
-gets transformed into:
+### After
+
+The file gets transformed into:
 
 ```jsx
 import styles from 'Head.module.css';
@@ -35,11 +41,41 @@ const Head = () => {
 export default Head;
 ```
 
-And the codemods creates the new file `Head.module.css` which contains:
+And the codemod creates the new file `Head.module.css` which contains:
 
-```css
+```jsx
 body {
 	margin: 0;
 	padding: 0;
 }
 ```
+
+## Applicability Criteria
+
+Next.js version higher or equal to 13.
+
+## Other Metadata
+
+### Codemod Version
+
+v1.0.0
+
+### Change Mode
+
+**Assistive**: The automation partially completes changes. Human involvement is needed to make changes ready to be pushed and merged.
+
+### **Codemod Engine**
+
+jscodeshift
+
+### Estimated Time Saving
+
+~5 minutes per occurrence.
+
+### Owner
+
+[Intuita](https://github.com/intuita-inc)
+
+### Links for more info
+
+- https://nextjs.org/docs/pages/building-your-application/styling/css-in-js
