@@ -33,7 +33,7 @@ v1.0.0
 
 ### Change Mode
 
-**Autonomous**: changes can safely be pushed and merged without further human involvement
+**Autonomous**: Changes can safely be pushed and merged without further human involvement.
 
 ### **Codemod Engine**
 
