@@ -51,6 +51,30 @@ The codemod will generate the following corresponding directory:
 
 ## Applicability Criteria
 
-## Links for more info
+Next.js version is greater or equal to 13.4.
+
+## Other Metadata
+
+### Codemod Version
+
+v1.0.0
+
+### Change Mode
+
+**Assistive**: automation partially complete changes. human involvement is needed to make changes ready to be pushed and merged.
+
+### **Codemod Engine**
+
+ts-morph
+
+### Estimated Time Saving
+
+~5 minutes per occurrence
+
+### Owner
+
+[Intuita](https://github.com/intuita-inc)
+
+### Links for more info
 
 - https://nextjs.org/docs/pages/building-your-application/upgrading/app-router-migration
