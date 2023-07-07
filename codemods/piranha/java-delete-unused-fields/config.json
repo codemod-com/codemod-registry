@@ -1,6 +1,6 @@
 {
     "schemaVersion": "1.0.0",
-    "name": "Piranha: Java Demo",
+    "name": "Java: Delete Unused Fields",
     "engine": "piranha",
     "language": "java",
     "owner": "intuita"
