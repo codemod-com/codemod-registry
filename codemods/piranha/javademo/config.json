@@ -1,6 +1,6 @@
 {
     "schemaVersion": "1.0.0",
-    "name": "javademo",
+    "name": "Piranha: Java Demo",
     "engine": "piranha",
     "language": "java",
     "owner": "intuita"
