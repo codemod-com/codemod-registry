@@ -11,12 +11,13 @@
 
 # adapted from https://github.com/uber/piranha/blob/1de55fa375609473f524e8117df61bf3a790bd36/tests/tests.py#L138
 # changed the Python rule definition into a YAML file
+# Ameya from Uber fixed the query
 
 [[rules]]
 name= "delete_unused_field"
 query = """(
     ((field_declaration
-        declarator: (_) @id_name) @decl)
+        declarator: (variable_declarator name: (_) @id_name)) @decl)
     (#match? @decl "^private")
     )
 """
