@@ -4,10 +4,10 @@
 
 Since Next.js 13.4, you can use the following hooks from the `next/navigation` module:
 
-- `useRouter`,
-- `useSearchParams`,
-- `usePathname`,
-- `useParams`.
+-   `useRouter`,
+-   `useSearchParams`,
+-   `usePathname`,
+-   `useParams`.
 
 These hooks replace the functionality available in the `useRouter` hook in the `next/hook` module, however, the behavior is distinct.
 
