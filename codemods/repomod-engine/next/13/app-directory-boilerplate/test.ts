@@ -1,6 +1,6 @@
 import { Context } from 'mocha';
 import { deepStrictEqual, ok } from 'node:assert';
-import { Volume, createFsFromVolume } from 'memfs';
+import { DirectoryJSON, Volume, createFsFromVolume } from 'memfs';
 import {
 	FileSystemManager,
 	UnifiedFileSystem,
@@ -25,16 +25,8 @@ export const getServerSideProps = () => {
 }
 `;
 
-const transform = async () => {
-	const volume = Volume.fromJSON({
-		'/opt/project/pages/index.jsx': '',
-		'/opt/project/pages/_app.jsx': '',
-		'/opt/project/pages/_document.jsx': '',
-		'/opt/project/pages/_error.jsx': '',
-		'/opt/project/pages/[a]/[b].tsx': A_B_CONTENT,
-		'/opt/project/pages/[a]/c.tsx': A_C_CONTENT,
-		'/opt/project/pages/a/index.tsx': '',
-	});
+const transform = async (json: DirectoryJSON) => {
+	const volume = Volume.fromJSON(json);
 
 	const fileSystemManager = new FileSystemManager(
 		volume.promises.readdir as any,
@@ -79,9 +71,17 @@ export const getServerSideProps = () => {
 };
 `;
 
-describe('next 13 app-directory-boilerplate', function () {
+describe.only('next 13 app-directory-boilerplate', function () {
 	it('should build correct files', async function (this: Context) {
-		const externalFileCommands = await transform();
+		const externalFileCommands = await transform({
+			'/opt/project/pages/index.jsx': '',
+			'/opt/project/pages/_app.jsx': '',
+			'/opt/project/pages/_document.jsx': '',
+			'/opt/project/pages/_error.jsx': '',
+			'/opt/project/pages/[a]/[b].tsx': A_B_CONTENT,
+			'/opt/project/pages/[a]/c.tsx': A_C_CONTENT,
+			'/opt/project/pages/a/index.tsx': '',
+		});
 
 		deepStrictEqual(externalFileCommands.length, 10);
 
@@ -159,5 +159,27 @@ describe('next 13 app-directory-boilerplate', function () {
 			path: '/opt/project/app/[a]/c/page.tsx',
 			data: A_C_DATA,
 		});
+	});
+
+	it('should not build error files if no previous error files were found', async function (this: Context) {
+		const externalFileCommands = await transform({
+			'/opt/project/pages/index.jsx': '',
+			'/opt/project/pages/_app.jsx': '',
+			'/opt/project/pages/_document.jsx': '',
+		});
+
+		deepStrictEqual(externalFileCommands.length, 3);
+
+		ok(
+			!externalFileCommands.some(
+				(command) => command.path === '/opt/project/app/error.tsx',
+			),
+		);
+
+		ok(
+			!externalFileCommands.some(
+				(command) => command.path === '/opt/project/app/error.jsx',
+			),
+		);
 	});
 });
