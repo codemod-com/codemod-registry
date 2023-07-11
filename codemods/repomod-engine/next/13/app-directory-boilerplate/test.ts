@@ -12,6 +12,7 @@ import tsmorph from 'ts-morph';
 
 const A_B_CONTENT = `
 import { X } from "../../testABC";
+import { Y } from "./testDEF";
 
 export const getStaticProps = () => {
 
@@ -55,7 +56,8 @@ const transform = async () => {
 };
 
 const A_B_DATA = `// This file has been sourced from: /opt/project/pages/[a]/[b].tsx
-import { X } from "../../testABC";
+import { X } from "../../../testABC";
+import { Y } from "../testDEF";
 export default function RoutePage({ params, }: {
     params: {};
 }) {

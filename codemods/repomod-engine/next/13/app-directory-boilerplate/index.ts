@@ -290,13 +290,13 @@ export const repomod: Repomod<Dependencies> = {
 				if (tsmorph.Node.isImportDeclaration(statement)) {
 					const structure = statement.getStructure();
 
-					if (structure.moduleSpecifier.startsWith('..')) {
+					if (structure.moduleSpecifier.startsWith('./')) {
+						structure.moduleSpecifier = `.${structure.moduleSpecifier}`;
+					} else if (structure.moduleSpecifier.startsWith('../')) {
 						structure.moduleSpecifier = `../${structure.moduleSpecifier}`;
 					}
 
-					newSourceFile.addImportDeclaration(
-						statement.getStructure(),
-					);
+					newSourceFile.addImportDeclaration(structure);
 
 					return;
 				}
