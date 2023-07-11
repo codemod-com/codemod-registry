@@ -91,6 +91,7 @@ describe('next 13 app-directory-boilerplate', function () {
 			'/opt/project/pages/_app.jsx': '',
 			'/opt/project/pages/_document.jsx': '',
 			'/opt/project/pages/_error.jsx': '',
+			'/opt/project/pages/_404.jsx': '',
 			'/opt/project/pages/[a]/[b].tsx': A_B_CONTENT,
 			'/opt/project/pages/[a]/c.tsx': A_C_CONTENT,
 			'/opt/project/pages/a/index.tsx': '',
@@ -161,7 +162,7 @@ describe('next 13 app-directory-boilerplate', function () {
 			),
 		);
 
-		deepStrictEqual(externalFileCommands[2], {
+		deepStrictEqual(externalFileCommands[1], {
 			kind: 'upsertFile',
 			path: '/opt/project/app/page.tsx',
 			data: '// This file has been sourced from: /opt/project/pages/index.jsx\nexport default function Index({}) {\n    return null;\n}\nexport const getStaticProps = async ({}) => {\n    return {\n        props: {},\n        revalidate: 10,\n    };\n};\n',
@@ -180,14 +181,14 @@ describe('next 13 app-directory-boilerplate', function () {
 		});
 	});
 
-	it('should not build error files if no previous error files were found', async function (this: Context) {
+	it('should build neither error files nor not-found files if no such previous files were found', async function (this: Context) {
 		const externalFileCommands = await transform({
 			'/opt/project/pages/index.jsx': '',
 			'/opt/project/pages/_app.jsx': '',
 			'/opt/project/pages/_document.jsx': '',
 		});
 
-		deepStrictEqual(externalFileCommands.length, 3);
+		deepStrictEqual(externalFileCommands.length, 2);
 
 		ok(
 			!externalFileCommands.some(
@@ -198,6 +199,18 @@ describe('next 13 app-directory-boilerplate', function () {
 		ok(
 			!externalFileCommands.some(
 				(command) => command.path === '/opt/project/app/error.jsx',
+			),
+		);
+
+		ok(
+			!externalFileCommands.some(
+				(command) => command.path === '/opt/project/app/not-found.tsx',
+			),
+		);
+
+		ok(
+			!externalFileCommands.some(
+				(command) => command.path === '/opt/project/app/not-found.jsx',
 			),
 		);
 	});
