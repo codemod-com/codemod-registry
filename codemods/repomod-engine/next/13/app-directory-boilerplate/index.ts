@@ -165,8 +165,25 @@ export const repomod: Repomod<Dependencies> = {
 				base: undefined,
 			});
 
-			const rootErrorPathIncludes =
+			const rootErrorPathIncluded =
 				api.exists(jsxErrorPath) || api.exists(tsxErrorPath);
+
+			const jsxNotFoundPath = posix.format({
+				...parsedPath,
+				name: '_404',
+				ext: '.jsx',
+				base: undefined,
+			});
+
+			const tsxNotFoundPath = posix.format({
+				...parsedPath,
+				name: '_404',
+				ext: '.tsx',
+				base: undefined,
+			});
+
+			const rootNotFoundPathIncluded =
+				api.exists(jsxNotFoundPath) || api.exists(tsxNotFoundPath);
 
 			const oldData = await api.readFile(path);
 
@@ -181,14 +198,6 @@ export const repomod: Repomod<Dependencies> = {
 				},
 				{
 					kind: 'upsertFile' as const,
-					path: rootNotFoundPath,
-					options: {
-						...options,
-						filePurpose: FilePurpose.ROOT_NOT_FOUND,
-					},
-				},
-				{
-					kind: 'upsertFile' as const,
 					path: rootPagePath,
 					options: {
 						...options,
@@ -199,13 +208,24 @@ export const repomod: Repomod<Dependencies> = {
 				},
 			];
 
-			if (rootErrorPathIncludes) {
+			if (rootErrorPathIncluded) {
 				commands.push({
 					kind: 'upsertFile' as const,
 					path: rootErrorPath,
 					options: {
 						...options,
 						filePurpose: FilePurpose.ROOT_ERROR,
+					},
+				});
+			}
+
+			if (rootNotFoundPathIncluded) {
+				commands.push({
+					kind: 'upsertFile' as const,
+					path: rootNotFoundPath,
+					options: {
+						...options,
+						filePurpose: FilePurpose.ROOT_NOT_FOUND,
 					},
 				});
 			}
