@@ -1,4 +1,4 @@
-import { posix } from 'node:path';
+import { ParsedPath, posix } from 'node:path';
 import tsmorph from 'ts-morph';
 import type { Repomod } from '@intuita-inc/repomod-engine-api';
 
@@ -164,9 +164,26 @@ export const repomod: Repomod<Dependencies> = {
 				name: 'page',
 			});
 
-			return [
+			const jsxErrorPath = posix.format({
+				...parsedPath,
+				name: '_error',
+				ext: '.jsx',
+				base: undefined,
+			});
+
+			const tsxErrorPath = posix.format({
+				...parsedPath,
+				name: '_error',
+				ext: '.tsx',
+				base: undefined,
+			});
+
+			const rootErrorPathIncludes =
+				api.exists(jsxErrorPath) || api.exists(tsxErrorPath);
+
+			const commands = [
 				{
-					kind: 'upsertFile',
+					kind: 'upsertFile' as const,
 					path: rootLayoutPath,
 					options: {
 						...options,
@@ -174,15 +191,7 @@ export const repomod: Repomod<Dependencies> = {
 					},
 				},
 				{
-					kind: 'upsertFile',
-					path: rootErrorPath,
-					options: {
-						...options,
-						filePurpose: FilePurpose.ROOT_ERROR,
-					},
-				},
-				{
-					kind: 'upsertFile',
+					kind: 'upsertFile' as const,
 					path: rootNotFoundPath,
 					options: {
 						...options,
@@ -190,7 +199,7 @@ export const repomod: Repomod<Dependencies> = {
 					},
 				},
 				{
-					kind: 'upsertFile',
+					kind: 'upsertFile' as const,
 					path: rootPagePath,
 					options: {
 						...options,
@@ -198,6 +207,19 @@ export const repomod: Repomod<Dependencies> = {
 					},
 				},
 			];
+
+			if (rootErrorPathIncludes) {
+				commands.push({
+					kind: 'upsertFile' as const,
+					path: rootErrorPath,
+					options: {
+						...options,
+						filePurpose: FilePurpose.ROOT_ERROR,
+					},
+				});
+			}
+
+			return commands;
 		}
 
 		if (!endsWithPages) {
