@@ -306,15 +306,15 @@ export const repomod: Repomod<Dependencies> = {
 						.getDeclarationList()
 						.getDeclarations();
 
-					const getStaticPropsUsed = declarations.some(
+					const getStaticPathUsed = declarations.some(
 						(declaration) => {
-							return declaration.getName() === 'getStaticProps';
+							return declaration.getName() === 'getStaticPath';
 						},
 					);
 
-					if (getStaticPropsUsed) {
+					if (getStaticPathUsed) {
 						newSourceFile.addStatements(
-							`// TODO reimplement getStaticProps as generateStaticParams\n`,
+							`// TODO reimplement getStaticPath as generateStaticParams\n`,
 						);
 					}
 
