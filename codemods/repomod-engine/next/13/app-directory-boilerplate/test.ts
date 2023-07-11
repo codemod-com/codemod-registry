@@ -10,6 +10,19 @@ import {
 import { repomod } from './index.js';
 import tsmorph from 'ts-morph';
 
+const INDEX_CONTENT = `
+export default function Index({}) {
+	return null;
+}
+  
+export const getStaticProps = async ({}) => {
+	return {
+		props: {},
+	  	revalidate: 10,
+	}
+}
+`;
+
 const A_B_CONTENT = `
 import { X } from "../../testABC";
 import { Y } from "./testDEF";
@@ -71,10 +84,10 @@ export const getServerSideProps = () => {
 };
 `;
 
-describe.only('next 13 app-directory-boilerplate', function () {
+describe('next 13 app-directory-boilerplate', function () {
 	it('should build correct files', async function (this: Context) {
 		const externalFileCommands = await transform({
-			'/opt/project/pages/index.jsx': '',
+			'/opt/project/pages/index.jsx': INDEX_CONTENT,
 			'/opt/project/pages/_app.jsx': '',
 			'/opt/project/pages/_document.jsx': '',
 			'/opt/project/pages/_error.jsx': '',
@@ -147,6 +160,12 @@ describe.only('next 13 app-directory-boilerplate', function () {
 				(command) => command.path === '/opt/project/app/a/layout.tsx',
 			),
 		);
+
+		deepStrictEqual(externalFileCommands[2], {
+			kind: 'upsertFile',
+			path: '/opt/project/app/page.tsx',
+			data: '// This file has been sourced from: /opt/project/pages/index.jsx\nexport default function Index({}) {\n    return null;\n}\nexport const getStaticProps = async ({}) => {\n    return {\n        props: {},\n        revalidate: 10,\n    };\n};\n',
+		});
 
 		deepStrictEqual(externalFileCommands[8], {
 			kind: 'upsertFile',
