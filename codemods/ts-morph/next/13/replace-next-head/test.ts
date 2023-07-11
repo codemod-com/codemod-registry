@@ -667,6 +667,7 @@ describe('next 13 replace-next-head', function () {
 							<meta name="referrer" content={var10} />
 							<meta name="theme-color" media="(prefers-color-scheme: light)" content={var11} />
 							<meta name="theme-color" media="(prefers-color-scheme: dark)" content={var12} />
+							<meta name="theme-color" content="#000" />
 							<meta name="color-scheme" content={var13} />
 							<meta name="viewport" content={var14} />
 							<meta name="creator" content={var15} />
@@ -699,7 +700,8 @@ describe('next 13 replace-next-head', function () {
 			referrer: var10, 
 			themeColor: [
 				{ media: "(prefers-color-scheme: light)", color: var11, },
-				{ media: "(prefers-color-scheme: dark)", color: var12, }
+				{ media: "(prefers-color-scheme: dark)", color: var12, },
+				{ color: "#000", }
 			],
 			colorScheme: var13, 
 			viewport: var14, 
@@ -767,6 +769,8 @@ describe('next 13 replace-next-head', function () {
 						{/* this tag can be removed */}
 						<meta name="theme-color" media="(prefers-color-scheme: dark)" content={var12} />
 						{/* this tag can be removed */}
+						<meta name="theme-color" content="#000" />
+						{/* this tag can be removed */}
 						<meta name="color-scheme" content={var13} />
 						{/* this tag can be removed */}
 						<meta name="viewport" content={var14} />
@@ -796,6 +800,7 @@ describe('next 13 replace-next-head', function () {
 	  `;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
 		deepStrictEqual(
 			actual?.replace(/\s/gm, ''),
 			expected?.replace(/\s/gm, ''),
