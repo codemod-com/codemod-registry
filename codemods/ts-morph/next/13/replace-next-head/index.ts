@@ -608,9 +608,10 @@ export const handleTag = (
 		};
 
 		if (Object.keys(icons).includes(name)) {
-			const n = icons[name];
+			const iconTypeName = icons[name];
+			const { sizes, type, href } = HTMLAttributes;
 
-			if (!n) {
+			if (!iconTypeName) {
 				return;
 			}
 
@@ -618,7 +619,17 @@ export const handleTag = (
 				metadataObject.icons = {};
 			}
 
-			metadataObject.icons[n] = content;
+			if (!metadataObject.icons[iconTypeName]) {
+				metadataObject.icons[iconTypeName] = [];
+			}
+
+			const iconMetadataObject = {
+				...(sizes && { sizes }),
+				...(type && { type }),
+				...(href && { url: href }),
+			};
+
+			metadataObject.icons[iconTypeName].push(iconMetadataObject);
 			return;
 		}
 

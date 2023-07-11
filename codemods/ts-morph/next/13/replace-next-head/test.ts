@@ -408,8 +408,23 @@ describe('next 13 replace-next-head', function () {
 	      <>
 	        <Head>
 						<link rel="shortcut icon" href="/shortcut-icon.png" />
-						<link rel="icon" href="/icon.png" />
-						<link rel="apple-touch-icon" href="/apple-icon.png" />
+						<link
+							rel="apple-touch-icon"
+							sizes="180x180"
+							href="/favicon/apple-touch-icon.png"
+						/>
+						<link
+							rel="icon"
+							type="image/png"
+							sizes="32x32"
+							href="/favicon/favicon-32x32.png"
+						/>
+						<link
+							rel="icon"
+							type="image/png"
+							sizes="16x16"
+							href="/favicon/favicon-16x16.png"
+						/>
 	        </Head>
 	      </>
 	    );
@@ -421,9 +436,16 @@ describe('next 13 replace-next-head', function () {
 		import Head from 'next/head';
 	  export const metadata: Metadata = {
 			icons: {
-				shortcut: "/shortcut-icon.png",
-				icon: "/icon.png",
-				apple: "/apple-icon.png",
+				shortcut: [{ url: "/shortcut-icon.png", }],
+				apple: [{ sizes: "180x180", url: "/favicon/apple-touch-icon.png", }],
+				icon: [
+					{ sizes: "32x32", type: "image/png", url: "/favicon/favicon-32x32.png", },
+					{
+						sizes: "16x16",
+						type: "image/png",
+						url: "/favicon/favicon-16x16.png",
+					}
+				],
 			},
 		};
 
@@ -432,11 +454,27 @@ describe('next 13 replace-next-head', function () {
 	      <>
 	        <Head>
 						{/* this tag can be removed */}
-	                   <link rel="shortcut icon" href="/shortcut-icon.png" />
+						<link rel="shortcut icon" href="/shortcut-icon.png" />
 						{/* this tag can be removed */}
-	                   <link rel="icon" href="/icon.png" />
+						<link
+						rel="apple-touch-icon"
+						sizes="180x180"
+						href="/favicon/apple-touch-icon.png"
+						/>
 						{/* this tag can be removed */}
-	                   <link rel="apple-touch-icon" href="/apple-icon.png" />
+						<link
+							rel="icon"
+							type="image/png"
+							sizes="32x32"
+							href="/favicon/favicon-32x32.png"
+						/>
+						{/* this tag can be removed */}
+						<link
+							rel="icon"
+							type="image/png"
+							sizes="16x16"
+							href="/favicon/favicon-16x16.png"
+						/>
 					</Head>
 	      </>
 	    );
