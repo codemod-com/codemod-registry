@@ -451,14 +451,20 @@ export const handleTag = (
 		if (name === 'theme-color') {
 			const { content, media } = HTMLAttributes;
 
+			if (!content && !media) {
+				return;
+			}
+
 			if (!metadataObject.themeColor) {
 				metadataObject.themeColor = [];
 			}
 
-			metadataObject.themeColor.push({
-				media,
-				color: content,
-			});
+			const themeColorObj = {
+				...(media && { media }),
+				...(content && { color: content }),
+			};
+
+			metadataObject.themeColor.push(themeColorObj);
 
 			return;
 		}
@@ -627,6 +633,7 @@ export const handleTag = (
 	metadataContainer.set(() => metadataObject);
 };
 
+// @TODO refactor this
 const buildMetadataObjectStr = (metadataObject: Record<string, any>) => {
 	let str = '{';
 	Object.keys(metadataObject).forEach((key) => {
