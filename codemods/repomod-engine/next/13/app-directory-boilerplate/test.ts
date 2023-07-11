@@ -14,7 +14,7 @@ const A_B_CONTENT = `
 import { X } from "../../testABC";
 import { Y } from "./testDEF";
 
-export const getStaticProps = () => {
+export const getStaticPath = () => {
 
 }
 `;
@@ -63,8 +63,8 @@ export default function RoutePage({ params, }: {
 }) {
     return <RouteClientComponent />;
 }
-// TODO reimplement getStaticProps as generateStaticParams
-export const getStaticProps = () => {
+// TODO reimplement getStaticPath as generateStaticParams
+export const getStaticPath = () => {
 };
 `;
 
