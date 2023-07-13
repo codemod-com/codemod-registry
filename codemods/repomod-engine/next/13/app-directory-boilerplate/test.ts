@@ -11,6 +11,8 @@ import { repomod } from './index.js';
 import tsmorph from 'ts-morph';
 
 const INDEX_CONTENT = `
+import A from './testQWE';
+
 export default function Index({}) {
 	return null;
 }
@@ -135,7 +137,7 @@ describe('next 13 app-directory-boilerplate', function () {
 		deepStrictEqual(externalFileCommands[1], {
 			kind: 'upsertFile',
 			path: '/opt/project/app/page.tsx',
-			data: '// This file has been sourced from: /opt/project/pages/index.jsx\nexport default function Index({}) {\n    return null;\n}\nexport const getStaticProps = async ({}) => {\n    return {\n        props: {},\n        revalidate: 10,\n    };\n};\n',
+			data: '// This file has been sourced from: /opt/project/pages/index.jsx\nimport A from "./testQWE";\nexport default function Index({}) {\n    return null;\n}\nexport const getStaticProps = async ({}) => {\n    return {\n        props: {},\n        revalidate: 10,\n    };\n};\n',
 		});
 
 		deepStrictEqual(externalFileCommands[5], {
