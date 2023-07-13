@@ -97,7 +97,7 @@ describe('next 13 app-directory-boilerplate', function () {
 			'/opt/project/pages/a/index.tsx': '',
 		});
 
-		deepStrictEqual(externalFileCommands.length, 10);
+		deepStrictEqual(externalFileCommands.length, 7);
 
 		ok(
 			externalFileCommands.some(
@@ -126,21 +126,7 @@ describe('next 13 app-directory-boilerplate', function () {
 		ok(
 			externalFileCommands.some(
 				(command) =>
-					command.path === '/opt/project/app/[a]/[b]/layout.tsx',
-			),
-		);
-
-		ok(
-			externalFileCommands.some(
-				(command) =>
 					command.path === '/opt/project/app/[a]/[b]/page.tsx',
-			),
-		);
-
-		ok(
-			externalFileCommands.some(
-				(command) =>
-					command.path === '/opt/project/app/[a]/c/layout.tsx',
 			),
 		);
 
@@ -156,28 +142,22 @@ describe('next 13 app-directory-boilerplate', function () {
 			),
 		);
 
-		ok(
-			externalFileCommands.some(
-				(command) => command.path === '/opt/project/app/a/layout.tsx',
-			),
-		);
-
 		deepStrictEqual(externalFileCommands[1], {
 			kind: 'upsertFile',
 			path: '/opt/project/app/page.tsx',
 			data: '// This file has been sourced from: /opt/project/pages/index.jsx\nexport default function Index({}) {\n    return null;\n}\nexport const getStaticProps = async ({}) => {\n    return {\n        props: {},\n        revalidate: 10,\n    };\n};\n',
 		});
 
-		deepStrictEqual(externalFileCommands[8], {
+		deepStrictEqual(externalFileCommands[5], {
 			kind: 'upsertFile',
-			path: '/opt/project/app/[a]/[b]/page.tsx',
-			data: A_B_DATA,
+			path: '/opt/project/app/[a]/c/page.tsx',
+			data: A_C_DATA,
 		});
 
 		deepStrictEqual(externalFileCommands[6], {
 			kind: 'upsertFile',
-			path: '/opt/project/app/[a]/c/page.tsx',
-			data: A_C_DATA,
+			path: '/opt/project/app/[a]/[b]/page.tsx',
+			data: A_B_DATA,
 		});
 	});
 
