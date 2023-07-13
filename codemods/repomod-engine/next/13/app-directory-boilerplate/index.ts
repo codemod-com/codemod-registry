@@ -71,18 +71,6 @@ export default function RouteLayout(
 }
 `;
 
-const ROUTE_PAGE_CONTENT = `
-export default function RoutePage(
-	{
-		params,
-	}: {
-		params: {},
-	}
-) {
-    return <RouteClientComponent />;
-}
-`;
-
 enum FilePurpose {
 	// root directory
 	ROOT_LAYOUT = 'ROOT_LAYOUT',
@@ -98,7 +86,7 @@ const map = new Map([
 	[FilePurpose.ROOT_ERROR, ROOT_ERROR_CONTENT],
 	[FilePurpose.ROOT_NOT_FOUND, ROOT_NOT_FOUND_CONTENT],
 	[FilePurpose.ROOT_PAGE, ''],
-	[FilePurpose.ROUTE_PAGE, ROUTE_PAGE_CONTENT],
+	[FilePurpose.ROUTE_PAGE, ''],
 ]);
 
 const EXTENSION = '.tsx';

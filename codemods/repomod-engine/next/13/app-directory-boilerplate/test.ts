@@ -63,22 +63,12 @@ const transform = async (json: DirectoryJSON) => {
 const A_B_DATA = `// This file has been sourced from: /opt/project/pages/[a]/[b].tsx
 import { X } from "../../../testABC";
 import { Y } from "../testDEF";
-export default function RoutePage({ params, }: {
-    params: {};
-}) {
-    return <RouteClientComponent />;
-}
 // TODO reimplement getStaticPath as generateStaticParams
 export const getStaticPath = () => {
 };
 `;
 
 const A_C_DATA = `// This file has been sourced from: /opt/project/pages/[a]/c.tsx
-export default function RoutePage({ params, }: {
-    params: {};
-}) {
-    return <RouteClientComponent />;
-}
 // TODO reimplement getServerSideProps with custom logic
 export const getServerSideProps = () => {
 };
