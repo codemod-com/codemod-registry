@@ -3,6 +3,7 @@ import {
 	ASTNode,
 	ArrowFunctionExpression,
 	Collection,
+	File,
 	FileInfo,
 	FunctionDeclaration,
 	JSCodeshift,
@@ -136,10 +137,27 @@ const deepCloneCollection = <T extends ASTNode>(
 	return j(root.toSource());
 };
 
+const addImportStatement: ModFunction<File, 'write'> = (j, root, settings) => {
+	if (typeof settings.statement !== 'string') {
+		return [false, []];
+	}
+
+	const importSpecifier = j.importSpecifier(j.identifier(settings.statement));
+
+	const importDeclaration = j.importDeclaration(
+		[importSpecifier],
+		j.literal('next'),
+	);
+
+	root.find(j.Program).get('body', 0).insertBefore(importDeclaration);
+
+	return [false, []];
+};
+
 const addGetDataFunction: ModFunction<
 	FunctionDeclaration | ArrowFunctionExpression,
 	'write'
-> = (j, root) => {
+> = (j, root, settings) => {
 	const cloned = deepCloneCollection(j, root);
 
 	const clonedFunctionDeclarationCollection = cloned.find(
@@ -207,8 +225,28 @@ const addGetDataFunction: ModFunction<
 			}
 		});
 
+	const params = clonedFunction.value.params.length
+		? clonedFunction.value.params
+		: [j.identifier('ctx')];
+
+	const contextTypeName =
+		settings.methodName === 'getStaticProps'
+			? 'GetStaticPropsContext'
+			: 'GetServerSidePropsContext';
+
+	params.forEach((p) => {
+		if (
+			(p.type === 'ObjectPattern' || p.type === 'Identifier') &&
+			!p.typeAnnotation
+		) {
+			p.typeAnnotation = j.tsTypeAnnotation(
+				j.tsTypeReference(j.identifier(contextTypeName)),
+			);
+		}
+	});
+
 	const getDataFunctionDeclaration = j.functionDeclaration.from({
-		params: clonedFunction.value.params,
+		params,
 		body:
 			clonedFunction.value.body.type === 'BlockStatement'
 				? clonedFunction.value.body
@@ -239,7 +277,16 @@ const addGetDataFunction: ModFunction<
 		getDataFunctionDeclaration,
 	);
 
-	return [true, []];
+	return [
+		true,
+		[
+			[
+				addImportStatement,
+				root.closest(j.File),
+				{ statement: contextTypeName },
+			],
+		],
+	];
 };
 
 // @TODO fix code duplication
@@ -260,7 +307,11 @@ export const findGetStaticPropsFunctionDeclarations: ModFunction<
 		const functionDeclarationCollection = j(functionDeclarationPath);
 
 		lazyModFunctions.push(
-			[addGetDataFunction, functionDeclarationCollection, settings],
+			[
+				addGetDataFunction,
+				functionDeclarationCollection,
+				{ ...settings, methodName: 'getStaticProps' },
+			],
 			[findReturnStatements, functionDeclarationCollection, settings],
 			[
 				findComponentFunctionDefinition,
@@ -299,7 +350,11 @@ export const findGetStaticPropsArrowFunctions: ModFunction<File, 'read'> = (
 		}
 
 		lazyModFunctions.push(
-			[addGetDataFunction, arrowFunctionCollection, settings],
+			[
+				addGetDataFunction,
+				arrowFunctionCollection,
+				{ ...settings, methodName: 'getStaticProps' },
+			],
 			[findReturnStatements, arrowFunctionCollection, settings],
 			[
 				findComponentFunctionDefinition,
@@ -328,7 +383,11 @@ export const findGetServerSidePropsFunctionDeclarations: ModFunction<
 		const functionDeclarationCollection = j(functionDeclarationPath);
 
 		lazyModFunctions.push(
-			[addGetDataFunction, functionDeclarationCollection, settings],
+			[
+				addGetDataFunction,
+				functionDeclarationCollection,
+				{ ...settings, methodName: 'getServerSideProps' },
+			],
 			[findReturnStatements, functionDeclarationCollection, settings],
 			[
 				findComponentFunctionDefinition,
@@ -369,7 +428,11 @@ export const findGetServerSidePropsArrowFunctions: ModFunction<File, 'read'> = (
 		}
 
 		lazyModFunctions.push(
-			[addGetDataFunction, arrowFunctionCollection, settings],
+			[
+				addGetDataFunction,
+				arrowFunctionCollection,
+				{ ...settings, methodName: 'getServerSideProps' },
+			],
 			[findReturnStatements, arrowFunctionCollection, settings],
 			[
 				findComponentFunctionDefinition,
@@ -754,7 +817,14 @@ export const addVariableDeclarations: ModFunction<ObjectProperty, 'write'> = (
 	root,
 	settings,
 ) => {
-	const params = settings.includeParams ? [j.identifier('params')] : [];
+	const objectExpression = j.objectExpression([
+		j.objectProperty.from({
+			key: j.identifier('params'),
+			value: j.identifier('params'),
+			shorthand: true,
+		}),
+	]);
+
 	const objectProperties: ObjectProperty[] = [];
 
 	root.forEach((objectPropertyPath) => {
@@ -770,7 +840,7 @@ export const addVariableDeclarations: ModFunction<ObjectProperty, 'write'> = (
 		j.variableDeclarator(
 			j.objectPattern(objectProperties),
 			j.awaitExpression(
-				j.callExpression(j.identifier(`getData`), params),
+				j.callExpression(j.identifier(`getData`), [objectExpression]),
 			),
 		),
 	]);
@@ -871,7 +941,7 @@ export const findObjectPropertiesWithinFunctionParameters: ModFunction<
 			},
 		});
 
-		if (paramsProperty.length === 0 && settings.includeParams) {
+		if (paramsProperty.length === 0) {
 			const props = objectPatternPath.value.properties;
 
 			const newProperty = j.property.from({
@@ -883,11 +953,11 @@ export const findObjectPropertiesWithinFunctionParameters: ModFunction<
 
 			props.push(newProperty);
 
-			root.forEach((rootPath) => {
-				rootPath.value.typeAnnotation = j.tsTypeAnnotation(
-					j.tsTypeReference(j.identifier('PageProps')),
-				);
-			});
+			// root.forEach((rootPath) => {
+			// 	rootPath.value.typeAnnotation = j.tsTypeAnnotation(
+			// 		j.tsTypeReference(j.identifier('PageProps')),
+			// 	);
+			// });
 		}
 	});
 
