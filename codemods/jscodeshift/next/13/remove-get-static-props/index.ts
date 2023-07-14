@@ -1,10 +1,13 @@
 import {
 	API,
+	ASTNode,
+	ArrowFunctionExpression,
 	Collection,
 	FileInfo,
 	FunctionDeclaration,
 	JSCodeshift,
 	ObjectPattern,
+	ObjectProperty,
 	Options,
 	Transform,
 } from 'jscodeshift';
@@ -124,6 +127,118 @@ const addPageParamsTypeAlias: ModFunction<File, 'write'> = (j, root) => {
 	return [true, []];
 };
 
+const deepCloneCollection = <T extends ASTNode>(
+	j: JSCodeshift,
+	root: Collection<T>,
+) => {
+	return j(root.toSource());
+};
+
+const addGetDataFunction: ModFunction<
+	FunctionDeclaration | ArrowFunctionExpression,
+	'write'
+> = (j, root) => {
+	const cloned = deepCloneCollection(j, root);
+
+	const clonedFunctionDeclarationCollection = cloned.find(
+		j.FunctionDeclaration,
+	);
+	const clonedFArrowFunctionExpressionCollection = cloned.find(
+		j.ArrowFunctionExpression,
+	);
+
+	const clonedFunction =
+		clonedFunctionDeclarationCollection.paths()[0] ??
+		clonedFArrowFunctionExpressionCollection.paths()[0] ??
+		null;
+
+	if (clonedFunction === null) {
+		return [false, []];
+	}
+
+	j(clonedFunction)
+		.find(j.ReturnStatement)
+		.forEach((path) => {
+			const node = path.value;
+
+			const argument = node.argument;
+
+			if (argument === null) {
+				return;
+			}
+
+			// common case #1
+			// return { props: ... }
+			if (argument.type === 'ObjectExpression') {
+				const props =
+					argument.properties.find(
+						(node): node is ObjectProperty =>
+							node.type === 'ObjectProperty' &&
+							node.key.type === 'Identifier' &&
+							node.key.name === 'props',
+					) ?? null;
+
+				if (props === null) {
+					return;
+				}
+
+				const propsPropValue = props.value;
+
+				// @TODO find a way to check if propsPropValue is ExpressionKind without making a lot of checks
+				if (propsPropValue.type !== 'ObjectExpression') {
+					return;
+				}
+
+				node.argument = propsPropValue;
+			}
+
+			// common case #2
+			// res.props = ...;
+			// return res;
+			if (argument.type === 'Identifier') {
+				node.argument = j.memberExpression(
+					argument,
+					j.identifier('props'),
+				);
+			}
+		});
+
+	const getDataFunctionDeclaration = j.functionDeclaration.from({
+		params: clonedFunction.value.params,
+		body:
+			clonedFunction.value.body.type === 'BlockStatement'
+				? clonedFunction.value.body
+				: j.blockStatement([]),
+		id: j.identifier('getData'),
+		async: true,
+	});
+
+
+	const program = root.closest(j.Program);
+
+	const programNode = program.paths()[0] ?? null;
+
+	if (programNode === null) {
+		return [false, []];
+	}
+
+	const lastImportDeclarationIndex = findLastIndex(
+		programNode.value.body,
+		(node) => node.type === 'ImportDeclaration',
+	);
+
+	const insertPosition =
+		lastImportDeclarationIndex === -1 ? 0 : lastImportDeclarationIndex + 1;
+
+	programNode.value.body.splice(
+		insertPosition,
+		0,
+		getDataFunctionDeclaration,
+	);
+
+	return [true, []];
+};
+
 export const findGetStaticPropsFunctionDeclarations: ModFunction<
 	File,
 	'read'
@@ -141,11 +256,17 @@ export const findGetStaticPropsFunctionDeclarations: ModFunction<
 		const functionDeclarationCollection = j(functionDeclarationPath);
 
 		lazyModFunctions.push(
+			[addGetDataFunction, functionDeclarationCollection, settings],
 			[findReturnStatements, functionDeclarationCollection, settings],
 			[
 				addCommentOnFunctionDeclaration,
 				functionDeclarationCollection,
 				settings,
+			],
+			[
+				findComponentFunctionDefinition,
+				root,
+				{ name: '', includeParams: settings.includeParams },
 			],
 		);
 	});
@@ -178,11 +299,17 @@ export const findGetStaticPropsArrowFunctions: ModFunction<File, 'read'> = (
 		}
 
 		lazyModFunctions.push(
+			[addGetDataFunction, arrowFunctionCollection, settings],
 			[findReturnStatements, arrowFunctionCollection, settings],
 			[
 				addCommentOnFunctionDeclaration,
 				arrowFunctionCollection,
 				settings,
+			],
+			[
+				findComponentFunctionDefinition,
+				root,
+				{ name: '', includeParams: settings.includeParams },
 			],
 		);
 	});
@@ -205,11 +332,17 @@ export const findGetServerSidePropsFunctionDeclarations: ModFunction<
 		const functionDeclarationCollection = j(functionDeclarationPath);
 
 		lazyModFunctions.push(
+			[addGetDataFunction, functionDeclarationCollection, settings],
 			[findReturnStatements, functionDeclarationCollection, settings],
 			[
 				addCommentOnFunctionDeclaration,
 				functionDeclarationCollection,
 				settings,
+			],
+			[
+				findComponentFunctionDefinition,
+				root,
+				{ name: '', includeParams: settings.includeParams },
 			],
 		);
 	});
@@ -244,11 +377,17 @@ export const findGetServerSidePropsArrowFunctions: ModFunction<File, 'read'> = (
 		}
 
 		lazyModFunctions.push(
+			[addGetDataFunction, arrowFunctionCollection, settings],
 			[findReturnStatements, arrowFunctionCollection, settings],
 			[
 				addCommentOnFunctionDeclaration,
 				arrowFunctionCollection,
 				settings,
+			],
+			[
+				findComponentFunctionDefinition,
+				root,
+				{ name: '', includeParams: settings.includeParams },
 			],
 		);
 	});
@@ -367,10 +506,11 @@ export const findReturnStatements: ModFunction<FunctionDeclaration, 'read'> = (
 			return;
 		}
 
-		lazyModFunctions.push(
-			[findPropsObjectProperty, returnStatementCollection, settings],
-			[findRevalidateObjectProperty, returnStatementCollection, settings],
-		);
+		lazyModFunctions.push([
+			findRevalidateObjectProperty,
+			returnStatementCollection,
+			settings,
+		]);
 	});
 
 	return [false, lazyModFunctions];
@@ -552,67 +692,6 @@ export const addRevalidateVariableDeclaration: ModFunction<any, 'write'> = (
 	return [dirtyFlag, []];
 };
 
-export const findPropsObjectProperty: ModFunction<any, 'read'> = (
-	j,
-	root,
-	settings,
-) => {
-	const lazyModFunctions: LazyModFunction[] = [];
-	root.find(j.ObjectProperty, {
-		key: {
-			type: 'Identifier',
-			name: 'props',
-		},
-	}).forEach((objectPropertyPath) => {
-		const objectPropertyCollection = j(objectPropertyPath);
-
-		lazyModFunctions.push([
-			findObjectProperties,
-			objectPropertyCollection,
-			settings,
-		]);
-	});
-
-	return [false, lazyModFunctions];
-};
-
-export const findObjectProperties: ModFunction<any, 'read'> = (
-	j,
-	root,
-	settings,
-) => {
-	const lazyModFunctions: LazyModFunction[] = [];
-
-	const fileCollection = root.closest(j.File);
-	root.find(j.ObjectProperty, {
-		key: {
-			type: 'Identifier',
-		},
-	}).forEach((objectPropertyPath) => {
-		const objectProperty = objectPropertyPath.value;
-
-		if (objectProperty.key.type !== 'Identifier') {
-			return;
-		}
-
-		const { name } = objectProperty.key;
-		lazyModFunctions.push(
-			[
-				addGetXFunctionDefinition,
-				fileCollection,
-				{ name, includeParams: settings.includeParams },
-			],
-			[
-				findComponentFunctionDefinition,
-				fileCollection,
-				{ name, includeParams: settings.includeParams },
-			],
-		);
-	});
-
-	return [false, lazyModFunctions];
-};
-
 export const addGetXFunctionDefinition: ModFunction<File, 'write'> = (
 	j,
 	root,
@@ -706,14 +785,6 @@ export const findComponentFunctionDefinition: ModFunction<File, 'read'> = (
 			functionDeclarationCollection,
 			settings,
 		]);
-
-		if (settings.methodName !== 'getStaticPaths') {
-			lazyModFunctions.push([
-				addVariableDeclarations,
-				functionDeclarationCollection,
-				settings,
-			]);
-		}
 	});
 
 	return [false, lazyModFunctions];
@@ -723,19 +794,24 @@ export const addVariableDeclarations: ModFunction<
 	FunctionDeclaration,
 	'write'
 > = (j, root, settings) => {
-	const name = 'name' in settings ? String(settings.name) ?? '' : '';
-	const identifierName = name
-		.split('')
-		.map((character, i) => (i == 0 ? character.toUpperCase() : character))
-		.join('');
+	const names =
+		'names' in settings ? String(settings.names).split(',') ?? [] : [];
 
 	const params = settings.includeParams ? [j.identifier('params')] : [];
 
 	const variableDeclaration = j.variableDeclaration('const', [
 		j.variableDeclarator(
-			j.identifier(name),
+			j.objectPattern(
+				names.map((name) =>
+					j.objectProperty.from({
+						shorthand: true,
+						value: j.identifier(name),
+						key: j.identifier(name),
+					}),
+				),
+			),
 			j.awaitExpression(
-				j.callExpression(j.identifier(`get${identifierName}`), params),
+				j.callExpression(j.identifier(`getData`), params),
 			),
 		),
 	]);
@@ -745,20 +821,6 @@ export const addVariableDeclarations: ModFunction<
 		const blockStatement = blockStatementPath.value;
 		// only add variableDeclaration to blackStatement if its direct child of the FunctionDeclaration
 		if (blockStatementPath.parentPath !== root.paths()[0]) {
-			return;
-		}
-
-		const variableDeclarationAlreadyExists =
-			blockStatement.body.findIndex((node) => {
-				return (
-					node.type === 'VariableDeclaration' &&
-					node.declarations[0]?.type === 'VariableDeclarator' &&
-					node.declarations[0]?.id?.type === 'Identifier' &&
-					node.declarations[0]?.id.name === name
-				);
-			}) !== -1;
-
-		if (variableDeclarationAlreadyExists) {
 			return;
 		}
 
@@ -825,17 +887,45 @@ export const findObjectPropertiesWithinFunctionParameters: ModFunction<
 		}
 	});
 
-	const name = 'name' in settings ? String(settings.name) ?? '' : '';
 	const objectPropertyCollection = root.find(j.ObjectProperty, {
 		key: {
 			type: 'Identifier',
-			name,
 		},
 	});
 
-	const lazyModFunctions: LazyModFunction[] = [
-		[removeCollection, objectPropertyCollection, settings],
-	];
+	const propsToBeMovedToComponent: ObjectProperty[] = [];
+
+	objectPropertyCollection.forEach((objectPropertyPath) => {
+		if (
+			objectPropertyPath.value.key.type === 'Identifier' &&
+			!['params', 'searchParams'].includes(
+				objectPropertyPath.value.key.name,
+			)
+		) {
+			propsToBeMovedToComponent.push(objectPropertyPath.value);
+		}
+	});
+
+	const lazyModFunctions: LazyModFunction[] = [];
+
+	const updatedSettings = {
+		...settings,
+		names: propsToBeMovedToComponent
+			.map((prop) => ('name' in prop.key ? prop.key.name : ''))
+			.join(),
+	};
+
+	lazyModFunctions.push([
+		addVariableDeclarations,
+		root.closest(j.FunctionDeclaration),
+		updatedSettings,
+	]);
+
+	lazyModFunctions.push([
+		removeCollection,
+		objectPropertyCollection,
+		settings,
+	]);
 
 	return [false, lazyModFunctions];
 };
