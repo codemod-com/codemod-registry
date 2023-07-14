@@ -12,16 +12,18 @@ import {
 	Transform,
 } from 'jscodeshift';
 
+type Settings = Partial<Record<string, string | boolean | Collection<any>>>;
+
 type ModFunction<T, D extends 'read' | 'write'> = (
 	j: JSCodeshift,
 	root: Collection<T>,
-	settings: Partial<Record<string, string | boolean>>,
+	settings: Settings,
 ) => [D extends 'write' ? boolean : false, ReadonlyArray<LazyModFunction>];
 
 type LazyModFunction = [
 	ModFunction<any, 'read' | 'write'>,
 	Collection<any>,
-	Partial<Record<string, string | boolean>>,
+	Settings,
 ];
 
 // @TODO
@@ -747,37 +749,40 @@ export const findComponentFunctionDefinition: ModFunction<File, 'read'> = (
 	return [false, lazyModFunctions];
 };
 
-export const addVariableDeclarations: ModFunction<
-	FunctionDeclaration,
-	'write'
-> = (j, root, settings) => {
-	const names =
-		'names' in settings ? String(settings.names).split(',') ?? [] : [];
-
+export const addVariableDeclarations: ModFunction<ObjectProperty, 'write'> = (
+	j,
+	root,
+	settings,
+) => {
 	const params = settings.includeParams ? [j.identifier('params')] : [];
+	const objectProperties: ObjectProperty[] = [];
+
+	root.forEach((objectPropertyPath) => {
+		objectProperties.push(
+			j.objectProperty.from({
+				...objectPropertyPath.value,
+				shorthand: true,
+			}),
+		);
+	});
 
 	const variableDeclaration = j.variableDeclaration('const', [
 		j.variableDeclarator(
-			j.objectPattern(
-				names.map((name) =>
-					j.objectProperty.from({
-						shorthand: true,
-						value: j.identifier(name),
-						key: j.identifier(name),
-					}),
-				),
-			),
+			j.objectPattern(objectProperties),
 			j.awaitExpression(
 				j.callExpression(j.identifier(`getData`), params),
 			),
 		),
 	]);
 
+	const functionDeclaration =
+		settings.component as Collection<FunctionDeclaration>;
+
 	let addedVariableDeclaration = false;
-	root.find(j.BlockStatement).forEach((blockStatementPath) => {
+	functionDeclaration.find(j.BlockStatement).forEach((blockStatementPath) => {
 		const blockStatement = blockStatementPath.value;
 		// only add variableDeclaration to blackStatement if its direct child of the FunctionDeclaration
-		if (blockStatementPath.parentPath !== root.paths()[0]) {
+		if (blockStatementPath.parentPath !== functionDeclaration.paths()[0]) {
 			return;
 		}
 
@@ -785,7 +790,7 @@ export const addVariableDeclarations: ModFunction<
 		addedVariableDeclaration = true;
 	});
 
-	root.forEach((functionDeclarationPath) => {
+	functionDeclaration.forEach((functionDeclarationPath) => {
 		if (addedVariableDeclaration && !functionDeclarationPath.value.async) {
 			functionDeclarationPath.value.async = true;
 		}
@@ -800,19 +805,60 @@ export const findObjectPatternsWithFunctionDeclaration: ModFunction<
 > = (j, root, settings) => {
 	const lazyModFunctions: LazyModFunction[] = [];
 
-	root.find(j.ObjectPattern).forEach((objectPatternPath) => {
-		const objectPatternCollection = j(objectPatternPath);
+	root.find(j.ObjectPattern)
+		.filter(
+			(path) =>
+				(path.parentPath.node.type === 'FunctionDeclaration' ||
+					path.parentPath.node.type === 'ArrowFunctionExpression') &&
+				path.parentPath.name === 'params',
+		)
+		.forEach((objectPatternPath) => {
+			const objectPatternCollection = j(objectPatternPath);
 
-		lazyModFunctions.push([
-			findObjectPropertiesWithinFunctionParameters,
-			objectPatternCollection,
-			settings,
-		]);
-	});
+			lazyModFunctions.push([
+				findObjectPropertiesWithinFunctionParameters,
+				objectPatternCollection,
+				{ ...settings, component: root },
+			]);
+		});
 
 	return [false, lazyModFunctions];
 };
 
+// @TODO
+function deepCopyObjectPattern(j: JSCodeshift, objectPattern: ObjectPattern) {
+	const newObjectPattern = j.objectPattern([]);
+
+	objectPattern.properties.forEach((property) => {
+		if (!('value' in property)) {
+			return;
+		}
+
+		if (property.value.type === 'ObjectPattern') {
+			const newValue = deepCopyObjectPattern(j, property.value);
+
+			newObjectPattern.properties.push(
+				j.objectProperty.from({
+					key: property.key,
+					value: newValue,
+					shorthand: true,
+				}),
+			);
+
+			return;
+		}
+
+		newObjectPattern.properties.push(
+			j.objectProperty.from({
+				key: property.key,
+				value: property.value,
+				shorthand: true,
+			}),
+		);
+	});
+
+	return newObjectPattern;
+}
 export const findObjectPropertiesWithinFunctionParameters: ModFunction<
 	ObjectPattern,
 	'read'
@@ -824,6 +870,7 @@ export const findObjectPropertiesWithinFunctionParameters: ModFunction<
 				name: 'params',
 			},
 		});
+
 		if (paramsProperty.length === 0 && settings.includeParams) {
 			const props = objectPatternPath.value.properties;
 
@@ -850,33 +897,24 @@ export const findObjectPropertiesWithinFunctionParameters: ModFunction<
 		},
 	});
 
-	const propsToBeMovedToComponent: ObjectProperty[] = [];
-
-	objectPropertyCollection.forEach((objectPropertyPath) => {
-		if (
-			objectPropertyPath.value.key.type === 'Identifier' &&
-			!['params', 'searchParams'].includes(
-				objectPropertyPath.value.key.name,
-			)
-		) {
-			propsToBeMovedToComponent.push(objectPropertyPath.value);
-		}
-	});
-
 	const lazyModFunctions: LazyModFunction[] = [];
 
-	const updatedSettings = {
-		...settings,
-		names: propsToBeMovedToComponent
-			.map((prop) => ('name' in prop.key ? prop.key.name : ''))
-			.join(),
-	};
+	const objectPattern = root.paths()[0] ?? null;
 
-	lazyModFunctions.push([
-		addVariableDeclarations,
-		root.closest(j.FunctionDeclaration),
-		updatedSettings,
-	]);
+	if (!objectPattern) {
+		return [false, []];
+	}
+
+	const clonedObjectPattern = deepCopyObjectPattern(j, objectPattern.value);
+
+	const properties = clonedObjectPattern.properties.filter(
+		(p) =>
+			p.type === 'ObjectProperty' &&
+			p.key.type === 'Identifier' &&
+			!['params', 'searchParams'].includes(p.key.name),
+	);
+
+	lazyModFunctions.push([addVariableDeclarations, j(properties), settings]);
 
 	lazyModFunctions.push([
 		removeCollection,

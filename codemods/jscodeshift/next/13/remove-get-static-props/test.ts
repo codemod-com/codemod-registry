@@ -111,6 +111,50 @@ describe('next 13 remove-get-static-props', function () {
 		);
 	});
 
+	it('should replace props nested props properly', function () {
+		const INPUT = `
+			export async function getStaticProps() {
+				const allPosts = await promise;
+				return { props: { allPosts } };
+			}
+
+			export default function Component({ allPosts: { edges }}) {
+			return edges.map(edge => <b>edge</b>)
+	          }
+	      `;
+
+		const OUTPUT = `
+			async function getData(){
+				const allPosts = await promise;
+				return { allPosts } ;
+			}
+
+			export 
+			async function getStaticProps() {
+				const allPosts = await promise;
+				return { props: { allPosts } };
+			}
+
+			export default async function Component({}) {
+				const { allPosts: { edges } } = await getData();
+
+				return edges.map(edge => <b>edge</b>)
+			}
+		`;
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+
 	it('should create additional functions if getStaticProps is present', function () {
 		const INPUT = `
 			export async function getStaticProps() {
