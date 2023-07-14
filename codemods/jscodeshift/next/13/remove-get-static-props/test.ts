@@ -39,7 +39,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { users };
 			}
 
-			export // TODO: remove this function
+			export
 			async function getStaticProps() {
 				const users = await promise;
 
@@ -85,7 +85,7 @@ describe('next 13 remove-get-static-props', function () {
 				return res.props;
 			}
 
-			export // TODO: remove this function
+			export 
 			async function getStaticProps() {
 				const users = await promise;
 				const res = { props: { users } };
@@ -133,7 +133,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { users, groups }
 			}
 
-			export // TODO: remove this function
+			export 
 			async function getStaticProps() {
 				const users = await promise;
 				const groups = await anotherPromise;
@@ -187,7 +187,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { users, groups }
 			}
 
-			export // TODO: remove this function
+			export
 			async function getStaticProps() {
 				const users = await promise;
 				const groups = await anotherPromise;
@@ -246,7 +246,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { users, groups }
 			}
 
-			export // TODO: remove this function
+			export
 			async function getStaticProps() {
 				const users = await promise;
 				const groups = await anotherPromise;
@@ -306,7 +306,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { users, groups };
 			}
 
-			export const getStaticProps = // TODO: remove this function
+			export const getStaticProps = 
 			 async () => {
 				const users = await promise;
 				const groups = await anotherPromise;
@@ -373,7 +373,7 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 
-			export const getStaticProps =  // TODO: remove this function 
+			export const getStaticProps =  
 			 async () => {
 				const users = await promise;
 				const groups = await anotherPromise;
@@ -444,7 +444,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { users, groups };
 			}
 
-			export const getStaticProps = // TODO: remove this function
+			export const getStaticProps = 
 			 async () => {
 				const users = await promise;
 				const groups = await anotherPromise;
@@ -507,7 +507,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { projects };
 			}
 
-			export // TODO: remove this function
+			export
 			async function getServerSideProps() {
 				const res = await fetch(\`https://...\`);
 				const projects = await res.json();
@@ -586,7 +586,7 @@ describe('next 13 remove-get-static-props', function () {
 			return { post };
 		}
 
-		export // TODO: remove this function
+		export 
 	  async function getStaticPaths() {
 	    return {
 	            paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
@@ -594,7 +594,7 @@ describe('next 13 remove-get-static-props', function () {
 	    };
 	  }
 
-		export // TODO: remove this function
+		export
 		async function getStaticProps({ params }) {
 			const res = await fetch(\`https://.../posts/\${params.id}\`);
 			const post = await res.json();
@@ -668,7 +668,7 @@ describe('next 13 remove-get-static-props', function () {
 			return { post }
 		}
 
-		export // TODO: remove this function
+		export 
 	  async function getStaticPaths() {
 	    return {
 	            paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
@@ -676,7 +676,7 @@ describe('next 13 remove-get-static-props', function () {
 	    };
 	  }
 
-		export // TODO: remove this function
+		export 
 		async function getStaticProps({ params }) {
 			const res = await fetch(\`https://.../posts/\${params.id}\`);
 			const post = await res.json();
@@ -748,7 +748,7 @@ describe('next 13 remove-get-static-props', function () {
 			return { post };
 		}
 
-		export // TODO: remove this function
+		export
 	  async function getStaticPaths() {
 	    return {
 	            paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
@@ -756,7 +756,7 @@ describe('next 13 remove-get-static-props', function () {
 	    };
 	  }
 
-		export // TODO: remove this function
+		export 
 		async function getStaticProps({ params }) {
 			const res = await fetch(\`https://.../posts/\${params.id}\`);
 			const post = await res.json();

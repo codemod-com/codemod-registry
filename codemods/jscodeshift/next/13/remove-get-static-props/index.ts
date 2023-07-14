@@ -240,6 +240,7 @@ const addGetDataFunction: ModFunction<
 	return [true, []];
 };
 
+// @TODO fix code duplication
 export const findGetStaticPropsFunctionDeclarations: ModFunction<
 	File,
 	'read'
@@ -260,11 +261,6 @@ export const findGetStaticPropsFunctionDeclarations: ModFunction<
 			[addGetDataFunction, functionDeclarationCollection, settings],
 			[findReturnStatements, functionDeclarationCollection, settings],
 			[
-				addCommentOnFunctionDeclaration,
-				functionDeclarationCollection,
-				settings,
-			],
-			[
 				findComponentFunctionDefinition,
 				root,
 				{ name: '', includeParams: settings.includeParams },
@@ -275,6 +271,7 @@ export const findGetStaticPropsFunctionDeclarations: ModFunction<
 	return [false, lazyModFunctions];
 };
 
+// @TODO fix code duplication
 export const findGetStaticPropsArrowFunctions: ModFunction<File, 'read'> = (
 	j,
 	root,
@@ -303,11 +300,6 @@ export const findGetStaticPropsArrowFunctions: ModFunction<File, 'read'> = (
 			[addGetDataFunction, arrowFunctionCollection, settings],
 			[findReturnStatements, arrowFunctionCollection, settings],
 			[
-				addCommentOnFunctionDeclaration,
-				arrowFunctionCollection,
-				settings,
-			],
-			[
 				findComponentFunctionDefinition,
 				root,
 				{ name: '', includeParams: settings.includeParams },
@@ -318,6 +310,7 @@ export const findGetStaticPropsArrowFunctions: ModFunction<File, 'read'> = (
 	return [false, lazyModFunctions];
 };
 
+// @TODO fix code duplication
 export const findGetServerSidePropsFunctionDeclarations: ModFunction<
 	File,
 	'read'
@@ -336,11 +329,6 @@ export const findGetServerSidePropsFunctionDeclarations: ModFunction<
 			[addGetDataFunction, functionDeclarationCollection, settings],
 			[findReturnStatements, functionDeclarationCollection, settings],
 			[
-				addCommentOnFunctionDeclaration,
-				functionDeclarationCollection,
-				settings,
-			],
-			[
 				findComponentFunctionDefinition,
 				root,
 				{ name: '', includeParams: settings.includeParams },
@@ -351,6 +339,7 @@ export const findGetServerSidePropsFunctionDeclarations: ModFunction<
 	return [false, lazyModFunctions];
 };
 
+// @TODO fix code duplication
 export const findGetServerSidePropsArrowFunctions: ModFunction<File, 'read'> = (
 	j,
 	root,
@@ -381,11 +370,6 @@ export const findGetServerSidePropsArrowFunctions: ModFunction<File, 'read'> = (
 			[addGetDataFunction, arrowFunctionCollection, settings],
 			[findReturnStatements, arrowFunctionCollection, settings],
 			[
-				addCommentOnFunctionDeclaration,
-				arrowFunctionCollection,
-				settings,
-			],
-			[
 				findComponentFunctionDefinition,
 				root,
 				{ name: '', includeParams: settings.includeParams },
@@ -396,6 +380,7 @@ export const findGetServerSidePropsArrowFunctions: ModFunction<File, 'read'> = (
 	return [false, lazyModFunctions];
 };
 
+// @TODO fix code duplication
 export const findGetStaticPathsFunctionDeclarations: ModFunction<
 	File,
 	'read'
@@ -416,17 +401,12 @@ export const findGetStaticPathsFunctionDeclarations: ModFunction<
 			[findReturnStatements, functionDeclarationCollection, newSettings],
 			[addGenerateStaticParamsFunctionDeclaration, root, newSettings],
 			[addPageParamsTypeAlias, root, newSettings],
-			[
-				addCommentOnFunctionDeclaration,
-				functionDeclarationCollection,
-				newSettings,
-			],
 		);
 	});
 
 	return [false, lazyModFunctions];
 };
-
+// @TODO fix code duplication
 export const findGetStaticPathsArrowFunctions: ModFunction<File, 'read'> = (
 	j,
 	root,
@@ -457,34 +437,10 @@ export const findGetStaticPathsArrowFunctions: ModFunction<File, 'read'> = (
 			[findReturnStatements, arrowFunctionCollection, newSettings],
 			[addGenerateStaticParamsFunctionDeclaration, root, newSettings],
 			[addPageParamsTypeAlias, root, newSettings],
-			[
-				addCommentOnFunctionDeclaration,
-				arrowFunctionCollection,
-				newSettings,
-			],
 		);
 	});
 
 	return [false, lazyModFunctions];
-};
-
-export const addCommentOnFunctionDeclaration: ModFunction<
-	FunctionDeclaration,
-	'write'
-> = (j, root) => {
-	const lazyModFunctions: LazyModFunction[] = [];
-	let dirtyFlag = false;
-
-	root.forEach((functionDeclarationPath) => {
-		dirtyFlag = true;
-
-		functionDeclarationPath.value.comments = [
-			...(functionDeclarationPath.value.comments ?? []),
-			j.commentLine(' TODO: remove this function'),
-		];
-	});
-
-	return [dirtyFlag, lazyModFunctions];
 };
 
 export const findReturnStatements: ModFunction<FunctionDeclaration, 'read'> = (
