@@ -335,7 +335,6 @@ describe('next 13 remove-get-static-props', function () {
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT?.replace(/\W/gm, ''),
 		);
-
 	});
 
 	it('should work with hooks that have multiple return statements', function () {
@@ -407,8 +406,6 @@ describe('next 13 remove-get-static-props', function () {
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT?.replace(/\W/gm, ''),
 		);
-
-		
 	});
 
 	it('should not duplicate revalidate prop', function () {

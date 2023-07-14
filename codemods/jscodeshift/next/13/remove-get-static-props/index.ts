@@ -171,12 +171,14 @@ const addGetDataFunction: ModFunction<
 			// return { props: ... }
 			if (argument.type === 'ObjectExpression') {
 				const props =
-					argument.properties.find(
-						(node): node is ObjectProperty =>
-							node.type === 'ObjectProperty' &&
-							node.key.type === 'Identifier' &&
-							node.key.name === 'props',
-					) ?? null;
+					j(argument)
+						.find(j.ObjectProperty, {
+							key: {
+								type: 'Identifier',
+								name: 'props',
+							},
+						})
+						.paths()[0]?.value ?? null;
 
 				if (props === null) {
 					return;
@@ -212,7 +214,6 @@ const addGetDataFunction: ModFunction<
 		id: j.identifier('getData'),
 		async: true,
 	});
-
 
 	const program = root.closest(j.Program);
 
