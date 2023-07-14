@@ -1,131 +1,163 @@
-import { join } from 'path';
-import {
-	existsSync,
-	mkdirSync,
-	readFileSync,
-	readdirSync,
-	writeFileSync,
-} from 'fs';
-import { createHash } from 'crypto';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { access, copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { globSync } from 'glob';
+import esbuild from 'esbuild';
 import * as S from '@effect/schema/Schema';
+import { constants } from 'node:fs';
+import { deflate } from 'node:zlib';
+import { promisify } from 'node:util';
 
-const CodemodSchema = S.struct({
-	kind: S.literal('piranhaRule'),
-	hashDigest: S.string,
-	name: S.string,
-	language: S.string,
-	configurationDirectoryBasename: S.string,
-	rulesTomlFileBasename: S.string,
-});
+const promisifiedDeflate = promisify(deflate);
 
-type Codemod = S.To<typeof CodemodSchema>;
+const codemodConfigSchema = S.union(
+	S.struct({
+		schemaVersion: S.literal('1.0.0'),
+		engine: S.literal('piranha'),
+		language: S.literal('java'),
+	}),
+	S.struct({
+		schemaVersion: S.literal('1.0.0'),
+		engine: S.literal('jscodeshift'),
+	}),
+	S.struct({
+		schemaVersion: S.literal('1.0.0'),
+		engine: S.literal('ts-morph'),
+	}),
+	S.struct({
+		schemaVersion: S.literal('1.0.0'),
+		engine: S.literal('repomod-engine'),
+	}),
+);
 
-const CodemodConfigSchema = S.struct({
-	name: S.string,
-	engine: S.literal('piranha'),
-	language: S.literal('java'),
-});
+const parseCodemodConfigSchema = S.parseSync(codemodConfigSchema);
 
-type CodemodConfig = S.To<typeof CodemodConfigSchema>;
-
-const buildCodemod = (config: CodemodConfig): Codemod => {
-	const hashDigest = createHash('ripemd160')
-		.update(config.name)
-		.digest('base64url');
-
-	const configurationDirectoryBasename = createHash('ripemd160')
-		.update('configuration')
-		.update(config.name)
-		.digest('base64url');
-
-	const hash = createHash('ripemd160')
-		.update('rules.toml')
-		.update(config.name)
-		.digest('base64url');
-
-	const rulesTomlFileBasename = `${hash}.toml`;
-
-	return {
-		kind: 'piranhaRule',
-		hashDigest,
-		name: config.name,
-		language: config.language,
-		configurationDirectoryBasename,
-		rulesTomlFileBasename,
+const transpile = async (
+	input: Buffer,
+	extension: 'js' | 'ts',
+): Promise<Buffer> => {
+	const options: Parameters<typeof esbuild.transform>[1] = {
+		legalComments: 'inline',
+		minifyWhitespace: true,
 	};
+
+	if (extension === 'ts') {
+		options.loader = 'ts';
+	}
+
+	const { code } = await esbuild.transform(input, options);
+
+	return Buffer.from(code, 'utf8');
 };
 
-type Entry = Readonly<{
-	kind: 'README' | 'rules.toml';
-	name: string;
-	path: string;
-}>;
+const build = async () => {
+	const cwd = fileURLToPath(new URL('.', import.meta.url));
 
-const entries: Entry[] = [];
-const codemods: Codemod[] = [];
+	const configFilePaths = globSync('**/config.json', {
+		cwd,
+		dot: false,
+		ignore: ['**/node_modules/**', '**/build/**'],
+	});
 
-const buildDirectoryPath = join(__dirname, './build');
+	const names = configFilePaths.map(dirname);
 
-mkdirSync(buildDirectoryPath, { recursive: true });
+	// emitting names
 
-const handleDirectory = (rootDirectory: string) => {
-	const directories = readdirSync(rootDirectory);
+	const buildDirectoryPath = join(cwd, './build');
 
-	for (const directory of directories) {
-		const configPath = join(rootDirectory, directory, 'config.json');
-		const readmePath = join(rootDirectory, directory, 'README.md');
-		const rulesPath = join(rootDirectory, directory, 'rules.toml');
+	await mkdir(buildDirectoryPath, { recursive: true });
 
-		const config = readFileSync(configPath, 'utf8');
-		const jsonConfig = JSON.parse(config);
+	await writeFile(
+		join(buildDirectoryPath, 'names.json'),
+		JSON.stringify(names),
+	);
 
-		if (existsSync(readmePath)) {
-			const data = readFileSync(readmePath, 'utf8');
+	for (const name of names) {
+		const hashDigest = createHash('ripemd160')
+			.update(name)
+			.digest('base64url');
 
-			const hashDigest = createHash('ripemd160')
-				.update('README.md')
-				.update(jsonConfig.name)
-				.digest('base64url');
+		const codemodDirectoryPath = join(buildDirectoryPath, hashDigest);
 
-			const path = join(buildDirectoryPath, `${hashDigest}.md`);
+		await mkdir(codemodDirectoryPath, { recursive: true });
 
-			entries.push({
-				kind: 'README',
-				name: jsonConfig.name,
-				path: `${hashDigest}.md`,
-			});
+		const configPath = join(cwd, name, 'config.json');
+		console.log(configPath);
 
-			writeFileSync(path, data);
+		const data = await readFile(configPath, { encoding: 'utf8' });
+
+		const config = parseCodemodConfigSchema(JSON.parse(data), {
+			onExcessProperty: 'ignore',
+		});
+
+		{
+			const buildConfigPath = join(codemodDirectoryPath, 'config.json');
+
+			writeFile(buildConfigPath, JSON.stringify(config));
 		}
 
-		const parseCodemodConfigSchema = S.parseEither(CodemodConfigSchema);
+		if (
+			config.engine === 'jscodeshift' ||
+			config.engine === 'ts-morph' ||
+			config.engine === 'repomod-engine'
+		) {
+			try {
+				const indexPath = join(cwd, name, 'index.ts');
 
-		const codemodConfig = parseCodemodConfigSchema(jsonConfig);
+				await access(indexPath, constants.R_OK);
 
-		if (existsSync(rulesPath) && codemodConfig._tag === 'Right') {
-			const data = readFileSync(rulesPath, 'utf8');
+				const data = await readFile(indexPath);
+				const code = await transpile(data, 'ts');
+				const compressedBuffer = await promisifiedDeflate(code);
 
-			const codemod = buildCodemod(codemodConfig.right);
+				const buildIndexPath = join(
+					codemodDirectoryPath,
+					'index.mjs.z',
+				);
 
-			const path = join(
-				buildDirectoryPath,
-				codemod.rulesTomlFileBasename,
+				writeFile(buildIndexPath, compressedBuffer);
+			} catch (error) {
+				console.error(error);
+			}
+
+			try {
+				const indexPath = join(cwd, name, 'index.js');
+
+				await access(indexPath, constants.R_OK);
+
+				const data = await readFile(indexPath);
+				const code = await transpile(data, 'js');
+				const compressedBuffer = await promisifiedDeflate(code);
+
+				const buildIndexPath = join(
+					codemodDirectoryPath,
+					'index.mjs.z',
+				);
+
+				writeFile(buildIndexPath, compressedBuffer);
+			} catch (error) {
+				console.error(error);
+			}
+		} else if (config.engine === 'piranha') {
+			const rulesPath = join(cwd, name, 'rules.toml');
+			const buildRulesPath = join(codemodDirectoryPath, 'rules.toml');
+
+			await copyFile(rulesPath, buildRulesPath);
+		}
+
+		try {
+			const readmePath = join(cwd, name, 'README.md');
+			const buildDescriptionPath = join(
+				codemodDirectoryPath,
+				'description.md',
 			);
 
-			writeFileSync(path, data);
+			await access(readmePath, constants.R_OK);
 
-			codemods.push(codemod);
-		}
+			await copyFile(readmePath, buildDescriptionPath);
+		} catch {}
 	}
 };
 
-handleDirectory(join(__dirname, './codemods/jscodeshift/next/13'));
-handleDirectory(join(__dirname, './codemods/repomod-engine/next/13'));
-handleDirectory(join(__dirname, './codemods/ts-morph/next/13'));
-handleDirectory(join(__dirname, './codemods/piranha'));
-
-writeFileSync(join(buildDirectoryPath, 'index.json'), JSON.stringify(entries));
-writeFileSync(
-	join(buildDirectoryPath, 'codemods.json'),
-	JSON.stringify(codemods),
-);
+await build();

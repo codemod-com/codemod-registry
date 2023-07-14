@@ -1,5 +1,0 @@
-loader:
-    - 'ts-node/esm'
-full-trace: true
-bail: false
-spec: './**/test.ts'
