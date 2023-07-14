@@ -740,7 +740,7 @@ export const findComponentFunctionDefinition: ModFunction<File, 'read'> = (
 		const functionDeclarationCollection = j(functionDeclarationPath);
 
 		lazyModFunctions.push([
-			findObjectPatternsWithFunctionDeclaration,
+			findObjectPatternsWithFunctionParameters,
 			functionDeclarationCollection,
 			settings,
 		]);
@@ -799,7 +799,7 @@ export const addVariableDeclarations: ModFunction<ObjectProperty, 'write'> = (
 	return [true, []];
 };
 
-export const findObjectPatternsWithFunctionDeclaration: ModFunction<
+export const findObjectPatternsWithFunctionParameters: ModFunction<
 	FunctionDeclaration,
 	'read'
 > = (j, root, settings) => {
