@@ -33,19 +33,24 @@ describe('next 13 remove-get-static-props', function () {
 	      `;
 
 		const OUTPUT = `
-			// TODO: implement this function
-			async function getUsers() {
+			import { GetStaticPropsContext } from 'next';
+			async function getData(ctx: GetStaticPropsContext){
+				const users = await promise;
+
+				return { users };
 			}
 
-			export // TODO: remove this function
+			export
 			async function getStaticProps() {
 				const users = await promise;
 
 				return { props: { users } };
 			}
 
-			export default async function Component({}) {
-				const users = await getUsers();
+			export default async function Component({params }) {
+				const {users} = await getData({
+					params, 
+				});
 
 				return users.map(user => <b>user</b>)
 			}
@@ -57,6 +62,100 @@ describe('next 13 remove-get-static-props', function () {
 		};
 
 		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should create an additional function if getStaticProps returns an Identifier', function () {
+		const INPUT = `
+			export async function getStaticProps(context: GetStaticPropsContext) {
+				const users = await promise(context.params);
+				const res = { props: { users } };
+				return res;
+			}
+
+			export default function Component({ users }) {
+				return users.map(user => <b>user</b>)
+	          }
+	      `;
+
+		const OUTPUT = `
+			import { GetStaticPropsContext } from 'next';
+			async function getData(context: GetStaticPropsContext){
+				const users = await promise(context.params);
+				const res = { props: { users } };
+				return res.props;
+			}
+
+			export async function getStaticProps(context: GetStaticPropsContext) {
+				const users = await promise(context.params);
+				const res = { props: { users } };
+				return res;
+			}
+
+			export default async function Component({ params }) {
+				const {users} = await getData({
+					params, 
+				});
+
+				return users.map(user => <b>user</b>)
+			}
+		`;
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should replace props nested props properly', function () {
+		const INPUT = `
+			export async function getStaticProps() {
+				const allPosts = await promise;
+				return { props: { allPosts } };
+			}
+
+			export default function Component({ allPosts: { edges }}) {
+			return edges.map(edge => <b>edge</b>)
+	          }
+	      `;
+
+		const OUTPUT = `
+			import { GetStaticPropsContext } from 'next';
+			async function getData(ctx: GetStaticPropsContext){
+				const allPosts = await promise;
+				return { allPosts } ;
+			}
+
+			export 
+			async function getStaticProps() {
+				const allPosts = await promise;
+				return { props: { allPosts } };
+			}
+
+			export default async function Component({ params }) {
+				const { allPosts: { edges } } = await getData({params});
+
+				return edges.map(edge => <b>edge</b>)
+			}
+		`;
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),
@@ -78,15 +177,15 @@ describe('next 13 remove-get-static-props', function () {
 	      `;
 
 		const OUTPUT = `
-			// TODO: implement this function
-			async function getGroups() {
+		import { GetStaticPropsContext } from 'next';
+		async function getData(ctx: GetStaticPropsContext){
+				const users = await promise;
+				const groups = await anotherPromise;
+
+				return { users, groups }
 			}
 
-			// TODO: implement this function
-			async function getUsers() {
-			}
-
-			export // TODO: remove this function
+			export 
 			async function getStaticProps() {
 				const users = await promise;
 				const groups = await anotherPromise;
@@ -94,9 +193,8 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { users, groups }, revalidate: 1 };
 			}
 
-			export default async function Component({}) {
-				const groups = await getGroups();
-	              const users = await getUsers();
+			export default async function Component({ params }) {
+				const {users, groups } = await getData({ params });
 
 				return [...users, ...groups].map(obj => <b>{obj}</b>)
 			}
@@ -134,15 +232,15 @@ describe('next 13 remove-get-static-props', function () {
 	      `;
 
 		const OUTPUT = `
-			// TODO: implement this function
-			async function getGroups() {
+		import { GetStaticPropsContext } from 'next';
+		async function getData(ctx: GetStaticPropsContext){
+				const users = await promise;
+				const groups = await anotherPromise;
+
+				return { users, groups }
 			}
 
-			// TODO: implement this function
-			async function getUsers() {
-			}
-
-			export // TODO: remove this function
+			export
 			async function getStaticProps() {
 				const users = await promise;
 				const groups = await anotherPromise;
@@ -150,9 +248,8 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { users, groups }, revalidate: 1 };
 			}
 
-			export default async function Component({}) {
-				const groups = await getGroups();
-	      const users = await getUsers();
+			export default async function Component({params}) {
+				const { users, groups } = await getData({ params });
 
 				return <C prop={(a) => {
 					return a;
@@ -194,16 +291,16 @@ describe('next 13 remove-get-static-props', function () {
 	      `;
 
 		const OUTPUT = `
+		import { GetStaticPropsContext } from 'next';
 			import x from "y";
-			// TODO: implement this function
-			async function getGroups() {
+			async function getData(ctx: GetStaticPropsContext) {
+				const users = await promise;
+				const groups = await anotherPromise;
+
+				return { users, groups }
 			}
 
-			// TODO: implement this function
-			async function getUsers() {
-			}
-
-			export // TODO: remove this function
+			export
 			async function getStaticProps() {
 				const users = await promise;
 				const groups = await anotherPromise;
@@ -211,9 +308,8 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { users, groups }, revalidate: 1 };
 			}
 
-			export default async function Component({}) {
-				const groups = await getGroups();
-	      const users = await getUsers();
+			export default async function Component({ params }) {
+				const { users, groups } = await getData(params);
 
 				return <C prop={(a) => {
 					return a;
@@ -235,6 +331,7 @@ describe('next 13 remove-get-static-props', function () {
 			OUTPUT?.replace(/\W/gm, ''),
 		);
 	});
+
 	it('should work with arrow functions', function () {
 		const INPUT = `
 			import x from "y";
@@ -254,16 +351,17 @@ describe('next 13 remove-get-static-props', function () {
 	      `;
 
 		const OUTPUT = `
+			import { GetStaticPropsContext } from 'next';
 			import x from "y";
-			// TODO: implement this function
-			async function getGroups() {
+
+			async function getData(ctx: GetStaticPropsContext) {
+				const users = await promise;
+				const groups = await anotherPromise;
+
+				return { users, groups };
 			}
 
-			// TODO: implement this function
-			async function getUsers() {
-			}
-
-			export const getStaticProps = // TODO: remove this function
+			export const getStaticProps = 
 			 async () => {
 				const users = await promise;
 				const groups = await anotherPromise;
@@ -271,9 +369,8 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { users, groups }, revalidate: 1 };
 			}
 
-			export default async function Component({}) {
-				const groups = await getGroups();
-	      const users = await getUsers();
+			export default async function Component({ params }) {
+				const { users, groups } = await getData({ params });
 
 				return <C prop={(a) => {
 					return a;
@@ -289,6 +386,7 @@ describe('next 13 remove-get-static-props', function () {
 		};
 
 		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT?.replace(/\W/gm, ''),
@@ -298,7 +396,7 @@ describe('next 13 remove-get-static-props', function () {
 	it('should work with hooks that have multiple return statements', function () {
 		const INPUT = `
 			import x from "y";
-			export const getStaticProps = async () => {
+			export const getStaticProps =  async () => {
 				const users = await promise;
 				const groups = await anotherPromise;
 
@@ -318,16 +416,21 @@ describe('next 13 remove-get-static-props', function () {
 	      `;
 
 		const OUTPUT = `
+		import { GetStaticPropsContext } from 'next';
 			import x from "y";
-			// TODO: implement this function
-			async function getGroups() {
+			async function getData(ctx: GetStaticPropsContext) {
+				const users = await promise;
+				const groups = await anotherPromise;
+
+				if(false) {
+					return { users, groups };
+				}
+
+				return { users, groups };
 			}
 
-			// TODO: implement this function
-			async function getUsers() {
-			}
 
-			export const getStaticProps = // TODO: remove this function
+			export const getStaticProps =  
 			 async () => {
 				const users = await promise;
 				const groups = await anotherPromise;
@@ -339,9 +442,8 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { users, groups }, revalidate: 1 };
 			}
 
-			export default async function Component({}) {
-				const groups = await getGroups();
-	      const users = await getUsers();
+			export default async function Component({ params }) {
+				const { users, groups } = await getData({ params });
 
 				return <C prop={(a) => {
 					return a;
@@ -386,16 +488,21 @@ describe('next 13 remove-get-static-props', function () {
 	      `;
 
 		const OUTPUT = `
+		import { GetStaticPropsContext } from 'next';
 			import x from "y";
-			// TODO: implement this function
-			async function getGroups() {
+			
+			async function getData(ctx: GetStaticPropsContext) {
+				const users = await promise;
+				const groups = await anotherPromise;
+
+				if(false) {
+					return { users, groups };
+				}
+
+				return { users, groups };
 			}
 
-			// TODO: implement this function
-			async function getUsers() {
-			}
-
-			export const getStaticProps = // TODO: remove this function
+			export const getStaticProps = 
 			 async () => {
 				const users = await promise;
 				const groups = await anotherPromise;
@@ -407,9 +514,8 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { users, groups }, revalidate: 1 };
 			}
 
-			export default async function Component({}) {
-				const groups = await getGroups();
-	      const users = await getUsers();
+			export default async function Component({ params }) {
+				const { users, groups } = await getData({ params });
 
 				return <C prop={(a) => {
 					return a;
@@ -452,19 +558,24 @@ describe('next 13 remove-get-static-props', function () {
 		} `;
 
 		const OUTPUT = `
-			// TODO: implement this function
-			async function getProjects() {}
+		import { GetServerSidePropsContext } from 'next';
+			async function getData(ctx: GetServerSidePropsContext) {
+				const res = await fetch(\`https://...\`);
+				const projects = await res.json();
 
-			export // TODO: remove this function
-			async function getServerSideProps {
+				return { projects };
+			}
+
+			export
+			async function getServerSideProps() {
 				const res = await fetch(\`https://...\`);
 				const projects = await res.json();
 
 				return { props: { projects } };
 			}
 
-			export default async function Dashboard({}) {
-				const projects = await getProjects();
+			export default async function Dashboard({ params }) {
+				const {projects} = await getData({ params });
 				return (
 					<ul>
 						{projects.map((project) => (
@@ -491,67 +602,71 @@ describe('next 13 remove-get-static-props', function () {
 	it('should handle getStaticPaths', function () {
 		const INPUT = `
 		import PostLayout from '@/components/post-layout';
- 
+
 		export async function getStaticPaths() {
 			return {
 				paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
-				fallback: true, 
+				fallback: true,
 			};
 		}
-		 
+
 		export async function getStaticProps({ params }) {
 			const res = await fetch(\`https://.../posts/\${params.id}\`);
 			const post = await res.json();
-		 
+
 			return { props: { post } };
 		}
-		 
+
 		export default function Post({ post }) {
 			return <PostLayout post={post} />;
 		}
 	`;
 
 		const OUTPUT = `
+		import { GetStaticPropsContext } from "next";
 		import PostLayout from '@/components/post-layout';
- 
+
 		type PageParams = {};
 
-    type PageProps = {
-    	params: PageParams
-    };
+	  type PageProps = {
+	  	params: PageParams
+	  };
 
-				
 		export 	// TODO: implement this function
 		async function generateStaticParams() {
 			return [];
 		}
 		
-		// TODO: implement this function
-		async function getPost(params: PageParams) {}
-		
-		export // TODO: remove this function
-    async function getStaticPaths() {
-      return {
-              paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
+		async function getData({ params }: GetStaticPropsContext) {
+			const res = await fetch(\`https://.../posts/\${params.id}\`);
+			const post = await res.json();
+
+			return { post };
+		}
+
+		export 
+	  async function getStaticPaths() {
+	    return {
+	            paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
 							fallback: true,
-      };
-    }
-		
-		export // TODO: remove this function
+	    };
+	  }
+
+		export
 		async function getStaticProps({ params }) {
 			const res = await fetch(\`https://.../posts/\${params.id}\`);
 			const post = await res.json();
-		 
+
 			return { props: { post } };
 		}
-		 
-		export default async function Post({ params }: PageProps) {
-			const post = await getPost(params);
-		 
+
+		export default async function Post({ params }) {
+			const {post} = await getData({params});
+
 			return <PostLayout post={post} />;
 		}
-		
-		export const dynamicParams = true; 
+
+		export const dynamicParams = true;
 		`;
 
 		const fileInfo: FileInfo = {
@@ -560,7 +675,6 @@ describe('next 13 remove-get-static-props', function () {
 		};
 
 		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
-
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),
@@ -570,67 +684,71 @@ describe('next 13 remove-get-static-props', function () {
 	it('should transform fallback property correctly 2', function () {
 		const INPUT = `
 		import PostLayout from '@/components/post-layout';
- 
+
 		export async function getStaticPaths() {
 			return {
 				paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
-				fallback: false, 
+				fallback: false,
 			};
 		}
-		 
+
 		export async function getStaticProps({ params }) {
 			const res = await fetch(\`https://.../posts/\${params.id}\`);
 			const post = await res.json();
-		 
+
 			return { props: { post } };
 		}
-		 
+
 		export default function Post({ post }) {
 			return <PostLayout post={post} />;
 		}
 	`;
 
 		const OUTPUT = `
+		import { GetStaticPropsContext } from "next";
 		import PostLayout from '@/components/post-layout';
- 
+
 		type PageParams = {};
 
-    type PageProps = {
-    	params: PageParams
-    };
+	  type PageProps = {
+	  	params: PageParams
+	  };
 
-				
 		export 	// TODO: implement this function
 		async function generateStaticParams() {
 			return [];
 		}
-		
-		// TODO: implement this function
-		async function getPost(params: PageParams) {}
-		
-		export // TODO: remove this function
-    async function getStaticPaths() {
-      return {
-              paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
+
+		async function getData({params}:GetStaticPropsContext ) {
+			const res = await fetch(\`https://.../posts/\${params.id}\`);
+			const post = await res.json();
+
+			return { post }
+		}
+
+		export 
+	  async function getStaticPaths() {
+	    return {
+	            paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
 							fallback: false,
-      };
-    }
-		
-		export // TODO: remove this function
+	    };
+	  }
+
+		export 
 		async function getStaticProps({ params }) {
 			const res = await fetch(\`https://.../posts/\${params.id}\`);
 			const post = await res.json();
-		 
+
 			return { props: { post } };
 		}
-		 
-		export default async function Post({ params }: PageProps) {
-			const post = await getPost(params);
-		 
+
+		export default async function Post({ params }) {
+			const {post} = await getData({params});
+
 			return <PostLayout post={post} />;
 		}
-		
-		export const dynamicParams = false; 
+
+		export const dynamicParams = false;
 		`;
 
 		const fileInfo: FileInfo = {
@@ -647,67 +765,71 @@ describe('next 13 remove-get-static-props', function () {
 	it('should transform fallback property correctly', function () {
 		const INPUT = `
 		import PostLayout from '@/components/post-layout';
- 
+
 		export async function getStaticPaths() {
 			return {
 				paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
-				fallback: 'blocking', 
+				fallback: 'blocking',
 			};
 		}
-		 
+
 		export async function getStaticProps({ params }) {
 			const res = await fetch(\`https://.../posts/\${params.id}\`);
 			const post = await res.json();
-		 
+
 			return { props: { post } };
 		}
-		 
+
 		export default function Post({ post }) {
 			return <PostLayout post={post} />;
 		}
 	`;
 
 		const OUTPUT = `
+		import { GetStaticPropsContext } from "next";
 		import PostLayout from '@/components/post-layout';
- 
+
 		type PageParams = {};
 
-    type PageProps = {
-    	params: PageParams
-    };
+	  type PageProps = {
+	  	params: PageParams
+	  };
 
-				
 		export 	// TODO: implement this function
 		async function generateStaticParams() {
 			return [];
 		}
-		
-		// TODO: implement this function
-		async function getPost(params: PageParams) {}
-		
-		export // TODO: remove this function
-    async function getStaticPaths() {
-      return {
-              paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
+
+		async function getData({params}: GetStaticPropsContext) {
+			const res = await fetch(\`https://.../posts/\${params.id}\`);
+			const post = await res.json();
+
+			return { post };
+		}
+
+		export
+	  async function getStaticPaths() {
+	    return {
+	            paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
 							fallback: 'blocking',
-      };
-    }
-		
-		export // TODO: remove this function
+	    };
+	  }
+
+		export 
 		async function getStaticProps({ params }) {
 			const res = await fetch(\`https://.../posts/\${params.id}\`);
 			const post = await res.json();
-		 
+
 			return { props: { post } };
 		}
-		 
-		export default async function Post({ params }: PageProps) {
-			const post = await getPost(params);
-		 
+
+		export default async function Post({ params }) {
+			const {post} = await getData({params});
+
 			return <PostLayout post={post} />;
 		}
-		
-		export const dynamicParams = true; 
+
+		export const dynamicParams = true;
 		`;
 
 		const fileInfo: FileInfo = {
