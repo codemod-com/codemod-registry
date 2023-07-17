@@ -712,7 +712,7 @@ describe('next 13 replace-next-head', function () {
 		);
 	});
 
-	it('should other metatags', function (this: Context) {
+	it('should replace "other" metatags', function (this: Context) {
 		const beforeText = `
 	  import Head from 'next/head';
 	  export default function Page() {
