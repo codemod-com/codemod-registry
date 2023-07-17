@@ -83,7 +83,6 @@ const build = async () => {
 		await mkdir(codemodDirectoryPath, { recursive: true });
 
 		const configPath = join(cwd, name, 'config.json');
-		console.log(configPath);
 
 		const data = await readFile(configPath, { encoding: 'utf8' });
 
