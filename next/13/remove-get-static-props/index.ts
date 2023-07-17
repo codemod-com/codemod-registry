@@ -44,12 +44,11 @@ function findLastIndex<T>(
  */
 
 const generateStaticParamsMethodFactory = (j: JSCodeshift) => {
-	const functionDeclaration =
-		j(`async function generateStaticParams(ctx: GetStaticPathsContext) {
-		return (await _getStaticPaths(ctx)).paths;
+	const functionDeclaration = j(`async function generateStaticParams() {
+		return (await _getStaticPaths({})).paths;
 	}`)
-			.find(j.FunctionDeclaration)
-			.paths()[0]!;
+		.find(j.FunctionDeclaration)
+		.paths()[0]!;
 
 	return j.exportNamedDeclaration(functionDeclaration.value);
 };
@@ -505,7 +504,6 @@ export const findGetStaticPathsFunctionDeclarations: ModFunction<
 
 	return [false, lazyModFunctions];
 };
-
 // @TODO fix code duplication
 export const findGetStaticPathsArrowFunctions: ModFunction<File, 'read'> = (
 	j,

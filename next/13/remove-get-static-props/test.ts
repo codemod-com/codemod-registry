@@ -632,8 +632,8 @@ describe('next 13 remove-get-static-props', function () {
 	  	params: PageParams
 	  };
 
-		export async function generateStaticParams(ctx: GetStaticPathsContext) {
-			return (await _getStaticPaths(ctx)).paths;
+		export async function generateStaticParams() {
+			return (await _getStaticPaths({})).paths;
 		}
 		
 		async function getData({ params }: GetStaticPropsContext) {
@@ -714,8 +714,8 @@ describe('next 13 remove-get-static-props', function () {
 	  	params: PageParams
 	  };
 
-		export async function generateStaticParams(ctx: GetStaticPathsContext) {
-			return (await _getStaticPaths(ctx)).paths;
+		export async function generateStaticParams() {
+			return (await _getStaticPaths({})).paths;
 		}
 		
 		async function getData({params}:GetStaticPropsContext ) {
@@ -794,8 +794,8 @@ describe('next 13 remove-get-static-props', function () {
 	  	params: PageParams
 	  };
 
-		export async function generateStaticParams(ctx: GetStaticPathsContext) {
-			return (await _getStaticPaths(ctx)).paths;
+		export async function generateStaticParams() {
+			return (await _getStaticPaths({})).paths;
 		}
 
 		async function getData({params}: GetStaticPropsContext) {
