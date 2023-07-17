@@ -98,7 +98,7 @@ const verificationTags = [
 	'y_key',
 	'yandex-verification',
 ];
-const iconTags = ['icon', 'apple-touch-icon', 'shortcut icon'];
+const iconTags = ['icon', 'apple-touch-icon', 'shortcut icon', 'mask-icon'];
 
 const knownNames = [
 	...openGraphTags,
@@ -600,15 +600,21 @@ export const handleTag = (
 			return;
 		}
 
+		const otherIcons = ['mask-icon'];
+
 		const icons: Record<string, string> = {
 			'shortcut icon': 'shortcut',
 			icon: 'icon',
 			'apple-touch-icon': 'apple',
+			'mask-icon': 'other',
+			...Object.fromEntries(
+				otherIcons.map((otherIcon) => [otherIcon, 'other']),
+			),
 		};
 
 		if (Object.keys(icons).includes(name)) {
 			const iconTypeName = icons[name];
-			const { sizes, type, href } = HTMLAttributes;
+			const { sizes, type, href, rel } = HTMLAttributes;
 
 			if (!iconTypeName) {
 				return;
@@ -622,10 +628,13 @@ export const handleTag = (
 				metadataObject.icons[iconTypeName] = [];
 			}
 
+			const shouldIncludeRel = otherIcons.includes(name);
+
 			const iconMetadataObject = {
 				...(sizes && { sizes }),
 				...(type && { type }),
 				...(href && { url: href }),
+				...(shouldIncludeRel && rel && { rel }),
 			};
 
 			metadataObject.icons[iconTypeName].push(iconMetadataObject);

@@ -425,6 +425,11 @@ describe('next 13 replace-next-head', function () {
 							sizes="16x16"
 							href="/favicon/favicon-16x16.png"
 						/>
+						<link
+							rel="mask-icon"
+							href="/favicon/safari-pinned-tab.svg"
+							color="#000000"
+						/>
 	        </Head>
 	      </>
 	    );
@@ -444,6 +449,12 @@ describe('next 13 replace-next-head', function () {
 						sizes: "16x16",
 						type: "image/png",
 						url: "/favicon/favicon-16x16.png",
+					}
+				],
+				other: [
+					{
+						url: "/favicon/safari-pinned-tab.svg",
+						rel: "mask-icon",
 					}
 				],
 			},
@@ -475,6 +486,12 @@ describe('next 13 replace-next-head', function () {
 							sizes="16x16"
 							href="/favicon/favicon-16x16.png"
 						/>
+						{/* this tag can be removed */}
+						<link
+						rel="mask-icon"
+						href="/favicon/safari-pinned-tab.svg"
+						color="#000000"
+					/>
 					</Head>
 	      </>
 	    );
@@ -482,6 +499,7 @@ describe('next 13 replace-next-head', function () {
 	  `;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
 		deepStrictEqual(
 			actual?.replace(/\s/gm, ''),
 			expected?.replace(/\s/gm, ''),
