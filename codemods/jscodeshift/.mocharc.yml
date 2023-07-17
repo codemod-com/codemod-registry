@@ -1,6 +1,0 @@
-require:
-    - 'ts-node/register'
-    - './mochaHooks.ts'
-full-trace: true
-bail: true
-spec: './**/test.ts'
