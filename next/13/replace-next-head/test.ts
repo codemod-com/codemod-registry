@@ -569,6 +569,13 @@ describe('next 13 replace-next-head', function () {
 						<meta property="og:site_name" content="Next.js" />
 						<meta property="og:locale" content="en_US" />
 						<meta property="og:type" content="website" />
+						<meta property="og:image:url" content="https://nextjs.org/og.png" />
+						<meta property="og:image:width" content="800" />
+						<meta property="og:image:height" content="600" />
+						<meta property="og:image:url" content="https://nextjs.org/og-alt.png" />
+						<meta property="og:image:width" content="1800" />
+						<meta property="og:image:height" content="1600" />
+						<meta property="og:image:alt" content="My custom alt" />
 	        </Head>
 	      </>
 	    );
@@ -586,6 +593,16 @@ describe('next 13 replace-next-head', function () {
 				siteName: "Next.js",
 				locale: "en_US",
 				type: "website",
+				images: [{
+					url: "https://nextjs.org/og.png",
+					width: "800",
+					height: "600",
+				}, {
+						url: "https://nextjs.org/og-alt.png",
+						width: "1800",
+						height: "1600",
+						alt: "My custom alt",
+				}],
 			},
 		};
 
@@ -605,6 +622,20 @@ describe('next 13 replace-next-head', function () {
 						<meta property="og:locale" content="en_US" />
 						{/* this tag can be removed */}
 						<meta property="og:type" content="website" />
+						{/* this tag can be removed */}
+						<meta property="og:image:url" content="https://nextjs.org/og.png" />
+						{/* this tag can be removed */}
+						<meta property="og:image:width" content="800" />
+						{/* this tag can be removed */}
+						<meta property="og:image:height" content="600" />
+						{/* this tag can be removed */}
+						<meta property="og:image:url" content="https://nextjs.org/og-alt.png" />
+						{/* this tag can be removed */}
+						<meta property="og:image:width" content="1800" />
+						{/* this tag can be removed */}
+						<meta property="og:image:height" content="1600" />
+						{/* this tag can be removed */}
+						<meta property="og:image:alt" content="My custom alt" />
 					</Head>
 	      </>
 	    );
@@ -612,6 +643,7 @@ describe('next 13 replace-next-head', function () {
 	  `;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
 		deepStrictEqual(
 			actual?.replace(/\s/gm, ''),
 			expected?.replace(/\s/gm, ''),
@@ -679,7 +711,7 @@ describe('next 13 replace-next-head', function () {
 			expected?.replace(/\s/gm, ''),
 		);
 	});
-	
+
 	it('should other metatags', function (this: Context) {
 		const beforeText = `
 	  import Head from 'next/head';

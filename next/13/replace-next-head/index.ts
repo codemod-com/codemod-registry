@@ -45,6 +45,10 @@ const openGraphTags = [
 	'og:locale',
 	'og:country_name',
 	'og:ttl',
+	'og:image:url', 
+	'og:image:width', 
+	'og:image:height', 
+	'og:image:alt',
 ];
 
 // @TODO multi tags
@@ -493,7 +497,24 @@ export const handleTag = (
 			}
 
 			if (name.startsWith('og:image')) {
-				// @TODO
+				const { content } = HTMLAttributes;
+				
+				if(!metadataObject.openGraph.images) {
+					metadataObject.openGraph.images = [];
+				}
+				
+				if(name === 'og:image:url') {
+					metadataObject.openGraph.images.push({
+						url: content, 
+					});
+					
+					} else {
+						const image = metadataObject.openGraph.images.at(-1);
+						const propName = name.replace('og:image:', '');
+						
+						image[propName] = content;
+				}
+				
 				return;
 			}
 
