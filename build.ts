@@ -29,6 +29,11 @@ const codemodConfigSchema = S.union(
 		schemaVersion: S.literal('1.0.0'),
 		engine: S.literal('repomod-engine'),
 	}),
+	S.struct({
+		schemaVersion: S.literal('1.0.0'),
+		engine: S.literal('recipe'),
+		names: S.array(S.string),
+	}),
 );
 
 const parseCodemodConfigSchema = S.parseSync(codemodConfigSchema);
@@ -143,6 +148,8 @@ const build = async () => {
 			const buildRulesPath = join(codemodDirectoryPath, 'rules.toml');
 
 			await copyFile(rulesPath, buildRulesPath);
+		} else if (config.engine === 'recipe') {
+			// nothing to do
 		}
 
 		try {
