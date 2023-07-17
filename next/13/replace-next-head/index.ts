@@ -98,7 +98,10 @@ const verificationTags = [
 	'y_key',
 	'yandex-verification',
 ];
+
 const iconTags = ['icon', 'apple-touch-icon', 'shortcut icon', 'mask-icon'];
+
+const otherMetaTags = ['msapplication-TileColor', 'msapplication-config'];
 
 const knownNames = [
 	...openGraphTags,
@@ -109,6 +112,7 @@ const knownNames = [
 	...formatDetectionTags,
 	...verificationTags,
 	...iconTags,
+	...otherMetaTags,
 ];
 
 export const camelize = (str: string) =>
@@ -438,6 +442,15 @@ export const handleTag = (
 	if (HTMLTagName === 'meta') {
 		const content = HTMLAttributes.content;
 
+		if (otherMetaTags.includes(name)) {
+			if (!metadataObject.other) {
+				metadataObject.other = {};
+			}
+
+			metadataObject.other[name] = content;
+			return;
+		}
+
 		if (name === 'author') {
 			if (!metadataObject.authors) {
 				metadataObject.authors = [];
@@ -652,6 +665,22 @@ export const handleTag = (
 	metadataContainer.set(() => metadataObject);
 };
 
+const isValidIdentifier = (identifierName: string): boolean => {
+	if (identifierName.length === 0) {
+		return false;
+	}
+
+	if (!/[a-zA-Z_]/.test(identifierName.charAt(0))) {
+		return false;
+	}
+
+	const validChars = /^[a-zA-Z0-9_]*$/;
+	return validChars.test(identifierName);
+};
+
+const isDoubleQuotified = (str: string) =>
+	str.startsWith('"') && str.endsWith('"');
+
 // @TODO refactor this
 const buildMetadataObjectStr = (metadataObject: Record<string, any>) => {
 	let str = '{';
@@ -672,7 +701,12 @@ const buildMetadataObjectStr = (metadataObject: Record<string, any>) => {
 			value = buildMetadataObjectStr(val);
 		}
 
-		str += `\n ${key}: ${value},`;
+		const keyIsValidIdentifier = isValidIdentifier(key);
+		const keyDoubleQuotified = isDoubleQuotified(key);
+
+		str += `\n ${
+			!keyIsValidIdentifier && !keyDoubleQuotified ? `"${key}"` : key
+		}: ${value},`;
 	});
 
 	str += '}';

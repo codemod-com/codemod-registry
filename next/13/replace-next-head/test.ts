@@ -679,6 +679,52 @@ describe('next 13 replace-next-head', function () {
 			expected?.replace(/\s/gm, ''),
 		);
 	});
+	
+	it('should other metatags', function (this: Context) {
+		const beforeText = `
+	  import Head from 'next/head';
+	  export default function Page() {
+	    return (
+	      <>
+	        <Head>
+						<meta name="msapplication-TileColor" content="#000000" />
+						<meta name="msapplication-config" content="/favicon/browserconfig.xml" />
+	        </Head>
+	      </>
+	    );
+	  }
+		`;
+
+		const afterText = `
+	  import { Metadata } from "next";
+		import Head from 'next/head';
+	  export const metadata: Metadata = {
+			other: {
+				"msapplication-TileColor": "#000000",
+				"msapplication-config": "/favicon/browserconfig.xml",
+			},
+		};
+
+		export default function Page() {
+	    return (
+	      <>
+	        <Head>
+						{/* this tag can be removed */}
+						<meta name="msapplication-TileColor" content="#000000" />
+						{/* this tag can be removed */}
+						<meta name="msapplication-config" content="/favicon/browserconfig.xml" />
+					</Head>
+	      </>
+	    );
+	  }
+	  `;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected?.replace(/\s/gm, ''),
+		);
+	});
 
 	it('should support basic metadata', function (this: Context) {
 		const beforeText = `
