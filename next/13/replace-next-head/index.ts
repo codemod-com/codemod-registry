@@ -45,6 +45,7 @@ const openGraphTags = [
 	'og:locale',
 	'og:country_name',
 	'og:ttl',
+	'og:image', 
 	'og:image:url', 
 	'og:image:width', 
 	'og:image:height', 
@@ -503,7 +504,7 @@ export const handleTag = (
 					metadataObject.openGraph.images = [];
 				}
 				
-				if(name === 'og:image:url') {
+				if(name === 'og:image:url' ||  name === 'og:image') {
 					metadataObject.openGraph.images.push({
 						url: content, 
 					});
