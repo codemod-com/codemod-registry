@@ -44,15 +44,14 @@ function findLastIndex<T>(
  */
 
 const generateStaticParamsMethodFactory = (j: JSCodeshift) => {
-	return j.exportNamedDeclaration(
-		j.functionDeclaration.from({
-			async: true,
-			body: j.blockStatement([j.returnStatement(j.arrayExpression([]))]),
-			id: j.identifier('generateStaticParams'),
-			comments: [j.commentLine(' TODO: implement this function')],
-			params: [],
-		}),
-	);
+	const functionDeclaration =
+		j(`async function generateStaticParams(ctx: GetStaticPathsContext) {
+		return (await _getStaticPaths(ctx)).paths;
+	}`)
+			.find(j.FunctionDeclaration)
+			.paths()[0]!;
+
+	return j.exportNamedDeclaration(functionDeclaration.value);
 };
 
 const serverHookParamsFactory = (j: JSCodeshift) => {
@@ -89,6 +88,36 @@ const addGenerateStaticParamsFunctionDeclaration: ModFunction<File, 'write'> = (
 	});
 
 	return [true, []];
+};
+
+const renameGetStaticPathsFunctionDeclaration: ModFunction<
+	FunctionDeclaration,
+	'write'
+> = (j, root) => {
+	root.forEach((functionDeclarationPath) => {
+		const id = functionDeclarationPath.value.id;
+
+		if (!id) {
+			return;
+		}
+
+		id.name = '_getStaticPaths';
+	});
+
+	return [false, []];
+};
+
+const renameGetStaticPathsArrowFunction: ModFunction<any, 'write'> = (
+	j,
+	root,
+) => {
+	root.find(j.Identifier, {
+		name: 'getStaticPaths',
+	}).forEach((identifierPath) => {
+		identifierPath.value.name = '_getStaticPaths';
+	});
+
+	return [false, []];
 };
 
 const addPageParamsTypeAlias: ModFunction<File, 'write'> = (j, root) => {
@@ -463,6 +492,11 @@ export const findGetStaticPathsFunctionDeclarations: ModFunction<
 		const newSettings = { ...settings, methodName: 'getStaticPaths' };
 
 		lazyModFunctions.push(
+			[
+				renameGetStaticPathsFunctionDeclaration,
+				functionDeclarationCollection,
+				newSettings,
+			],
 			[findReturnStatements, functionDeclarationCollection, newSettings],
 			[addGenerateStaticParamsFunctionDeclaration, root, newSettings],
 			[addPageParamsTypeAlias, root, newSettings],
@@ -471,6 +505,7 @@ export const findGetStaticPathsFunctionDeclarations: ModFunction<
 
 	return [false, lazyModFunctions];
 };
+
 // @TODO fix code duplication
 export const findGetStaticPathsArrowFunctions: ModFunction<File, 'read'> = (
 	j,
@@ -479,14 +514,16 @@ export const findGetStaticPathsArrowFunctions: ModFunction<File, 'read'> = (
 ) => {
 	const lazyModFunctions: LazyModFunction[] = [];
 
-	const arrowFunctionCollection = root
-		.find(j.VariableDeclarator, {
-			id: {
-				type: 'Identifier',
-				name: 'getStaticPaths',
-			},
-		})
-		.find(j.ArrowFunctionExpression);
+	const variableDeclaratorCollection = root.find(j.VariableDeclarator, {
+		id: {
+			type: 'Identifier',
+			name: 'getStaticPaths',
+		},
+	});
+
+	const arrowFunctionCollection = variableDeclaratorCollection.find(
+		j.ArrowFunctionExpression,
+	);
 
 	arrowFunctionCollection.forEach((arrowFunctionPath) => {
 		const arrowFunctionCollection = j(arrowFunctionPath);
@@ -499,6 +536,11 @@ export const findGetStaticPathsArrowFunctions: ModFunction<File, 'read'> = (
 		const newSettings = { ...settings, methodName: 'getStaticPaths' };
 
 		lazyModFunctions.push(
+			[
+				renameGetStaticPathsArrowFunction,
+				variableDeclaratorCollection,
+				newSettings,
+			],
 			[findReturnStatements, arrowFunctionCollection, newSettings],
 			[addGenerateStaticParamsFunctionDeclaration, root, newSettings],
 			[addPageParamsTypeAlias, root, newSettings],
