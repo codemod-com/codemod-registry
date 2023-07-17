@@ -1,6 +1,7 @@
 import { FileInfo } from 'jscodeshift';
 import assert from 'node:assert';
 import transform from './index.js';
+import { buildApi } from '../../../utilities.js'; 
 
 describe('next 13 remove-get-static-props', function () {
 	it('should not remove anything if getStaticProps', function () {
@@ -14,7 +15,7 @@ describe('next 13 remove-get-static-props', function () {
 			source: INPUT,
 		};
 
-		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+		const actualOutput = transform(fileInfo, buildApi('tsx'), {});
 
 		assert.deepEqual(actualOutput, undefined);
 	});
@@ -61,7 +62,7 @@ describe('next 13 remove-get-static-props', function () {
 			source: INPUT,
 		};
 
-		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+		const actualOutput = transform(fileInfo, buildApi('tsx'), {});
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
@@ -110,7 +111,7 @@ describe('next 13 remove-get-static-props', function () {
 			source: INPUT,
 		};
 
-		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+		const actualOutput = transform(fileInfo, buildApi('tsx'), {});
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),
@@ -154,7 +155,7 @@ describe('next 13 remove-get-static-props', function () {
 			source: INPUT,
 		};
 
-		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+		const actualOutput = transform(fileInfo, buildApi('tsx'), {});
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
@@ -207,7 +208,7 @@ describe('next 13 remove-get-static-props', function () {
 			source: INPUT,
 		};
 
-		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+		const actualOutput = transform(fileInfo, buildApi('tsx'), {});
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),
@@ -264,7 +265,7 @@ describe('next 13 remove-get-static-props', function () {
 			source: INPUT,
 		};
 
-		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+		const actualOutput = transform(fileInfo, buildApi('tsx'), {});
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
@@ -324,7 +325,7 @@ describe('next 13 remove-get-static-props', function () {
 			source: INPUT,
 		};
 
-		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+		const actualOutput = transform(fileInfo, buildApi('tsx'), {});
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
@@ -385,7 +386,7 @@ describe('next 13 remove-get-static-props', function () {
 			source: INPUT,
 		};
 
-		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+		const actualOutput = transform(fileInfo, buildApi('tsx'), {});
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
@@ -458,7 +459,7 @@ describe('next 13 remove-get-static-props', function () {
 			source: INPUT,
 		};
 
-		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+		const actualOutput = transform(fileInfo, buildApi('tsx'), {});
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT?.replace(/\W/gm, ''),
@@ -530,7 +531,7 @@ describe('next 13 remove-get-static-props', function () {
 			source: INPUT,
 		};
 
-		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+		const actualOutput = transform(fileInfo, buildApi('tsx'), {});
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
@@ -591,7 +592,7 @@ describe('next 13 remove-get-static-props', function () {
 			source: INPUT,
 		};
 
-		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+		const actualOutput = transform(fileInfo, buildApi('tsx'), {});
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
@@ -674,7 +675,7 @@ describe('next 13 remove-get-static-props', function () {
 			source: INPUT,
 		};
 
-		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+		const actualOutput = transform(fileInfo, buildApi('tsx'), {});
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),
@@ -756,7 +757,7 @@ describe('next 13 remove-get-static-props', function () {
 			source: INPUT,
 		};
 
-		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+		const actualOutput = transform(fileInfo, buildApi('tsx'), {});
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),
@@ -837,7 +838,7 @@ describe('next 13 remove-get-static-props', function () {
 			source: INPUT,
 		};
 
-		const actualOutput = transform(fileInfo, this.buildApi('tsx'), {});
+		const actualOutput = transform(fileInfo, buildApi('tsx'), {});
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),
