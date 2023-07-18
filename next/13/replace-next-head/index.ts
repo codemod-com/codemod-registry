@@ -848,15 +848,15 @@ const getPageComponentFunctionDeclaration = (sourceFile: SourceFile) => {
 	return sourceFile.getFunctions().find((f) => f.isDefaultExport()) ?? null;
 };
 
-const getGetStaticPropsFunctionDeclarationOrIdentifier = (sourceFile: SourceFile):  FunctionDeclaration | Identifier | null => {
+const getGetStaticPropsFunctionDeclarationOrIdentifier = (
+	sourceFile: SourceFile,
+): FunctionDeclaration | Identifier | null => {
 	let res: FunctionDeclaration | Identifier | null = null;
-
+	const hookNames = ['getStaticProps', '_getStaticProps'];
 	sourceFile.forEachChild((child) => {
 		if (
 			Node.isFunctionDeclaration(child) &&
-			['getStaticProps', '_getStaticProps'].includes(
-				child.getName() ?? '',
-			)
+			hookNames.includes(child.getName() ?? '')
 		) {
 			res = child;
 		}
@@ -864,13 +864,17 @@ const getGetStaticPropsFunctionDeclarationOrIdentifier = (sourceFile: SourceFile
 		if (Node.isVariableStatement(child) && child.hasExportKeyword()) {
 			const declaration = child
 				.getFirstChildByKind(SyntaxKind.VariableDeclarationList)
-				?.getFirstChildByKind(SyntaxKind.VariableDeclaration)
-			
-				
-			if (declaration?.getInitializer()?.getKind() === SyntaxKind.ArrowFunction) {
+				?.getFirstChildByKind(SyntaxKind.VariableDeclaration);
+
+			if (
+				declaration?.getInitializer()?.getKind() ===
+				SyntaxKind.ArrowFunction
+			) {
 				const nameNode = declaration.getNameNode();
-				if(Node.isIdentifier(nameNode)) {
-					
+				if (
+					Node.isIdentifier(nameNode) &&
+					hookNames.includes(nameNode.getText())
+				) {
 					res = nameNode;
 				}
 			}
