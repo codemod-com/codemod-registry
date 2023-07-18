@@ -1,4 +1,5 @@
 import {
+	ArrowFunction,
 	BindingElement,
 	FunctionDeclaration,
 	ImportClause,
@@ -847,16 +848,36 @@ const getPageComponentFunctionDeclaration = (sourceFile: SourceFile) => {
 	return sourceFile.getFunctions().find((f) => f.isDefaultExport()) ?? null;
 };
 
-const getGetStaticPropsFunctionDeclaration = (sourceFile: SourceFile) => {
-	return (
-		sourceFile
-			.getFunctions()
-			.find(
-				(f) =>
-					f.getName() === 'getStaticProps' ||
-					f.getName() === '_getStaticProps',
-			) ?? null
-	);
+const getGetStaticPropsFunctionDeclarationOrIdentifier = (sourceFile: SourceFile):  FunctionDeclaration | Identifier | null => {
+	let res: FunctionDeclaration | Identifier | null = null;
+
+	sourceFile.forEachChild((child) => {
+		if (
+			Node.isFunctionDeclaration(child) &&
+			['getStaticProps', '_getStaticProps'].includes(
+				child.getName() ?? '',
+			)
+		) {
+			res = child;
+		}
+
+		if (Node.isVariableStatement(child) && child.hasExportKeyword()) {
+			const declaration = child
+				.getFirstChildByKind(SyntaxKind.VariableDeclarationList)
+				?.getFirstChildByKind(SyntaxKind.VariableDeclaration)
+			
+				
+			if (declaration?.getInitializer()?.getKind() === SyntaxKind.ArrowFunction) {
+				const nameNode = declaration.getNameNode();
+				if(Node.isIdentifier(nameNode)) {
+					
+					res = nameNode;
+				}
+			}
+		}
+	});
+
+	return res;
 };
 
 const insertGenerateMetadataFunctionDeclaration = (
@@ -871,7 +892,7 @@ const insertGenerateMetadataFunctionDeclaration = (
 	}
 
 	const getStaticPropsFunctionDeclaration =
-		getGetStaticPropsFunctionDeclaration(sourceFile);
+		getGetStaticPropsFunctionDeclarationOrIdentifier(sourceFile);
 
 	if (getStaticPropsFunctionDeclaration === null) {
 		return;
