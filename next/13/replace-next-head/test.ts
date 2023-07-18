@@ -202,6 +202,7 @@ describe('next 13 replace-next-head', function () {
 
 	it('should replace title tag - jsxExpression', function (this: Context) {
 		const beforeText = `
+		import { Metadata } from "next";
 	  import Head from 'next/head';
 	  export default function Page() {
 	    return (
