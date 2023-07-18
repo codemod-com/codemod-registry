@@ -1,4 +1,5 @@
 import {
+	ArrowFunction,
 	BindingElement,
 	FunctionDeclaration,
 	ImportClause,
@@ -206,6 +207,7 @@ const handleJsxSelfClosingElement = (
 	jsxSelfClosingElement: JsxSelfClosingElement,
 	metadataContainer: Container<Record<string, any>>,
 	topLevelVariablesContainer: Container<Definition[]>,
+	settingsContainer: Container<Record<string, any>>,
 ) => {
 	const tagName = jsxSelfClosingElement.getTagNameNode().getText();
 
@@ -237,7 +239,18 @@ const handleJsxSelfClosingElement = (
 						identifier,
 						topLevelVariablesContainer,
 					);
-					if (!definedOnTopLevel) {
+
+					const definedInComponentProps =
+						isIdentifierDefinedInPageProps(identifier);
+
+					if (definedInComponentProps) {
+						settingsContainer.set((prev) => ({
+							...prev,
+							isDynamicMetadata: true,
+						}));
+					}
+
+					if (!definedOnTopLevel && !definedInComponentProps) {
 						shouldReplaceTag = false;
 					}
 				});
@@ -281,6 +294,7 @@ const handleHeadChildJsxElement = (
 	jsxElement: JsxElement,
 	metadataContainer: Container<Record<string, any>>,
 	topLevelVariablesContainer: Container<Definition[]>,
+	settingsContainer: Container<Record<string, any>>,
 ) => {
 	if (jsxElement.getOpeningElement().getTagNameNode().getText() !== 'title') {
 		return;
@@ -309,7 +323,18 @@ const handleHeadChildJsxElement = (
 					identifier,
 					topLevelVariablesContainer,
 				);
-				if (!definedOnTopLevel) {
+
+				const definedInComponentProps =
+					isIdentifierDefinedInPageProps(identifier);
+
+				if (definedInComponentProps) {
+					settingsContainer.set((prev) => ({
+						...prev,
+						isDynamicMetadata: true,
+					}));
+				}
+
+				if (!definedOnTopLevel && !definedInComponentProps) {
 					shouldReplaceTag = false;
 				}
 			});
@@ -363,6 +388,7 @@ const handleHeadJsxElement = (
 	headJsxElement: JsxElement,
 	metadataContainer: Container<Record<string, any>>,
 	topLevelVariablesContainer: Container<Definition[]>,
+	settingsContainer: Container<Record<string, any>>,
 ) => {
 	const jsxChildren = headJsxElement.getJsxChildren();
 
@@ -372,12 +398,14 @@ const handleHeadJsxElement = (
 				child,
 				metadataContainer,
 				topLevelVariablesContainer,
+				settingsContainer,
 			);
 		} else if (Node.isJsxSelfClosingElement(child)) {
 			handleJsxSelfClosingElement(
 				child,
 				metadataContainer,
 				topLevelVariablesContainer,
+				settingsContainer,
 			);
 		}
 	});
@@ -387,6 +415,7 @@ const handleHeadIdentifier = (
 	headIdentifier: Identifier,
 	metadataContainer: Container<Record<string, any>>,
 	topLevelVariablesContainer: Container<Definition[]>,
+	settingsContainer: Container<Record<string, any>>,
 ) => {
 	headIdentifier.findReferencesAsNodes().forEach((node) => {
 		const parent = node.getParent();
@@ -399,6 +428,7 @@ const handleHeadIdentifier = (
 					grandparent,
 					metadataContainer,
 					topLevelVariablesContainer,
+					settingsContainer,
 				);
 			}
 		}
@@ -409,6 +439,7 @@ const handleImportDeclaration = (
 	importDeclaration: ImportDeclaration,
 	metadataContainer: Container<Record<string, any>>,
 	topLevelVariablesContainer: Container<Definition[]>,
+	settingsContainer: Container<Record<string, any>>,
 ) => {
 	const moduleSpecifier = importDeclaration.getModuleSpecifier();
 
@@ -426,6 +457,7 @@ const handleImportDeclaration = (
 		headIdentifier,
 		metadataContainer,
 		topLevelVariablesContainer,
+		settingsContainer,
 	);
 };
 
@@ -793,12 +825,125 @@ const collectTopLevelDefinitions = (
 		collectImportDeclaration(importDeclaration, topLevelVariablesContainer);
 	});
 };
+
+const isIdentifierDefinedInPageProps = (identifier: Identifier): boolean => {
+	const definitions = identifier.getDefinitionNodes();
+
+	return (
+		definitions.length !== 0 &&
+		definitions.every((d) => {
+			const param = d.getFirstAncestorByKind(SyntaxKind.Parameter);
+			const parent = param?.getParent();
+
+			return (
+				param &&
+				Node.isFunctionDeclaration(parent) &&
+				parent.isDefaultExport()
+			);
+		})
+	);
+};
+
+const getPageComponentFunctionDeclaration = (sourceFile: SourceFile) => {
+	return sourceFile.getFunctions().find((f) => f.isDefaultExport()) ?? null;
+};
+
+const getGetStaticPropsFunctionDeclarationOrIdentifier = (sourceFile: SourceFile):  FunctionDeclaration | Identifier | null => {
+	let res: FunctionDeclaration | Identifier | null = null;
+
+	sourceFile.forEachChild((child) => {
+		if (
+			Node.isFunctionDeclaration(child) &&
+			['getStaticProps', '_getStaticProps'].includes(
+				child.getName() ?? '',
+			)
+		) {
+			res = child;
+		}
+
+		if (Node.isVariableStatement(child) && child.hasExportKeyword()) {
+			const declaration = child
+				.getFirstChildByKind(SyntaxKind.VariableDeclarationList)
+				?.getFirstChildByKind(SyntaxKind.VariableDeclaration)
+			
+				
+			if (declaration?.getInitializer()?.getKind() === SyntaxKind.ArrowFunction) {
+				const nameNode = declaration.getNameNode();
+				if(Node.isIdentifier(nameNode)) {
+					
+					res = nameNode;
+				}
+			}
+		}
+	});
+
+	return res;
+};
+
+const insertGenerateMetadataFunctionDeclaration = (
+	sourceFile: SourceFile,
+	metadataObject: Record<string, any>,
+) => {
+	const pageComponentFunctionDeclaration =
+		getPageComponentFunctionDeclaration(sourceFile);
+
+	if (pageComponentFunctionDeclaration === null) {
+		return;
+	}
+
+	const getStaticPropsFunctionDeclaration =
+		getGetStaticPropsFunctionDeclarationOrIdentifier(sourceFile);
+
+	if (getStaticPropsFunctionDeclaration === null) {
+		return;
+	}
+
+	// rename to avoid next.js warnings
+	getStaticPropsFunctionDeclaration.rename('_getStaticProps');
+
+	const propsParameter =
+		pageComponentFunctionDeclaration.getParameters()[0] ?? null;
+
+	if (propsParameter === null) {
+		return;
+	}
+
+	const propsParameterIsObjectBindingPattern = Node.isObjectBindingPattern(
+		propsParameter.getNameNode(),
+	);
+
+	sourceFile.addStatements(
+		`  
+			export async function generateMetadata(
+				{ params }: { params: Params },
+				parentMetadata: ResolvingMetadata
+			): Promise<Metadata> {
+					const { props }  = await  _getStaticProps({ params });
+					const awaitedParentMetadata = await parentMetadata;
+				  
+					${
+						propsParameterIsObjectBindingPattern
+							? `const ${propsParameter.getText()} = props;`
+							: ''
+					}
+					
+					const pageMetadata = ${buildMetadataObjectStr(metadataObject)};
+					
+					return {
+						...awaitedParentMetadata, 
+						...pageMetadata
+					}
+					}	`,
+	);
+};
+
 export const handleSourceFile = (
 	sourceFile: SourceFile,
 ): string | undefined => {
 	const metadataContainer = buildContainer<Record<string, any>>({});
 	const topLevelVariablesContainer = buildContainer<Definition[]>([]);
 	const importDeclarations = sourceFile.getImportDeclarations();
+	const settingsContainer = buildContainer<Record<string, any>>({});
 
 	collectTopLevelDefinitions(sourceFile, topLevelVariablesContainer);
 
@@ -807,6 +952,7 @@ export const handleSourceFile = (
 			importDeclaration,
 			metadataContainer,
 			topLevelVariablesContainer,
+			settingsContainer,
 		),
 	);
 
@@ -822,7 +968,29 @@ export const handleSourceFile = (
 		? 0
 		: (declaration?.getChildIndex() ?? 0) + 1;
 
-	sourceFile.insertStatements(pos, buildMetadataStatement(metadataObject));
-	sourceFile.insertStatements(0, 'import { Metadata } from "next";');
+	if (settingsContainer.get().isDynamicMetadata) {
+		insertGenerateMetadataFunctionDeclaration(sourceFile, metadataObject);
+	} else {
+		sourceFile.insertStatements(
+			pos,
+			buildMetadataStatement(metadataObject),
+		);
+	}
+	sourceFile.insertStatements(
+		0,
+		`import { Metadata  ${
+			settingsContainer.get().isDynamicMetadata
+				? ', ResolvingMetadata'
+				: ''
+		}  } from "next";`,
+	);
+
+	if (settingsContainer.get().isDynamicMetadata) {
+		sourceFile.insertStatements(
+			pos + 1,
+			'type Params = Record<string, string |  string[]>;',
+		);
+	}
+
 	return sourceFile.print({ emitHint: EmitHint.SourceFile });
 };
