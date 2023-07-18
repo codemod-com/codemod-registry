@@ -45,6 +45,11 @@ const openGraphTags = [
 	'og:locale',
 	'og:country_name',
 	'og:ttl',
+	'og:image',
+	'og:image:url',
+	'og:image:width',
+	'og:image:height',
+	'og:image:alt',
 ];
 
 // @TODO multi tags
@@ -98,7 +103,10 @@ const verificationTags = [
 	'y_key',
 	'yandex-verification',
 ];
-const iconTags = ['icon', 'apple-touch-icon', 'shortcut icon'];
+
+const iconTags = ['icon', 'apple-touch-icon', 'shortcut icon', 'mask-icon'];
+
+const otherMetaTags = ['msapplication-TileColor', 'msapplication-config'];
 
 const knownNames = [
 	...openGraphTags,
@@ -109,6 +117,7 @@ const knownNames = [
 	...formatDetectionTags,
 	...verificationTags,
 	...iconTags,
+	...otherMetaTags,
 ];
 
 export const camelize = (str: string) =>
@@ -438,6 +447,15 @@ export const handleTag = (
 	if (HTMLTagName === 'meta') {
 		const content = HTMLAttributes.content;
 
+		if (otherMetaTags.includes(name)) {
+			if (!metadataObject.other) {
+				metadataObject.other = {};
+			}
+
+			metadataObject.other[name] = content;
+			return;
+		}
+
 		if (name === 'author') {
 			if (!metadataObject.authors) {
 				metadataObject.authors = [];
@@ -480,7 +498,23 @@ export const handleTag = (
 			}
 
 			if (name.startsWith('og:image')) {
-				// @TODO
+				const { content } = HTMLAttributes;
+
+				if (!metadataObject.openGraph.images) {
+					metadataObject.openGraph.images = [];
+				}
+
+				if (name === 'og:image:url' || name === 'og:image') {
+					metadataObject.openGraph.images.push({
+						url: content,
+					});
+				} else {
+					const image = metadataObject.openGraph.images.at(-1);
+					const propName = name.replace('og:image:', '');
+
+					image[propName] = content;
+				}
+
 				return;
 			}
 
@@ -600,15 +634,21 @@ export const handleTag = (
 			return;
 		}
 
+		const otherIcons = ['mask-icon'];
+
 		const icons: Record<string, string> = {
 			'shortcut icon': 'shortcut',
 			icon: 'icon',
 			'apple-touch-icon': 'apple',
+			'mask-icon': 'other',
+			...Object.fromEntries(
+				otherIcons.map((otherIcon) => [otherIcon, 'other']),
+			),
 		};
 
 		if (Object.keys(icons).includes(name)) {
 			const iconTypeName = icons[name];
-			const { sizes, type, href } = HTMLAttributes;
+			const { sizes, type, href, rel } = HTMLAttributes;
 
 			if (!iconTypeName) {
 				return;
@@ -622,10 +662,13 @@ export const handleTag = (
 				metadataObject.icons[iconTypeName] = [];
 			}
 
+			const shouldIncludeRel = otherIcons.includes(name);
+
 			const iconMetadataObject = {
 				...(sizes && { sizes }),
 				...(type && { type }),
 				...(href && { url: href }),
+				...(shouldIncludeRel && rel && { rel }),
 			};
 
 			metadataObject.icons[iconTypeName].push(iconMetadataObject);
@@ -642,6 +685,22 @@ export const handleTag = (
 
 	metadataContainer.set(() => metadataObject);
 };
+
+const isValidIdentifier = (identifierName: string): boolean => {
+	if (identifierName.length === 0) {
+		return false;
+	}
+
+	if (!/[a-zA-Z_]/.test(identifierName.charAt(0))) {
+		return false;
+	}
+
+	const validChars = /^[a-zA-Z0-9_]*$/;
+	return validChars.test(identifierName);
+};
+
+const isDoubleQuotified = (str: string) =>
+	str.startsWith('"') && str.endsWith('"');
 
 // @TODO refactor this
 const buildMetadataObjectStr = (metadataObject: Record<string, any>) => {
@@ -663,7 +722,12 @@ const buildMetadataObjectStr = (metadataObject: Record<string, any>) => {
 			value = buildMetadataObjectStr(val);
 		}
 
-		str += `\n ${key}: ${value},`;
+		const keyIsValidIdentifier = isValidIdentifier(key);
+		const keyDoubleQuotified = isDoubleQuotified(key);
+
+		str += `\n ${
+			!keyIsValidIdentifier && !keyDoubleQuotified ? `"${key}"` : key
+		}: ${value},`;
 	});
 
 	str += '}';

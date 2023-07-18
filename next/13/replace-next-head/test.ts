@@ -425,6 +425,11 @@ describe('next 13 replace-next-head', function () {
 							sizes="16x16"
 							href="/favicon/favicon-16x16.png"
 						/>
+						<link
+							rel="mask-icon"
+							href="/favicon/safari-pinned-tab.svg"
+							color="#000000"
+						/>
 	        </Head>
 	      </>
 	    );
@@ -444,6 +449,12 @@ describe('next 13 replace-next-head', function () {
 						sizes: "16x16",
 						type: "image/png",
 						url: "/favicon/favicon-16x16.png",
+					}
+				],
+				other: [
+					{
+						url: "/favicon/safari-pinned-tab.svg",
+						rel: "mask-icon",
 					}
 				],
 			},
@@ -475,6 +486,12 @@ describe('next 13 replace-next-head', function () {
 							sizes="16x16"
 							href="/favicon/favicon-16x16.png"
 						/>
+						{/* this tag can be removed */}
+						<link
+						rel="mask-icon"
+						href="/favicon/safari-pinned-tab.svg"
+						color="#000000"
+					/>
 					</Head>
 	      </>
 	    );
@@ -482,6 +499,7 @@ describe('next 13 replace-next-head', function () {
 	  `;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
 		deepStrictEqual(
 			actual?.replace(/\s/gm, ''),
 			expected?.replace(/\s/gm, ''),
@@ -551,6 +569,13 @@ describe('next 13 replace-next-head', function () {
 						<meta property="og:site_name" content="Next.js" />
 						<meta property="og:locale" content="en_US" />
 						<meta property="og:type" content="website" />
+						<meta property="og:image:url" content="https://nextjs.org/og.png" />
+						<meta property="og:image:width" content="800" />
+						<meta property="og:image:height" content="600" />
+						<meta property="og:image:url" content="https://nextjs.org/og-alt.png" />
+						<meta property="og:image:width" content="1800" />
+						<meta property="og:image:height" content="1600" />
+						<meta property="og:image:alt" content="My custom alt" />
 	        </Head>
 	      </>
 	    );
@@ -568,6 +593,16 @@ describe('next 13 replace-next-head', function () {
 				siteName: "Next.js",
 				locale: "en_US",
 				type: "website",
+				images: [{
+					url: "https://nextjs.org/og.png",
+					width: "800",
+					height: "600",
+				}, {
+						url: "https://nextjs.org/og-alt.png",
+						width: "1800",
+						height: "1600",
+						alt: "My custom alt",
+				}],
 			},
 		};
 
@@ -587,6 +622,20 @@ describe('next 13 replace-next-head', function () {
 						<meta property="og:locale" content="en_US" />
 						{/* this tag can be removed */}
 						<meta property="og:type" content="website" />
+						{/* this tag can be removed */}
+						<meta property="og:image:url" content="https://nextjs.org/og.png" />
+						{/* this tag can be removed */}
+						<meta property="og:image:width" content="800" />
+						{/* this tag can be removed */}
+						<meta property="og:image:height" content="600" />
+						{/* this tag can be removed */}
+						<meta property="og:image:url" content="https://nextjs.org/og-alt.png" />
+						{/* this tag can be removed */}
+						<meta property="og:image:width" content="1800" />
+						{/* this tag can be removed */}
+						<meta property="og:image:height" content="1600" />
+						{/* this tag can be removed */}
+						<meta property="og:image:alt" content="My custom alt" />
 					</Head>
 	      </>
 	    );
@@ -594,6 +643,7 @@ describe('next 13 replace-next-head', function () {
 	  `;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
 		deepStrictEqual(
 			actual?.replace(/\s/gm, ''),
 			expected?.replace(/\s/gm, ''),
@@ -649,6 +699,52 @@ describe('next 13 replace-next-head', function () {
 						<meta name="twitter:creator" content="@nextjs" />
 						{/* this tag can be removed */}
 						<meta name="twitter:creator:id" content="1467726470533754880" />
+					</Head>
+	      </>
+	    );
+	  }
+	  `;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected?.replace(/\s/gm, ''),
+		);
+	});
+
+	it('should replace "other" metatags', function (this: Context) {
+		const beforeText = `
+	  import Head from 'next/head';
+	  export default function Page() {
+	    return (
+	      <>
+	        <Head>
+						<meta name="msapplication-TileColor" content="#000000" />
+						<meta name="msapplication-config" content="/favicon/browserconfig.xml" />
+	        </Head>
+	      </>
+	    );
+	  }
+		`;
+
+		const afterText = `
+	  import { Metadata } from "next";
+		import Head from 'next/head';
+	  export const metadata: Metadata = {
+			other: {
+				"msapplication-TileColor": "#000000",
+				"msapplication-config": "/favicon/browserconfig.xml",
+			},
+		};
+
+		export default function Page() {
+	    return (
+	      <>
+	        <Head>
+						{/* this tag can be removed */}
+						<meta name="msapplication-TileColor" content="#000000" />
+						{/* this tag can be removed */}
+						<meta name="msapplication-config" content="/favicon/browserconfig.xml" />
 					</Head>
 	      </>
 	    );
