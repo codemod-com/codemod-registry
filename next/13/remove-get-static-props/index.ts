@@ -324,12 +324,15 @@ export const findGetStaticPropsFunctionDeclarations: ModFunction<
 > = (j, root, settings) => {
 	const lazyModFunctions: LazyModFunction[] = [];
 
-	const functionDeclarations = root.find(j.FunctionDeclaration, {
-		id: {
-			type: 'Identifier',
-			name: 'getStaticProps',
-		},
-	});
+	const functionDeclarations = root
+		.find(j.FunctionDeclaration)
+		.filter(
+			(functionDeclarationPath) =>
+				functionDeclarationPath.value.id?.type === 'Identifier' &&
+				['getStaticProps', '_getStaticProps'].includes(
+					functionDeclarationPath.value.id?.name ?? '',
+				),
+		);
 
 	functionDeclarations.forEach((functionDeclarationPath) => {
 		const functionDeclarationCollection = j(functionDeclarationPath);
@@ -361,20 +364,26 @@ export const findGetStaticPropsArrowFunctions: ModFunction<File, 'read'> = (
 	const lazyModFunctions: LazyModFunction[] = [];
 
 	const arrowFunctionCollection = root
-		.find(j.VariableDeclarator, {
-			id: {
-				type: 'Identifier',
-				name: 'getStaticProps',
-			},
-		})
+		.find(j.VariableDeclarator)
+		.filter(
+			(variableDeclaratorPath) =>
+				variableDeclaratorPath.value.id.type === 'Identifier' &&
+				['getStaticProps', '_getStaticProps'].includes(
+					variableDeclaratorPath.value.id.name,
+				),
+		)
 		.find(j.ArrowFunctionExpression);
 
 	arrowFunctionCollection.forEach((arrowFunctionPath) => {
 		const arrowFunctionCollection = j(arrowFunctionPath);
 
 		// only direct child of variableDeclarator
-		if (arrowFunctionPath.parent?.value?.id?.name !== 'getStaticProps') {
-			return;
+		if (
+			!['getStaticProps', '_getStaticProps'].includes(
+				arrowFunctionPath.parent?.value?.id?.name ?? '',
+			)
+		) {
+			return [false, []];
 		}
 
 		lazyModFunctions.push(
