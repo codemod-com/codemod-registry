@@ -72,6 +72,93 @@ describe('next 13 replace-next-head', function () {
 		);
 	});
 
+	it('should insert generateMetadata function if metadata tags depend on component props', function (this: Context) {
+		const beforeText = `
+	  import Head from 'next/head';
+		
+		export async function getStaticProps ({ params }) {
+			const { post, product } = fetchData(params.id);
+			
+			return {
+				props: {
+					post, 
+					product, 
+				}
+			}
+		}
+		
+	  export default function Page({ post, product }) {
+	    return (
+	      <>
+	        <Head>
+	          <title>{post.title}</title>
+						<meta name="description" content={product.details} />
+	        </Head>
+	      </>
+	    );
+	  }
+		`;
+
+		const afterText = `
+	  import { Metadata, ResolvingMetadata } from "next";
+		import Head from 'next/head';
+	  
+		type Params = Record<string, string |  string[]>;
+		
+		export async function _getStaticProps ({ params }) {
+			const { post, product } = fetchData(params.id);
+			
+			return {
+				props: {
+					post, 
+					product, 
+				}
+			}
+		}
+		
+	  export default function Page({ post, product }) {
+	    return (
+	      <>
+	        <Head>
+	          {/* this tag can be removed */}
+						<title>{post.title}</title>
+						{/* this tag can be removed */}
+						<meta name="description" content={product.details} />
+	        </Head>
+	      </>
+	    );
+	  }
+		export async function generateMetadata(
+			{ params }: { params: Params },
+			parentMetadata: ResolvingMetadata
+		): Promise<Metadata> {
+			const { props }  = await _getStaticProps({ params });
+			
+			const awaitedParentMetadata = await parentMetadata;
+			const { post, product } = props;
+			
+			const pageMetadata  = {
+				title: \`\${post.title}\`, 
+				description: product.details, 
+			}
+			
+			return {
+				...awaitedParentMetadata, 
+				...pageMetadata
+			}
+		}
+		
+		
+	  `;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected?.replace(/\s/gm, ''),
+		);
+	});
+
 	it('should not remove JSX comments', function (this: Context) {
 		const beforeText = `
 	  import Head from 'next/head';
