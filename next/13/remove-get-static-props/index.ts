@@ -170,6 +170,26 @@ const addImportStatement: ModFunction<File, 'write'> = (j, root, settings) => {
 		return [false, []];
 	}
 
+	const alreadyExists = root.find(j.ImportDeclaration, {
+		specifiers: [
+			{
+				type: 'ImportSpecifier',
+				imported: {
+					type: 'Identifier',
+					name: settings.statement,
+				},
+			},
+		],
+		source: {
+			type: 'StringLiteral',
+			value: 'next',
+		},
+	}).length !== 0;
+	
+	if(alreadyExists) {
+		return [false, []];
+	}
+
 	const importSpecifier = j.importSpecifier(j.identifier(settings.statement));
 
 	const importDeclaration = j.importDeclaration(
@@ -411,28 +431,31 @@ export const findGetServerSidePropsFunctionDeclarations: ModFunction<
 > = (j, root, settings) => {
 	const lazyModFunctions: LazyModFunction[] = [];
 
-	root.find(j.FunctionDeclaration, {
-		id: {
-			type: 'Identifier',
-			name: 'getServerSideProps',
-		},
-	}).forEach((functionDeclarationPath) => {
-		const functionDeclarationCollection = j(functionDeclarationPath);
+	root.find(j.FunctionDeclaration)
+		.filter(
+			(functionDeclarationPath) =>
+				functionDeclarationPath.value.id?.type === 'Identifier' &&
+				['getServerSideProps', '_getServerSideProps'].includes(
+					functionDeclarationPath.value.id?.name ?? '',
+				),
+		)
+		.forEach((functionDeclarationPath) => {
+			const functionDeclarationCollection = j(functionDeclarationPath);
 
-		lazyModFunctions.push(
-			[
-				addGetDataFunction,
-				functionDeclarationCollection,
-				{ ...settings, methodName: 'getServerSideProps' },
-			],
-			[findReturnStatements, functionDeclarationCollection, settings],
-			[
-				findComponentFunctionDefinition,
-				root,
-				{ name: '', includeParams: settings.includeParams },
-			],
-		);
-	});
+			lazyModFunctions.push(
+				[
+					addGetDataFunction,
+					functionDeclarationCollection,
+					{ ...settings, methodName: 'getServerSideProps' },
+				],
+				[findReturnStatements, functionDeclarationCollection, settings],
+				[
+					findComponentFunctionDefinition,
+					root,
+					{ name: '', includeParams: settings.includeParams },
+				],
+			);
+		});
 
 	return [false, lazyModFunctions];
 };
@@ -446,12 +469,14 @@ export const findGetServerSidePropsArrowFunctions: ModFunction<File, 'read'> = (
 	const lazyModFunctions: LazyModFunction[] = [];
 
 	const arrowFunctionCollection = root
-		.find(j.VariableDeclarator, {
-			id: {
-				type: 'Identifier',
-				name: 'getServerSideProps',
-			},
-		})
+		.find(j.VariableDeclarator)
+		.filter(
+			(variableDeclaratorPath) =>
+				variableDeclaratorPath.value.id.type === 'Identifier' &&
+				['getServerSideProps', '_getServerSideProps'].includes(
+					variableDeclaratorPath.value.id.name,
+				),
+		)
 		.find(j.ArrowFunctionExpression);
 
 	arrowFunctionCollection.forEach((arrowFunctionPath) => {
@@ -459,9 +484,11 @@ export const findGetServerSidePropsArrowFunctions: ModFunction<File, 'read'> = (
 
 		// only direct child of variableDeclarator
 		if (
-			arrowFunctionPath.parent?.value?.id?.name !== 'getServerSideProps'
+			!['getServerSideProps', '_getServerSideProps'].includes(
+				arrowFunctionPath.parent?.value?.id?.name,
+			)
 		) {
-			return;
+			return [false, []];
 		}
 
 		lazyModFunctions.push(

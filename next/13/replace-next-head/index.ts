@@ -850,9 +850,10 @@ const getPageComponentFunctionDeclaration = (sourceFile: SourceFile) => {
 
 const getGetStaticPropsFunctionDeclarationOrIdentifier = (
 	sourceFile: SourceFile,
+	hookNames: string[],
 ): FunctionDeclaration | Identifier | null => {
 	let res: FunctionDeclaration | Identifier | null = null;
-	const hookNames = ['getStaticProps', '_getStaticProps'];
+
 	sourceFile.forEachChild((child) => {
 		if (
 			Node.isFunctionDeclaration(child) &&
@@ -896,14 +897,29 @@ const insertGenerateMetadataFunctionDeclaration = (
 	}
 
 	const getStaticPropsFunctionDeclaration =
-		getGetStaticPropsFunctionDeclarationOrIdentifier(sourceFile);
+		getGetStaticPropsFunctionDeclarationOrIdentifier(sourceFile, [
+			'getStaticProps',
+			'_getStaticProps',
+		]);
 
-	if (getStaticPropsFunctionDeclaration === null) {
+	const getServerSidePropsFunctionDeclaration =
+		getGetStaticPropsFunctionDeclarationOrIdentifier(sourceFile, [
+			'getServerSideProps',
+			'_getServerSideProps',
+		]);
+
+	const hook =
+		getServerSidePropsFunctionDeclaration ??
+		getStaticPropsFunctionDeclaration ??
+		null;
+	const isStatic = getStaticPropsFunctionDeclaration !== null;
+
+	if (hook === null) {
 		return;
 	}
 
 	// rename to avoid next.js warnings
-	getStaticPropsFunctionDeclaration.rename('_getStaticProps');
+	hook.rename(isStatic ? '_getStaticProps' : '_getServerSideProps');
 
 	const propsParameter =
 		pageComponentFunctionDeclaration.getParameters()[0] ?? null;
@@ -922,7 +938,9 @@ const insertGenerateMetadataFunctionDeclaration = (
 				{ params }: { params: Params },
 				parentMetadata: ResolvingMetadata
 			): Promise<Metadata> {
-					const { props }  = await  _getStaticProps({ params });
+					const { props }  = await  ${
+						isStatic ? '_getStaticProps' : '_getServerSideProps'
+					}({ params });
 					const awaitedParentMetadata = await parentMetadata;
 				  
 					${
@@ -980,14 +998,22 @@ export const handleSourceFile = (
 			buildMetadataStatement(metadataObject),
 		);
 	}
-	sourceFile.insertStatements(
-		0,
-		`import { Metadata  ${
-			settingsContainer.get().isDynamicMetadata
-				? ', ResolvingMetadata'
-				: ''
-		}  } from "next";`,
-	);
+	
+	const importAlreadyExists = sourceFile.getImportDeclarations().find(declaration => {
+			const specifier =declaration.getImportClause()?.getNamedImports().find(imp => imp.getNameNode().getText() === 'Metadata') ?? null;
+			return specifier !== null && declaration.getModuleSpecifier().getText() === '"next"';
+		});
+	
+	if(!importAlreadyExists) {
+		sourceFile.insertStatements(
+			0,
+			`import { Metadata  ${
+				settingsContainer.get().isDynamicMetadata
+					? ', ResolvingMetadata'
+					: ''
+			}  } from "next";`,
+		);
+	}
 
 	if (settingsContainer.get().isDynamicMetadata) {
 		sourceFile.insertStatements(
