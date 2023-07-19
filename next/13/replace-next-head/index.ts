@@ -998,13 +998,24 @@ export const handleSourceFile = (
 			buildMetadataStatement(metadataObject),
 		);
 	}
-	
-	const importAlreadyExists = sourceFile.getImportDeclarations().find(declaration => {
-			const specifier =declaration.getImportClause()?.getNamedImports().find(imp => imp.getNameNode().getText() === 'Metadata') ?? null;
-			return specifier !== null && declaration.getModuleSpecifier().getText() === '"next"';
+
+	const importAlreadyExists = sourceFile
+		.getImportDeclarations()
+		.find((declaration) => {
+			const specifier =
+				declaration
+					.getImportClause()
+					?.getNamedImports()
+					.find(
+						(imp) => imp.getNameNode().getText() === 'Metadata',
+					) ?? null;
+			return (
+				specifier !== null &&
+				declaration.getModuleSpecifier().getText() === '"next"'
+			);
 		});
-	
-	if(!importAlreadyExists) {
+
+	if (!importAlreadyExists) {
 		sourceFile.insertStatements(
 			0,
 			`import { Metadata  ${

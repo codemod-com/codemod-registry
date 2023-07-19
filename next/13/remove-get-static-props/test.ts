@@ -36,9 +36,7 @@ describe('next 13 remove-get-static-props', function () {
 		const OUTPUT = `
 			import { GetStaticPropsContext } from 'next';
 			async function getData(ctx: GetStaticPropsContext){
-				const users = await promise;
-
-				return { users };
+				return (await getStaticProps(ctx)).props;
 			}
 
 			export
@@ -48,7 +46,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { users } };
 			}
 
-			export default async function Component({params }) {
+			export default async function Component({ params }) {
 				const {users} = await getData({
 					params, 
 				});
@@ -84,10 +82,8 @@ describe('next 13 remove-get-static-props', function () {
 
 		const OUTPUT = `
 			import { GetStaticPropsContext } from 'next';
-			async function getData(context: GetStaticPropsContext){
-				const users = await promise(context.params);
-				const res = { props: { users } };
-				return res.props;
+			async function getData(ctx: GetStaticPropsContext){
+				return (await getStaticProps(ctx)).props;
 			}
 
 			export async function getStaticProps(context: GetStaticPropsContext) {
@@ -132,8 +128,7 @@ describe('next 13 remove-get-static-props', function () {
 		const OUTPUT = `
 			import { GetStaticPropsContext } from 'next';
 			async function getData(ctx: GetStaticPropsContext){
-				const allPosts = await promise;
-				return { allPosts } ;
+				return (await getStaticProps(ctx)).props;
 			}
 
 			export 
@@ -179,11 +174,8 @@ describe('next 13 remove-get-static-props', function () {
 		const OUTPUT = `
 		import { GetStaticPropsContext } from 'next';
 		async function getData(ctx: GetStaticPropsContext){
-				const users = await promise;
-				const groups = await anotherPromise;
-
-				return { users, groups }
-			}
+			return (await getStaticProps(ctx)).props;
+		}
 
 			export 
 			async function getStaticProps() {
@@ -234,11 +226,8 @@ describe('next 13 remove-get-static-props', function () {
 		const OUTPUT = `
 		import { GetStaticPropsContext } from 'next';
 		async function getData(ctx: GetStaticPropsContext){
-				const users = await promise;
-				const groups = await anotherPromise;
-
-				return { users, groups }
-			}
+			return (await getStaticProps(ctx)).props;
+		}
 
 			export
 			async function getStaticProps() {
@@ -293,11 +282,8 @@ describe('next 13 remove-get-static-props', function () {
 		const OUTPUT = `
 		import { GetStaticPropsContext } from 'next';
 			import x from "y";
-			async function getData(ctx: GetStaticPropsContext) {
-				const users = await promise;
-				const groups = await anotherPromise;
-
-				return { users, groups }
+			async function getData(ctx: GetStaticPropsContext){
+				return (await getStaticProps(ctx)).props;
 			}
 
 			export
@@ -354,11 +340,8 @@ describe('next 13 remove-get-static-props', function () {
 			import { GetStaticPropsContext } from 'next';
 			import x from "y";
 
-			async function getData(ctx: GetStaticPropsContext) {
-				const users = await promise;
-				const groups = await anotherPromise;
-
-				return { users, groups };
+			async function getData(ctx: GetStaticPropsContext){
+				return (await getStaticProps(ctx)).props;
 			}
 
 			export const getStaticProps = 
@@ -418,17 +401,9 @@ describe('next 13 remove-get-static-props', function () {
 		const OUTPUT = `
 		import { GetStaticPropsContext } from 'next';
 			import x from "y";
-			async function getData(ctx: GetStaticPropsContext) {
-				const users = await promise;
-				const groups = await anotherPromise;
-
-				if(false) {
-					return { users, groups };
-				}
-
-				return { users, groups };
+			async function getData(ctx: GetStaticPropsContext){
+				return (await getStaticProps(ctx)).props;
 			}
-
 
 			export const getStaticProps =  
 			 async () => {
@@ -491,15 +466,8 @@ describe('next 13 remove-get-static-props', function () {
 		import { GetStaticPropsContext } from 'next';
 			import x from "y";
 			
-			async function getData(ctx: GetStaticPropsContext) {
-				const users = await promise;
-				const groups = await anotherPromise;
-
-				if(false) {
-					return { users, groups };
-				}
-
-				return { users, groups };
+			async function getData(ctx: GetStaticPropsContext){
+				return (await getStaticProps(ctx)).props;
 			}
 
 			export const getStaticProps = 
@@ -559,13 +527,9 @@ describe('next 13 remove-get-static-props', function () {
 
 		const OUTPUT = `
 		import { GetServerSidePropsContext } from 'next';
-			async function getData(ctx: GetServerSidePropsContext) {
-				const res = await fetch(\`https://...\`);
-				const projects = await res.json();
-
-				return { projects };
+			async function getData(ctx: GetServerSidePropsContext){
+				return (await getServerSideProps(ctx)).props;
 			}
-
 			export
 			async function getServerSideProps() {
 				const res = await fetch(\`https://...\`);
@@ -636,11 +600,8 @@ describe('next 13 remove-get-static-props', function () {
 			return (await _getStaticPaths({})).paths;
 		}
 		
-		async function getData({ params }: GetStaticPropsContext) {
-			const res = await fetch(\`https://.../posts/\${params.id}\`);
-			const post = await res.json();
-
-			return { post };
+		async function getData(ctx: GetStaticPropsContext){
+			return (await getStaticProps(ctx)).props;
 		}
 
 		export 
@@ -718,11 +679,8 @@ describe('next 13 remove-get-static-props', function () {
 			return (await _getStaticPaths({})).paths;
 		}
 		
-		async function getData({params}:GetStaticPropsContext ) {
-			const res = await fetch(\`https://.../posts/\${params.id}\`);
-			const post = await res.json();
-
-			return { post }
+		async function getData(ctx: GetStaticPropsContext){
+			return (await getStaticProps(ctx)).props;
 		}
 
 		export 
@@ -798,11 +756,8 @@ describe('next 13 remove-get-static-props', function () {
 			return (await _getStaticPaths({})).paths;
 		}
 
-		async function getData({params}: GetStaticPropsContext) {
-			const res = await fetch(\`https://.../posts/\${params.id}\`);
-			const post = await res.json();
-
-			return { post };
+		async function getData(ctx: GetStaticPropsContext){
+			return (await getStaticProps(ctx)).props;
 		}
 
 		export
