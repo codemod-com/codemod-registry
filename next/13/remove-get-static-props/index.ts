@@ -55,7 +55,7 @@ const getFirstIndexAfterImports = (j: JSCodeshift, file: Collection<File>) => {
 
 const generateStaticParamsMethodFactory = (j: JSCodeshift) => {
 	const functionDeclaration = j(`async function generateStaticParams() {
-		return (await _getStaticPaths({})).paths;
+		return (await getStaticPaths({})).paths;
 	}`)
 		.find(j.FunctionDeclaration)
 		.paths()[0]!;
@@ -102,36 +102,6 @@ const addGenerateStaticParamsFunctionDeclaration: ModFunction<File, 'write'> = (
 	});
 
 	return [true, []];
-};
-
-const renameGetStaticPathsFunctionDeclaration: ModFunction<
-	FunctionDeclaration,
-	'write'
-> = (j, root) => {
-	root.forEach((functionDeclarationPath) => {
-		const id = functionDeclarationPath.value.id;
-
-		if (!id) {
-			return;
-		}
-
-		id.name = '_getStaticPaths';
-	});
-
-	return [false, []];
-};
-
-const renameGetStaticPathsArrowFunction: ModFunction<any, 'write'> = (
-	j,
-	root,
-) => {
-	root.find(j.Identifier, {
-		name: 'getStaticPaths',
-	}).forEach((identifierPath) => {
-		identifierPath.value.name = '_getStaticPaths';
-	});
-
-	return [false, []];
 };
 
 const addPageParamsTypeAlias: ModFunction<File, 'write'> = (j, root) => {
@@ -245,15 +215,12 @@ export const findGetStaticPropsFunctionDeclarations: ModFunction<
 > = (j, root, settings) => {
 	const lazyModFunctions: LazyModFunction[] = [];
 
-	const functionDeclarations = root
-		.find(j.FunctionDeclaration)
-		.filter(
-			(functionDeclarationPath) =>
-				functionDeclarationPath.value.id?.type === 'Identifier' &&
-				['getStaticProps', '_getStaticProps'].includes(
-					functionDeclarationPath.value.id?.name ?? '',
-				),
-		);
+	const functionDeclarations = root.find(j.FunctionDeclaration, {
+		id: {
+			type: 'Identifier',
+			name: 'getStaticProps',
+		},
+	});
 
 	functionDeclarations.forEach((functionDeclarationPath) => {
 		const functionDeclarationCollection = j(functionDeclarationPath);
@@ -285,25 +252,19 @@ export const findGetStaticPropsArrowFunctions: ModFunction<File, 'read'> = (
 	const lazyModFunctions: LazyModFunction[] = [];
 
 	const arrowFunctionCollection = root
-		.find(j.VariableDeclarator)
-		.filter(
-			(variableDeclaratorPath) =>
-				variableDeclaratorPath.value.id.type === 'Identifier' &&
-				['getStaticProps', '_getStaticProps'].includes(
-					variableDeclaratorPath.value.id.name,
-				),
-		)
+		.find(j.VariableDeclarator, {
+			id: {
+				type: 'Identifier',
+				name: 'getStaticProps',
+			},
+		})
 		.find(j.ArrowFunctionExpression);
 
 	arrowFunctionCollection.forEach((arrowFunctionPath) => {
 		const arrowFunctionCollection = j(arrowFunctionPath);
 
 		// only direct child of variableDeclarator
-		if (
-			!['getStaticProps', '_getStaticProps'].includes(
-				arrowFunctionPath.parent?.value?.id?.name ?? '',
-			)
-		) {
+		if (arrowFunctionPath.parent?.value?.id?.name !== 'getStaticProps') {
 			return [false, []];
 		}
 
@@ -332,31 +293,28 @@ export const findGetServerSidePropsFunctionDeclarations: ModFunction<
 > = (j, root, settings) => {
 	const lazyModFunctions: LazyModFunction[] = [];
 
-	root.find(j.FunctionDeclaration)
-		.filter(
-			(functionDeclarationPath) =>
-				functionDeclarationPath.value.id?.type === 'Identifier' &&
-				['getServerSideProps', '_getServerSideProps'].includes(
-					functionDeclarationPath.value.id?.name ?? '',
-				),
-		)
-		.forEach((functionDeclarationPath) => {
-			const functionDeclarationCollection = j(functionDeclarationPath);
+	root.find(j.FunctionDeclaration, {
+		id: {
+			type: 'Identifier',
+			name: 'getServerSideProps',
+		},
+	}).forEach((functionDeclarationPath) => {
+		const functionDeclarationCollection = j(functionDeclarationPath);
 
-			lazyModFunctions.push(
-				[
-					addGetDataFunction,
-					functionDeclarationCollection,
-					{ ...settings, methodName: 'getServerSideProps' },
-				],
-				[findReturnStatements, functionDeclarationCollection, settings],
-				[
-					findComponentFunctionDefinition,
-					root,
-					{ name: '', includeParams: settings.includeParams },
-				],
-			);
-		});
+		lazyModFunctions.push(
+			[
+				addGetDataFunction,
+				functionDeclarationCollection,
+				{ ...settings, methodName: 'getServerSideProps' },
+			],
+			[findReturnStatements, functionDeclarationCollection, settings],
+			[
+				findComponentFunctionDefinition,
+				root,
+				{ name: '', includeParams: settings.includeParams },
+			],
+		);
+	});
 
 	return [false, lazyModFunctions];
 };
@@ -370,14 +328,12 @@ export const findGetServerSidePropsArrowFunctions: ModFunction<File, 'read'> = (
 	const lazyModFunctions: LazyModFunction[] = [];
 
 	const arrowFunctionCollection = root
-		.find(j.VariableDeclarator)
-		.filter(
-			(variableDeclaratorPath) =>
-				variableDeclaratorPath.value.id.type === 'Identifier' &&
-				['getServerSideProps', '_getServerSideProps'].includes(
-					variableDeclaratorPath.value.id.name,
-				),
-		)
+		.find(j.VariableDeclarator, {
+			id: {
+				type: 'Identifier',
+				name: 'getServerSideProps',
+			},
+		})
 		.find(j.ArrowFunctionExpression);
 
 	arrowFunctionCollection.forEach((arrowFunctionPath) => {
@@ -385,9 +341,7 @@ export const findGetServerSidePropsArrowFunctions: ModFunction<File, 'read'> = (
 
 		// only direct child of variableDeclarator
 		if (
-			!['getServerSideProps', '_getServerSideProps'].includes(
-				arrowFunctionPath.parent?.value?.id?.name,
-			)
+			arrowFunctionPath.parent?.value?.id?.name !== 'getServerSideProps'
 		) {
 			return [false, []];
 		}
@@ -428,11 +382,6 @@ export const findGetStaticPathsFunctionDeclarations: ModFunction<
 		const newSettings = { ...settings, methodName: 'getStaticPaths' };
 
 		lazyModFunctions.push(
-			[
-				renameGetStaticPathsFunctionDeclaration,
-				functionDeclarationCollection,
-				newSettings,
-			],
 			[findReturnStatements, functionDeclarationCollection, newSettings],
 			[addGenerateStaticParamsFunctionDeclaration, root, newSettings],
 			[addPageParamsTypeAlias, root, newSettings],
@@ -471,11 +420,6 @@ export const findGetStaticPathsArrowFunctions: ModFunction<File, 'read'> = (
 		const newSettings = { ...settings, methodName: 'getStaticPaths' };
 
 		lazyModFunctions.push(
-			[
-				renameGetStaticPathsArrowFunction,
-				variableDeclaratorCollection,
-				newSettings,
-			],
 			[findReturnStatements, arrowFunctionCollection, newSettings],
 			[addGenerateStaticParamsFunctionDeclaration, root, newSettings],
 			[addPageParamsTypeAlias, root, newSettings],

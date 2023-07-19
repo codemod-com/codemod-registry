@@ -369,7 +369,6 @@ describe('next 13 remove-get-static-props', function () {
 		};
 
 		const actualOutput = transform(fileInfo, buildApi('tsx'), {});
-
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT?.replace(/\W/gm, ''),
@@ -597,7 +596,7 @@ describe('next 13 remove-get-static-props', function () {
 	  };
 
 		export async function generateStaticParams() {
-			return (await _getStaticPaths({})).paths;
+			return (await getStaticPaths({})).paths;
 		}
 		
 		async function getData(ctx: GetStaticPropsContext){
@@ -605,7 +604,7 @@ describe('next 13 remove-get-static-props', function () {
 		}
 
 		export 
-	  async function _getStaticPaths() {
+	  async function getStaticPaths() {
 	    return {
 	            paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
 							fallback: true,
@@ -676,7 +675,7 @@ describe('next 13 remove-get-static-props', function () {
 	  };
 
 		export async function generateStaticParams() {
-			return (await _getStaticPaths({})).paths;
+			return (await getStaticPaths({})).paths;
 		}
 		
 		async function getData(ctx: GetStaticPropsContext){
@@ -684,7 +683,7 @@ describe('next 13 remove-get-static-props', function () {
 		}
 
 		export 
-	  async function _getStaticPaths() {
+	  async function getStaticPaths() {
 	    return {
 	            paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
 							fallback: false,
@@ -753,7 +752,7 @@ describe('next 13 remove-get-static-props', function () {
 	  };
 
 		export async function generateStaticParams() {
-			return (await _getStaticPaths({})).paths;
+			return (await getStaticPaths({})).paths;
 		}
 
 		async function getData(ctx: GetStaticPropsContext){
@@ -761,7 +760,7 @@ describe('next 13 remove-get-static-props', function () {
 		}
 
 		export
-	  async function _getStaticPaths() {
+	  async function getStaticPaths() {
 	    return {
 	            paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
 							fallback: 'blocking',
