@@ -635,58 +635,6 @@ export const addRevalidateVariableDeclaration: ModFunction<any, 'write'> = (
 	return [dirtyFlag, []];
 };
 
-export const addGetXFunctionDefinition: ModFunction<File, 'write'> = (
-	j,
-	root,
-	settings,
-) => {
-	const name = 'name' in settings ? String(settings.name) ?? '' : '';
-
-	const params = [];
-
-	if (settings.includeParams) {
-		params.push(serverHookParamsFactory(j));
-	}
-
-	const identifierName = name
-		.split('')
-		.map((character, i) => (i == 0 ? character.toUpperCase() : character))
-		.join('');
-
-	const functionDeclaration = j.functionDeclaration.from({
-		async: true,
-		body: j.blockStatement([]),
-		id: j.identifier(`get${identifierName}`),
-		comments: [j.commentLine(' TODO: implement this function')],
-		params,
-	});
-
-	let dirtyFlag = false;
-
-	root.find(j.Program).forEach((program) => {
-		dirtyFlag = true;
-
-		const functionDeclarationAlreadyExists =
-			program.value.body.findIndex((node) => {
-				return (
-					node.type === 'FunctionDeclaration' &&
-					node.id?.type === 'Identifier' &&
-					node.id?.name === `get${identifierName}`
-				);
-			}) !== -1;
-
-		if (functionDeclarationAlreadyExists) {
-			return;
-		}
-
-		const insertPosition = getFirstIndexAfterImports(j, root);
-
-		program.value.body.splice(insertPosition, 0, functionDeclaration);
-	});
-
-	return [dirtyFlag, []];
-};
-
 export const findComponentFunctionDefinition: ModFunction<File, 'read'> = (
 	j,
 	root,
@@ -694,33 +642,64 @@ export const findComponentFunctionDefinition: ModFunction<File, 'read'> = (
 ) => {
 	const lazyModFunctions: LazyModFunction[] = [];
 
-	// @TODO component can be arrow function
-	// @TODO get Component from the DefaultExport (more reliable)
-	root.find(j.FunctionDeclaration, {
-		id: {
-			type: 'Identifier',
-		},
-	}).forEach((functionDeclarationPath) => {
-		const functionDeclaration = functionDeclarationPath.value;
+	const program = root.find(j.Program).paths()[0] ?? null;
 
-		if (functionDeclaration.id?.type !== 'Identifier') {
-			return;
-		}
+	if (program === null) {
+		return [false, []];
+	}
 
-		const firstCharacter = functionDeclaration.id.name.charAt(0);
+	const defaultExport =
+		root.find(j.ExportDefaultDeclaration).paths()[0] ?? null;
+	const defaultExportDeclaration = defaultExport?.value.declaration ?? null;
 
-		if (firstCharacter !== firstCharacter.toUpperCase()) {
-			return;
-		}
+	let pageComponentFunction:
+		| FunctionDeclaration
+		| ArrowFunctionExpression
+		| null = null;
 
-		const functionDeclarationCollection = j(functionDeclarationPath);
+	if (defaultExportDeclaration?.type === 'FunctionDeclaration') {
+		pageComponentFunction = defaultExportDeclaration;
+	}
 
-		lazyModFunctions.push([
-			findObjectPatternsWithFunctionParameters,
-			functionDeclarationCollection,
-			settings,
-		]);
-	});
+	if (defaultExportDeclaration?.type === 'Identifier') {
+		const program = root.find(j.Program).paths()[0] ?? null;
+
+		(program?.value.body ?? []).forEach((node) => {
+			if (
+				node.type === 'FunctionDeclaration' &&
+				node.id?.name === defaultExportDeclaration.name
+			) {
+				pageComponentFunction = node;
+			}
+
+			if (
+				node.type === 'VariableDeclaration' &&
+				node.declarations[0]?.type === 'VariableDeclarator' &&
+				node.declarations[0].id?.type === 'Identifier' &&
+				node.declarations[0].id.name ===
+					defaultExportDeclaration.name &&
+				node.declarations[0].init?.type === 'ArrowFunctionExpression'
+			) {
+				pageComponentFunction = node.declarations[0].init;
+			}
+		});
+	}
+
+	if (pageComponentFunction === null) {
+		return [false, []];
+	}
+
+	lazyModFunctions.push([
+		findObjectPatternsWithFunctionParameters,
+		j(pageComponentFunction),
+		settings,
+	]);
+
+	lazyModFunctions.push([
+		findIdentifierWithFunctionParameters,
+		j(pageComponentFunction),
+		settings,
+	]);
 
 	return [false, lazyModFunctions];
 };
@@ -758,28 +737,86 @@ export const addVariableDeclarations: ModFunction<ObjectProperty, 'write'> = (
 		),
 	]);
 
-	const functionDeclaration =
-		settings.component as Collection<FunctionDeclaration>;
+	const functionDeclaration = settings.component as Collection<
+		FunctionDeclaration | ArrowFunctionExpression
+	>;
 
-	let addedVariableDeclaration = false;
-	functionDeclaration.find(j.BlockStatement).forEach((blockStatementPath) => {
-		const blockStatement = blockStatementPath.value;
-		// only add variableDeclaration to blackStatement if its direct child of the FunctionDeclaration
-		if (blockStatementPath.parentPath !== functionDeclaration.paths()[0]) {
-			return;
+	functionDeclaration.forEach((path) => {
+		const { body } = path.value;
+
+		if (j.JSXElement.check(body)) {
+			path.value.body = j.blockStatement.from({
+				body: [variableDeclaration, j.returnStatement(body)],
+			});
+			path.value.async = true;
 		}
 
-		blockStatement.body.unshift(variableDeclaration);
-		addedVariableDeclaration = true;
-	});
-
-	functionDeclaration.forEach((functionDeclarationPath) => {
-		if (addedVariableDeclaration && !functionDeclarationPath.value.async) {
-			functionDeclarationPath.value.async = true;
+		if (j.BlockStatement.check(body)) {
+			body.body.unshift(variableDeclaration);
+			path.value.async = true;
 		}
 	});
 
 	return [true, []];
+};
+
+export const findIdentifierWithFunctionParameters: ModFunction<
+	FunctionDeclaration,
+	'read'
+> = (j, root) => {
+	const lazyModFunctions: LazyModFunction[] = [];
+
+	root.forEach((functionDeclarationPath) => {
+		const firstParam = functionDeclarationPath.value.params[0] ?? null;
+
+		if (j.Identifier.check(firstParam)) {
+			lazyModFunctions.push([
+				addGetDataVariableDeclaration,
+				root,
+				{ identifierName: firstParam.name },
+			]);
+		}
+	});
+
+	return [false, lazyModFunctions];
+};
+
+const addGetDataVariableDeclaration: ModFunction<
+	FunctionDeclaration | ArrowFunctionExpression,
+	'write'
+> = (j, root, settings) => {
+	const objectExpression = j.objectExpression([
+		j.objectProperty.from({
+			key: j.identifier('params'),
+			value: j.identifier('params'),
+			shorthand: true,
+		}),
+	]);
+
+	const variableDeclaration = j.variableDeclaration('const', [
+		j.variableDeclarator(
+			j.identifier(settings.identifierName?.toString() ?? ''),
+			j.awaitExpression(
+				j.callExpression(j.identifier(`getData`), [objectExpression]),
+			),
+		),
+	]);
+
+	root.forEach((path) => {
+		const { body } = path.value;
+
+		if (j.JSXElement.check(body)) {
+			path.value.body = j.blockStatement.from({
+				body: [variableDeclaration, j.returnStatement(body)],
+			});
+		}
+
+		if (j.BlockStatement.check(body)) {
+			body.body.unshift(variableDeclaration);
+		}
+	});
+
+	return [false, []];
 };
 
 export const findObjectPatternsWithFunctionParameters: ModFunction<

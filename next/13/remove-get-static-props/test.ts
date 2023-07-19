@@ -206,6 +206,97 @@ describe('next 13 remove-get-static-props', function () {
 		);
 	});
 
+	it('should inject data fetching function when props are not destructured', function () {
+		const INPUT = `
+			export async function getStaticProps() {
+				const users = await promise;
+				return { props: { users } };
+			}
+
+			function SingleAppPage(props: inferSSRProps<typeof getStaticProps>) {
+					return null;
+			}
+			
+			export default SingleAppPage;
+			
+	    `;
+
+		const OUTPUT = `
+			import { GetStaticPropsContext } from 'next';
+			
+			async function getData(ctx: GetStaticPropsContext){
+				return (await getStaticProps(ctx)).props;
+			}
+
+			export async function getStaticProps() {
+				const users = await promise;
+				return { props: { users } };
+			}
+
+			function SingleAppPage(props: inferSSRProps<typeof getStaticProps>) {
+				const props = await getData({ params });
+				return null;
+		}
+		
+		export default SingleAppPage;
+		`;
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, buildApi('tsx'), {});
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should inject data fetching function when Page component has implicit return', function () {
+		const INPUT = `
+			export async function getStaticProps() {
+				const users = await promise;
+				return { props: { users } };
+			}
+
+			const Home = ({ users }) => (<Component users={users} />);
+			
+			export default Home;
+	    `;
+
+		const OUTPUT = `
+			import { GetStaticPropsContext } from 'next';
+			
+			async function getData(ctx: GetStaticPropsContext){
+				return (await getStaticProps(ctx)).props;
+			}
+
+			export async function getStaticProps() {
+				const users = await promise;
+				return { props: { users } };
+			}
+
+			const Home = async ({ params }) => {
+				const { users } = await getData({ params });
+				return (<Component users={users} />)
+			};
+			
+			export default Home;
+		`;
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, buildApi('tsx'), {});
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+
 	it('should add data hooks on the top level of the component ', function () {
 		const INPUT = `
 			export async function getStaticProps() {
