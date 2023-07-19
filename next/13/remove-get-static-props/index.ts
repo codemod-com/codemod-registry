@@ -1,6 +1,5 @@
 import {
 	API,
-	ASTNode,
 	ArrowFunctionExpression,
 	Collection,
 	File,
@@ -27,17 +26,28 @@ type LazyModFunction = [
 	Settings,
 ];
 
-// @TODO
-function findLastIndex<T>(
+const findLastIndex = <T>(
 	array: Array<T>,
 	predicate: (value: T, index: number, obj: T[]) => boolean,
-): number {
+): number => {
 	let l = array.length;
 	while (l--) {
 		if (predicate(array[l]!, l, array)) return l;
 	}
 	return -1;
-}
+};
+
+const getFirstIndexAfterImports = (j: JSCodeshift, file: Collection<File>) => {
+	const programBody = file.find(j.Program).paths()[0]?.value.body ?? [];
+
+	const lastImportDeclarationIndex = findLastIndex(programBody, (node) =>
+		j.ImportDeclaration.check(node),
+	);
+
+	return lastImportDeclarationIndex === -1
+		? 0
+		: lastImportDeclarationIndex + 1;
+};
 
 /**
  * factories
@@ -45,12 +55,25 @@ function findLastIndex<T>(
 
 const generateStaticParamsMethodFactory = (j: JSCodeshift) => {
 	const functionDeclaration = j(`async function generateStaticParams() {
-		return (await _getStaticPaths({})).paths;
+		return (await getStaticPaths({})).paths;
 	}`)
 		.find(j.FunctionDeclaration)
 		.paths()[0]!;
 
 	return j.exportNamedDeclaration(functionDeclaration.value);
+};
+
+const getDataMethodFactory = (
+	j: JSCodeshift,
+	argType: string,
+	decoratedMethodName: string,
+) => {
+	return j(`
+	async function getData(ctx: ${argType}) {
+		return (await ${decoratedMethodName}(ctx)).props;
+	}`)
+		.find(j.FunctionDeclaration)
+		.paths()[0]!;
 };
 
 const serverHookParamsFactory = (j: JSCodeshift) => {
@@ -69,15 +92,7 @@ const addGenerateStaticParamsFunctionDeclaration: ModFunction<File, 'write'> = (
 	const generateStaticParamsMethod = generateStaticParamsMethodFactory(j);
 
 	root.find(j.Program).forEach((program) => {
-		const lastImportDeclarationIndex = findLastIndex(
-			program.value.body,
-			(node) => node.type === 'ImportDeclaration',
-		);
-
-		const insertPosition =
-			lastImportDeclarationIndex === -1
-				? 0
-				: lastImportDeclarationIndex + 1;
+		const insertPosition = getFirstIndexAfterImports(j, root);
 
 		program.value.body.splice(
 			insertPosition,
@@ -87,36 +102,6 @@ const addGenerateStaticParamsFunctionDeclaration: ModFunction<File, 'write'> = (
 	});
 
 	return [true, []];
-};
-
-const renameGetStaticPathsFunctionDeclaration: ModFunction<
-	FunctionDeclaration,
-	'write'
-> = (j, root) => {
-	root.forEach((functionDeclarationPath) => {
-		const id = functionDeclarationPath.value.id;
-
-		if (!id) {
-			return;
-		}
-
-		id.name = '_getStaticPaths';
-	});
-
-	return [false, []];
-};
-
-const renameGetStaticPathsArrowFunction: ModFunction<any, 'write'> = (
-	j,
-	root,
-) => {
-	root.find(j.Identifier, {
-		name: 'getStaticPaths',
-	}).forEach((identifierPath) => {
-		identifierPath.value.name = '_getStaticPaths';
-	});
-
-	return [false, []];
 };
 
 const addPageParamsTypeAlias: ModFunction<File, 'write'> = (j, root) => {
@@ -138,15 +123,7 @@ const addPageParamsTypeAlias: ModFunction<File, 'write'> = (j, root) => {
 	);
 
 	root.find(j.Program).forEach((program) => {
-		const lastImportDeclarationIndex = findLastIndex(
-			program.value.body,
-			(node) => node.type === 'ImportDeclaration',
-		);
-
-		const insertPosition =
-			lastImportDeclarationIndex === -1
-				? 0
-				: lastImportDeclarationIndex + 1;
+		const insertPosition = getFirstIndexAfterImports(j, root);
 
 		program.value.body.splice(
 			insertPosition,
@@ -158,35 +135,29 @@ const addPageParamsTypeAlias: ModFunction<File, 'write'> = (j, root) => {
 	return [true, []];
 };
 
-const deepCloneCollection = <T extends ASTNode>(
-	j: JSCodeshift,
-	root: Collection<T>,
-) => {
-	return j(root.toSource());
-};
-
 const addImportStatement: ModFunction<File, 'write'> = (j, root, settings) => {
 	if (typeof settings.statement !== 'string') {
 		return [false, []];
 	}
 
-	const alreadyExists = root.find(j.ImportDeclaration, {
-		specifiers: [
-			{
-				type: 'ImportSpecifier',
-				imported: {
-					type: 'Identifier',
-					name: settings.statement,
+	const alreadyExists =
+		root.find(j.ImportDeclaration, {
+			specifiers: [
+				{
+					type: 'ImportSpecifier',
+					imported: {
+						type: 'Identifier',
+						name: settings.statement,
+					},
 				},
+			],
+			source: {
+				type: 'StringLiteral',
+				value: 'next',
 			},
-		],
-		source: {
-			type: 'StringLiteral',
-			value: 'next',
-		},
-	}).length !== 0;
-	
-	if(alreadyExists) {
+		}).length !== 0;
+
+	if (alreadyExists) {
 		return [false, []];
 	}
 
@@ -206,103 +177,20 @@ const addGetDataFunction: ModFunction<
 	FunctionDeclaration | ArrowFunctionExpression,
 	'write'
 > = (j, root, settings) => {
-	const cloned = deepCloneCollection(j, root);
-
-	const clonedFunctionDeclarationCollection = cloned.find(
-		j.FunctionDeclaration,
-	);
-	const clonedFArrowFunctionExpressionCollection = cloned.find(
-		j.ArrowFunctionExpression,
-	);
-
-	const clonedFunction =
-		clonedFunctionDeclarationCollection.paths()[0] ??
-		clonedFArrowFunctionExpressionCollection.paths()[0] ??
-		null;
-
-	if (clonedFunction === null) {
-		return [false, []];
-	}
-
-	j(clonedFunction)
-		.find(j.ReturnStatement)
-		.forEach((path) => {
-			const node = path.value;
-
-			const argument = node.argument;
-
-			if (argument === null) {
-				return;
-			}
-
-			// common case #1
-			// return { props: ... }
-			if (argument.type === 'ObjectExpression') {
-				const props =
-					j(argument)
-						.find(j.ObjectProperty, {
-							key: {
-								type: 'Identifier',
-								name: 'props',
-							},
-						})
-						.paths()[0]?.value ?? null;
-
-				if (props === null) {
-					return;
-				}
-
-				const propsPropValue = props.value;
-
-				// @TODO find a way to check if propsPropValue is ExpressionKind without making a lot of checks
-				if (propsPropValue.type !== 'ObjectExpression') {
-					return;
-				}
-
-				node.argument = propsPropValue;
-			}
-
-			// common case #2
-			// res.props = ...;
-			// return res;
-			if (argument.type === 'Identifier') {
-				node.argument = j.memberExpression(
-					argument,
-					j.identifier('props'),
-				);
-			}
-		});
-
-	const params = clonedFunction.value.params.length
-		? clonedFunction.value.params
-		: [j.identifier('ctx')];
+	const { methodName } = settings;
 
 	const contextTypeName =
-		settings.methodName === 'getStaticProps'
+		methodName === 'getStaticProps'
 			? 'GetStaticPropsContext'
 			: 'GetServerSidePropsContext';
 
-	params.forEach((p) => {
-		if (
-			(p.type === 'ObjectPattern' || p.type === 'Identifier') &&
-			!p.typeAnnotation
-		) {
-			p.typeAnnotation = j.tsTypeAnnotation(
-				j.tsTypeReference(j.identifier(contextTypeName)),
-			);
-		}
-	});
+	const getDataFunctionDeclaration = getDataMethodFactory(
+		j,
+		contextTypeName,
+		`${methodName}`,
+	);
 
-	const getDataFunctionDeclaration = j.functionDeclaration.from({
-		params,
-		body:
-			clonedFunction.value.body.type === 'BlockStatement'
-				? clonedFunction.value.body
-				: j.blockStatement([]),
-		id: j.identifier('getData'),
-		async: true,
-	});
-
+	const file = root.closest(j.File);
 	const program = root.closest(j.Program);
 
 	const programNode = program.paths()[0] ?? null;
@@ -311,30 +199,13 @@ const addGetDataFunction: ModFunction<
 		return [false, []];
 	}
 
-	const lastImportDeclarationIndex = findLastIndex(
-		programNode.value.body,
-		(node) => node.type === 'ImportDeclaration',
-	);
-
-	const insertPosition =
-		lastImportDeclarationIndex === -1 ? 0 : lastImportDeclarationIndex + 1;
-
 	programNode.value.body.splice(
-		insertPosition,
+		getFirstIndexAfterImports(j, file),
 		0,
-		getDataFunctionDeclaration,
+		getDataFunctionDeclaration.value,
 	);
 
-	return [
-		true,
-		[
-			[
-				addImportStatement,
-				root.closest(j.File),
-				{ statement: contextTypeName },
-			],
-		],
-	];
+	return [true, [[addImportStatement, file, { statement: contextTypeName }]]];
 };
 
 // @TODO fix code duplication
@@ -344,15 +215,12 @@ export const findGetStaticPropsFunctionDeclarations: ModFunction<
 > = (j, root, settings) => {
 	const lazyModFunctions: LazyModFunction[] = [];
 
-	const functionDeclarations = root
-		.find(j.FunctionDeclaration)
-		.filter(
-			(functionDeclarationPath) =>
-				functionDeclarationPath.value.id?.type === 'Identifier' &&
-				['getStaticProps', '_getStaticProps'].includes(
-					functionDeclarationPath.value.id?.name ?? '',
-				),
-		);
+	const functionDeclarations = root.find(j.FunctionDeclaration, {
+		id: {
+			type: 'Identifier',
+			name: 'getStaticProps',
+		},
+	});
 
 	functionDeclarations.forEach((functionDeclarationPath) => {
 		const functionDeclarationCollection = j(functionDeclarationPath);
@@ -384,25 +252,19 @@ export const findGetStaticPropsArrowFunctions: ModFunction<File, 'read'> = (
 	const lazyModFunctions: LazyModFunction[] = [];
 
 	const arrowFunctionCollection = root
-		.find(j.VariableDeclarator)
-		.filter(
-			(variableDeclaratorPath) =>
-				variableDeclaratorPath.value.id.type === 'Identifier' &&
-				['getStaticProps', '_getStaticProps'].includes(
-					variableDeclaratorPath.value.id.name,
-				),
-		)
+		.find(j.VariableDeclarator, {
+			id: {
+				type: 'Identifier',
+				name: 'getStaticProps',
+			},
+		})
 		.find(j.ArrowFunctionExpression);
 
 	arrowFunctionCollection.forEach((arrowFunctionPath) => {
 		const arrowFunctionCollection = j(arrowFunctionPath);
 
 		// only direct child of variableDeclarator
-		if (
-			!['getStaticProps', '_getStaticProps'].includes(
-				arrowFunctionPath.parent?.value?.id?.name ?? '',
-			)
-		) {
+		if (arrowFunctionPath.parent?.value?.id?.name !== 'getStaticProps') {
 			return [false, []];
 		}
 
@@ -431,31 +293,28 @@ export const findGetServerSidePropsFunctionDeclarations: ModFunction<
 > = (j, root, settings) => {
 	const lazyModFunctions: LazyModFunction[] = [];
 
-	root.find(j.FunctionDeclaration)
-		.filter(
-			(functionDeclarationPath) =>
-				functionDeclarationPath.value.id?.type === 'Identifier' &&
-				['getServerSideProps', '_getServerSideProps'].includes(
-					functionDeclarationPath.value.id?.name ?? '',
-				),
-		)
-		.forEach((functionDeclarationPath) => {
-			const functionDeclarationCollection = j(functionDeclarationPath);
+	root.find(j.FunctionDeclaration, {
+		id: {
+			type: 'Identifier',
+			name: 'getServerSideProps',
+		},
+	}).forEach((functionDeclarationPath) => {
+		const functionDeclarationCollection = j(functionDeclarationPath);
 
-			lazyModFunctions.push(
-				[
-					addGetDataFunction,
-					functionDeclarationCollection,
-					{ ...settings, methodName: 'getServerSideProps' },
-				],
-				[findReturnStatements, functionDeclarationCollection, settings],
-				[
-					findComponentFunctionDefinition,
-					root,
-					{ name: '', includeParams: settings.includeParams },
-				],
-			);
-		});
+		lazyModFunctions.push(
+			[
+				addGetDataFunction,
+				functionDeclarationCollection,
+				{ ...settings, methodName: 'getServerSideProps' },
+			],
+			[findReturnStatements, functionDeclarationCollection, settings],
+			[
+				findComponentFunctionDefinition,
+				root,
+				{ name: '', includeParams: settings.includeParams },
+			],
+		);
+	});
 
 	return [false, lazyModFunctions];
 };
@@ -469,14 +328,12 @@ export const findGetServerSidePropsArrowFunctions: ModFunction<File, 'read'> = (
 	const lazyModFunctions: LazyModFunction[] = [];
 
 	const arrowFunctionCollection = root
-		.find(j.VariableDeclarator)
-		.filter(
-			(variableDeclaratorPath) =>
-				variableDeclaratorPath.value.id.type === 'Identifier' &&
-				['getServerSideProps', '_getServerSideProps'].includes(
-					variableDeclaratorPath.value.id.name,
-				),
-		)
+		.find(j.VariableDeclarator, {
+			id: {
+				type: 'Identifier',
+				name: 'getServerSideProps',
+			},
+		})
 		.find(j.ArrowFunctionExpression);
 
 	arrowFunctionCollection.forEach((arrowFunctionPath) => {
@@ -484,9 +341,7 @@ export const findGetServerSidePropsArrowFunctions: ModFunction<File, 'read'> = (
 
 		// only direct child of variableDeclarator
 		if (
-			!['getServerSideProps', '_getServerSideProps'].includes(
-				arrowFunctionPath.parent?.value?.id?.name,
-			)
+			arrowFunctionPath.parent?.value?.id?.name !== 'getServerSideProps'
 		) {
 			return [false, []];
 		}
@@ -527,11 +382,6 @@ export const findGetStaticPathsFunctionDeclarations: ModFunction<
 		const newSettings = { ...settings, methodName: 'getStaticPaths' };
 
 		lazyModFunctions.push(
-			[
-				renameGetStaticPathsFunctionDeclaration,
-				functionDeclarationCollection,
-				newSettings,
-			],
 			[findReturnStatements, functionDeclarationCollection, newSettings],
 			[addGenerateStaticParamsFunctionDeclaration, root, newSettings],
 			[addPageParamsTypeAlias, root, newSettings],
@@ -570,11 +420,6 @@ export const findGetStaticPathsArrowFunctions: ModFunction<File, 'read'> = (
 		const newSettings = { ...settings, methodName: 'getStaticPaths' };
 
 		lazyModFunctions.push(
-			[
-				renameGetStaticPathsArrowFunction,
-				variableDeclaratorCollection,
-				newSettings,
-			],
 			[findReturnStatements, arrowFunctionCollection, newSettings],
 			[addGenerateStaticParamsFunctionDeclaration, root, newSettings],
 			[addPageParamsTypeAlias, root, newSettings],
@@ -821,11 +666,6 @@ export const addGetXFunctionDefinition: ModFunction<File, 'write'> = (
 	root.find(j.Program).forEach((program) => {
 		dirtyFlag = true;
 
-		const lastImportDeclarationIndex = findLastIndex(
-			program.value.body,
-			(node) => node.type === 'ImportDeclaration',
-		);
-
 		const functionDeclarationAlreadyExists =
 			program.value.body.findIndex((node) => {
 				return (
@@ -839,10 +679,7 @@ export const addGetXFunctionDefinition: ModFunction<File, 'write'> = (
 			return;
 		}
 
-		const insertPosition =
-			lastImportDeclarationIndex === -1
-				? 0
-				: lastImportDeclarationIndex + 1;
+		const insertPosition = getFirstIndexAfterImports(j, root);
 
 		program.value.body.splice(insertPosition, 0, functionDeclaration);
 	});
