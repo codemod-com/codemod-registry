@@ -45,6 +45,7 @@ const transpile = async (
 	const options: Parameters<typeof esbuild.transform>[1] = {
 		legalComments: 'inline',
 		minifyWhitespace: true,
+		format: 'cjs',
 	};
 
 	if (extension === 'ts') {
@@ -117,7 +118,7 @@ const build = async () => {
 
 				const buildIndexPath = join(
 					codemodDirectoryPath,
-					'index.mjs.z',
+					'index.cjs.z',
 				);
 
 				writeFile(buildIndexPath, compressedBuffer);
@@ -136,7 +137,7 @@ const build = async () => {
 
 				const buildIndexPath = join(
 					codemodDirectoryPath,
-					'index.mjs.z',
+					'index.cjs.z',
 				);
 
 				writeFile(buildIndexPath, compressedBuffer);
