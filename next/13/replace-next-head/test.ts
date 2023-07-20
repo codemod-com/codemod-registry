@@ -851,20 +851,7 @@ describe('next 13 replace-next-head', function () {
 	  `;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
-		console.log(actual);
-		const a = actual?.replace(/\s/gm, '') ?? '';
-		const b = expected?.replace(/\s/gm, '') ?? '';
-
-		for (let i = 0; i < a.length; i++) {
-			if (a[i] !== b[i]) {
-				console.log(
-					a.slice(i - 30, i + 30),
-					'\n',
-					b.slice(i - 30, i + 30),
-				);
-				break;
-			}
-		}
+		
 		deepStrictEqual(
 			actual?.replace(/\s/gm, ''),
 			expected?.replace(/\s/gm, ''),
