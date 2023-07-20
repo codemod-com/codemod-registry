@@ -744,7 +744,7 @@ export const addVariableDeclarations: ModFunction<ObjectProperty, 'write'> = (
 	functionDeclaration.forEach((path) => {
 		const { body } = path.value;
 
-		if (j.JSXElement.check(body)) {
+		if (j.JSXElement.check(body) || j.JSXFragment.check(body)) {
 			path.value.body = j.blockStatement.from({
 				body: [variableDeclaration, j.returnStatement(body)],
 			});
@@ -805,7 +805,7 @@ const addGetDataVariableDeclaration: ModFunction<
 	root.forEach((path) => {
 		const { body } = path.value;
 
-		if (j.JSXElement.check(body)) {
+		if (j.JSXElement.check(body) || j.JSXFragment.check(body)) {
 			path.value.body = j.blockStatement.from({
 				body: [variableDeclaration, j.returnStatement(body)],
 			});
