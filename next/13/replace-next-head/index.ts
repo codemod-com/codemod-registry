@@ -36,7 +36,7 @@ type Definition =
 	| NamespaceImport
 	| BindingElement;
 
-const openGraphTags = [
+const openGraphWebsiteTags = [
 	'og:type',
 	'og:determiner',
 	'og:title',
@@ -44,6 +44,7 @@ const openGraphTags = [
 	'og:url',
 	'og:site_name',
 	'og:locale',
+	'og:locale:alternate',
 	'og:country_name',
 	'og:ttl',
 	'og:image',
@@ -51,6 +52,14 @@ const openGraphTags = [
 	'og:image:width',
 	'og:image:height',
 	'og:image:alt',
+	'og:audio', 
+	'og:audio:secure_url', 
+	'og:audio:type', 
+	'og:video', 
+	'og:video:secure_url', 
+	'og:video:type', 
+	'og:video:width', 
+	'og:video:height',
 ];
 
 // @TODO multi tags
@@ -110,7 +119,7 @@ const iconTags = ['icon', 'apple-touch-icon', 'shortcut icon', 'mask-icon'];
 const otherMetaTags = ['msapplication-TileColor', 'msapplication-config'];
 
 const knownNames = [
-	...openGraphTags,
+	...openGraphWebsiteTags,
 	...twitterTags,
 	...alternatesLinks,
 	...basicTags,
@@ -529,6 +538,7 @@ export const handleTag = (
 				metadataObject.openGraph = {};
 			}
 
+			// image structured property
 			if (name.startsWith('og:image')) {
 				const { content } = HTMLAttributes;
 
@@ -550,6 +560,59 @@ export const handleTag = (
 				return;
 			}
 
+			if(name.startsWith('og:audio')) {
+				const { content } = HTMLAttributes;
+
+				if (!metadataObject.openGraph.audio) {
+					metadataObject.openGraph.audio = [];
+				}
+
+				if (name === 'og:audio') {
+					metadataObject.openGraph.audio.push({
+						url: content,
+					});
+				} else {
+					const audio = metadataObject.openGraph.audio.at(-1);
+					const propName = name.replace('og:audio:', '');
+
+					audio[camelize(propName)] = content;
+				}
+
+				return;
+			}
+			
+			if(name.startsWith('og:video')) {
+				const { content } = HTMLAttributes;
+
+				if (!metadataObject.openGraph.videos) {
+					metadataObject.openGraph.videos = [];
+				}
+
+				if (name === 'og:video') {
+					metadataObject.openGraph.videos.push({
+						url: content,
+					});
+				} else {
+					const video = metadataObject.openGraph.videos.at(-1);
+					const propName = name.replace('og:video:', '');
+
+					video[camelize(propName)] = content;
+				}
+
+				return;
+			}
+			
+			if(name === 'og:locale:alternate') {
+				const { content } = HTMLAttributes;
+				
+				if(!metadataObject.openGraph.alternateLocale) {
+					metadataObject.openGraph.alternateLocale = [];
+				}
+				
+				metadataObject.openGraph.alternateLocale.push(content);
+				return;
+			}
+			
 			metadataObject.openGraph[n] = content;
 			return;
 		}

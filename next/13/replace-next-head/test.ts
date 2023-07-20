@@ -644,18 +644,21 @@ describe('next 13 replace-next-head', function () {
 		);
 	});
 
-	it('should support openGraph meta tags', function (this: Context) {
+	it('should support openGraph "website" meta tags', function (this: Context) {
 		const beforeText = `
 	  import Head from 'next/head';
 	  export default function Page() {
 	    return (
 	      <>
 	        <Head>
+						<meta property="og:determiner" content="the" />
 						<meta property="og:title" content="Next.js" />
 						<meta property="og:description" content="The React Framework for the Web" />
 						<meta property="og:url" content="https://nextjs.org/" />
 						<meta property="og:site_name" content="Next.js" />
 						<meta property="og:locale" content="en_US" />
+						<meta property="og:locale:alternate" content="fr_FR" />
+						<meta property="og:locale:alternate" content="es_ES" />
 						<meta property="og:type" content="website" />
 						<meta property="og:image:url" content="https://nextjs.org/og.png" />
 						<meta property="og:image:width" content="800" />
@@ -664,6 +667,14 @@ describe('next 13 replace-next-head', function () {
 						<meta property="og:image:width" content="1800" />
 						<meta property="og:image:height" content="1600" />
 						<meta property="og:image:alt" content="My custom alt" />
+						<meta property="og:audio" content="https://example.com/sound.mp3" />
+						<meta property="og:audio:secure_url" content="https://secure.example.com/sound.mp3" />
+						<meta property="og:audio:type" content="audio/mpeg" />
+						<meta property="og:video" content="https://example.com/movie.swf" />
+						<meta property="og:video:secure_url" content="https://secure.example.com/movie.swf" />
+						<meta property="og:video:type" content="application/x-shockwave-flash" />
+						<meta property="og:video:width" content="400" />
+						<meta property="og:video:height" content="300" />
 	        </Head>
 	      </>
 	    );
@@ -675,11 +686,13 @@ describe('next 13 replace-next-head', function () {
 		import Head from 'next/head';
 	  export const metadata: Metadata = {
 			openGraph: {
+				determiner: "the",
 				title: "Next.js",
 				description: "The React Framework for the Web",
 				url: "https://nextjs.org/",
 				siteName: "Next.js",
 				locale: "en_US",
+				alternateLocale: ["fr_FR", "es_ES"],
 				type: "website",
 				images: [{
 					url: "https://nextjs.org/og.png",
@@ -691,6 +704,18 @@ describe('next 13 replace-next-head', function () {
 						height: "1600",
 						alt: "My custom alt",
 				}],
+				audio: [{
+					url: "https://example.com/sound.mp3", 
+					secureUrl: "https://secure.example.com/sound.mp3", 
+					type: "audio/mpeg",
+				}],
+				videos: [{
+					url: "https://example.com/movie.swf", 
+					secureUrl: "https://secure.example.com/movie.swf", 
+					type: "application/x-shockwave-flash", 
+					width: "400", 
+					height: "300", 
+				}], 
 			},
 		};
 
@@ -698,6 +723,8 @@ describe('next 13 replace-next-head', function () {
 	    return (
 	      <>
 	        <Head>
+						{/* this tag can be removed */}
+						<meta property="og:determiner" content="the" />
 						{/* this tag can be removed */}
 						<meta property="og:title" content="Next.js" />
 						{/* this tag can be removed */}
@@ -708,6 +735,10 @@ describe('next 13 replace-next-head', function () {
 						<meta property="og:site_name" content="Next.js" />
 						{/* this tag can be removed */}
 						<meta property="og:locale" content="en_US" />
+						{/* this tag can be removed */}
+						<meta property="og:locale:alternate" content="fr_FR" />
+						{/* this tag can be removed */}
+						<meta property="og:locale:alternate" content="es_ES" />
 						{/* this tag can be removed */}
 						<meta property="og:type" content="website" />
 						{/* this tag can be removed */}
@@ -724,6 +755,22 @@ describe('next 13 replace-next-head', function () {
 						<meta property="og:image:height" content="1600" />
 						{/* this tag can be removed */}
 						<meta property="og:image:alt" content="My custom alt" />
+						{/* this tag can be removed */}
+						<meta property="og:audio" content="https://example.com/sound.mp3" />
+						{/* this tag can be removed */}
+						<meta property="og:audio:secure_url" content="https://secure.example.com/sound.mp3" />
+						{/* this tag can be removed */}
+						<meta property="og:audio:type" content="audio/mpeg" />
+						{/* this tag can be removed */}
+						<meta property="og:video" content="https://example.com/movie.swf" />
+						{/* this tag can be removed */}
+						<meta property="og:video:secure_url" content="https://secure.example.com/movie.swf" />
+						{/* this tag can be removed */}
+						<meta property="og:video:type" content="application/x-shockwave-flash" />
+						{/* this tag can be removed */}
+						<meta property="og:video:width" content="400" />
+						{/* this tag can be removed */}
+						<meta property="og:video:height" content="300" />
 					</Head>
 	      </>
 	    );
@@ -731,7 +778,7 @@ describe('next 13 replace-next-head', function () {
 	  `;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
-
+		
 		deepStrictEqual(
 			actual?.replace(/\s/gm, ''),
 			expected?.replace(/\s/gm, ''),
