@@ -1,10 +1,17 @@
 import { posix } from 'node:path';
 import tsmorph from 'ts-morph';
-import { Repomod } from '@intuita-inc/repomod-engine-api';
+import type { Repomod } from '@intuita-inc/repomod-engine-api';
+import type { fromMarkdown } from 'mdast-util-from-markdown';
+import type { visit } from 'unist-util-visit';
+
+type Root = ReturnType<typeof fromMarkdown>;
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 type Dependencies = Readonly<{
 	tsmorph: typeof tsmorph;
+	parseMdx?: (data: string) => Root;
+	stringifyMdx?: (tree: Root) => string;
+	visitMdxAst?: typeof visit;
 }>;
 
 const ROOT_LAYOUT_CONTENT = `
@@ -53,24 +60,6 @@ export default function NotFound() {
 }
 `;
 
-const ROUTE_LAYOUT_CONTENT = `
-import { Metadata } from 'next';
- 
-export const metadata: Metadata = {
-	title: '',
-	description: '',
-};
-
-export default function RouteLayout(
-	{ children, params }: {
-		children: React.ReactNode;
-		params: {};
-	}
-) {
-	return <>{children}</>;
-}
-`;
-
 enum FilePurpose {
 	// root directory
 	ROOT_LAYOUT = 'ROOT_LAYOUT',
@@ -92,7 +81,7 @@ const map = new Map([
 const EXTENSION = '.tsx';
 
 export const repomod: Repomod<Dependencies> = {
-	includePatterns: ['**/pages/**/*.{js,jsx,ts,tsx}'],
+	includePatterns: ['**/pages/**/*.{js,jsx,ts,tsx,cjs,mjs,mdx}'],
 	excludePatterns: ['**/node_modules/**', '**/pages/api/**'],
 	handleFile: async (api, path, options) => {
 		const parsedPath = posix.parse(path);
@@ -233,7 +222,7 @@ export const repomod: Repomod<Dependencies> = {
 			const routePagePath = posix.format({
 				root: parsedPath.root,
 				dir: newDir,
-				ext: EXTENSION,
+				ext: parsedPath.ext === '.mdx' ? '.mdx' : '.tsx',
 				name: 'page',
 			});
 
@@ -277,86 +266,136 @@ export const repomod: Repomod<Dependencies> = {
 				filePurpose === FilePurpose.ROOT_PAGE) &&
 			options.oldPath
 		) {
-			const { tsmorph } = api.getDependencies();
+			const { tsmorph, parseMdx, stringifyMdx, visitMdxAst } =
+				api.getDependencies();
 
-			const project = new tsmorph.Project({
-				useInMemoryFileSystem: true,
-				skipFileDependencyResolution: true,
-				compilerOptions: {
-					allowJs: true,
-				},
-			});
+			let sourcingStatementInserted = false;
 
-			const newSourceFile = project.createSourceFile(path, content);
+			const rewriteWithTsMorph = (input: string) => {
+				const project = new tsmorph.Project({
+					useInMemoryFileSystem: true,
+					skipFileDependencyResolution: true,
+					compilerOptions: {
+						allowJs: true,
+					},
+				});
 
-			const oldSourceFile = project.createSourceFile(
-				options.oldPath,
-				options.oldData ?? '',
-			);
+				const newSourceFile = project.createSourceFile(path, content);
 
-			oldSourceFile.getStatementsWithComments().forEach((statement) => {
-				if (tsmorph.Node.isImportDeclaration(statement)) {
-					const structure = statement.getStructure();
+				const oldSourceFile = project.createSourceFile(
+					options.oldPath ?? '',
+					input,
+				);
 
-					if (filePurpose === FilePurpose.ROUTE_PAGE) {
-						if (structure.moduleSpecifier.startsWith('./')) {
-							structure.moduleSpecifier = `.${structure.moduleSpecifier}`;
-						} else if (
-							structure.moduleSpecifier.startsWith('../')
-						) {
-							structure.moduleSpecifier = `../${structure.moduleSpecifier}`;
+				oldSourceFile
+					.getStatementsWithComments()
+					.forEach((statement) => {
+						if (tsmorph.Node.isImportDeclaration(statement)) {
+							const structure = statement.getStructure();
+
+							if (filePurpose === FilePurpose.ROUTE_PAGE) {
+								if (
+									structure.moduleSpecifier.startsWith('./')
+								) {
+									structure.moduleSpecifier = `.${structure.moduleSpecifier}`;
+								} else if (
+									structure.moduleSpecifier.startsWith('../')
+								) {
+									structure.moduleSpecifier = `../${structure.moduleSpecifier}`;
+								}
+							}
+
+							newSourceFile.addImportDeclaration(structure);
+
+							return;
 						}
-					}
 
-					newSourceFile.addImportDeclaration(structure);
+						if (tsmorph.Node.isVariableStatement(statement)) {
+							const declarations = statement
+								.getDeclarationList()
+								.getDeclarations();
 
-					return;
-				}
-
-				if (tsmorph.Node.isVariableStatement(statement)) {
-					const declarations = statement
-						.getDeclarationList()
-						.getDeclarations();
-
-					const getStaticPathUsed = declarations.some(
-						(declaration) => {
-							return declaration.getName() === 'getStaticPath';
-						},
-					);
-
-					if (getStaticPathUsed) {
-						newSourceFile.addStatements(
-							`// TODO reimplement getStaticPath as generateStaticParams\n`,
-						);
-					}
-
-					const getServerSidePropsUsed = declarations.some(
-						(declaration) => {
-							return (
-								declaration.getName() === 'getServerSideProps'
+							const getStaticPathUsed = declarations.some(
+								(declaration) => {
+									return (
+										declaration.getName() ===
+										'getStaticPath'
+									);
+								},
 							);
-						},
+
+							if (getStaticPathUsed) {
+								newSourceFile.addStatements(
+									`// TODO reimplement getStaticPath as generateStaticParams\n`,
+								);
+							}
+
+							const getServerSidePropsUsed = declarations.some(
+								(declaration) => {
+									return (
+										declaration.getName() ===
+										'getServerSideProps'
+									);
+								},
+							);
+
+							if (getServerSidePropsUsed) {
+								newSourceFile.addStatements(
+									`// TODO reimplement getServerSideProps with custom logic\n`,
+								);
+							}
+						}
+
+						newSourceFile.addStatements(statement.print());
+					});
+
+				if (!sourcingStatementInserted) {
+					newSourceFile.insertStatements(
+						0,
+						`// This file has been sourced from: ${options.oldPath}`,
 					);
 
-					if (getServerSidePropsUsed) {
-						newSourceFile.addStatements(
-							`// TODO reimplement getServerSideProps with custom logic\n`,
-						);
-					}
+					sourcingStatementInserted = true;
 				}
 
-				newSourceFile.addStatements(statement.print());
-			});
+				return newSourceFile.print();
+			};
 
-			newSourceFile.insertStatements(
-				0,
-				`// This file has been sourced from: ${options.oldPath}`,
-			);
+			if (path.endsWith('.mdx')) {
+				if (parseMdx && stringifyMdx && visitMdxAst) {
+					const tree = parseMdx(options.oldData ?? '');
+
+					visitMdxAst(tree, (node) => {
+						if (node.type === 'mdxjsEsm') {
+							node.value = rewriteWithTsMorph(node.value);
+
+							delete node.data;
+							delete node.position;
+
+							return 'skip';
+						}
+					});
+
+					const data = stringifyMdx(tree);
+
+					return {
+						kind: 'upsertData',
+						path,
+						data,
+					};
+				} else {
+					return {
+						kind: 'noop',
+					};
+				}
+			}
+
+			const data = rewriteWithTsMorph(options.oldData ?? '');
 
 			return {
 				kind: 'upsertData',
 				path,
-				data: newSourceFile.print(),
+				data,
 			};
 		}
 
