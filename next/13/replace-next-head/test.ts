@@ -778,6 +778,79 @@ describe('next 13 replace-next-head', function () {
 	  `;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected?.replace(/\s/gm, ''),
+		);
+	});
+
+	it('should support openGraph "article" meta tags', function (this: Context) {
+		const beforeText = `
+	  import Head from 'next/head';
+	  export default function Page() {
+	    return (
+	      <>
+	        <Head>
+						<meta property="og:type" content="article" />
+						<meta property="article:published_time" content="2023-07-20T12:24:36.871Z" />
+						<meta property="article:modified_time" content="2023-07-20T12:24:36.871Z" />
+						<meta property="article:expiration_time" content="2023-07-20T12:24:36.871Z" />
+						<meta property="article:author" content="Seb" />
+						<meta property="article:author" content="Josh" />
+						<meta property="article:section" content="Technology" />
+						<meta property="article:tag" content="tag1" />
+						<meta property="article:tag" content="tag2" />
+	        </Head>
+	      </>
+	    );
+	  }
+		`;
+
+		const afterText = `
+	  import { Metadata } from "next";
+		import Head from 'next/head';
+	  export const metadata: Metadata = {
+			openGraph: {
+				type: "article",
+				publishedTime: "2023-07-20T12:24:36.871Z",
+				modifiedTime: "2023-07-20T12:24:36.871Z",
+				expirationTime: "2023-07-20T12:24:36.871Z",
+				authors: ["Seb", "Josh"], 
+				section: "Technology",
+				tags: ["tag1", "tag2"],
+			},
+		};
+
+		export default function Page() {
+	    return (
+	      <>
+	        <Head>
+						{/* this tag can be removed */}
+						<meta property="og:type" content="article" />
+						{/* this tag can be removed */}
+						<meta property="article:published_time" content="2023-07-20T12:24:36.871Z" />
+						{/* this tag can be removed */}
+						<meta property="article:modified_time" content="2023-07-20T12:24:36.871Z" />
+						{/* this tag can be removed */}
+						<meta property="article:expiration_time" content="2023-07-20T12:24:36.871Z" />
+						{/* this tag can be removed */}
+						<meta property="article:author" content="Seb" />
+						{/* this tag can be removed */}
+						<meta property="article:author" content="Josh" />
+						{/* this tag can be removed */}
+						<meta property="article:section" content="Technology" />
+						{/* this tag can be removed */}
+						<meta property="article:tag" content="tag1" />
+						{/* this tag can be removed */}
+						<meta property="article:tag" content="tag2" />
+					</Head>
+	      </>
+	    );
+	  }
+	  `;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 		
 		deepStrictEqual(
 			actual?.replace(/\s/gm, ''),

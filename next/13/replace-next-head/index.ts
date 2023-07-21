@@ -52,18 +52,24 @@ const openGraphWebsiteTags = [
 	'og:image:width',
 	'og:image:height',
 	'og:image:alt',
-	'og:audio', 
-	'og:audio:secure_url', 
-	'og:audio:type', 
-	'og:video', 
-	'og:video:secure_url', 
-	'og:video:type', 
-	'og:video:width', 
+	'og:audio',
+	'og:audio:secure_url',
+	'og:audio:type',
+	'og:video',
+	'og:video:secure_url',
+	'og:video:type',
+	'og:video:width',
 	'og:video:height',
 ];
 
-// @TODO multi tags
-// @TODO typedOpenGraph
+const openGraphArticleTags = [
+	'article:published_time',
+	'article:modified_time',
+	'article:expiration_time',
+	'article:author',
+	'article:section',
+	'article:tag',
+];
 
 const twitterTags = [
 	'twitter:card',
@@ -120,6 +126,7 @@ const otherMetaTags = ['msapplication-TileColor', 'msapplication-config'];
 
 const knownNames = [
 	...openGraphWebsiteTags,
+	...openGraphArticleTags,
 	...twitterTags,
 	...alternatesLinks,
 	...basicTags,
@@ -476,7 +483,6 @@ export const handleTag = (
 ) => {
 	const metadataObject = metadataContainer.get();
 	const name = getTagPropertyName(HTMLTagName, HTMLAttributes);
-
 	if (name === null) {
 		return;
 	}
@@ -494,6 +500,39 @@ export const handleTag = (
 			}
 
 			metadataObject.other[name] = content;
+			return;
+		}
+
+		if (name.startsWith('article')) {
+			const { content } = HTMLAttributes;
+
+			if (!metadataObject.openGraph) {
+				metadataObject.openGraph = {};
+			}
+
+			if (name === 'article:author') {
+				if (!metadataObject.openGraph.authors) {
+					metadataObject.openGraph.authors = [];
+				}
+
+				metadataObject.openGraph.authors.push(content);
+
+				return;
+			}
+
+			if (name === 'article:tag') {
+				if (!metadataObject.openGraph.tags) {
+					metadataObject.openGraph.tags = [];
+				}
+
+				metadataObject.openGraph.tags.push(content);
+
+				return;
+			}
+
+			metadataObject.openGraph[camelize(name.replace('article:', ''))] =
+				content;
+
 			return;
 		}
 
@@ -560,7 +599,7 @@ export const handleTag = (
 				return;
 			}
 
-			if(name.startsWith('og:audio')) {
+			if (name.startsWith('og:audio')) {
 				const { content } = HTMLAttributes;
 
 				if (!metadataObject.openGraph.audio) {
@@ -580,8 +619,8 @@ export const handleTag = (
 
 				return;
 			}
-			
-			if(name.startsWith('og:video')) {
+
+			if (name.startsWith('og:video')) {
 				const { content } = HTMLAttributes;
 
 				if (!metadataObject.openGraph.videos) {
@@ -601,18 +640,18 @@ export const handleTag = (
 
 				return;
 			}
-			
-			if(name === 'og:locale:alternate') {
+
+			if (name === 'og:locale:alternate') {
 				const { content } = HTMLAttributes;
-				
-				if(!metadataObject.openGraph.alternateLocale) {
+
+				if (!metadataObject.openGraph.alternateLocale) {
 					metadataObject.openGraph.alternateLocale = [];
 				}
-				
+
 				metadataObject.openGraph.alternateLocale.push(content);
 				return;
 			}
-			
+
 			metadataObject.openGraph[n] = content;
 			return;
 		}
