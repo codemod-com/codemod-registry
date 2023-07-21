@@ -5,6 +5,7 @@ import {
 	File,
 	FileInfo,
 	FunctionDeclaration,
+	FunctionExpression,
 	JSCodeshift,
 	ObjectPattern,
 	ObjectProperty,
@@ -655,6 +656,7 @@ export const findComponentFunctionDefinition: ModFunction<File, 'read'> = (
 	let pageComponentFunction:
 		| FunctionDeclaration
 		| ArrowFunctionExpression
+		| FunctionExpression
 		| null = null;
 
 	if (defaultExportDeclaration?.type === 'FunctionDeclaration') {
@@ -678,7 +680,9 @@ export const findComponentFunctionDefinition: ModFunction<File, 'read'> = (
 				node.declarations[0].id?.type === 'Identifier' &&
 				node.declarations[0].id.name ===
 					defaultExportDeclaration.name &&
-				node.declarations[0].init?.type === 'ArrowFunctionExpression'
+				(node.declarations[0].init?.type ===
+					'ArrowFunctionExpression' ||
+					node.declarations[0].init?.type === 'FunctionExpression')
 			) {
 				pageComponentFunction = node.declarations[0].init;
 			}
@@ -809,10 +813,13 @@ const addGetDataVariableDeclaration: ModFunction<
 			path.value.body = j.blockStatement.from({
 				body: [variableDeclaration, j.returnStatement(body)],
 			});
+
+			path.value.async = true;
 		}
 
 		if (j.BlockStatement.check(body)) {
 			body.body.unshift(variableDeclaration);
+			path.value.async = true;
 		}
 	});
 
