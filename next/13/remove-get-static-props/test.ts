@@ -340,7 +340,7 @@ describe('next 13 remove-get-static-props', function () {
 			OUTPUT.replace(/\W/gm, ''),
 		);
 	});
-	
+
 	it('should inject data fetching function when Page component is functionexpression', function () {
 		const INPUT = `
 			export async function getStaticProps() {
@@ -381,7 +381,7 @@ describe('next 13 remove-get-static-props', function () {
 		};
 
 		const actualOutput = transform(fileInfo, buildApi('tsx'), {});
-		console.log(actualOutput)
+		console.log(actualOutput);
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),

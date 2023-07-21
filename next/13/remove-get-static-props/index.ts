@@ -813,7 +813,7 @@ const addGetDataVariableDeclaration: ModFunction<
 			path.value.body = j.blockStatement.from({
 				body: [variableDeclaration, j.returnStatement(body)],
 			});
-			
+
 			path.value.async = true;
 		}
 
