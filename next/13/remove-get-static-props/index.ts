@@ -6,6 +6,7 @@ import {
 	FileInfo,
 	FunctionDeclaration,
 	FunctionExpression,
+	Identifier,
 	JSCodeshift,
 	ObjectPattern,
 	ObjectProperty,
@@ -66,11 +67,12 @@ const generateStaticParamsMethodFactory = (j: JSCodeshift) => {
 
 const getDataMethodFactory = (
 	j: JSCodeshift,
+	argName: string,
 	argType: string,
 	decoratedMethodName: string,
 ) => {
 	return j(`
-	async function getData(ctx: ${argType}) {
+	async function getData(${argName}: ${argType}) {
 		return (await ${decoratedMethodName}(ctx)).props;
 	}`)
 		.find(j.FunctionDeclaration)
@@ -174,25 +176,17 @@ const addImportStatement: ModFunction<File, 'write'> = (j, root, settings) => {
 	return [false, []];
 };
 
-const addGetDataFunction: ModFunction<
-	FunctionDeclaration | ArrowFunctionExpression,
-	'write'
-> = (j, root, settings) => {
-	const { methodName } = settings;
-
-	const contextTypeName =
-		methodName === 'getStaticProps'
-			? 'GetStaticPropsContext'
-			: 'GetServerSidePropsContext';
+const addGetDataFunction: ModFunction<File, 'write'> = (j, root, settings) => {
+	const { functionName, argName, argType } = settings;
 
 	const getDataFunctionDeclaration = getDataMethodFactory(
 		j,
-		contextTypeName,
-		`${methodName}`,
+		argName as string,
+		argType as string,
+		functionName as string,
 	);
 
-	const file = root.closest(j.File);
-	const program = root.closest(j.Program);
+	const program = root.find(j.Program);
 
 	const programNode = program.paths()[0] ?? null;
 
@@ -201,231 +195,154 @@ const addGetDataFunction: ModFunction<
 	}
 
 	programNode.value.body.splice(
-		getFirstIndexAfterImports(j, file),
+		getFirstIndexAfterImports(j, root),
 		0,
 		getDataFunctionDeclaration.value,
 	);
 
-	return [true, [[addImportStatement, file, { statement: contextTypeName }]]];
+	return [true, [[addImportStatement, root, { statement: argType }]]];
 };
 
+const DATA_FETCHING_METHOD_NAMES = ['getServerSideProps', 'getStaticProps'];
+
 // @TODO fix code duplication
-export const findGetStaticPropsFunctionDeclarations: ModFunction<
-	File,
-	'read'
-> = (j, root, settings) => {
+export const findFunctionDeclarations: ModFunction<File, 'read'> = (
+	j,
+	root,
+	settings,
+) => {
 	const lazyModFunctions: LazyModFunction[] = [];
 
-	const functionDeclarations = root.find(j.FunctionDeclaration, {
-		id: {
-			type: 'Identifier',
-			name: 'getStaticProps',
-		},
-	});
+	const functionDeclarations = root.find(j.FunctionDeclaration);
 
 	functionDeclarations.forEach((functionDeclarationPath) => {
 		const functionDeclarationCollection = j(functionDeclarationPath);
 
-		lazyModFunctions.push(
-			[
-				addGetDataFunction,
-				functionDeclarationCollection,
-				{ ...settings, methodName: 'getStaticProps' },
-			],
-			[findReturnStatements, functionDeclarationCollection, settings],
-			[
-				findComponentFunctionDefinition,
-				root,
-				{ name: '', includeParams: settings.includeParams },
-			],
-		);
-	});
+		const { id } = functionDeclarationPath.value;
 
-	return [false, lazyModFunctions];
-};
-
-// @TODO fix code duplication
-export const findGetStaticPropsArrowFunctions: ModFunction<File, 'read'> = (
-	j,
-	root,
-	settings,
-) => {
-	const lazyModFunctions: LazyModFunction[] = [];
-
-	const arrowFunctionCollection = root
-		.find(j.VariableDeclarator, {
-			id: {
-				type: 'Identifier',
-				name: 'getStaticProps',
-			},
-		})
-		.find(j.ArrowFunctionExpression);
-
-	arrowFunctionCollection.forEach((arrowFunctionPath) => {
-		const arrowFunctionCollection = j(arrowFunctionPath);
-
-		// only direct child of variableDeclarator
-		if (arrowFunctionPath.parent?.value?.id?.name !== 'getStaticProps') {
-			return [false, []];
-		}
-
-		lazyModFunctions.push(
-			[
-				addGetDataFunction,
-				arrowFunctionCollection,
-				{ ...settings, methodName: 'getStaticProps' },
-			],
-			[findReturnStatements, arrowFunctionCollection, settings],
-			[
-				findComponentFunctionDefinition,
-				root,
-				{ name: '', includeParams: settings.includeParams },
-			],
-		);
-	});
-
-	return [false, lazyModFunctions];
-};
-
-// @TODO fix code duplication
-export const findGetServerSidePropsFunctionDeclarations: ModFunction<
-	File,
-	'read'
-> = (j, root, settings) => {
-	const lazyModFunctions: LazyModFunction[] = [];
-
-	root.find(j.FunctionDeclaration, {
-		id: {
-			type: 'Identifier',
-			name: 'getServerSideProps',
-		},
-	}).forEach((functionDeclarationPath) => {
-		const functionDeclarationCollection = j(functionDeclarationPath);
-
-		lazyModFunctions.push(
-			[
-				addGetDataFunction,
-				functionDeclarationCollection,
-				{ ...settings, methodName: 'getServerSideProps' },
-			],
-			[findReturnStatements, functionDeclarationCollection, settings],
-			[
-				findComponentFunctionDefinition,
-				root,
-				{ name: '', includeParams: settings.includeParams },
-			],
-		);
-	});
-
-	return [false, lazyModFunctions];
-};
-
-// @TODO fix code duplication
-export const findGetServerSidePropsArrowFunctions: ModFunction<File, 'read'> = (
-	j,
-	root,
-	settings,
-) => {
-	const lazyModFunctions: LazyModFunction[] = [];
-
-	const arrowFunctionCollection = root
-		.find(j.VariableDeclarator, {
-			id: {
-				type: 'Identifier',
-				name: 'getServerSideProps',
-			},
-		})
-		.find(j.ArrowFunctionExpression);
-
-	arrowFunctionCollection.forEach((arrowFunctionPath) => {
-		const arrowFunctionCollection = j(arrowFunctionPath);
-
-		// only direct child of variableDeclarator
-		if (
-			arrowFunctionPath.parent?.value?.id?.name !== 'getServerSideProps'
-		) {
-			return [false, []];
-		}
-
-		lazyModFunctions.push(
-			[
-				addGetDataFunction,
-				arrowFunctionCollection,
-				{ ...settings, methodName: 'getServerSideProps' },
-			],
-			[findReturnStatements, arrowFunctionCollection, settings],
-			[
-				findComponentFunctionDefinition,
-				root,
-				{ name: '', includeParams: settings.includeParams },
-			],
-		);
-	});
-
-	return [false, lazyModFunctions];
-};
-
-// @TODO fix code duplication
-export const findGetStaticPathsFunctionDeclarations: ModFunction<
-	File,
-	'read'
-> = (j, root, settings) => {
-	const lazyModFunctions: LazyModFunction[] = [];
-
-	root.find(j.FunctionDeclaration, {
-		id: {
-			type: 'Identifier',
-			name: 'getStaticPaths',
-		},
-	}).forEach((functionDeclarationPath) => {
-		const functionDeclarationCollection = j(functionDeclarationPath);
-
-		const newSettings = { ...settings, methodName: 'getStaticPaths' };
-
-		lazyModFunctions.push(
-			[findReturnStatements, functionDeclarationCollection, newSettings],
-			[addGenerateStaticParamsFunctionDeclaration, root, newSettings],
-			[addPageParamsTypeAlias, root, newSettings],
-		);
-	});
-
-	return [false, lazyModFunctions];
-};
-// @TODO fix code duplication
-export const findGetStaticPathsArrowFunctions: ModFunction<File, 'read'> = (
-	j,
-	root,
-	settings,
-) => {
-	const lazyModFunctions: LazyModFunction[] = [];
-
-	const variableDeclaratorCollection = root.find(j.VariableDeclarator, {
-		id: {
-			type: 'Identifier',
-			name: 'getStaticPaths',
-		},
-	});
-
-	const arrowFunctionCollection = variableDeclaratorCollection.find(
-		j.ArrowFunctionExpression,
-	);
-
-	arrowFunctionCollection.forEach((arrowFunctionPath) => {
-		const arrowFunctionCollection = j(arrowFunctionPath);
-
-		// only direct child of variableDeclarator
-		if (arrowFunctionPath.parent?.value?.id?.name !== 'getStaticPaths') {
+		if (!j.Identifier.check(id)) {
 			return;
 		}
 
-		const newSettings = { ...settings, methodName: 'getStaticPaths' };
+		if (DATA_FETCHING_METHOD_NAMES.includes(id.name)) {
+			lazyModFunctions.push(
+				[
+					addGetDataFunction,
+					root,
+					{
+						...settings,
+						functionName: id.name,
+						argName: 'ctx',
+						argType:
+							id.name === 'getStaticProps'
+								? 'GetStaticPropsContext'
+								: 'GetServerSidePropsContext',
+					},
+				],
+				[findReturnStatements, functionDeclarationCollection, settings],
+				[
+					findComponentFunctionDefinition,
+					root,
+					{ name: '', includeParams: settings.includeParams },
+				],
+			);
+		}
 
-		lazyModFunctions.push(
-			[findReturnStatements, arrowFunctionCollection, newSettings],
-			[addGenerateStaticParamsFunctionDeclaration, root, newSettings],
-			[addPageParamsTypeAlias, root, newSettings],
-		);
+		if (id.name === 'getStaticPaths') {
+			const newSettings = { ...settings, methodName: 'getStaticPaths' };
+
+			lazyModFunctions.push(
+				[
+					findReturnStatements,
+					functionDeclarationCollection,
+					newSettings,
+				],
+				[addGenerateStaticParamsFunctionDeclaration, root, newSettings],
+				[addPageParamsTypeAlias, root, newSettings],
+			);
+		}
 	});
+
+	return [false, lazyModFunctions];
+};
+
+export const findArrowFunctionExpressions: ModFunction<File, 'read'> = (
+	j,
+	root,
+	settings,
+) => {
+	const lazyModFunctions: LazyModFunction[] = [];
+
+	const variableDeclaratorCollection = root
+		.find(j.VariableDeclarator)
+		.filter((variableDeclaratorPath) => {
+			const id = variableDeclaratorPath.value.id;
+
+			return (
+				j.Identifier.check(id) &&
+				DATA_FETCHING_METHOD_NAMES.includes(id.name)
+			);
+		});
+
+	variableDeclaratorCollection
+		.find(j.ArrowFunctionExpression)
+		.forEach((arrowFunctionExpressionPath) => {
+			const id = arrowFunctionExpressionPath.parent.value
+				.id as Identifier;
+
+			if (!j.Identifier.check(id)) {
+				return;
+			}
+
+			if (DATA_FETCHING_METHOD_NAMES.includes(id.name)) {
+				lazyModFunctions.push(
+					[
+						addGetDataFunction,
+						root,
+						{
+							...settings,
+							functionName: id.name,
+							argName: 'ctx',
+							argType:
+								id.name === 'getStaticProps'
+									? 'GetStaticPropsContext'
+									: 'GetServerSidePropsContext',
+						},
+					],
+					[
+						findReturnStatements,
+						j(arrowFunctionExpressionPath),
+						settings,
+					],
+					[
+						findComponentFunctionDefinition,
+						root,
+						{ name: '', includeParams: settings.includeParams },
+					],
+				);
+			}
+
+			if (id.name === 'getStaticPaths') {
+				const newSettings = {
+					...settings,
+					methodName: 'getStaticPaths',
+				};
+
+				lazyModFunctions.push(
+					[
+						findReturnStatements,
+						j(arrowFunctionExpressionPath),
+						newSettings,
+					],
+					[
+						addGenerateStaticParamsFunctionDeclaration,
+						root,
+						newSettings,
+					],
+					[addPageParamsTypeAlias, root, newSettings],
+				);
+			}
+		});
 
 	return [false, lazyModFunctions];
 };
@@ -986,12 +903,8 @@ export default function transform(
 	};
 
 	const lazyModFunctions: LazyModFunction[] = [
-		[findGetStaticPropsFunctionDeclarations, root, settings],
-		[findGetStaticPropsArrowFunctions, root, settings],
-		[findGetServerSidePropsFunctionDeclarations, root, settings],
-		[findGetServerSidePropsArrowFunctions, root, settings],
-		[findGetStaticPathsFunctionDeclarations, root, settings],
-		[findGetStaticPathsArrowFunctions, root, settings],
+		[findFunctionDeclarations, root, settings],
+		[findArrowFunctionExpressions, root, settings],
 	];
 
 	const handleLazyModFunction = (lazyModFunction: LazyModFunction) => {

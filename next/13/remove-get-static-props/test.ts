@@ -367,7 +367,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { users } };
 			}
 
-			const AppPage: AppPageType['default'] = async function AppPage({ params }) {
+			const AppPage: AppPageType['default'] = async function AppPage(props) {
 				const props = await getData({ params });
 				return null;
 			};
@@ -770,6 +770,10 @@ describe('next 13 remove-get-static-props', function () {
 		import { GetStaticPropsContext } from "next";
 		import PostLayout from '@/components/post-layout';
 
+		async function getData(ctx: GetStaticPropsContext) {
+			return (await getStaticProps(ctx)).props;
+	}
+	
 		type PageParams = {};
 
 	  type PageProps = {
@@ -780,10 +784,6 @@ describe('next 13 remove-get-static-props', function () {
 			return (await getStaticPaths({})).paths;
 		}
 		
-		async function getData(ctx: GetStaticPropsContext){
-			return (await getStaticProps(ctx)).props;
-		}
-
 		export 
 	  async function getStaticPaths() {
 	    return {
@@ -815,7 +815,6 @@ describe('next 13 remove-get-static-props', function () {
 		};
 
 		const actualOutput = transform(fileInfo, buildApi('tsx'), {});
-
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),
@@ -849,6 +848,10 @@ describe('next 13 remove-get-static-props', function () {
 		import { GetStaticPropsContext } from "next";
 		import PostLayout from '@/components/post-layout';
 
+		async function getData(ctx: GetStaticPropsContext){
+			return (await getStaticProps(ctx)).props;
+		}
+		
 		type PageParams = {};
 
 	  type PageProps = {
@@ -859,9 +862,7 @@ describe('next 13 remove-get-static-props', function () {
 			return (await getStaticPaths({})).paths;
 		}
 		
-		async function getData(ctx: GetStaticPropsContext){
-			return (await getStaticProps(ctx)).props;
-		}
+	
 
 		export 
 	  async function getStaticPaths() {
@@ -926,6 +927,10 @@ describe('next 13 remove-get-static-props', function () {
 		import { GetStaticPropsContext } from "next";
 		import PostLayout from '@/components/post-layout';
 
+		async function getData(ctx: GetStaticPropsContext){
+			return (await getStaticProps(ctx)).props;
+		}
+		
 		type PageParams = {};
 
 	  type PageProps = {
@@ -934,10 +939,6 @@ describe('next 13 remove-get-static-props', function () {
 
 		export async function generateStaticParams() {
 			return (await getStaticPaths({})).paths;
-		}
-
-		async function getData(ctx: GetStaticPropsContext){
-			return (await getStaticProps(ctx)).props;
 		}
 
 		export
