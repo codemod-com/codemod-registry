@@ -9,6 +9,11 @@ import {
 } from '@intuita-inc/repomod-engine-api';
 import { repomod } from './index.js';
 import tsmorph from 'ts-morph';
+import { fromMarkdown } from 'mdast-util-from-markdown';
+import { toMarkdown } from 'mdast-util-to-markdown';
+import { mdxjs } from 'micromark-extension-mdxjs';
+import { mdxFromMarkdown, mdxToMarkdown } from 'mdast-util-mdx';
+import { visit } from 'unist-util-visit';
 
 const INDEX_CONTENT = `
 import A from './testQWE';
@@ -53,10 +58,27 @@ const transform = async (json: DirectoryJSON) => {
 		fileSystemManager,
 	);
 
+	const parseMdx = (data: string) =>
+		fromMarkdown(data, {
+			extensions: [mdxjs()],
+			mdastExtensions: [mdxFromMarkdown()],
+		});
+
+	type Root = ReturnType<typeof fromMarkdown>;
+
+	const stringifyMdx = (tree: Root) =>
+		toMarkdown(tree, { extensions: [mdxToMarkdown()] });
+
 	const api = buildApi<{
 		tsmorph: typeof tsmorph;
+		parseMdx: typeof parseMdx;
+		stringifyMdx: typeof stringifyMdx;
+		visitMdxAst: typeof visit;
 	}>(unifiedFileSystem, () => ({
 		tsmorph,
+		parseMdx,
+		stringifyMdx,
+		visitMdxAst: visit,
 	}));
 
 	return executeRepomod(api, repomod, '/', {});
@@ -70,7 +92,23 @@ export const getStaticPath = () => {
 };
 `;
 
+const A_B_MDX_DATA = `// This file has been sourced from: /opt/project/pages/[a]/[b].mdx
+import { X } from "../../../testABC";
+import { Y } from "../testDEF";
+
+
+// TODO reimplement getStaticPath as generateStaticParams
+export const getStaticPath = () => {
+};
+`;
+
 const A_C_DATA = `// This file has been sourced from: /opt/project/pages/[a]/c.tsx
+// TODO reimplement getServerSideProps with custom logic
+export const getServerSideProps = () => {
+};
+`;
+
+const A_C_MDX_DATA = `// This file has been sourced from: /opt/project/pages/[a]/c.mdx
 // TODO reimplement getServerSideProps with custom logic
 export const getServerSideProps = () => {
 };
@@ -185,5 +223,29 @@ describe('next 13 app-directory-boilerplate', function () {
 				(command) => command.path === '/opt/project/app/not-found.jsx',
 			),
 		);
+	});
+
+	it('should build correct MDX files', async function (this: Context) {
+		const externalFileCommands = await transform({
+			'/opt/project/pages/index.jsx': INDEX_CONTENT,
+			'/opt/project/pages/_app.jsx': '',
+			'/opt/project/pages/_document.jsx': '',
+			'/opt/project/pages/[a]/[b].mdx': A_B_CONTENT,
+			'/opt/project/pages/[a]/c.mdx': A_C_CONTENT,
+		});
+
+		deepStrictEqual(externalFileCommands.length, 4);
+
+		deepStrictEqual(externalFileCommands[2], {
+			kind: 'upsertFile',
+			path: '/opt/project/app/[a]/c/page.mdx',
+			data: A_C_MDX_DATA,
+		});
+
+		deepStrictEqual(externalFileCommands[3], {
+			kind: 'upsertFile',
+			path: '/opt/project/app/[a]/[b]/page.mdx',
+			data: A_B_MDX_DATA,
+		});
 	});
 });
