@@ -233,7 +233,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { users } };
 			}
 
-			function SingleAppPage(props: inferSSRProps<typeof getStaticProps>) {
+			async function SingleAppPage(props: inferSSRProps<typeof getStaticProps>) {
 				const props = await getData({ params });
 				return null;
 		}
@@ -335,6 +335,53 @@ describe('next 13 remove-get-static-props', function () {
 		};
 
 		const actualOutput = transform(fileInfo, buildApi('tsx'), {});
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+	
+	it('should inject data fetching function when Page component is functionexpression', function () {
+		const INPUT = `
+			export async function getStaticProps() {
+				const users = await promise;
+				return { props: { users } };
+			}
+
+			const AppPage: AppPageType['default'] = function AppPage(props) {
+				return null;
+			};
+			
+			export default AppPage;
+	    `;
+
+		const OUTPUT = `
+			import { GetStaticPropsContext } from 'next';
+			
+			async function getData(ctx: GetStaticPropsContext){
+				return (await getStaticProps(ctx)).props;
+			}
+
+			export async function getStaticProps() {
+				const users = await promise;
+				return { props: { users } };
+			}
+
+			const AppPage: AppPageType['default'] = async function AppPage({ params }) {
+				const props = await getData({ params });
+				return null;
+			};
+			
+			export default AppPage;
+		`;
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, buildApi('tsx'), {});
+		console.log(actualOutput)
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),
