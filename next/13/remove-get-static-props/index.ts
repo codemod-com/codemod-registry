@@ -723,6 +723,18 @@ const addGetDataVariableDeclaration: ModFunction<
 		),
 	]);
 
+	let addedVariableDeclaration = false;
+
+	const objectPattern = j.objectPattern.from({
+		properties: [
+			j.objectProperty.from({
+				key: j.identifier('params'),
+				value: j.identifier('params'),
+				shorthand: true
+			}),
+		],
+	});
+
 	root.forEach((path) => {
 		const { body } = path.value;
 
@@ -731,12 +743,16 @@ const addGetDataVariableDeclaration: ModFunction<
 				body: [variableDeclaration, j.returnStatement(body)],
 			});
 
+			addedVariableDeclaration = true;
 			path.value.async = true;
+			path.value.params = [objectPattern];
 		}
 
 		if (j.BlockStatement.check(body)) {
 			body.body.unshift(variableDeclaration);
+			addedVariableDeclaration = true;
 			path.value.async = true;
+			path.value.params = [objectPattern];
 		}
 	});
 

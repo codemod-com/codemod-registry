@@ -233,7 +233,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { users } };
 			}
 
-			async function SingleAppPage(props: inferSSRProps<typeof getStaticProps>) {
+			async function SingleAppPage({ params }) {
 				const props = await getData({ params });
 				return null;
 		}
@@ -367,7 +367,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { users } };
 			}
 
-			const AppPage: AppPageType['default'] = async function AppPage(props) {
+			const AppPage: AppPageType['default'] = async function AppPage({ params }) {
 				const props = await getData({ params });
 				return null;
 			};
