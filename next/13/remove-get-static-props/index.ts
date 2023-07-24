@@ -220,7 +220,6 @@ const addGetDataFunction: ModFunction<File, 'write'> = (j, root, settings) => {
 
 const DATA_FETCHING_METHOD_NAMES = ['getServerSideProps', 'getStaticProps'];
 
-// @TODO fix code duplication
 export const findFunctionDeclarations: ModFunction<File, 'read'> = (
 	j,
 	root,
@@ -247,18 +246,13 @@ export const findFunctionDeclarations: ModFunction<File, 'read'> = (
 					{
 						...settings,
 						functionName: id.name,
-						argName: 'ctx',
-						argType:
-							id.name === 'getStaticProps'
-								? 'GetStaticPropsContext'
-								: 'GetServerSidePropsContext',
 					},
 				],
 				[findReturnStatements, functionDeclarationCollection, settings],
 				[
 					findComponentFunctionDefinition,
 					root,
-					{ name: '', includeParams: settings.includeParams },
+					settings, 
 				],
 			);
 		}
@@ -289,14 +283,6 @@ export const findArrowFunctionExpressions: ModFunction<File, 'read'> = (
 
 	const variableDeclaratorCollection = root
 		.find(j.VariableDeclarator)
-		.filter((variableDeclaratorPath) => {
-			const id = variableDeclaratorPath.value.id;
-
-			return (
-				j.Identifier.check(id) &&
-				DATA_FETCHING_METHOD_NAMES.includes(id.name)
-			);
-		});
 
 	variableDeclaratorCollection
 		.find(j.ArrowFunctionExpression)
@@ -316,11 +302,6 @@ export const findArrowFunctionExpressions: ModFunction<File, 'read'> = (
 						{
 							...settings,
 							functionName: id.name,
-							argName: 'ctx',
-							argType:
-								id.name === 'getStaticProps'
-									? 'GetStaticPropsContext'
-									: 'GetServerSidePropsContext',
 						},
 					],
 					[
@@ -331,7 +312,7 @@ export const findArrowFunctionExpressions: ModFunction<File, 'read'> = (
 					[
 						findComponentFunctionDefinition,
 						root,
-						{ name: '', includeParams: settings.includeParams },
+						settings, 
 					],
 				);
 			}
