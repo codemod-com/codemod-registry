@@ -63,27 +63,23 @@ const generateStaticParamsMethodFactory = (j: JSCodeshift) => {
 	return j.exportNamedDeclaration(functionDeclaration.value);
 };
 
-const getDataMethodFactory = (
-	j: JSCodeshift,
-	argName: string,
-	argType: string,
-	decoratedMethodName: string,
-) => {
+const getDataMethodFactory = (j: JSCodeshift, decoratedMethodName: string) => {
 	return j(`
-	async function getData(${argName}: ${argType}) {
-		return (await ${decoratedMethodName}(ctx)).props;
+	async function getData({ params }: { params: Params }) {
+		const result = await ${decoratedMethodName}({ params });
+		
+		if("redirect" in result) {
+			redirect(result.redirect.destination);	
+		}
+		
+		if("notFound" in result) {
+			notFound();
+		}
+		
+		return "props" in result ? result.props : {};
 	}`)
 		.find(j.FunctionDeclaration)
 		.paths()[0]!;
-};
-
-const serverHookParamsFactory = (j: JSCodeshift) => {
-	return j.identifier.from({
-		name: 'params',
-		typeAnnotation: j.tsTypeAnnotation(
-			j.tsTypeReference(j.identifier('PageParams')),
-		),
-	});
 };
 
 const addGenerateStaticParamsFunctionDeclaration: ModFunction<File, 'write'> = (
@@ -107,8 +103,19 @@ const addGenerateStaticParamsFunctionDeclaration: ModFunction<File, 'write'> = (
 
 const addPageParamsTypeAlias: ModFunction<File, 'write'> = (j, root) => {
 	const pageParamsType = j.tsTypeAliasDeclaration(
-		j.identifier('PageParams'),
-		j.tsTypeLiteral([]),
+		j.identifier('Params'),
+		j.tsTypeLiteral([
+			j.tsIndexSignature(
+				[j.identifier('key: string')],
+				j.tsTypeAnnotation(
+					j.tsUnionType([
+						j.tsStringKeyword(),
+						j.tsArrayType(j.tsStringKeyword()),
+						j.tsUndefinedKeyword(),
+					]),
+				),
+			),
+		]),
 	);
 
 	const pagePropsType = j.tsTypeAliasDeclaration(
@@ -116,9 +123,7 @@ const addPageParamsTypeAlias: ModFunction<File, 'write'> = (j, root) => {
 		j.tsTypeLiteral([
 			j.tsPropertySignature(
 				j.identifier('params'),
-				j.tsTypeAnnotation(
-					j.tsTypeReference(j.identifier('PageParams')),
-				),
+				j.tsTypeAnnotation(j.tsTypeReference(j.identifier('Params'))),
 			),
 		]),
 	);
@@ -137,24 +142,27 @@ const addPageParamsTypeAlias: ModFunction<File, 'write'> = (j, root) => {
 };
 
 const addImportStatement: ModFunction<File, 'write'> = (j, root, settings) => {
-	if (typeof settings.statement !== 'string') {
+	if (
+		typeof settings.specifierNames !== 'string' ||
+		typeof settings.sourceName !== 'string'
+	) {
 		return [false, []];
 	}
 
+	const specifiers = settings.specifierNames.split(',');
+
 	const alreadyExists =
 		root.find(j.ImportDeclaration, {
-			specifiers: [
-				{
-					type: 'ImportSpecifier',
-					imported: {
-						type: 'Identifier',
-						name: settings.statement,
-					},
+			specifiers: specifiers.map((s) => ({
+				type: 'ImportSpecifier' as const,
+				imported: {
+					type: 'Identifier' as const,
+					name: s,
 				},
-			],
+			})),
 			source: {
 				type: 'StringLiteral',
-				value: 'next',
+				value: settings.sourceName,
 			},
 		}).length !== 0;
 
@@ -162,11 +170,9 @@ const addImportStatement: ModFunction<File, 'write'> = (j, root, settings) => {
 		return [false, []];
 	}
 
-	const importSpecifier = j.importSpecifier(j.identifier(settings.statement));
-
 	const importDeclaration = j.importDeclaration(
-		[importSpecifier],
-		j.literal('next'),
+		specifiers.map((s) => j.importSpecifier(j.identifier(s))),
+		j.literal(settings.sourceName),
 	);
 
 	root.find(j.Program).get('body', 0).insertBefore(importDeclaration);
@@ -179,8 +185,6 @@ const addGetDataFunction: ModFunction<File, 'write'> = (j, root, settings) => {
 
 	const getDataFunctionDeclaration = getDataMethodFactory(
 		j,
-		argName as string,
-		argType as string,
 		functionName as string,
 	);
 
@@ -198,7 +202,20 @@ const addGetDataFunction: ModFunction<File, 'write'> = (j, root, settings) => {
 		getDataFunctionDeclaration.value,
 	);
 
-	return [true, [[addImportStatement, root, { statement: argType }]]];
+	return [
+		true,
+		[
+			[
+				addImportStatement,
+				root,
+				{
+					specifierNames: 'notFound,redirect',
+					sourceName: 'next/navigation',
+				},
+			],
+			[addPageParamsTypeAlias, root, {}],
+		],
+	];
 };
 
 const DATA_FETCHING_METHOD_NAMES = ['getServerSideProps', 'getStaticProps'];
@@ -256,7 +273,6 @@ export const findFunctionDeclarations: ModFunction<File, 'read'> = (
 					newSettings,
 				],
 				[addGenerateStaticParamsFunctionDeclaration, root, newSettings],
-				[addPageParamsTypeAlias, root, newSettings],
 			);
 		}
 	});
@@ -337,7 +353,6 @@ export const findArrowFunctionExpressions: ModFunction<File, 'read'> = (
 						root,
 						newSettings,
 					],
-					[addPageParamsTypeAlias, root, newSettings],
 				);
 			}
 		});
@@ -617,8 +632,12 @@ export const findComponentFunctionDefinition: ModFunction<File, 'read'> = (
 	if (pageComponentFunction === null) {
 		return [false, []];
 	}
-	
-	lazyModFunctions.push([addGetDataVariableDeclaration, j(pageComponentFunction), settings]);
+
+	lazyModFunctions.push([
+		addGetDataVariableDeclaration,
+		j(pageComponentFunction),
+		settings,
+	]);
 
 	return [false, lazyModFunctions];
 };
@@ -645,6 +664,9 @@ const addGetDataVariableDeclaration: ModFunction<
 				shorthand: true,
 			}),
 		],
+		typeAnnotation: j.tsTypeAnnotation(
+			j.tsTypeReference(j.identifier('PageProps')),
+		),
 	});
 
 	root.forEach((path) => {
@@ -653,7 +675,9 @@ const addGetDataVariableDeclaration: ModFunction<
 		const firstParam = params[0] ?? null;
 
 		const callExpression = j.awaitExpression(
-			j.callExpression(j.identifier(`getData`), [getDataArgObjectExpression]),
+			j.callExpression(j.identifier(`getData`), [
+				getDataArgObjectExpression,
+			]),
 		);
 
 		const id = j.Identifier.check(firstParam)
