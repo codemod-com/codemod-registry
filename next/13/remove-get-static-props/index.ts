@@ -609,15 +609,9 @@ export const findComponentFunctionDefinition: ModFunction<File, 'read'> = (
 	if (pageComponentFunction === null) {
 		return [false, []];
 	}
-
+	
 	lazyModFunctions.push([
-		findObjectPatternsWithFunctionParameters,
-		j(pageComponentFunction),
-		settings,
-	]);
-
-	lazyModFunctions.push([
-		findIdentifierWithFunctionParameters,
+		findFunctionParams,
 		j(pageComponentFunction),
 		settings,
 	]);
@@ -681,10 +675,10 @@ export const addVariableDeclarations: ModFunction<ObjectProperty, 'write'> = (
 	return [true, []];
 };
 
-export const findIdentifierWithFunctionParameters: ModFunction<
+export const findFunctionParams: ModFunction<
 	FunctionDeclaration,
 	'read'
-> = (j, root) => {
+> = (j, root, settings) => {
 	const lazyModFunctions: LazyModFunction[] = [];
 
 	root.forEach((functionDeclarationPath) => {
@@ -695,6 +689,14 @@ export const findIdentifierWithFunctionParameters: ModFunction<
 				addGetDataVariableDeclaration,
 				root,
 				{ identifierName: firstParam.name },
+			]);
+		}
+		
+		if(j.ObjectPattern.check(firstParam)) {
+			lazyModFunctions.push([
+				findObjectPropertiesWithinFunctionParameters,
+				j(firstParam),
+				{ ...settings, component: root },
 			]);
 		}
 	});
@@ -757,32 +759,6 @@ const addGetDataVariableDeclaration: ModFunction<
 	});
 
 	return [false, []];
-};
-
-export const findObjectPatternsWithFunctionParameters: ModFunction<
-	FunctionDeclaration,
-	'read'
-> = (j, root, settings) => {
-	const lazyModFunctions: LazyModFunction[] = [];
-
-	root.find(j.ObjectPattern)
-		.filter(
-			(path) =>
-				(path.parentPath.node.type === 'FunctionDeclaration' ||
-					path.parentPath.node.type === 'ArrowFunctionExpression') &&
-				path.parentPath.name === 'params',
-		)
-		.forEach((objectPatternPath) => {
-			const objectPatternCollection = j(objectPatternPath);
-
-			lazyModFunctions.push([
-				findObjectPropertiesWithinFunctionParameters,
-				objectPatternCollection,
-				{ ...settings, component: root },
-			]);
-		});
-
-	return [false, lazyModFunctions];
 };
 
 // @TODO
