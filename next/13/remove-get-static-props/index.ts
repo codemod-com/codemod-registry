@@ -584,24 +584,34 @@ export const findComponentFunctionDefinition: ModFunction<File, 'read'> = (
 		const program = root.find(j.Program).paths()[0] ?? null;
 
 		(program?.value.body ?? []).forEach((node) => {
+			let _node = node;
+
+			// node can be within ExportNamedDeclaration
 			if (
-				node.type === 'FunctionDeclaration' &&
-				node.id?.name === defaultExportDeclaration.name
+				j.ExportNamedDeclaration.check(node) &&
+				(j.FunctionDeclaration.check(node.declaration) ||
+					j.VariableDeclaration.check(node.declaration))
 			) {
-				pageComponentFunction = node;
+				_node = node.declaration;
 			}
 
 			if (
-				node.type === 'VariableDeclaration' &&
-				node.declarations[0]?.type === 'VariableDeclarator' &&
-				node.declarations[0].id?.type === 'Identifier' &&
-				node.declarations[0].id.name ===
-					defaultExportDeclaration.name &&
-				(node.declarations[0].init?.type ===
-					'ArrowFunctionExpression' ||
-					node.declarations[0].init?.type === 'FunctionExpression')
+				j.FunctionDeclaration.check(_node) &&
+				_node.id?.name === defaultExportDeclaration.name
 			) {
-				pageComponentFunction = node.declarations[0].init;
+				pageComponentFunction = _node;
+			}
+
+			if (
+				j.VariableDeclaration.check(_node) &&
+				j.VariableDeclarator.check(_node.declarations[0]) &&
+				j.Identifier.check(_node.declarations[0].id) &&
+				_node.declarations[0].id.name ===
+					defaultExportDeclaration.name &&
+				(j.ArrowFunctionExpression.check(_node.declarations[0].init) ||
+					j.FunctionExpression.check(_node.declarations[0].init))
+			) {
+				pageComponentFunction = _node.declarations[0].init;
 			}
 		});
 	}
@@ -609,7 +619,7 @@ export const findComponentFunctionDefinition: ModFunction<File, 'read'> = (
 	if (pageComponentFunction === null) {
 		return [false, []];
 	}
-	
+
 	lazyModFunctions.push([
 		findFunctionParams,
 		j(pageComponentFunction),
@@ -675,10 +685,11 @@ export const addVariableDeclarations: ModFunction<ObjectProperty, 'write'> = (
 	return [true, []];
 };
 
-export const findFunctionParams: ModFunction<
-	FunctionDeclaration,
-	'read'
-> = (j, root, settings) => {
+export const findFunctionParams: ModFunction<FunctionDeclaration, 'read'> = (
+	j,
+	root,
+	settings,
+) => {
 	const lazyModFunctions: LazyModFunction[] = [];
 
 	root.forEach((functionDeclarationPath) => {
@@ -691,8 +702,8 @@ export const findFunctionParams: ModFunction<
 				{ identifierName: firstParam.name },
 			]);
 		}
-		
-		if(j.ObjectPattern.check(firstParam)) {
+
+		if (j.ObjectPattern.check(firstParam)) {
 			lazyModFunctions.push([
 				findObjectPropertiesWithinFunctionParameters,
 				j(firstParam),
@@ -732,7 +743,7 @@ const addGetDataVariableDeclaration: ModFunction<
 			j.objectProperty.from({
 				key: j.identifier('params'),
 				value: j.identifier('params'),
-				shorthand: true
+				shorthand: true,
 			}),
 		],
 	});
