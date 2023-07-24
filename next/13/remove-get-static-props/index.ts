@@ -619,98 +619,8 @@ export const findComponentFunctionDefinition: ModFunction<File, 'read'> = (
 	if (pageComponentFunction === null) {
 		return [false, []];
 	}
-
-	lazyModFunctions.push([
-		findFunctionParams,
-		j(pageComponentFunction),
-		settings,
-	]);
-
-	return [false, lazyModFunctions];
-};
-
-export const addVariableDeclarations: ModFunction<ObjectProperty, 'write'> = (
-	j,
-	root,
-	settings,
-) => {
-	const objectExpression = j.objectExpression([
-		j.objectProperty.from({
-			key: j.identifier('params'),
-			value: j.identifier('params'),
-			shorthand: true,
-		}),
-	]);
-
-	const objectProperties: ObjectProperty[] = [];
-
-	root.forEach((objectPropertyPath) => {
-		objectProperties.push(
-			j.objectProperty.from({
-				...objectPropertyPath.value,
-				shorthand: true,
-			}),
-		);
-	});
-
-	const variableDeclaration = j.variableDeclaration('const', [
-		j.variableDeclarator(
-			j.objectPattern(objectProperties),
-			j.awaitExpression(
-				j.callExpression(j.identifier(`getData`), [objectExpression]),
-			),
-		),
-	]);
-
-	const functionDeclaration = settings.component as Collection<
-		FunctionDeclaration | ArrowFunctionExpression
-	>;
-
-	functionDeclaration.forEach((path) => {
-		const { body } = path.value;
-
-		if (j.JSXElement.check(body) || j.JSXFragment.check(body)) {
-			path.value.body = j.blockStatement.from({
-				body: [variableDeclaration, j.returnStatement(body)],
-			});
-			path.value.async = true;
-		}
-
-		if (j.BlockStatement.check(body)) {
-			body.body.unshift(variableDeclaration);
-			path.value.async = true;
-		}
-	});
-
-	return [true, []];
-};
-
-export const findFunctionParams: ModFunction<FunctionDeclaration, 'read'> = (
-	j,
-	root,
-	settings,
-) => {
-	const lazyModFunctions: LazyModFunction[] = [];
-
-	root.forEach((functionDeclarationPath) => {
-		const firstParam = functionDeclarationPath.value.params[0] ?? null;
-
-		if (j.Identifier.check(firstParam)) {
-			lazyModFunctions.push([
-				addGetDataVariableDeclaration,
-				root,
-				{ identifierName: firstParam.name },
-			]);
-		}
-
-		if (j.ObjectPattern.check(firstParam)) {
-			lazyModFunctions.push([
-				findObjectPropertiesWithinFunctionParameters,
-				j(firstParam),
-				{ ...settings, component: root },
-			]);
-		}
-	});
+	
+	lazyModFunctions.push([addGetDataVariableDeclaration, j(pageComponentFunction), settings]);
 
 	return [false, lazyModFunctions];
 };
@@ -718,8 +628,8 @@ export const findFunctionParams: ModFunction<FunctionDeclaration, 'read'> = (
 const addGetDataVariableDeclaration: ModFunction<
 	FunctionDeclaration | ArrowFunctionExpression,
 	'write'
-> = (j, root, settings) => {
-	const objectExpression = j.objectExpression([
+> = (j, root) => {
+	const getDataArgObjectExpression = j.objectExpression([
 		j.objectProperty.from({
 			key: j.identifier('params'),
 			value: j.identifier('params'),
@@ -727,18 +637,9 @@ const addGetDataVariableDeclaration: ModFunction<
 		}),
 	]);
 
-	const variableDeclaration = j.variableDeclaration('const', [
-		j.variableDeclarator(
-			j.identifier(settings.identifierName?.toString() ?? ''),
-			j.awaitExpression(
-				j.callExpression(j.identifier(`getData`), [objectExpression]),
-			),
-		),
-	]);
-
 	let addedVariableDeclaration = false;
 
-	const objectPattern = j.objectPattern.from({
+	const componentPropsObjectPattern = j.objectPattern.from({
 		properties: [
 			j.objectProperty.from({
 				key: j.identifier('params'),
@@ -749,7 +650,29 @@ const addGetDataVariableDeclaration: ModFunction<
 	});
 
 	root.forEach((path) => {
-		const { body } = path.value;
+		const { body, params } = path.value;
+
+		const firstParam = params[0] ?? null;
+
+		const callExpression = j.awaitExpression(
+			j.callExpression(j.identifier(`getData`), [getDataArgObjectExpression]),
+		);
+
+		const id = j.Identifier.check(firstParam)
+			? j.identifier(firstParam.name)
+			: j.ObjectPattern.check(firstParam)
+			? j.objectPattern.from({
+					...firstParam,
+					typeAnnotation: null,
+			  })
+			: null;
+
+		const variableDeclaration =
+			id === null
+				? j.expressionStatement(callExpression)
+				: j.variableDeclaration('const', [
+						j.variableDeclarator(id, callExpression),
+				  ]);
 
 		if (j.JSXElement.check(body) || j.JSXFragment.check(body)) {
 			path.value.body = j.blockStatement.from({
@@ -758,128 +681,18 @@ const addGetDataVariableDeclaration: ModFunction<
 
 			addedVariableDeclaration = true;
 			path.value.async = true;
-			path.value.params = [objectPattern];
+			path.value.params = [componentPropsObjectPattern];
 		}
 
 		if (j.BlockStatement.check(body)) {
 			body.body.unshift(variableDeclaration);
 			addedVariableDeclaration = true;
 			path.value.async = true;
-			path.value.params = [objectPattern];
+			path.value.params = [componentPropsObjectPattern];
 		}
 	});
 
 	return [false, []];
-};
-
-// @TODO
-function deepCopyObjectPattern(j: JSCodeshift, objectPattern: ObjectPattern) {
-	const newObjectPattern = j.objectPattern([]);
-
-	objectPattern.properties.forEach((property) => {
-		if (!('value' in property)) {
-			return;
-		}
-
-		if (property.value.type === 'ObjectPattern') {
-			const newValue = deepCopyObjectPattern(j, property.value);
-
-			newObjectPattern.properties.push(
-				j.objectProperty.from({
-					key: property.key,
-					value: newValue,
-					shorthand: true,
-				}),
-			);
-
-			return;
-		}
-
-		newObjectPattern.properties.push(
-			j.objectProperty.from({
-				key: property.key,
-				value: property.value,
-				shorthand: true,
-			}),
-		);
-	});
-
-	return newObjectPattern;
-}
-export const findObjectPropertiesWithinFunctionParameters: ModFunction<
-	ObjectPattern,
-	'read'
-> = (j, root, settings) => {
-	root.forEach((objectPatternPath) => {
-		const paramsProperty = root.find(j.ObjectProperty, {
-			key: {
-				type: 'Identifier',
-				name: 'params',
-			},
-		});
-
-		if (paramsProperty.length === 0) {
-			const props = objectPatternPath.value.properties;
-
-			const newProperty = j.property.from({
-				kind: 'init',
-				key: j.identifier('params'),
-				shorthand: true,
-				value: j.identifier('params'),
-			});
-
-			props.push(newProperty);
-
-			// root.forEach((rootPath) => {
-			// 	rootPath.value.typeAnnotation = j.tsTypeAnnotation(
-			// 		j.tsTypeReference(j.identifier('PageProps')),
-			// 	);
-			// });
-		}
-	});
-
-	const objectPropertyCollection = root.find(j.ObjectProperty, {
-		key: {
-			type: 'Identifier',
-		},
-	});
-
-	const lazyModFunctions: LazyModFunction[] = [];
-
-	const objectPattern = root.paths()[0] ?? null;
-
-	if (!objectPattern) {
-		return [false, []];
-	}
-
-	const clonedObjectPattern = deepCopyObjectPattern(j, objectPattern.value);
-
-	const properties = clonedObjectPattern.properties.filter(
-		(p) =>
-			p.type === 'ObjectProperty' &&
-			p.key.type === 'Identifier' &&
-			!['params', 'searchParams'].includes(p.key.name),
-	);
-
-	lazyModFunctions.push([addVariableDeclarations, j(properties), settings]);
-
-	lazyModFunctions.push([
-		removeCollection,
-		objectPropertyCollection,
-		settings,
-	]);
-
-	return [false, lazyModFunctions];
-};
-
-export const removeCollection: ModFunction<any, 'write'> = (_, root, __) => {
-	if (!root.length) {
-		return [false, []];
-	}
-
-	root.remove();
-
-	return [true, []];
 };
 
 export default function transform(
