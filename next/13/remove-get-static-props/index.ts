@@ -8,8 +8,6 @@ import {
 	FunctionExpression,
 	Identifier,
 	JSCodeshift,
-	ObjectPattern,
-	ObjectProperty,
 	Options,
 	Transform,
 } from 'jscodeshift';
@@ -692,7 +690,7 @@ const addGetDataVariableDeclaration: ModFunction<
 		}
 	});
 
-	return [false, []];
+	return [addedVariableDeclaration, []];
 };
 
 export default function transform(
