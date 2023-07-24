@@ -108,11 +108,13 @@ const addPageParamsTypeAlias: ModFunction<File, 'write'> = (j, root) => {
 			j.tsIndexSignature(
 				[j.identifier('key: string')],
 				j.tsTypeAnnotation(
-					j.tsUnionType([
-						j.tsStringKeyword(),
-						j.tsArrayType(j.tsStringKeyword()),
-						j.tsUndefinedKeyword(),
-					]),
+					j.tsOptionalType(
+						j.tsUnionType([
+							j.tsStringKeyword(),
+							j.tsArrayType(j.tsStringKeyword()),
+							j.tsUndefinedKeyword(),
+						]),
+					),
 				),
 			),
 		]),
@@ -249,11 +251,7 @@ export const findFunctionDeclarations: ModFunction<File, 'read'> = (
 					},
 				],
 				[findReturnStatements, functionDeclarationCollection, settings],
-				[
-					findComponentFunctionDefinition,
-					root,
-					settings, 
-				],
+				[findComponentFunctionDefinition, root, settings],
 			);
 		}
 
@@ -281,8 +279,7 @@ export const findArrowFunctionExpressions: ModFunction<File, 'read'> = (
 ) => {
 	const lazyModFunctions: LazyModFunction[] = [];
 
-	const variableDeclaratorCollection = root
-		.find(j.VariableDeclarator)
+	const variableDeclaratorCollection = root.find(j.VariableDeclarator);
 
 	variableDeclaratorCollection
 		.find(j.ArrowFunctionExpression)
@@ -309,11 +306,7 @@ export const findArrowFunctionExpressions: ModFunction<File, 'read'> = (
 						j(arrowFunctionExpressionPath),
 						settings,
 					],
-					[
-						findComponentFunctionDefinition,
-						root,
-						settings, 
-					],
+					[findComponentFunctionDefinition, root, settings],
 				);
 			}
 
