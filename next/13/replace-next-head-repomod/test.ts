@@ -1,5 +1,4 @@
 import { Context } from 'mocha';
-import { deepStrictEqual, ok } from 'node:assert';
 import { DirectoryJSON, Volume, createFsFromVolume } from 'memfs';
 import {
 	FileSystemManager,
@@ -28,7 +27,7 @@ import Head from 'next/head';
 import NestedComponent from '../components/b.tsx';
 import notAComponent from '../utils';
 notAComponent();
-export default function Meta({ title, description}) {
+export default function Meta({ title, description }) {
 	notAComponent();
 	return (<>
 	<Head>
@@ -103,68 +102,5 @@ describe('next 13 replace-next-head-repomod', function () {
 			'/opt/project/components/a.tsx': A_COMPONENT_CONTENT,
 			'/opt/project/components/b.tsx': B_COMPONENT_CONTENT,
 		});
-
-		// 	deepStrictEqual(externalFileCommands.length, 7);
-
-		// 	ok(
-		// 		externalFileCommands.some(
-		// 			(command) => command.path === '/opt/project/app/layout.tsx',
-		// 		),
-		// 	);
-
-		// 	ok(
-		// 		externalFileCommands.some(
-		// 			(command) => command.path === '/opt/project/app/error.tsx',
-		// 		),
-		// 	);
-
-		// 	ok(
-		// 		externalFileCommands.some(
-		// 			(command) => command.path === '/opt/project/app/not-found.tsx',
-		// 		),
-		// 	);
-
-		// 	ok(
-		// 		externalFileCommands.some(
-		// 			(command) => command.path === '/opt/project/app/page.tsx',
-		// 		),
-		// 	);
-
-		// 	ok(
-		// 		externalFileCommands.some(
-		// 			(command) =>
-		// 				command.path === '/opt/project/app/[a]/[b]/page.tsx',
-		// 		),
-		// 	);
-
-		// 	ok(
-		// 		externalFileCommands.some(
-		// 			(command) => command.path === '/opt/project/app/[a]/c/page.tsx',
-		// 		),
-		// 	);
-
-		// 	ok(
-		// 		externalFileCommands.some(
-		// 			(command) => command.path === '/opt/project/app/a/page.tsx',
-		// 		),
-		// 	);
-
-		// 	deepStrictEqual(externalFileCommands[1], {
-		// 		kind: 'upsertFile',
-		// 		path: '/opt/project/app/page.tsx',
-		// 		data: '// This file has been sourced from: /opt/project/pages/index.jsx\nimport A from "./testQWE";\nexport default function Index({}) {\n    return null;\n}\nexport const getStaticProps = async ({}) => {\n    return {\n        props: {},\n        revalidate: 10,\n    };\n};\n',
-		// 	});
-
-		// 	deepStrictEqual(externalFileCommands[5], {
-		// 		kind: 'upsertFile',
-		// 		path: '/opt/project/app/[a]/c/page.tsx',
-		// 		data: A_C_DATA,
-		// 	});
-
-		// 	deepStrictEqual(externalFileCommands[6], {
-		// 		kind: 'upsertFile',
-		// 		path: '/opt/project/app/[a]/[b]/page.tsx',
-		// 		data: A_B_DATA,
-		// 	});
 	});
 });

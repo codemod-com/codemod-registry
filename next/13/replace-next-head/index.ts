@@ -27,7 +27,7 @@ export type ParsedMetadataTag = {
 	HTMLAttributes: HTMLAttributes;
 };
 
-type Definition =
+export type Definition =
 	| VariableDeclaration
 	| FunctionDeclaration
 	| ImportClause
@@ -450,7 +450,7 @@ const handleHeadIdentifier = (
 	});
 };
 
-const handleImportDeclaration = (
+export const handleImportDeclaration = (
 	importDeclaration: ImportDeclaration,
 	metadataContainer: Container<Record<string, any>>,
 	topLevelVariablesContainer: Container<Definition[]>,
@@ -908,7 +908,7 @@ const collectImportDeclaration = (
 	}
 };
 
-const collectTopLevelDefinitions = (
+export const collectTopLevelDefinitions = (
 	sourceFile: SourceFile,
 	topLevelVariablesContainer: Container<Definition[]>,
 ) => {
