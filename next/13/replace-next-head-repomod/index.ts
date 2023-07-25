@@ -30,12 +30,12 @@ import type { visit } from 'unist-util-visit';
 
 type HTMLTagName = 'title' | 'meta' | 'link';
 type HTMLAttributes = Record<string, string>;
-export type ParsedMetadataTag = {
+type ParsedMetadataTag = {
 	HTMLTagName: HTMLTagName;
 	HTMLAttributes: HTMLAttributes;
 };
 
-export type Definition =
+type Definition =
 	| VariableDeclaration
 	| FunctionDeclaration
 	| ImportClause
