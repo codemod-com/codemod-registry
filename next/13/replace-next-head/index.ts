@@ -1,5 +1,4 @@
 import {
-	ArrowFunction,
 	BindingElement,
 	FunctionDeclaration,
 	ImportClause,
