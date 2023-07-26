@@ -37,7 +37,7 @@ describe('next 13 remove-get-static-props', function () {
 		import { notFound, redirect } from "next/navigation";
 		
 		type Params = {
-			[key: string]?: string | string[] | undefined
+			[key: string]: string | string[] | undefined
 		};
 
 		type PageProps = {
@@ -103,7 +103,7 @@ describe('next 13 remove-get-static-props', function () {
 		const OUTPUT = `
 		import { notFound, redirect } from "next/navigation";
 		type Params = {
-			[key: string]?: string | string[] | undefined
+			[key: string]: string | string[] | undefined
 		};
 
 		type PageProps = {
@@ -166,7 +166,7 @@ describe('next 13 remove-get-static-props', function () {
 			import { notFound, redirect } from "next/navigation";
 			
 			type Params = {
-				[key: string]?: string | string[] | undefined
+				[key: string]: string | string[] | undefined
 			};
 	
 			type PageProps = {
@@ -231,7 +231,7 @@ describe('next 13 remove-get-static-props', function () {
 		import { notFound, redirect } from "next/navigation";
 		
 		type Params = {
-			[key: string]?: string | string[] | undefined
+			[key: string]: string | string[] | undefined
 		};
 
 		type PageProps = {
@@ -300,7 +300,7 @@ describe('next 13 remove-get-static-props', function () {
 		import { notFound, redirect } from "next/navigation";
 		
 		type Params = {
-			[key: string]?: string | string[] | undefined
+			[key: string]: string | string[] | undefined
 		};
 
 		type PageProps = {
@@ -364,7 +364,7 @@ describe('next 13 remove-get-static-props', function () {
 		import { notFound, redirect } from "next/navigation";
 		
 		type Params = {
-			[key: string]?: string | string[] | undefined
+			[key: string]: string | string[] | undefined
 		};
 
 		type PageProps = {
@@ -427,7 +427,7 @@ describe('next 13 remove-get-static-props', function () {
 			import { notFound, redirect } from "next/navigation";
 			
 			type Params = {
-				[key: string]?: string | string[] | undefined
+				[key: string]: string | string[] | undefined
 			};
 	
 			type PageProps = {
@@ -491,7 +491,7 @@ describe('next 13 remove-get-static-props', function () {
 		import { notFound, redirect } from "next/navigation";
 		
 		type Params = {
-			[key: string]?: string | string[] | undefined
+			[key: string]: string | string[] | undefined
 		};
 
 		type PageProps = {
@@ -553,7 +553,7 @@ describe('next 13 remove-get-static-props', function () {
 		import { notFound, redirect } from "next/navigation";
 		
 		type Params = {
-			[key: string]?: string | string[] | undefined
+			[key: string]: string | string[] | undefined
 		};
 
 		type PageProps = {
@@ -615,7 +615,7 @@ describe('next 13 remove-get-static-props', function () {
 			import { notFound, redirect } from "next/navigation";
 			
 			type Params = {
-				[key: string]?: string | string[] | undefined
+				[key: string]: string | string[] | undefined
 			};
 	
 			type PageProps = {
@@ -679,7 +679,7 @@ describe('next 13 remove-get-static-props', function () {
 			import { notFound, redirect } from "next/navigation";
 			
 			type Params = {
-				[key: string]?: string | string[] | undefined
+				[key: string]: string | string[] | undefined
 			};
 	
 			type PageProps = {
@@ -746,7 +746,7 @@ describe('next 13 remove-get-static-props', function () {
 			import { notFound, redirect } from "next/navigation";
 			
 			type Params = {
-				[key: string]?: string | string[] | undefined
+				[key: string]: string | string[] | undefined
 			};
 	
 			type PageProps = {
@@ -822,7 +822,7 @@ describe('next 13 remove-get-static-props', function () {
 		import x from "y";
 		
 		type Params = {
-			[key: string]?: string | string[] | undefined
+			[key: string]: string | string[] | undefined
 		};
 
 		type PageProps = {
@@ -898,7 +898,7 @@ describe('next 13 remove-get-static-props', function () {
 		import x from "y";
 		
 		type Params = {
-			[key: string]?: string | string[] | undefined
+			[key: string]: string | string[] | undefined
 		};
 
 		type PageProps = {
@@ -977,7 +977,7 @@ describe('next 13 remove-get-static-props', function () {
 		import x from "y";
 		
 		type Params = {
-			[key: string]?: string | string[] | undefined
+			[key: string]: string | string[] | undefined
 		};
 
 		type PageProps = {
@@ -1060,7 +1060,7 @@ describe('next 13 remove-get-static-props', function () {
 		import x from "y";
 		
 		type Params = {
-			[key: string]?: string | string[] | undefined
+			[key: string]: string | string[] | undefined
 		};
 
 		type PageProps = {
@@ -1139,7 +1139,7 @@ describe('next 13 remove-get-static-props', function () {
 		const OUTPUT = `
 			import { notFound, redirect } from "next/navigation";
 			type Params = {
-				[key: string]?: string | string[] | undefined
+				[key: string]: string | string[] | undefined
 			};
 	
 			type PageProps = {
@@ -1221,7 +1221,7 @@ describe('next 13 remove-get-static-props', function () {
 		import PostLayout from '@/components/post-layout';
 	
 		type Params = {
-			[key: string]?: string | string[] | undefined
+			[key: string]: string | string[] | undefined
 		};
 
 		type PageProps = {
@@ -1311,7 +1311,7 @@ describe('next 13 remove-get-static-props', function () {
 		import PostLayout from '@/components/post-layout';
 	
 		type Params = {
-			[key: string]?: string | string[] | undefined
+			[key: string]: string | string[] | undefined
 		};
 
 		type PageProps = {
@@ -1400,7 +1400,7 @@ describe('next 13 remove-get-static-props', function () {
 		import PostLayout from '@/components/post-layout';
 	
 		type Params = {
-			[key: string]?: string | string[] | undefined
+			[key: string]: string | string[] | undefined
 		};
 
 		type PageProps = {
