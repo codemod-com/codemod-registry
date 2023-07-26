@@ -953,120 +953,120 @@ const isIdentifierDefinedInPageProps = (identifier: Identifier): boolean => {
 	);
 };
 
-const getPageComponentFunctionDeclaration = (sourceFile: SourceFile) => {
-	return sourceFile.getFunctions().find((f) => f.isDefaultExport()) ?? null;
-};
+// const getPageComponentFunctionDeclaration = (sourceFile: SourceFile) => {
+// 	return sourceFile.getFunctions().find((f) => f.isDefaultExport()) ?? null;
+// };
 
-const getGetStaticPropsFunctionDeclarationOrIdentifier = (
-	sourceFile: SourceFile,
-	hookNames: string[],
-): FunctionDeclaration | Identifier | null => {
-	let res: FunctionDeclaration | Identifier | null = null;
+// const getGetStaticPropsFunctionDeclarationOrIdentifier = (
+// 	sourceFile: SourceFile,
+// 	hookNames: string[],
+// ): FunctionDeclaration | Identifier | null => {
+// 	let res: FunctionDeclaration | Identifier | null = null;
 
-	sourceFile.forEachChild((child) => {
-		if (
-			Node.isFunctionDeclaration(child) &&
-			hookNames.includes(child.getName() ?? '')
-		) {
-			res = child;
-		}
+// 	sourceFile.forEachChild((child) => {
+// 		if (
+// 			Node.isFunctionDeclaration(child) &&
+// 			hookNames.includes(child.getName() ?? '')
+// 		) {
+// 			res = child;
+// 		}
 
-		if (Node.isVariableStatement(child) && child.hasExportKeyword()) {
-			const declaration = child
-				.getFirstChildByKind(SyntaxKind.VariableDeclarationList)
-				?.getFirstChildByKind(SyntaxKind.VariableDeclaration);
+// 		if (Node.isVariableStatement(child) && child.hasExportKeyword()) {
+// 			const declaration = child
+// 				.getFirstChildByKind(SyntaxKind.VariableDeclarationList)
+// 				?.getFirstChildByKind(SyntaxKind.VariableDeclaration);
 
-			if (
-				declaration?.getInitializer()?.getKind() ===
-				SyntaxKind.ArrowFunction
-			) {
-				const nameNode = declaration.getNameNode();
-				if (
-					Node.isIdentifier(nameNode) &&
-					hookNames.includes(nameNode.getText())
-				) {
-					res = nameNode;
-				}
-			}
-		}
-	});
+// 			if (
+// 				declaration?.getInitializer()?.getKind() ===
+// 				SyntaxKind.ArrowFunction
+// 			) {
+// 				const nameNode = declaration.getNameNode();
+// 				if (
+// 					Node.isIdentifier(nameNode) &&
+// 					hookNames.includes(nameNode.getText())
+// 				) {
+// 					res = nameNode;
+// 				}
+// 			}
+// 		}
+// 	});
 
-	return res;
-};
+// 	return res;
+// };
 
-const insertGenerateMetadataFunctionDeclaration = (
-	sourceFile: SourceFile,
-	metadataObject: Record<string, any>,
-) => {
-	const pageComponentFunctionDeclaration =
-		getPageComponentFunctionDeclaration(sourceFile);
+// const insertGenerateMetadataFunctionDeclaration = (
+// 	sourceFile: SourceFile,
+// 	metadataObject: Record<string, any>,
+// ) => {
+// 	const pageComponentFunctionDeclaration =
+// 		getPageComponentFunctionDeclaration(sourceFile);
 
-	if (pageComponentFunctionDeclaration === null) {
-		return;
-	}
+// 	if (pageComponentFunctionDeclaration === null) {
+// 		return;
+// 	}
 
-	const getStaticPropsFunctionDeclaration =
-		getGetStaticPropsFunctionDeclarationOrIdentifier(sourceFile, [
-			'getStaticProps',
-			'_getStaticProps',
-		]);
+// 	const getStaticPropsFunctionDeclaration =
+// 		getGetStaticPropsFunctionDeclarationOrIdentifier(sourceFile, [
+// 			'getStaticProps',
+// 			'_getStaticProps',
+// 		]);
 
-	const getServerSidePropsFunctionDeclaration =
-		getGetStaticPropsFunctionDeclarationOrIdentifier(sourceFile, [
-			'getServerSideProps',
-			'_getServerSideProps',
-		]);
+// 	const getServerSidePropsFunctionDeclaration =
+// 		getGetStaticPropsFunctionDeclarationOrIdentifier(sourceFile, [
+// 			'getServerSideProps',
+// 			'_getServerSideProps',
+// 		]);
 
-	const hook =
-		getServerSidePropsFunctionDeclaration ??
-		getStaticPropsFunctionDeclaration ??
-		null;
-	const isStatic = getStaticPropsFunctionDeclaration !== null;
+// 	const hook =
+// 		getServerSidePropsFunctionDeclaration ??
+// 		getStaticPropsFunctionDeclaration ??
+// 		null;
+// 	const isStatic = getStaticPropsFunctionDeclaration !== null;
 
-	if (hook === null) {
-		return;
-	}
+// 	if (hook === null) {
+// 		return;
+// 	}
 
-	// rename to avoid next.js warnings
-	hook.rename(isStatic ? '_getStaticProps' : '_getServerSideProps');
+// 	// rename to avoid next.js warnings
+// 	hook.rename(isStatic ? '_getStaticProps' : '_getServerSideProps');
 
-	const propsParameter =
-		pageComponentFunctionDeclaration.getParameters()[0] ?? null;
+// 	const propsParameter =
+// 		pageComponentFunctionDeclaration.getParameters()[0] ?? null;
 
-	if (propsParameter === null) {
-		return;
-	}
+// 	if (propsParameter === null) {
+// 		return;
+// 	}
 
-	const propsParameterIsObjectBindingPattern = Node.isObjectBindingPattern(
-		propsParameter.getNameNode(),
-	);
+// 	const propsParameterIsObjectBindingPattern = Node.isObjectBindingPattern(
+// 		propsParameter.getNameNode(),
+// 	);
 
-	sourceFile.addStatements(
-		`  
-			export async function generateMetadata(
-				{ params }: { params: Params },
-				parentMetadata: ResolvingMetadata
-			): Promise<Metadata> {
-					const { props }  = await  ${
-						isStatic ? '_getStaticProps' : '_getServerSideProps'
-					}({ params });
-					const awaitedParentMetadata = await parentMetadata;
-				  
-					${
-						propsParameterIsObjectBindingPattern
-							? `const ${propsParameter.getText()} = props;`
-							: ''
-					}
-					
-					const pageMetadata = ${buildMetadataObjectStr(metadataObject)};
-					
-					return {
-						...awaitedParentMetadata, 
-						...pageMetadata
-					}
-					}	`,
-	);
-};
+// 	sourceFile.addStatements(
+// 		`
+// 			export async function generateMetadata(
+// 				{ params }: { params: Params },
+// 				parentMetadata: ResolvingMetadata
+// 			): Promise<Metadata> {
+// 					const { props }  = await  ${
+// 						isStatic ? '_getStaticProps' : '_getServerSideProps'
+// 					}({ params });
+// 					const awaitedParentMetadata = await parentMetadata;
+
+// 					${
+// 						propsParameterIsObjectBindingPattern
+// 							? `const ${propsParameter.getText()} = props;`
+// 							: ''
+// 					}
+
+// 					const pageMetadata = ${buildMetadataObjectStr(metadataObject)};
+
+// 					return {
+// 						...awaitedParentMetadata,
+// 						...pageMetadata
+// 					}
+// 					}	`,
+// 	);
+// };
 
 type Root = ReturnType<typeof fromMarkdown>;
 
@@ -1289,7 +1289,7 @@ const mergeMetadata = (
 	const currentComponentMetadata = treeNode.metadata;
 
 	return Object.entries(treeNode.components)
-		.map(([_, componentNode]) => mergeMetadata(componentNode))
+		.map((arr) => mergeMetadata(arr[1]))
 		.reduce((mergedMetadata, childMetadata) => {
 			return { ...mergedMetadata, ...childMetadata };
 		}, currentComponentMetadata);

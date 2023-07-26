@@ -41,7 +41,9 @@ describe('next 13 move-css-in-js-styles', function () {
 		};
 
 		const options = {
-			createFile(path: string, data: string) {},
+			createFile(path: string, data: string) {
+				return { path, data };
+			},
 		};
 
 		const spy = sinon.spy(options);

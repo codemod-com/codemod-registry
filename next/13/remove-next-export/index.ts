@@ -10,7 +10,7 @@ type Dependencies = Readonly<{
 export const repomod: Repomod<Dependencies> = {
 	includePatterns: ['**/package.json', '**/next.config.js', '**/*.{md,sh}'],
 	excludePatterns: ['**/node_modules/**'],
-	handleData: async (api, path, data, options) => {
+	handleData: async (api, path, data) => {
 		const extension = posix.extname(path);
 		const basename = posix.basename(path);
 

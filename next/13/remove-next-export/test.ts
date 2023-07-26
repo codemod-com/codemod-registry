@@ -8,7 +8,7 @@ import { Volume, createFsFromVolume } from 'memfs';
 import tsmorph from 'ts-morph';
 import { repomod } from './index.js';
 import { Context } from 'mocha';
-import { deepStrictEqual, ok } from 'node:assert';
+import { deepStrictEqual } from 'node:assert';
 
 const PACKAGE_JSON = JSON.stringify({
 	scripts: {
