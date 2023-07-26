@@ -5,8 +5,9 @@
 	"type": "module",
 	"scripts": {
 		"build": "ts-node --esm ./build.ts",
-		"prettier:write": "prettier --write .",
-		"test": "mocha"
+		"test": "mocha",
+		"lint:eslint": "eslint . --fix --ext ts",
+		"lint:prettier": "prettier --write ."
 	},
 	"devDependencies": {
 		"@babel/core": ">=7.13.0 <8.0.0",
@@ -19,8 +20,14 @@
 		"@types/node": "20.4.2",
 		"@types/sinon": "^10.0.13",
 		"@types/tar": "^6.1.5",
+		"@typescript-eslint/eslint-plugin": "^6.2.0",
+		"@typescript-eslint/parser": "^6.2.0",
 		"chai": "^4.3.7",
 		"esbuild": "^0.18.12",
+		"eslint": "^8.45.0",
+		"eslint-config-prettier": "^8.8.0",
+		"eslint-plugin-prettier": "^5.0.0",
+		"eslint-plugin-react": "^7.33.0",
 		"glob": "^10.3.3",
 		"jscodeshift": "^0.14.0",
 		"mdast-util-from-markdown": "^2.0.0",
