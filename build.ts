@@ -1,6 +1,16 @@
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { access, copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
+import {
+	access,
+	copyFile,
+	mkdir,
+	readFile,
+	readdir,
+	rmdir,
+	stat,
+	unlink,
+	writeFile,
+} from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { globSync } from 'glob';
 import esbuild from 'esbuild';
@@ -8,6 +18,7 @@ import * as S from '@effect/schema/Schema';
 import { constants } from 'node:fs';
 import { deflate } from 'node:zlib';
 import { promisify } from 'node:util';
+import * as tar from 'tar';
 
 const promisifiedDeflate = promisify(deflate);
 
@@ -57,6 +68,27 @@ const transpile = async (
 	return Buffer.from(code, 'utf8');
 };
 
+const removeDirectoryContents = async (directoryPath: string) => {
+	const paths = await readdir(directoryPath);
+
+	// Loop through the files and delete them
+	for (const path of paths) {
+		const absolutePath = join(directoryPath, path);
+
+		const stats = await stat(absolutePath);
+
+		if (!stats.isFile()) {
+			await removeDirectoryContents(absolutePath);
+
+			await rmdir(absolutePath);
+
+			continue;
+		}
+
+		await unlink(absolutePath);
+	}
+};
+
 const build = async () => {
 	const cwd = fileURLToPath(new URL('.', import.meta.url));
 
@@ -73,6 +105,8 @@ const build = async () => {
 	const buildDirectoryPath = join(cwd, './build');
 
 	await mkdir(buildDirectoryPath, { recursive: true });
+
+	await removeDirectoryContents(buildDirectoryPath);
 
 	await writeFile(
 		join(buildDirectoryPath, 'names.json'),
@@ -165,6 +199,16 @@ const build = async () => {
 			await copyFile(readmePath, buildDescriptionPath);
 		} catch {}
 	}
+
+	await tar.create(
+		{
+			cwd: buildDirectoryPath,
+			portable: true,
+			file: join(buildDirectoryPath, 'registry.tar.gz'),
+			gzip: true,
+		},
+		await readdir(buildDirectoryPath),
+	);
 };
 
 await build();
