@@ -30,16 +30,8 @@ jobs:
               with:
                   version: 8
 
-<<<<<<< HEAD
-      - name: Install dependencies
-        run: pnpm install
-        
-      - name: Run codemod unit tests
-        run: pnpm test
-=======
             - name: Install dependencies
               run: pnpm install
 
             - name: Run codemod unit tests
               run: pnpm test
->>>>>>> 6a37769 (fix)
