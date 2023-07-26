@@ -23,7 +23,7 @@ import type {
 } from '@intuita-inc/repomod-engine-api';
 import type { fromMarkdown } from 'mdast-util-from-markdown';
 import type { visit } from 'unist-util-visit';
-
+import { posix } from 'node:path';
 /**
  * Copied from "../replace-next-head"
  */
@@ -1119,6 +1119,7 @@ export const buildComponentMetadata = (
 const initTsMorphProject = async (
 	tsmorph: Dependencies['tsmorph'],
 	unifiedFileSystem: Dependencies['unifiedFileSystem'],
+	rootPath: string,
 	compilerOptions: tsmorph.CompilerOptions = defaultCompilerOptions,
 ) => {
 	project = new tsmorph.Project({
@@ -1128,9 +1129,8 @@ const initTsMorphProject = async (
 		compilerOptions,
 	});
 
-	const rootName = '/opt/project';
 	const allFilePaths = await unifiedFileSystem.getFilePaths(
-		rootName,
+		rootPath,
 		['**/*.{jsx,tsx}'],
 		[],
 	);
@@ -1192,6 +1192,7 @@ const buildComponentTreeNode = async (
 
 	const importIdentifiersByImportPath =
 		collectedImportedIdentifiers(sourceFile);
+
 	const paths = importIdentifiersByImportPath.keys();
 
 	for (const path of paths) {
@@ -1206,7 +1207,6 @@ const buildComponentTreeNode = async (
 		);
 
 		const identifiers = importIdentifiersByImportPath.get(path) ?? [];
-
 		identifiers.forEach((identifier) => {
 			const refs = identifier.findReferencesAsNodes();
 
@@ -1229,18 +1229,18 @@ const buildComponentTreeNode = async (
 			if (jsxElement !== undefined) {
 				const resolvedFileName =
 					resolvedPath.resolvedModule?.resolvedFileName ?? '';
+
+				treeNode.components[resolvedFileName] = {
+					path,
+					props: {},
+					metadata: {},
+					components: {},
+				};
 				const attributes = jsxElement.getAttributes();
 				attributes.forEach((attribute) => {
 					if (Node.isJsxAttribute(attribute)) {
 						const name = attribute.getNameNode().getText();
 						const initializer = attribute.getInitializer();
-
-						treeNode.components[resolvedFileName] = {
-							path,
-							props: {},
-							metadata: {},
-							components: {},
-						};
 
 						if (Node.isStringLiteral(initializer)) {
 							treeNode.components[resolvedFileName]!.props[name] =
@@ -1270,6 +1270,7 @@ const buildComponentTree = async (
 	);
 
 	const componentPaths = Object.keys(node.components);
+
 	for (const path of componentPaths) {
 		const componentNode = node.components[path];
 		if (!componentNode) {
@@ -1330,12 +1331,8 @@ const insertMetadata = (
 		});
 
 	if (!importAlreadyExists) {
-		sourceFile.insertStatements(
-			0,
-			`import { Metadata } from "next";`,
-		);
+		sourceFile.insertStatements(0, `import { Metadata } from "next";`);
 	}
-
 };
 
 export const repomod: Repomod<Dependencies> = {
@@ -1343,9 +1340,14 @@ export const repomod: Repomod<Dependencies> = {
 	excludePatterns: ['**/node_modules/**', '**/pages/api/**'],
 	handleFile: async (api, path, options) => {
 		const { unifiedFileSystem, tsmorph } = api.getDependencies();
+		const parsedPath = posix.parse(path);
+		const projectDir = parsedPath.dir
+			.split(posix.sep)
+			.slice(0, -1)
+			.join(posix.sep);
 
 		if (project === null) {
-			await initTsMorphProject(tsmorph, unifiedFileSystem);
+			await initTsMorphProject(tsmorph, unifiedFileSystem, projectDir);
 		}
 
 		const componentTree: ComponentTreeNode = {
@@ -1356,9 +1358,7 @@ export const repomod: Repomod<Dependencies> = {
 		};
 
 		await buildComponentTree(tsmorph, path, componentTree);
-
 		const mergedMetadata = mergeMetadata(componentTree);
-
 		return [
 			{
 				kind: 'upsertFile',
