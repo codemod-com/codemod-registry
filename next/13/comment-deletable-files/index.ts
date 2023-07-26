@@ -1,7 +1,7 @@
-import type { API, FileInfo, Options, Transform } from 'jscodeshift';
+import type { API, FileInfo, Transform } from 'jscodeshift';
 import { basename } from 'node:path';
 
-export default function transform(file: FileInfo, api: API, _: Options) {
+export default function transform(file: FileInfo, api: API) {
 	const baseName = basename(file.path);
 
 	if (

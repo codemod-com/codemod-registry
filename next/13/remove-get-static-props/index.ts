@@ -8,7 +8,6 @@ import {
 	FunctionExpression,
 	Identifier,
 	JSCodeshift,
-	Options,
 	Transform,
 } from 'jscodeshift';
 
@@ -181,7 +180,7 @@ const addImportStatement: ModFunction<File, 'write'> = (j, root, settings) => {
 };
 
 const addGetDataFunction: ModFunction<File, 'write'> = (j, root, settings) => {
-	const { functionName, argName, argType } = settings;
+	const { functionName } = settings;
 
 	const getDataFunctionDeclaration = getDataMethodFactory(
 		j,
@@ -692,7 +691,6 @@ const addGetDataVariableDeclaration: ModFunction<
 export default function transform(
 	file: FileInfo,
 	api: API,
-	_: Options,
 ): string | undefined {
 	const j = api.jscodeshift;
 
