@@ -876,7 +876,7 @@ const buildMetadataObjectStr = (metadataObject: Record<string, any>) => {
 	return str;
 };
 
-const buildMetadataStatement = (metadataObject: Record<string, string>) => {
+const buildMetadataStatement = (metadataObject: Record<string, unknown>) => {
 	return `export const metadata: Metadata = ${buildMetadataObjectStr(
 		metadataObject,
 	)}`;
@@ -1282,10 +1282,81 @@ const buildComponentTree = async (
 	return node;
 };
 
+const mergeMetadata = (
+	treeNode: ComponentTreeNode,
+): Record<string, unknown> => {
+	const currentComponentMetadata = treeNode.metadata;
+
+	return Object.entries(treeNode.components)
+		.map(([_, componentNode]) => mergeMetadata(componentNode))
+		.reduce((mergedMetadata, childMetadata) => {
+			return { ...mergedMetadata, ...childMetadata };
+		}, currentComponentMetadata);
+};
+
+const insertMetadata = (
+	sourceFile: SourceFile,
+	metadataObject: Record<string, unknown>,
+) => {
+	const hasChanges = Object.keys(metadataObject).length !== 0;
+	if (!hasChanges) {
+		return undefined;
+	}
+
+	const importDeclarations = sourceFile.getImportDeclarations();
+
+	const declaration = [...importDeclarations].pop();
+
+	const pos = declaration?.wasForgotten()
+		? 0
+		: (declaration?.getChildIndex() ?? 0) + 1;
+
+	if (false) {
+		insertGenerateMetadataFunctionDeclaration(sourceFile, metadataObject);
+	} else {
+		sourceFile.insertStatements(
+			pos,
+			buildMetadataStatement(metadataObject),
+		);
+	}
+
+	const importAlreadyExists = sourceFile
+		.getImportDeclarations()
+		.find((declaration) => {
+			const specifier =
+				declaration
+					.getImportClause()
+					?.getNamedImports()
+					.find(
+						(imp) => imp.getNameNode().getText() === 'Metadata',
+					) ?? null;
+			return (
+				specifier !== null &&
+				declaration.getModuleSpecifier().getText() === '"next"'
+			);
+		});
+
+	if (!importAlreadyExists) {
+		sourceFile.insertStatements(
+			0,
+			`import { Metadata  ${
+				false ? ', ResolvingMetadata' : ''
+			}  } from "next";`,
+		);
+	}
+
+	if (false) {
+		sourceFile.insertStatements(
+			pos + 1,
+			'type Params = Record<string, string |  string[]>;',
+		);
+	}
+};
+
 export const repomod: Repomod<Dependencies> = {
 	includePatterns: ['**/pages/**/*.{jsx,tsx}'],
 	excludePatterns: ['**/node_modules/**', '**/pages/api/**'],
-	handleFile: async (api, path) => {
+	handleFile: async (api, path, options) => {
 		const { unifiedFileSystem, tsmorph } = api.getDependencies();
 
 		if (project === null) {
@@ -1300,9 +1371,49 @@ export const repomod: Repomod<Dependencies> = {
 		};
 
 		await buildComponentTree(tsmorph, path, componentTree);
-		return [];
+
+		const mergedMetadata = mergeMetadata(componentTree);
+
+		return [
+			{
+				kind: 'upsertFile',
+				path,
+				options: {
+					...options,
+					metadata: JSON.stringify(mergedMetadata),
+				},
+			},
+		];
 	},
-	handleData: async () => {
+	handleData: async (api, path, data, options) => {
+		const { tsmorph } = api.getDependencies();
+
+		const project = new tsmorph.Project({
+			useInMemoryFileSystem: true,
+			skipFileDependencyResolution: true,
+			compilerOptions: {
+				allowJs: true,
+			},
+		});
+
+		const sourceFile = project.createSourceFile(path, data);
+
+		try {
+			const metadata = JSON.parse(options.metadata ?? '');
+
+			insertMetadata(sourceFile, metadata);
+
+			return {
+				kind: 'upsertData',
+				path,
+				data: sourceFile.print(),
+			};
+		} catch (e) {
+			console.error(e);
+		}
+
+		console.log(data);
+
 		return {
 			kind: 'noop',
 		};

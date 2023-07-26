@@ -13,6 +13,7 @@ import { toMarkdown } from 'mdast-util-to-markdown';
 import { mdxjs } from 'micromark-extension-mdxjs';
 import { mdxFromMarkdown, mdxToMarkdown } from 'mdast-util-mdx';
 import { visit } from 'unist-util-visit';
+import { deepStrictEqual } from 'node:assert';
 
 const A_CONTENT = `
 import Meta from '../../components/a.tsx';
@@ -96,11 +97,27 @@ const transform = async (json: DirectoryJSON) => {
 };
 
 describe('next 13 replace-next-head-repomod', function () {
-	it('should build correct files', async function (this: Context) {
+	it('should merge inject metadata to the page', async function (this: Context) {
 		const externalFileCommands = await transform({
 			'/opt/project/pages/a/index.tsx': A_CONTENT,
 			'/opt/project/components/a.tsx': A_COMPONENT_CONTENT,
 			'/opt/project/components/b.tsx': B_COMPONENT_CONTENT,
+		});
+
+		deepStrictEqual(externalFileCommands[0], {
+			kind: 'upsertFile',
+			path: '/opt/project/pages/a/index.tsx',
+			data:
+				'import { Metadata } from "next";\n' +
+				"import Meta from '../../components/a.tsx';\n" +
+				'export const metadata: Metadata = {\n' +
+				'    title: `${title}`,\n' +
+				'    description: description,\n' +
+				'};\n' +
+				'const global = "global";\n' +
+				'export default function Index({}) {\n' +
+				'    return <Meta title={"string"} description={global}/>;\n' +
+				'}\n',
 		});
 	});
 });
