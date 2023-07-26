@@ -148,14 +148,26 @@ const build = async () => {
 
 				const data = await readFile(indexPath);
 				const code = await transpile(data, 'ts');
-				const compressedBuffer = await promisifiedDeflate(code);
 
-				const buildIndexPath = join(
-					codemodDirectoryPath,
-					'index.cjs.z',
-				);
+				{
+					const buildIndexPath = join(
+						codemodDirectoryPath,
+						'index.cjs',
+					);
 
-				writeFile(buildIndexPath, compressedBuffer);
+					writeFile(buildIndexPath, code);
+				}
+
+				{
+					const compressedBuffer = await promisifiedDeflate(code);
+
+					const buildIndexPath = join(
+						codemodDirectoryPath,
+						'index.cjs.z',
+					);
+
+					writeFile(buildIndexPath, compressedBuffer);
+				}
 			} catch (error) {
 				console.error(error);
 			}
@@ -167,14 +179,26 @@ const build = async () => {
 
 				const data = await readFile(indexPath);
 				const code = await transpile(data, 'js');
-				const compressedBuffer = await promisifiedDeflate(code);
 
-				const buildIndexPath = join(
-					codemodDirectoryPath,
-					'index.cjs.z',
-				);
+				{
+					const buildIndexPath = join(
+						codemodDirectoryPath,
+						'index.cjs',
+					);
 
-				writeFile(buildIndexPath, compressedBuffer);
+					writeFile(buildIndexPath, code);
+				}
+
+				{
+					const compressedBuffer = await promisifiedDeflate(code);
+
+					const buildIndexPath = join(
+						codemodDirectoryPath,
+						'index.cjs.z',
+					);
+
+					writeFile(buildIndexPath, compressedBuffer);
+				}
 			} catch (error) {
 				console.error(error);
 			}
@@ -206,6 +230,9 @@ const build = async () => {
 			portable: true,
 			file: join(buildDirectoryPath, 'registry.tar.gz'),
 			gzip: true,
+			filter: (path) => {
+				return !path.endsWith('.z');
+			},
 		},
 		await readdir(buildDirectoryPath),
 	);
