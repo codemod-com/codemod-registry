@@ -1311,14 +1311,7 @@ const insertMetadata = (
 		? 0
 		: (declaration?.getChildIndex() ?? 0) + 1;
 
-	if (false) {
-		insertGenerateMetadataFunctionDeclaration(sourceFile, metadataObject);
-	} else {
-		sourceFile.insertStatements(
-			pos,
-			buildMetadataStatement(metadataObject),
-		);
-	}
+	sourceFile.insertStatements(pos, buildMetadataStatement(metadataObject));
 
 	const importAlreadyExists = sourceFile
 		.getImportDeclarations()
@@ -1339,18 +1332,10 @@ const insertMetadata = (
 	if (!importAlreadyExists) {
 		sourceFile.insertStatements(
 			0,
-			`import { Metadata  ${
-				false ? ', ResolvingMetadata' : ''
-			}  } from "next";`,
+			`import { Metadata } from "next";`,
 		);
 	}
 
-	if (false) {
-		sourceFile.insertStatements(
-			pos + 1,
-			'type Params = Record<string, string |  string[]>;',
-		);
-	}
 };
 
 export const repomod: Repomod<Dependencies> = {
