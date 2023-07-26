@@ -108,13 +108,11 @@ const addPageParamsTypeAlias: ModFunction<File, 'write'> = (j, root) => {
 			j.tsIndexSignature(
 				[j.identifier('key: string')],
 				j.tsTypeAnnotation(
-					j.tsOptionalType(
-						j.tsUnionType([
-							j.tsStringKeyword(),
-							j.tsArrayType(j.tsStringKeyword()),
-							j.tsUndefinedKeyword(),
-						]),
-					),
+					j.tsUnionType([
+						j.tsStringKeyword(),
+						j.tsArrayType(j.tsStringKeyword()),
+						j.tsUndefinedKeyword(),
+					]),
 				),
 			),
 		]),

@@ -1206,6 +1206,13 @@ const buildComponentTreeNode = async (
 			ModuleKind.ESNext,
 		);
 
+		const resolvedFileName =
+			resolvedPath.resolvedModule?.resolvedFileName ?? null;
+
+		if (resolvedFileName === null) {
+			continue;
+		}
+
 		const identifiers = importIdentifiersByImportPath.get(path) ?? [];
 		identifiers.forEach((identifier) => {
 			const refs = identifier.findReferencesAsNodes();
@@ -1227,9 +1234,6 @@ const buildComponentTreeNode = async (
 			});
 
 			if (jsxElement !== undefined) {
-				const resolvedFileName =
-					resolvedPath.resolvedModule?.resolvedFileName ?? '';
-
 				treeNode.components[resolvedFileName] = {
 					path,
 					props: {},
@@ -1263,6 +1267,7 @@ const buildComponentTree = async (
 	containingPath: string,
 	treeNode: ComponentTreeNode,
 ) => {
+	// @TODO cache processed component nodes
 	const node = await buildComponentTreeNode(
 		tsmorph,
 		containingPath,
@@ -1341,10 +1346,12 @@ export const repomod: Repomod<Dependencies> = {
 	handleFile: async (api, path, options) => {
 		const { unifiedFileSystem, tsmorph } = api.getDependencies();
 		const parsedPath = posix.parse(path);
-		const projectDir = parsedPath.dir
-			.split(posix.sep)
-			.slice(0, -1)
-			.join(posix.sep);
+
+		const projectDir = parsedPath.dir.split('pages')[0] ?? null;
+
+		if (projectDir === null) {
+			return [];
+		}
 
 		if (project === null) {
 			await initTsMorphProject(tsmorph, unifiedFileSystem, projectDir);
@@ -1359,16 +1366,21 @@ export const repomod: Repomod<Dependencies> = {
 
 		await buildComponentTree(tsmorph, path, componentTree);
 		const mergedMetadata = mergeMetadata(componentTree);
-		return [
-			{
-				kind: 'upsertFile',
-				path,
-				options: {
-					...options,
-					metadata: JSON.stringify(mergedMetadata),
+
+		if (Object.keys(mergedMetadata).length !== 0) {
+			return [
+				{
+					kind: 'upsertFile',
+					path,
+					options: {
+						...options,
+						metadata: JSON.stringify(mergedMetadata),
+					},
 				},
-			},
-		];
+			];
+		}
+
+		return [];
 	},
 	handleData: async (api, path, data, options) => {
 		const { tsmorph } = api.getDependencies();
