@@ -26,9 +26,9 @@ SOFTWARE.
 Changes to the original file: add any typings in places where the compiler complained, added dirtyFlag
 */
 
-import { API, FileInfo, Options } from 'jscodeshift';
+import { API, FileInfo } from 'jscodeshift';
 
-export default function transform(file: FileInfo, api: API, options: Options) {
+export default function transform(file: FileInfo, api: API) {
 	const j = api.jscodeshift;
 
 	const root = j(file.source);

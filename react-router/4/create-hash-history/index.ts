@@ -75,12 +75,12 @@ function transform(
 			return;
 		}
 
-		let computedImport = j.importDeclaration(
+		const computedImport = j.importDeclaration(
 			[j.importDefaultSpecifier(j.identifier('createHashHistory'))],
 			j.literal('history/createHashHistory'),
 		);
 
-		let body = root.get().value.program.body;
+		const body = root.get().value.program.body;
 		body.unshift(computedImport);
 
 		const vardecl = j.variableDeclaration('const', [

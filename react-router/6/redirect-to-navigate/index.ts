@@ -37,7 +37,7 @@ function transform(
 
 	const root = j(file.source);
 
-	let dirtyFlag = false;
+	const dirtyFlag = false;
 
 	root.find(j.JSXElement, {
 		openingElement: {

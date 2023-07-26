@@ -221,7 +221,9 @@ const build = async () => {
 			await access(readmePath, constants.R_OK);
 
 			await copyFile(readmePath, buildDescriptionPath);
-		} catch {}
+		} catch (err) {
+			console.error(err);
+		}
 	}
 
 	await tar.create(
