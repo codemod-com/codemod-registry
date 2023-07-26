@@ -1397,8 +1397,6 @@ export const repomod: Repomod<Dependencies> = {
 			console.error(e);
 		}
 
-		console.log(data);
-
 		return {
 			kind: 'noop',
 		};
