@@ -1131,7 +1131,7 @@ const initTsMorphProject = async (
 
 	const allFilePaths = await unifiedFileSystem.getFilePaths(
 		rootPath,
-		['**/*.{jsx,tsx}'],
+		['**/*.{js,ts,jsx,tsx}'],
 		[],
 	);
 	for (const path of allFilePaths) {
@@ -1341,7 +1341,7 @@ const insertMetadata = (
 };
 
 export const repomod: Repomod<Dependencies> = {
-	includePatterns: ['**/pages/**/*.{jsx,tsx}'],
+	includePatterns: ['**/pages/**/*.{js,ts,jsx,tsx}'],
 	excludePatterns: ['**/node_modules/**', '**/pages/api/**'],
 	handleFile: async (api, path, options) => {
 		const { unifiedFileSystem, tsmorph } = api.getDependencies();
