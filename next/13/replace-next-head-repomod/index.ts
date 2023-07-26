@@ -24,9 +24,6 @@ import type {
 import type { fromMarkdown } from 'mdast-util-from-markdown';
 import type { visit } from 'unist-util-visit';
 import { posix } from 'node:path';
-/**
- * Copied from "../replace-next-head"
- */
 
 type HTMLTagName = 'title' | 'meta' | 'link';
 type HTMLAttributes = Record<string, string>;
