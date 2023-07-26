@@ -21,6 +21,7 @@
 		"@types/tar": "^6.1.5",
 		"chai": "^4.3.7",
 		"esbuild": "^0.18.12",
+		"eslint": "^8.45.0",
 		"glob": "^10.3.3",
 		"jscodeshift": "^0.14.0",
 		"mdast-util-from-markdown": "^2.0.0",
