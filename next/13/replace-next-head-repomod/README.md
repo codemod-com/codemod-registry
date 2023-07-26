@@ -1,4 +1,4 @@
-# Replace Next Head
+# Replace Next Head Repomod
 
 Generates a static metadata object based on meta tags managed by next/head. Marks the meta tags that can be deleted.
 
