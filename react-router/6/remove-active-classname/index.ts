@@ -26,14 +26,7 @@ THE SOFTWARE.
 Changes to the original file: added TypeScript, dirty flag, nullability checks
 */
 
-import type {
-	FileInfo,
-	API,
-	Options,
-	Transform,
-	ASTPath,
-	JSXElement,
-} from 'jscodeshift';
+import type { FileInfo, API, Options, Transform } from 'jscodeshift';
 
 function transform(
 	file: FileInfo,
