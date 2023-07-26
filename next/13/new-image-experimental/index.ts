@@ -402,7 +402,7 @@ export default function transformer(
 			requireExp?.value?.callee?.type === 'Identifier' &&
 			requireExp.value.callee.name === 'require'
 		) {
-			let firstArg = requireExp.value.arguments[0];
+			const firstArg = requireExp.value.arguments[0];
 			if (
 				firstArg &&
 				firstArg.type === 'Literal' &&
