@@ -68,7 +68,7 @@ describe('next 13 new-link', function () {
 			source: INPUT,
 		};
 
-		const actualOutput = transform(fileInfo, buildApi('tsx'), {});
+		const actualOutput = transform(fileInfo, buildApi('tsx'));
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
