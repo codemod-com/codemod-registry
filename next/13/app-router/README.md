@@ -25,10 +25,6 @@ v1.0.0
 
 **Assistive**: The automation partially completes changes. Human involvement is needed to make changes ready to be pushed and merged.
 
-### **Codemod Engine**
-
-ts-morph
-
 ### Estimated Time Saving
 
 ~5 minutes per occurrence
