@@ -248,4 +248,37 @@ describe('next 13 app-directory-boilerplate', function () {
 			data: A_B_MDX_DATA,
 		});
 	});
+
+	it('should remove the Head tag', async function (this: Context) {
+		const content = `
+		import Head from 'next/head';
+
+		export default async function Index() {
+			return <div>
+				<Head></Head>
+			</div>;
+		}
+		`;
+
+		const newContent = `
+		// This file has been sourced from: /opt/project/pages/index.jsx
+
+		export default async function Index() {
+			return <div>
+			</div>;
+		}
+		`;
+
+		const [_, externalFileCommand] = await transform({
+			'/opt/project/pages/index.jsx': content,
+		});
+
+		deepStrictEqual(externalFileCommand?.kind, 'upsertFile');
+		deepStrictEqual(externalFileCommand?.path, '/opt/project/app/page.tsx');
+
+		deepStrictEqual(
+			externalFileCommand?.data.replace(/\W/gm, ''),
+			newContent.replace(/\W/gm, ''),
+		);
+	});
 });

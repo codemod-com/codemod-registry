@@ -1,5 +1,5 @@
 import { posix } from 'node:path';
-import tsmorph from 'ts-morph';
+import tsmorph, { SyntaxKind } from 'ts-morph';
 import type { Repomod } from '@intuita-inc/repomod-engine-api';
 import type { fromMarkdown } from 'mdast-util-from-markdown';
 import type { visit } from 'unist-util-visit';
@@ -266,6 +266,8 @@ export const repomod: Repomod<Dependencies> = {
 				filePurpose === FilePurpose.ROOT_PAGE) &&
 			options.oldPath
 		) {
+			console.log('HERE');
+
 			const { tsmorph, parseMdx, stringifyMdx, visitMdxAst } =
 				api.getDependencies();
 
@@ -286,6 +288,36 @@ export const repomod: Repomod<Dependencies> = {
 					options.oldPath ?? '',
 					input,
 				);
+
+				oldSourceFile
+					.getImportDeclarations()
+					.filter((declaration) => {
+						return (
+							declaration
+								.getModuleSpecifier()
+								.getLiteralText() === 'next/head' &&
+							declaration.getImportClause()?.getText() === 'Head'
+						);
+					})
+					.forEach((declaration) => {
+						declaration.remove();
+					});
+
+				oldSourceFile
+					.getDescendantsOfKind(SyntaxKind.JsxOpeningElement)
+					.filter(
+						(jsxOpeningElement) =>
+							jsxOpeningElement.getTagNameNode().getText() ===
+							'Head',
+					)
+					.map((declaration) => {
+						return declaration.getFirstAncestorByKind(
+							SyntaxKind.JsxElement,
+						);
+					})
+					.forEach((jsxElement) => {
+						jsxElement?.replaceWithText('');
+					});
 
 				oldSourceFile
 					.getStatementsWithComments()
