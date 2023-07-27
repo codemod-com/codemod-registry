@@ -127,7 +127,7 @@ describe('next 13 app-directory-boilerplate', function () {
 			'/opt/project/pages/a/index.tsx': '',
 		});
 
-		deepStrictEqual(externalFileCommands.length, 7);
+		deepStrictEqual(externalFileCommands.length, 8);
 
 		ok(
 			externalFileCommands.some(
@@ -178,13 +178,13 @@ describe('next 13 app-directory-boilerplate', function () {
 			data: '// This file has been sourced from: /opt/project/pages/index.jsx\nimport A from "./testQWE";\nexport default function Index({}) {\n    return null;\n}\nexport const getStaticProps = async ({}) => {\n    return {\n        props: {},\n        revalidate: 10,\n    };\n};\n',
 		});
 
-		deepStrictEqual(externalFileCommands[5], {
+		deepStrictEqual(externalFileCommands[6], {
 			kind: 'upsertFile',
 			path: '/opt/project/app/[a]/c/page.tsx',
 			data: A_C_DATA,
 		});
 
-		deepStrictEqual(externalFileCommands[6], {
+		deepStrictEqual(externalFileCommands[7], {
 			kind: 'upsertFile',
 			path: '/opt/project/app/[a]/[b]/page.tsx',
 			data: A_B_DATA,
@@ -198,7 +198,7 @@ describe('next 13 app-directory-boilerplate', function () {
 			'/opt/project/pages/_document.jsx': '',
 		});
 
-		deepStrictEqual(externalFileCommands.length, 2);
+		deepStrictEqual(externalFileCommands.length, 3);
 
 		ok(
 			!externalFileCommands.some(
@@ -234,18 +234,57 @@ describe('next 13 app-directory-boilerplate', function () {
 			'/opt/project/pages/[a]/c.mdx': A_C_CONTENT,
 		});
 
-		deepStrictEqual(externalFileCommands.length, 4);
+		deepStrictEqual(externalFileCommands.length, 5);
 
-		deepStrictEqual(externalFileCommands[2], {
+		deepStrictEqual(externalFileCommands[3], {
 			kind: 'upsertFile',
 			path: '/opt/project/app/[a]/c/page.mdx',
 			data: A_C_MDX_DATA,
 		});
 
-		deepStrictEqual(externalFileCommands[3], {
+		deepStrictEqual(externalFileCommands[4], {
 			kind: 'upsertFile',
 			path: '/opt/project/app/[a]/[b]/page.mdx',
 			data: A_B_MDX_DATA,
 		});
+	});
+
+	it('should remove the Head tag', async function (this: Context) {
+		const content = `
+		import Head from 'next/head';
+
+		export default async function Index() {
+			return <div>
+				<Head></Head>
+			</div>;
+		}
+		`;
+
+		const newContent = `
+		// This file has been sourced from: /opt/project/pages/index.jsx
+
+		export default async function Index() {
+			return <div>
+			</div>;
+		}
+		`;
+
+		const [, upsertFileCommand, deleteIndexJsxCommand] = await transform({
+			'/opt/project/pages/index.jsx': content,
+		});
+
+		deepStrictEqual(upsertFileCommand?.kind, 'upsertFile');
+		deepStrictEqual(upsertFileCommand?.path, '/opt/project/app/page.tsx');
+
+		deepStrictEqual(
+			upsertFileCommand?.data.replace(/\W/gm, ''),
+			newContent.replace(/\W/gm, ''),
+		);
+
+		deepStrictEqual(deleteIndexJsxCommand?.kind, 'deleteFile');
+		deepStrictEqual(
+			deleteIndexJsxCommand?.path,
+			'/opt/project/pages/index.jsx',
+		);
 	});
 });
