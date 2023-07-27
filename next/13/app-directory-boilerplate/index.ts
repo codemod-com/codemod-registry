@@ -270,8 +270,6 @@ export const repomod: Repomod<Dependencies> = {
 				filePurpose === FilePurpose.ROOT_PAGE) &&
 			options.oldPath
 		) {
-			console.log('HERE');
-
 			const { tsmorph, parseMdx, stringifyMdx, visitMdxAst } =
 				api.getDependencies();
 

@@ -269,17 +269,15 @@ describe('next 13 app-directory-boilerplate', function () {
 		}
 		`;
 
-		const [_, externalFileCommand, deleteIndexJsxCommand] = await transform(
-			{
-				'/opt/project/pages/index.jsx': content,
-			},
-		);
+		const [, upsertFileCommand, deleteIndexJsxCommand] = await transform({
+			'/opt/project/pages/index.jsx': content,
+		});
 
-		deepStrictEqual(externalFileCommand?.kind, 'upsertFile');
-		deepStrictEqual(externalFileCommand?.path, '/opt/project/app/page.tsx');
+		deepStrictEqual(upsertFileCommand?.kind, 'upsertFile');
+		deepStrictEqual(upsertFileCommand?.path, '/opt/project/app/page.tsx');
 
 		deepStrictEqual(
-			externalFileCommand?.data.replace(/\W/gm, ''),
+			upsertFileCommand?.data.replace(/\W/gm, ''),
 			newContent.replace(/\W/gm, ''),
 		);
 
