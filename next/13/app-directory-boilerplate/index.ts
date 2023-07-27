@@ -181,6 +181,10 @@ export const repomod: Repomod<Dependencies> = {
 						oldData,
 					},
 				},
+				{
+					kind: 'deleteFile' as const,
+					path,
+				},
 			];
 
 			if (rootErrorPathIncluded) {

@@ -114,7 +114,7 @@ export const getServerSideProps = () => {
 };
 `;
 
-describe('next 13 app-directory-boilerplate', function () {
+describe.only('next 13 app-directory-boilerplate', function () {
 	it('should build correct files', async function (this: Context) {
 		const externalFileCommands = await transform({
 			'/opt/project/pages/index.jsx': INDEX_CONTENT,
@@ -127,7 +127,7 @@ describe('next 13 app-directory-boilerplate', function () {
 			'/opt/project/pages/a/index.tsx': '',
 		});
 
-		deepStrictEqual(externalFileCommands.length, 7);
+		deepStrictEqual(externalFileCommands.length, 8);
 
 		ok(
 			externalFileCommands.some(
@@ -178,13 +178,13 @@ describe('next 13 app-directory-boilerplate', function () {
 			data: '// This file has been sourced from: /opt/project/pages/index.jsx\nimport A from "./testQWE";\nexport default function Index({}) {\n    return null;\n}\nexport const getStaticProps = async ({}) => {\n    return {\n        props: {},\n        revalidate: 10,\n    };\n};\n',
 		});
 
-		deepStrictEqual(externalFileCommands[5], {
+		deepStrictEqual(externalFileCommands[6], {
 			kind: 'upsertFile',
 			path: '/opt/project/app/[a]/c/page.tsx',
 			data: A_C_DATA,
 		});
 
-		deepStrictEqual(externalFileCommands[6], {
+		deepStrictEqual(externalFileCommands[7], {
 			kind: 'upsertFile',
 			path: '/opt/project/app/[a]/[b]/page.tsx',
 			data: A_B_DATA,
@@ -198,7 +198,7 @@ describe('next 13 app-directory-boilerplate', function () {
 			'/opt/project/pages/_document.jsx': '',
 		});
 
-		deepStrictEqual(externalFileCommands.length, 2);
+		deepStrictEqual(externalFileCommands.length, 3);
 
 		ok(
 			!externalFileCommands.some(
@@ -234,15 +234,15 @@ describe('next 13 app-directory-boilerplate', function () {
 			'/opt/project/pages/[a]/c.mdx': A_C_CONTENT,
 		});
 
-		deepStrictEqual(externalFileCommands.length, 4);
+		deepStrictEqual(externalFileCommands.length, 5);
 
-		deepStrictEqual(externalFileCommands[2], {
+		deepStrictEqual(externalFileCommands[3], {
 			kind: 'upsertFile',
 			path: '/opt/project/app/[a]/c/page.mdx',
 			data: A_C_MDX_DATA,
 		});
 
-		deepStrictEqual(externalFileCommands[3], {
+		deepStrictEqual(externalFileCommands[4], {
 			kind: 'upsertFile',
 			path: '/opt/project/app/[a]/[b]/page.mdx',
 			data: A_B_MDX_DATA,
@@ -269,9 +269,11 @@ describe('next 13 app-directory-boilerplate', function () {
 		}
 		`;
 
-		const [_, externalFileCommand] = await transform({
-			'/opt/project/pages/index.jsx': content,
-		});
+		const [_, externalFileCommand, deleteIndexJsxCommand] = await transform(
+			{
+				'/opt/project/pages/index.jsx': content,
+			},
+		);
 
 		deepStrictEqual(externalFileCommand?.kind, 'upsertFile');
 		deepStrictEqual(externalFileCommand?.path, '/opt/project/app/page.tsx');
@@ -279,6 +281,12 @@ describe('next 13 app-directory-boilerplate', function () {
 		deepStrictEqual(
 			externalFileCommand?.data.replace(/\W/gm, ''),
 			newContent.replace(/\W/gm, ''),
+		);
+
+		deepStrictEqual(deleteIndexJsxCommand?.kind, 'deleteFile');
+		deepStrictEqual(
+			deleteIndexJsxCommand?.path,
+			'/opt/project/pages/index.jsx',
 		);
 	});
 });
