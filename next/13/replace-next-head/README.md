@@ -63,7 +63,7 @@ ts-morph
 
 ### Owner
 
-[Vercel](https://github.com/vercel)
+[Intuita](https://github.com/intuita-inc)
 
 ### Links for more info
 
