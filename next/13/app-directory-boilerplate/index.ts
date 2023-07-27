@@ -15,12 +15,13 @@ type Dependencies = Readonly<{
 }>;
 
 const ROOT_LAYOUT_CONTENT = `
-import { Metadata } from 'next';
+// remove the following lines if you do not use metadata in the root layout
+// import { Metadata } from 'next';
  
-export const metadata: Metadata = {
-	title: '',
-	description: '',
-};
+// export const metadata: Metadata = {
+// 	title: '',
+// 	description: '',
+// };
 
 export default function RootLayout({
 	children,
