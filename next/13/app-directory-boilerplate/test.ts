@@ -114,7 +114,7 @@ export const getServerSideProps = () => {
 };
 `;
 
-describe.only('next 13 app-directory-boilerplate', function () {
+describe('next 13 app-directory-boilerplate', function () {
 	it('should build correct files', async function (this: Context) {
 		const externalFileCommands = await transform({
 			'/opt/project/pages/index.jsx': INDEX_CONTENT,
