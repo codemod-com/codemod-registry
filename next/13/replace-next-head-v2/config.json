@@ -3,9 +3,6 @@
 	"name": "next/13/replace-next-head-v2",
 	"description": "This codemod generates Next 13 metadata object",
 	"engine": "repomod-engine",
-	"dependencyVersionLowerThan": [
-		"next",
-		"13.0.0"
-	],
+	"dependencyVersionLowerThan": ["next", "13.0.0"],
 	"owner": "intuita"
 }
