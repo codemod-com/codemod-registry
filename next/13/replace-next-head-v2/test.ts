@@ -96,7 +96,7 @@ const transform = async (json: DirectoryJSON) => {
 	return executeRepomod(api, repomod, '/', {});
 };
 
-describe('next 13 replace-next-head-repomod', function () {
+describe('next 13 replace-next-head-v2', function () {
 	it('should merge inject metadata to the page', async function (this: Context) {
 		const externalFileCommands = await transform({
 			'/opt/project/pages/a/index.tsx': A_CONTENT,
