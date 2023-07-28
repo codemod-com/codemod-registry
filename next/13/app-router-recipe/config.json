@@ -2,8 +2,8 @@
 	"schemaVersion": "1.0.0",
 	"engine": "recipe",
 	"names": [
-		"next/13/replace-next-head-v2",
 		"next/13/replace-next-router",
+		"next/13/replace-next-head-v2",
 		"next/13/remove-get-static-props",
 		"next/13/app-directory-boilerplate"
 	]
