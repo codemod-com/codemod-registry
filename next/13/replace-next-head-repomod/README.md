@@ -7,6 +7,7 @@ Generates a static metadata object based on meta tags managed by next/head. Mark
 ## Example:
 
 ### Before:
+
 ```jsx
 import Head from 'next/head';
 export default function Page() {
@@ -21,6 +22,7 @@ export default function Page() {
 ```
 
 ### After:
+
 ```jsx
 import { Metadata } from 'next';
 import Head from 'next/head';

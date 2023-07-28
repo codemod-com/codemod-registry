@@ -7,6 +7,7 @@ Generates a static metadata object based on meta tags managed by next/head. Mark
 ## Example:
 
 ### Before:
+
 ```jsx
 import Head from 'next/head';
 export default function Page() {
@@ -68,6 +69,3 @@ ts-morph
 ### Links for more info
 
 -   https://nextjs.org/docs/app/building-your-application/upgrading/app-router-migration#step-3-migrating-nexthead
-
-
-

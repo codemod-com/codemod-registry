@@ -36,7 +36,6 @@ module.exports = {
 };
 ```
 
-
 ## Applicability Criteria
 
 Next.js version higher or equal to 13.
