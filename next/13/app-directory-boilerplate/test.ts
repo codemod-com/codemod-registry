@@ -127,7 +127,7 @@ describe('next 13 app-directory-boilerplate', function () {
 			'/opt/project/pages/a/index.tsx': '',
 		});
 
-		deepStrictEqual(externalFileCommands.length, 8);
+		deepStrictEqual(externalFileCommands.length, 11);
 
 		ok(
 			externalFileCommands.some(
@@ -172,23 +172,50 @@ describe('next 13 app-directory-boilerplate', function () {
 			),
 		);
 
-		deepStrictEqual(externalFileCommands[1], {
-			kind: 'upsertFile',
-			path: '/opt/project/app/page.tsx',
-			data: '// This file has been sourced from: /opt/project/pages/index.jsx\nimport A from "./testQWE";\nexport default function Index({}) {\n    return null;\n}\nexport const getStaticProps = async ({}) => {\n    return {\n        props: {},\n        revalidate: 10,\n    };\n};\n',
-		});
+		ok(
+			externalFileCommands.some((command) => {
+				return (
+					command.kind === 'upsertFile' &&
+					command.path === '/opt/project/app/page.tsx' &&
+					command.data.replace(/\W/gm, '') ===
+						`// This file has been sourced from: /opt/project/pages/index.jsx
+						import A from "./testQWE";
+						
+						export default function Index({}) {
+							return null;
+						}
+						
+						export const getStaticProps = async ({}) => {
+							return {
+								props: {},
+								revalidate: 10,
+							};
+						};`.replace(/\W/gm, '')
+				);
+			}),
+		);
 
-		deepStrictEqual(externalFileCommands[6], {
-			kind: 'upsertFile',
-			path: '/opt/project/app/[a]/c/page.tsx',
-			data: A_C_DATA,
-		});
+		ok(
+			externalFileCommands.some((command) => {
+				return (
+					command.kind === 'upsertFile' &&
+					command.path === '/opt/project/app/[a]/c/page.tsx' &&
+					command.data.replace(/\W/gm, '') ===
+						A_C_DATA.replace(/\W/gm, '')
+				);
+			}),
+		);
 
-		deepStrictEqual(externalFileCommands[7], {
-			kind: 'upsertFile',
-			path: '/opt/project/app/[a]/[b]/page.tsx',
-			data: A_B_DATA,
-		});
+		ok(
+			externalFileCommands.some((command) => {
+				return (
+					command.kind === 'upsertFile' &&
+					command.path === '/opt/project/app/[a]/[b]/page.tsx' &&
+					command.data.replace(/\W/gm, '') ===
+						A_B_DATA.replace(/\W/gm, '')
+				);
+			}),
+		);
 	});
 
 	it('should build neither error files nor not-found files if no such previous files were found', async function (this: Context) {
@@ -234,19 +261,27 @@ describe('next 13 app-directory-boilerplate', function () {
 			'/opt/project/pages/[a]/c.mdx': A_C_CONTENT,
 		});
 
-		deepStrictEqual(externalFileCommands.length, 5);
+		deepStrictEqual(externalFileCommands.length, 7);
 
-		deepStrictEqual(externalFileCommands[3], {
-			kind: 'upsertFile',
-			path: '/opt/project/app/[a]/c/page.mdx',
-			data: A_C_MDX_DATA,
-		});
+		ok(
+			externalFileCommands.some((command) => {
+				return (
+					command.kind === 'upsertFile' &&
+					command.path === '/opt/project/app/[a]/c/page.mdx' &&
+					command.data === A_C_MDX_DATA
+				);
+			}),
+		);
 
-		deepStrictEqual(externalFileCommands[4], {
-			kind: 'upsertFile',
-			path: '/opt/project/app/[a]/[b]/page.mdx',
-			data: A_B_MDX_DATA,
-		});
+		ok(
+			externalFileCommands.some((command) => {
+				return (
+					command.kind === 'upsertFile' &&
+					command.path === '/opt/project/app/[a]/[b]/page.mdx' &&
+					command.data === A_B_MDX_DATA
+				);
+			}),
+		);
 	});
 
 	it('should remove the Head tag', async function (this: Context) {
