@@ -31,7 +31,7 @@ v1.0.0
 
 ### Owner
 
-[Vercel](https://github.com/vercel) and [Intuita](https://github.com/intuita-inc)
+[Intuita](https://github.com/intuita-inc)
 
 ### Links for more info
 
