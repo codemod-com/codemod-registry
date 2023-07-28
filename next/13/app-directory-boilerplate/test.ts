@@ -287,4 +287,42 @@ describe('next 13 app-directory-boilerplate', function () {
 			'/opt/project/pages/index.jsx',
 		);
 	});
+
+	it('should remove the Head tag when surrounded with ()', async function (this: Context) {
+		const content = `
+		import Head from "next/head";
+
+		export default function Index() {
+			return (
+				<Head></Head>
+			);
+		}
+		`;
+
+		const newContent = `
+		// This file has been sourced from: /opt/project/pages/index.jsx
+
+		export default function Index() {
+			return null;
+		}
+		`;
+
+		const [, upsertFileCommand, deleteIndexJsxCommand] = await transform({
+			'/opt/project/pages/index.jsx': content,
+		});
+
+		deepStrictEqual(upsertFileCommand?.kind, 'upsertFile');
+		deepStrictEqual(upsertFileCommand?.path, '/opt/project/app/page.tsx');
+
+		deepStrictEqual(
+			upsertFileCommand?.data.replace(/\W/gm, ''),
+			newContent.replace(/\W/gm, ''),
+		);
+
+		deepStrictEqual(deleteIndexJsxCommand?.kind, 'deleteFile');
+		deepStrictEqual(
+			deleteIndexJsxCommand?.path,
+			'/opt/project/pages/index.jsx',
+		);
+	});
 });

@@ -319,6 +319,19 @@ export const repomod: Repomod<Dependencies> = {
 						);
 					})
 					.forEach((jsxElement) => {
+						const parenthesizedExpressionParent =
+							jsxElement?.getParentIfKind(
+								SyntaxKind.ParenthesizedExpression,
+							) ?? null;
+
+						if (parenthesizedExpressionParent !== null) {
+							parenthesizedExpressionParent.replaceWithText(
+								'null',
+							);
+
+							return;
+						}
+
 						jsxElement?.replaceWithText('');
 					});
 
