@@ -1,4 +1,4 @@
-# Replace Next Head Repomod
+# Replace Next Head V2
 
 ## Description
 
