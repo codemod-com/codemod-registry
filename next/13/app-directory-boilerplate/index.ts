@@ -1,4 +1,4 @@
-import { posix } from 'node:path';
+import { ParsedPath, posix } from 'node:path';
 import tsmorph, { SyntaxKind } from 'ts-morph';
 import type { Repomod } from '@intuita-inc/repomod-engine-api';
 import type { fromMarkdown } from 'mdast-util-from-markdown';
@@ -81,10 +81,72 @@ const map = new Map([
 
 const EXTENSION = '.tsx';
 
+type FileAPI = Parameters<NonNullable<Repomod<Dependencies>['handleFile']>>[0];
+
+type Unpromisify<T> = T extends Promise<infer U> ? U : never;
+
+type FileCommand = Unpromisify<
+	ReturnType<NonNullable<Repomod<Dependencies>['handleFile']>>
+>[number];
+
+const getCssImportDeclarationsFromUnderscoreApp = async (
+	parsedPath: ParsedPath,
+	fileApi: FileAPI,
+	tsmorph: Dependencies['tsmorph'],
+): Promise<ReadonlyArray<string>> => {
+	const underscodeAppJsxPath = posix.format({
+		...parsedPath,
+		name: '_app',
+		ext: '.jsx',
+		base: undefined,
+	});
+
+	const underscodeAppTsxPath = posix.format({
+		...parsedPath,
+		name: '_app',
+		ext: '.tsx',
+		base: undefined,
+	});
+
+	const path = fileApi.exists(underscodeAppJsxPath)
+		? underscodeAppJsxPath
+		: fileApi.exists(underscodeAppTsxPath)
+		? underscodeAppTsxPath
+		: null;
+
+	if (path === null) {
+		return [];
+	}
+
+	const data = await fileApi.readFile(path);
+
+	const project = new tsmorph.Project({
+		useInMemoryFileSystem: true,
+		skipFileDependencyResolution: true,
+		compilerOptions: {
+			allowJs: true,
+		},
+	});
+
+	const sourceFile = project.createSourceFile(path, data);
+
+	return sourceFile
+		.getImportDeclarations()
+		.filter((importDeclaration) => {
+			return importDeclaration
+				.getModuleSpecifier()
+				.getText()
+				.includes('.css');
+		})
+		.map((importDeclaration) => importDeclaration.print());
+};
+
 export const repomod: Repomod<Dependencies> = {
 	includePatterns: ['**/pages/**/*.{js,jsx,ts,tsx,cjs,mjs,mdx}'],
 	excludePatterns: ['**/node_modules/**', '**/pages/api/**'],
 	handleFile: async (api, path, options) => {
+		const { tsmorph } = api.getDependencies();
+
 		const parsedPath = posix.parse(path);
 		const directoryNames = parsedPath.dir.split(posix.sep);
 		const endsWithPages =
@@ -163,13 +225,22 @@ export const repomod: Repomod<Dependencies> = {
 
 			const oldData = await api.readFile(path);
 
-			const commands = [
+			const cssImportDeclarations = (
+				await getCssImportDeclarationsFromUnderscoreApp(
+					parsedPath,
+					api,
+					tsmorph,
+				)
+			).join('\n');
+
+			const commands: FileCommand[] = [
 				{
 					kind: 'upsertFile' as const,
 					path: rootLayoutPath,
 					options: {
 						...options,
 						filePurpose: FilePurpose.ROOT_LAYOUT,
+						cssImportDeclarations,
 					},
 				},
 				{
@@ -444,6 +515,32 @@ export const repomod: Repomod<Dependencies> = {
 				kind: 'upsertData',
 				path,
 				data,
+			};
+		}
+
+		if (filePurpose === FilePurpose.ROOT_LAYOUT) {
+			const { tsmorph } = api.getDependencies();
+
+			const project = new tsmorph.Project({
+				useInMemoryFileSystem: true,
+				skipFileDependencyResolution: true,
+				compilerOptions: {
+					allowJs: true,
+				},
+			});
+
+			const sourceFile = project.createSourceFile(path, content);
+
+			const cssImportDeclarations = options.cssImportDeclarations ?? '';
+
+			if (cssImportDeclarations !== '') {
+				sourceFile.insertStatements(0, `${cssImportDeclarations}\n`);
+			}
+
+			return {
+				kind: 'upsertData',
+				path,
+				data: sourceFile.print(),
 			};
 		}
 

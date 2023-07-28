@@ -325,4 +325,56 @@ describe('next 13 app-directory-boilerplate', function () {
 			'/opt/project/pages/index.jsx',
 		);
 	});
+
+	it('should move the CSS import statement from _app to layout', async function (this: Context) {
+		const _app = `
+			import '../styles/index.css'
+		`;
+
+		const index = `
+			export default async function Index() {
+				return null;
+			}
+		`;
+
+		const [upsertLayoutCommand] = await transform({
+			'/opt/project/pages/_app.tsx': _app,
+			'/opt/project/pages/index.tsx': index,
+		});
+
+		deepStrictEqual(upsertLayoutCommand?.kind, 'upsertFile');
+		deepStrictEqual(
+			upsertLayoutCommand?.path,
+			'/opt/project/app/layout.tsx',
+		);
+
+		const layout = `
+			import '../styles/index.css'
+
+			// remove the following lines if you do not use metadata in the root layout
+			// import { Metadata } from 'next';
+			
+			// export const metadata: Metadata = {
+			// 	title: '',
+			// 	description: '',
+			// };
+			
+			export default function RootLayout({
+				children,
+			}: {
+				children: React.ReactNode;
+			}) {
+				return (
+					<html lang="en">
+						<body>{children}</body>
+					</html>
+				);
+			}
+		`;
+
+		deepStrictEqual(
+			upsertLayoutCommand?.data.replace(/\W/gm, ''),
+			layout.replace(/\W/gm, ''),
+		);
+	});
 });
