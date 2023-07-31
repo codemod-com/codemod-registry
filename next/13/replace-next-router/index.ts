@@ -329,6 +329,7 @@ const handleVariableDeclaration = (
 				);
 			} else if (Node.isVariableDeclaration(parent)) {
 				handleVariableDeclarationWithRouter(parent, requiresPathname);
+				usesRouter.set(() => true);
 			} else if (Node.isArrayLiteralExpression(parent)) {
 				usesRouter.set(() => true);
 			}
