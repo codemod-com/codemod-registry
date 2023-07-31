@@ -1491,7 +1491,7 @@ describe('next 13 replace-next-router', function () {
 
 			function() {
 				const searchParams = useSearchParams()
-				const { id: orgId } = querySchema.parse(Object.fromEntries(searchParams ?? new URLSearchParams()));
+				const { id: orgId } = querySchema.parse(...Object.fromEntries(searchParams ?? new URLSearchParams()));
 			}
 		`;
 
