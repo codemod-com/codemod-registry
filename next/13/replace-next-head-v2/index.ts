@@ -5,16 +5,10 @@ import tsmorph, {
 	ModuleKind,
 	Node,
 	SourceFile,
-	BindingElement,
-	FunctionDeclaration,
-	ImportClause,
-	NamespaceImport,
-	ImportSpecifier,
 	SyntaxKind,
-	VariableDeclaration,
-	VariableStatement,
 	ImportDeclaration,
 	JsxElement,
+	ImportDeclarationStructure,
 } from 'ts-morph';
 
 import type {
@@ -35,13 +29,11 @@ type ParsedMetadataTag = {
 	HTMLAttributes: HTMLAttributes;
 };
 
-type Definition =
-	| VariableDeclaration
-	| FunctionDeclaration
-	| ImportClause
-	| ImportSpecifier
-	| NamespaceImport
-	| BindingElement;
+type Dependency = {
+	kind: SyntaxKind;
+	text: string;
+	structure: ImportDeclarationStructure | null;
+};
 
 const openGraphWebsiteTags = [
 	'og:type',
@@ -192,44 +184,77 @@ export const buildContainer = <T>(initialValue: T) => {
 
 type Container<T> = ReturnType<typeof buildContainer<T>>;
 
-const isDefinedOnTheTopLevel = (
-	identifier: Identifier,
-	topLevelVariablesContainer: Container<Definition[]>,
-) => {
-	//  alternative
-	//  return definition.getFirstAncestorByKind(SyntaxKind.Block) === undefined;
-	const definitions = identifier.getDefinitionNodes() as Definition[];
-	const topLevelDefinitions = topLevelVariablesContainer.get();
-	const parent = identifier.getParent();
-	const identifierChildIndex = identifier.getChildIndex();
-
-	// if identifier is within property access expression "obj.a.b", check only for its root "obj"
-	if (
-		(Node.isPropertyAccessExpression(parent) ||
-			Node.isElementAccessExpression(parent)) &&
-		identifierChildIndex !== 0
-	) {
-		return true;
+const getStructure = (node: Node) => {
+	if (Node.isImportDeclaration(node)) {
+		return node.getStructure();
 	}
 
-	// @TODO
-	if (identifier.getText() === 'process') {
-		return true;
-	}
+	return null;
+};
 
-	if (definitions.length === 0) {
-		return false;
-	}
+const getDependenciesForIdentifiers = (identifiers: Identifier[]) => {
+	const dependencies: Record<string, Dependency> = {};
 
-	return definitions.every((definition) =>
-		topLevelDefinitions.includes(definition),
-	);
+	identifiers.forEach((identifier) => {
+		const parent = identifier.getParent();
+		const identifierChildIndex = identifier.getChildIndex();
+
+		if (
+			(Node.isPropertyAccessExpression(parent) ||
+				Node.isElementAccessExpression(parent)) &&
+			identifierChildIndex !== 0
+		) {
+			return;
+		}
+
+		const definitions = identifier.getDefinitionNodes();
+
+		const firstDefinition = definitions[0] ?? null;
+
+		if (firstDefinition === null) {
+			return;
+		}
+
+		const syntaxes = [
+			SyntaxKind.Parameter,
+			SyntaxKind.VariableStatement,
+			SyntaxKind.ImportDeclaration,
+			SyntaxKind.FunctionDeclaration,
+		];
+
+		let foundAncestor = null as Node | null;
+
+		syntaxes.forEach((s) => {
+			if (foundAncestor) {
+				return;
+			}
+
+			const ancestor = firstDefinition.getFirstAncestorByKind(s) ?? null;
+
+			if (ancestor !== null) {
+				foundAncestor = ancestor;
+			}
+		});
+
+		const identifierName = identifier.getText();
+
+		if (foundAncestor === null) {
+			return;
+		}
+
+		dependencies[identifierName] = {
+			text: foundAncestor.getText(),
+			structure: getStructure(foundAncestor),
+			kind: foundAncestor.getKind(),
+		};
+	});
+
+	return dependencies;
 };
 
 const handleJsxSelfClosingElement = (
 	jsxSelfClosingElement: JsxSelfClosingElement,
 	metadataContainer: Container<Record<string, any>>,
-	topLevelVariablesContainer: Container<Definition[]>,
 	settingsContainer: Container<Record<string, any>>,
 ) => {
 	const tagName = jsxSelfClosingElement.getTagNameNode().getText();
@@ -241,12 +266,7 @@ const handleJsxSelfClosingElement = (
 	const attributes = jsxSelfClosingElement.getAttributes();
 	const attributesObject: Record<string, string> = {};
 
-	let shouldReplaceTag = true;
 	attributes.forEach((attribute) => {
-		if (!shouldReplaceTag) {
-			return;
-		}
-
 		if (Node.isJsxAttribute(attribute)) {
 			const name = attribute.getNameNode().getText();
 			const initializer = attribute.getInitializer();
@@ -257,26 +277,10 @@ const handleJsxSelfClosingElement = (
 					SyntaxKind.Identifier,
 				);
 
-				identifiers.forEach((identifier) => {
-					const definedOnTopLevel = isDefinedOnTheTopLevel(
-						identifier,
-						topLevelVariablesContainer,
-					);
-
-					const definedInComponentProps =
-						isIdentifierDefinedInPageProps(identifier);
-
-					if (definedInComponentProps) {
-						settingsContainer.set((prev) => ({
-							...prev,
-							isDynamicMetadata: true,
-						}));
-					}
-
-					if (!definedOnTopLevel && !definedInComponentProps) {
-						shouldReplaceTag = false;
-					}
-				});
+				settingsContainer.set((prev) => ({
+					...prev,
+					dependencies: getDependenciesForIdentifiers(identifiers),
+				}));
 
 				attributesObject[name] =
 					initializer.getExpression()?.getText() ?? '';
@@ -295,20 +299,6 @@ const handleJsxSelfClosingElement = (
 	);
 
 	if (name && knownNames.includes(name)) {
-		const comment = `{/* ${
-			shouldReplaceTag
-				? 'this tag can be removed'
-				: 'this tag cannot be removed, because it uses variables from inner scope'
-		}*/}`;
-
-		jsxSelfClosingElement.replaceWithText(
-			`${comment} \n ${jsxSelfClosingElement.getText()}`,
-		);
-
-		if (!shouldReplaceTag) {
-			return;
-		}
-
 		handleTag(parsedTag, metadataContainer);
 	}
 };
@@ -316,7 +306,6 @@ const handleJsxSelfClosingElement = (
 const handleHeadChildJsxElement = (
 	jsxElement: JsxElement,
 	metadataContainer: Container<Record<string, any>>,
-	topLevelVariablesContainer: Container<Definition[]>,
 	settingsContainer: Container<Record<string, any>>,
 ) => {
 	if (jsxElement.getOpeningElement().getTagNameNode().getText() !== 'title') {
@@ -326,12 +315,7 @@ const handleHeadChildJsxElement = (
 	const children = jsxElement.getJsxChildren();
 
 	let text = '';
-	let shouldReplaceTag = true;
 	children.forEach((child) => {
-		if (!shouldReplaceTag) {
-			return;
-		}
-
 		if (Node.isJsxText(child)) {
 			const t = child.getFullText();
 			text += t;
@@ -341,26 +325,10 @@ const handleHeadChildJsxElement = (
 				SyntaxKind.Identifier,
 			);
 
-			identifiers.forEach((identifier) => {
-				const definedOnTopLevel = isDefinedOnTheTopLevel(
-					identifier,
-					topLevelVariablesContainer,
-				);
-
-				const definedInComponentProps =
-					isIdentifierDefinedInPageProps(identifier);
-
-				if (definedInComponentProps) {
-					settingsContainer.set((prev) => ({
-						...prev,
-						isDynamicMetadata: true,
-					}));
-				}
-
-				if (!definedOnTopLevel && !definedInComponentProps) {
-					shouldReplaceTag = false;
-				}
-			});
+			settingsContainer.set((prev) => ({
+				...prev,
+				dependencies: getDependenciesForIdentifiers(identifiers),
+			}));
 
 			if (Node.isTemplateExpression(expression)) {
 				const t = expression.getFullText().replace(/\`/g, '');
@@ -391,18 +359,6 @@ const handleHeadChildJsxElement = (
 	);
 
 	if (name && knownNames.includes(name)) {
-		const comment = `{/* ${
-			shouldReplaceTag
-				? 'this tag can be removed'
-				: 'this tag cannot be removed, because it uses variables from inner scope'
-		}*/}`;
-
-		jsxElement.replaceWithText(`${comment} \n ${jsxElement.getText()}`);
-
-		if (!shouldReplaceTag) {
-			return;
-		}
-
 		handleTag(parsedTag, metadataContainer);
 	}
 };
@@ -410,7 +366,6 @@ const handleHeadChildJsxElement = (
 const handleHeadJsxElement = (
 	headJsxElement: JsxElement,
 	metadataContainer: Container<Record<string, any>>,
-	topLevelVariablesContainer: Container<Definition[]>,
 	settingsContainer: Container<Record<string, any>>,
 ) => {
 	const jsxChildren = headJsxElement.getJsxChildren();
@@ -420,14 +375,12 @@ const handleHeadJsxElement = (
 			handleHeadChildJsxElement(
 				child,
 				metadataContainer,
-				topLevelVariablesContainer,
 				settingsContainer,
 			);
 		} else if (Node.isJsxSelfClosingElement(child)) {
 			handleJsxSelfClosingElement(
 				child,
 				metadataContainer,
-				topLevelVariablesContainer,
 				settingsContainer,
 			);
 		}
@@ -437,7 +390,6 @@ const handleHeadJsxElement = (
 const handleHeadIdentifier = (
 	headIdentifier: Identifier,
 	metadataContainer: Container<Record<string, any>>,
-	topLevelVariablesContainer: Container<Definition[]>,
 	settingsContainer: Container<Record<string, any>>,
 ) => {
 	headIdentifier.findReferencesAsNodes().forEach((node) => {
@@ -450,7 +402,6 @@ const handleHeadIdentifier = (
 				handleHeadJsxElement(
 					grandparent,
 					metadataContainer,
-					topLevelVariablesContainer,
 					settingsContainer,
 				);
 			}
@@ -461,7 +412,6 @@ const handleHeadIdentifier = (
 export const handleImportDeclaration = (
 	importDeclaration: ImportDeclaration,
 	metadataContainer: Container<Record<string, any>>,
-	topLevelVariablesContainer: Container<Definition[]>,
 	settingsContainer: Container<Record<string, any>>,
 ) => {
 	const moduleSpecifier = importDeclaration.getModuleSpecifier();
@@ -476,12 +426,7 @@ export const handleImportDeclaration = (
 		return;
 	}
 
-	handleHeadIdentifier(
-		headIdentifier,
-		metadataContainer,
-		topLevelVariablesContainer,
-		settingsContainer,
-	);
+	handleHeadIdentifier(headIdentifier, metadataContainer, settingsContainer);
 };
 
 export const handleTag = (
@@ -882,192 +827,6 @@ const buildMetadataStatement = (metadataObject: Record<string, unknown>) => {
 	)}`;
 };
 
-const collectVariableDeclaration = (
-	variableStatement: VariableStatement,
-	topLevelVariablesContainer: Container<Definition[]>,
-) => {
-	const declarations = variableStatement.getDeclarations();
-
-	declarations.forEach((declaration) => {
-		topLevelVariablesContainer.set((prev) => [...prev, declaration]);
-	});
-};
-
-const collectImportDeclaration = (
-	importDeclaration: ImportDeclaration,
-	topLevelVariablesContainer: Container<Definition[]>,
-) => {
-	const namedImports = importDeclaration.getNamedImports();
-
-	namedImports.forEach((namedImport) => {
-		topLevelVariablesContainer.set((prev) => [...prev, namedImport]);
-	});
-
-	const namespaceImport = importDeclaration.getNamespaceImport()?.getParent();
-
-	if (Node.isNamespaceImport(namespaceImport)) {
-		topLevelVariablesContainer.set((prev) => [...prev, namespaceImport]);
-	}
-
-	const defaultImport = importDeclaration.getDefaultImport()?.getParent();
-
-	if (Node.isImportClause(defaultImport)) {
-		topLevelVariablesContainer.set((prev) => [...prev, defaultImport]);
-	}
-};
-
-export const collectTopLevelDefinitions = (
-	sourceFile: SourceFile,
-	topLevelVariablesContainer: Container<Definition[]>,
-) => {
-	const importDeclarations = sourceFile.getImportDeclarations();
-	const variableStatements = sourceFile.getVariableStatements();
-
-	variableStatements.forEach((variableStatement) => {
-		collectVariableDeclaration(
-			variableStatement,
-			topLevelVariablesContainer,
-		);
-	});
-
-	importDeclarations.forEach((importDeclaration) => {
-		collectImportDeclaration(importDeclaration, topLevelVariablesContainer);
-	});
-};
-
-const isIdentifierDefinedInPageProps = (identifier: Identifier): boolean => {
-	const definitions = identifier.getDefinitionNodes();
-
-	return (
-		definitions.length !== 0 &&
-		definitions.every((d) => {
-			const param = d.getFirstAncestorByKind(SyntaxKind.Parameter);
-			const parent = param?.getParent();
-
-			return (
-				param &&
-				Node.isFunctionDeclaration(parent) &&
-				parent.isDefaultExport()
-			);
-		})
-	);
-};
-
-// const getPageComponentFunctionDeclaration = (sourceFile: SourceFile) => {
-// 	return sourceFile.getFunctions().find((f) => f.isDefaultExport()) ?? null;
-// };
-
-// const getGetStaticPropsFunctionDeclarationOrIdentifier = (
-// 	sourceFile: SourceFile,
-// 	hookNames: string[],
-// ): FunctionDeclaration | Identifier | null => {
-// 	let res: FunctionDeclaration | Identifier | null = null;
-
-// 	sourceFile.forEachChild((child) => {
-// 		if (
-// 			Node.isFunctionDeclaration(child) &&
-// 			hookNames.includes(child.getName() ?? '')
-// 		) {
-// 			res = child;
-// 		}
-
-// 		if (Node.isVariableStatement(child) && child.hasExportKeyword()) {
-// 			const declaration = child
-// 				.getFirstChildByKind(SyntaxKind.VariableDeclarationList)
-// 				?.getFirstChildByKind(SyntaxKind.VariableDeclaration);
-
-// 			if (
-// 				declaration?.getInitializer()?.getKind() ===
-// 				SyntaxKind.ArrowFunction
-// 			) {
-// 				const nameNode = declaration.getNameNode();
-// 				if (
-// 					Node.isIdentifier(nameNode) &&
-// 					hookNames.includes(nameNode.getText())
-// 				) {
-// 					res = nameNode;
-// 				}
-// 			}
-// 		}
-// 	});
-
-// 	return res;
-// };
-
-// const insertGenerateMetadataFunctionDeclaration = (
-// 	sourceFile: SourceFile,
-// 	metadataObject: Record<string, any>,
-// ) => {
-// 	const pageComponentFunctionDeclaration =
-// 		getPageComponentFunctionDeclaration(sourceFile);
-
-// 	if (pageComponentFunctionDeclaration === null) {
-// 		return;
-// 	}
-
-// 	const getStaticPropsFunctionDeclaration =
-// 		getGetStaticPropsFunctionDeclarationOrIdentifier(sourceFile, [
-// 			'getStaticProps',
-// 			'_getStaticProps',
-// 		]);
-
-// 	const getServerSidePropsFunctionDeclaration =
-// 		getGetStaticPropsFunctionDeclarationOrIdentifier(sourceFile, [
-// 			'getServerSideProps',
-// 			'_getServerSideProps',
-// 		]);
-
-// 	const hook =
-// 		getServerSidePropsFunctionDeclaration ??
-// 		getStaticPropsFunctionDeclaration ??
-// 		null;
-// 	const isStatic = getStaticPropsFunctionDeclaration !== null;
-
-// 	if (hook === null) {
-// 		return;
-// 	}
-
-// 	// rename to avoid next.js warnings
-// 	hook.rename(isStatic ? '_getStaticProps' : '_getServerSideProps');
-
-// 	const propsParameter =
-// 		pageComponentFunctionDeclaration.getParameters()[0] ?? null;
-
-// 	if (propsParameter === null) {
-// 		return;
-// 	}
-
-// 	const propsParameterIsObjectBindingPattern = Node.isObjectBindingPattern(
-// 		propsParameter.getNameNode(),
-// 	);
-
-// 	sourceFile.addStatements(
-// 		`
-// 			export async function generateMetadata(
-// 				{ params }: { params: Params },
-// 				parentMetadata: ResolvingMetadata
-// 			): Promise<Metadata> {
-// 					const { props }  = await  ${
-// 						isStatic ? '_getStaticProps' : '_getServerSideProps'
-// 					}({ params });
-// 					const awaitedParentMetadata = await parentMetadata;
-
-// 					${
-// 						propsParameterIsObjectBindingPattern
-// 							? `const ${propsParameter.getText()} = props;`
-// 							: ''
-// 					}
-
-// 					const pageMetadata = ${buildMetadataObjectStr(metadataObject)};
-
-// 					return {
-// 						...awaitedParentMetadata,
-// 						...pageMetadata
-// 					}
-// 					}	`,
-// 	);
-// };
-
 type Root = ReturnType<typeof fromMarkdown>;
 
 // eslint-disable-next-line @typescript-eslint/ban-types
@@ -1084,6 +843,7 @@ type ComponentTreeNode = {
 	components: Record<string, ComponentTreeNode>;
 	props: Record<string, string>;
 	metadata: Record<string, unknown>;
+	dependencies: Record<string, Dependency>;
 };
 
 let project: tsmorph.Project | null = null;
@@ -1096,24 +856,27 @@ const defaultCompilerOptions = {
 
 export const buildComponentMetadata = (
 	sourceFile: SourceFile,
-): Record<string, unknown> => {
+): {
+	metadata: Record<string, unknown>;
+	dependencies: Record<string, Dependency>;
+} => {
 	const metadataContainer = buildContainer<Record<string, any>>({});
-	const topLevelVariablesContainer = buildContainer<Definition[]>([]);
-	const importDeclarations = sourceFile.getImportDeclarations();
 	const settingsContainer = buildContainer<Record<string, any>>({});
 
-	collectTopLevelDefinitions(sourceFile, topLevelVariablesContainer);
+	const importDeclarations = sourceFile.getImportDeclarations();
 
 	importDeclarations.forEach((importDeclaration) =>
 		handleImportDeclaration(
 			importDeclaration,
 			metadataContainer,
-			topLevelVariablesContainer,
 			settingsContainer,
 		),
 	);
 
-	return metadataContainer.get();
+	return {
+		metadata: metadataContainer.get(),
+		dependencies: settingsContainer.get().dependencies,
+	};
 };
 
 const initTsMorphProject = async (
@@ -1173,14 +936,18 @@ const collectedImportedIdentifiers = (sourceFile: SourceFile) => {
 const buildComponentTreeNode = async (
 	tsmorph: Dependencies['tsmorph'],
 	containingPath: string,
-	treeNode: ComponentTreeNode,
 ) => {
+	const treeNode: ComponentTreeNode = {
+		path: containingPath,
+		components: {},
+		metadata: {},
+		dependencies: {},
+		props: {},
+	};
+
 	if (project === null) {
 		return treeNode;
 	}
-
-	treeNode.path = containingPath;
-	treeNode.components = {};
 
 	const sourceFile = project.getSourceFile(containingPath) ?? null;
 
@@ -1188,13 +955,15 @@ const buildComponentTreeNode = async (
 		return treeNode;
 	}
 
-	treeNode.metadata = buildComponentMetadata(sourceFile);
+	const { metadata, dependencies } = buildComponentMetadata(sourceFile);
+
+	treeNode.metadata = metadata;
+	treeNode.dependencies = dependencies;
 
 	const importIdentifiersByImportPath =
 		collectedImportedIdentifiers(sourceFile);
 
 	const paths = importIdentifiersByImportPath.keys();
-
 	for (const path of paths) {
 		const resolvedPath = tsmorph.ts.resolveModuleName(
 			path,
@@ -1239,6 +1008,7 @@ const buildComponentTreeNode = async (
 					props: {},
 					metadata: {},
 					components: {},
+					dependencies: {},
 				};
 				const attributes = jsxElement.getAttributes();
 				attributes.forEach((attribute) => {
@@ -1265,24 +1035,16 @@ const buildComponentTreeNode = async (
 const buildComponentTree = async (
 	tsmorph: Dependencies['tsmorph'],
 	containingPath: string,
-	treeNode: ComponentTreeNode,
 ) => {
-	// @TODO cache processed component nodes
-	const node = await buildComponentTreeNode(
+	const node: ComponentTreeNode = await buildComponentTreeNode(
 		tsmorph,
 		containingPath,
-		treeNode,
 	);
 
 	const componentPaths = Object.keys(node.components);
 
 	for (const path of componentPaths) {
-		const componentNode = node.components[path];
-		if (!componentNode) {
-			return;
-		}
-
-		await buildComponentTree(tsmorph, path, componentNode);
+		node.components[path] = await buildComponentTree(tsmorph, path);
 	}
 
 	return node;
@@ -1300,24 +1062,32 @@ const mergeMetadata = (
 		}, currentComponentMetadata);
 };
 
+const mergeDependencies = (
+	treeNode: ComponentTreeNode,
+): Record<string, unknown> => {
+	const currentComponentDependencies = treeNode.dependencies;
+
+	return Object.entries(treeNode.components)
+		.map((arr) => mergeDependencies(arr[1]))
+		.reduce((mergedDependencies, childDependencies) => {
+			return { ...mergedDependencies, ...childDependencies };
+		}, currentComponentDependencies);
+};
+
 const insertMetadata = (
 	sourceFile: SourceFile,
 	metadataObject: Record<string, unknown>,
 ) => {
-	const hasChanges = Object.keys(metadataObject).length !== 0;
-	if (!hasChanges) {
+	if (Object.keys(metadataObject).length === 0) {
 		return undefined;
 	}
 
-	const importDeclarations = sourceFile.getImportDeclarations();
+	const positionAfterImports = getPositionAfterImports(sourceFile);
 
-	const declaration = [...importDeclarations].pop();
-
-	const pos = declaration?.wasForgotten()
-		? 0
-		: (declaration?.getChildIndex() ?? 0) + 1;
-
-	sourceFile.insertStatements(pos, buildMetadataStatement(metadataObject));
+	sourceFile.insertStatements(
+		positionAfterImports,
+		buildMetadataStatement(metadataObject),
+	);
 
 	const importAlreadyExists = sourceFile
 		.getImportDeclarations()
@@ -1340,6 +1110,76 @@ const insertMetadata = (
 	}
 };
 
+const getPositionAfterImports = (sourceFile: SourceFile): number => {
+	const lastImportDeclaration =
+		sourceFile.getLastChildByKind(SyntaxKind.ImportDeclaration) ?? null;
+
+	if (lastImportDeclaration === null) {
+		return 0;
+	}
+
+	return lastImportDeclaration.getChildIndex() + 1;
+};
+
+const mergeOrCreateImports = (
+	sourceFile: SourceFile,
+	{ moduleSpecifier, namedImports }: ImportDeclarationStructure,
+) => {
+	const importDeclarations = sourceFile.getImportDeclarations();
+
+	const importedModule =
+		importDeclarations.find((importDeclaration) => {
+			const text = importDeclaration.getModuleSpecifier().getText();
+			return text.substring(1, text.length - 1) === moduleSpecifier;
+		}) ?? null;
+
+	// create import
+	if (importedModule === null) {
+		sourceFile.addImportDeclaration({
+			namedImports,
+			moduleSpecifier,
+		});
+		return;
+	}
+
+	if (!Array.isArray(namedImports)) {
+		return;
+	}
+
+	namedImports.forEach((namedImport) => {
+		const oldNamedImports = importedModule
+			.getNamedImports()
+			.map((i) => i.getText());
+
+		const importName =
+			typeof namedImport === 'string' ? namedImport : namedImport.name;
+
+		if (!oldNamedImports.includes(importName)) {
+			importedModule.addNamedImport(importName);
+		}
+	});
+};
+const insertDependencies = (
+	sourceFile: SourceFile,
+	dependencies: Record<string, Dependency>,
+) => {
+	let positionAfterImports = getPositionAfterImports(sourceFile);
+
+	Object.values(dependencies).forEach(({ kind, text, structure }) => {
+		if (kind === SyntaxKind.Parameter) {
+			return;
+		}
+
+		if (kind === SyntaxKind.ImportDeclaration && structure !== null) {
+			mergeOrCreateImports(sourceFile, structure);
+			positionAfterImports++;
+			return;
+		}
+
+		sourceFile.insertStatements(positionAfterImports, text);
+	});
+};
+
 export const repomod: Repomod<Dependencies> = {
 	includePatterns: ['**/pages/**/*.{jsx,tsx}'],
 	excludePatterns: ['**/node_modules/**', '**/pages/api/**'],
@@ -1357,30 +1197,29 @@ export const repomod: Repomod<Dependencies> = {
 			await initTsMorphProject(tsmorph, unifiedFileSystem, projectDir);
 		}
 
-		const componentTree: ComponentTreeNode = {
-			path,
-			components: {},
-			props: {},
-			metadata: {},
-		};
+		const componentTree = await buildComponentTree(tsmorph, path);
 
-		await buildComponentTree(tsmorph, path, componentTree);
 		const mergedMetadata = mergeMetadata(componentTree);
+		const mergedDependencies = mergeDependencies(componentTree);
 
-		if (Object.keys(mergedMetadata).length !== 0) {
-			return [
-				{
-					kind: 'upsertFile',
-					path,
-					options: {
-						...options,
-						metadata: JSON.stringify(mergedMetadata),
-					},
-				},
-			];
+		if (
+			Object.keys(mergedMetadata).length === 0 ||
+			Object.keys(mergedDependencies).length === 0
+		) {
+			return [];
 		}
 
-		return [];
+		return [
+			{
+				kind: 'upsertFile',
+				path,
+				options: {
+					...options,
+					metadata: JSON.stringify(mergedMetadata),
+					dependencies: JSON.stringify(mergedDependencies),
+				},
+			},
+		];
 	},
 	handleData: async (api, path, data, options) => {
 		const { tsmorph } = api.getDependencies();
@@ -1397,8 +1236,12 @@ export const repomod: Repomod<Dependencies> = {
 
 		try {
 			const metadata = JSON.parse(options.metadata ?? '');
+			const dependencies = JSON.parse(
+				options.dependencies ?? '',
+			) as Record<string, Dependency>;
 
 			insertMetadata(sourceFile, metadata);
+			insertDependencies(sourceFile, dependencies);
 
 			return {
 				kind: 'upsertData',
