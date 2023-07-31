@@ -1500,6 +1500,35 @@ describe('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
+	it.only('should ensure that `useRouter` import is updated', () => {
+		const beforeText = `
+		import { useRouter } from "next/router";
+		
+		export default function Verify() {
+		  const router = useRouter();
+		  const x = router;
+		  return (
+			<div />
+		  );
+	`;
+
+		const afterText = `
+		import { useRouter } from "next/navigation";
+		
+		export default function Verify() {
+		  const router = useRouter();
+		  const x = router;
+		
+		  return (
+			<div />
+		  );
+	`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(actual, expected);
+	});
+
 	// BreadcrumbContainer
 	// AppCard
 });
