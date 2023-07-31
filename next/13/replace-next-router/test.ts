@@ -1490,7 +1490,7 @@ describe('next 13 replace-next-router', function () {
 			import { useSearchParams } from "next/navigation";
 
 			function() {
-				const searchParams = useSearchParams()
+				const searchParams = useSearchParams();
 				const { id: orgId } = querySchema.parse(...Object.fromEntries(searchParams ?? new URLSearchParams()));
 			}
 		`;
