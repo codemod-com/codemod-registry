@@ -5,13 +5,7 @@ import tsmorph, {
 	ModuleKind,
 	Node,
 	SourceFile,
-	BindingElement,
-	FunctionDeclaration,
-	ImportClause,
-	NamespaceImport,
-	ImportSpecifier,
 	SyntaxKind,
-	VariableDeclaration,
 	ImportDeclaration,
 	JsxElement,
 } from 'ts-morph';
