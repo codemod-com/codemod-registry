@@ -1476,6 +1476,30 @@ describe('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
+	it('should support call expression parent node', () => {
+		const beforeText = `
+			import { useRouter } from 'next/router';
+
+			function() {
+				const router = useRouter();
+				const { id: orgId } = querySchema.parse(router.query);
+			}
+		`;
+
+		const afterText = `
+			import { useSearchParams } from "next/navigation";
+
+			function() {
+				const searchParams = useSearchParams()
+				const { id: orgId } = querySchema.parse(Object.fromEntries(searchParams ?? new URLSearchParams()));
+			}
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(actual, expected);
+	});
+
 	// BreadcrumbContainer
 	// AppCard
 });
