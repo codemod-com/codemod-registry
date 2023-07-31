@@ -161,8 +161,9 @@ const handleRouterPropertyAccessExpression = (
 			}
 		} else if (Node.isCallExpression(parentNode)) {
 			node.replaceWithText(
-				'...Object.fromEntries(searchParams ?? new URLSearchParams())',
+				'Object.fromEntries(searchParams ?? new URLSearchParams())',
 			);
+			onReplacedWithSearchParams();
 		} else if (Node.isElementAccessExpression(parentNode)) {
 			// e.g. router.query["param"]
 
