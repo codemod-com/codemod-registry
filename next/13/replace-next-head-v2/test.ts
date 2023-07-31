@@ -17,6 +17,7 @@ import { deepStrictEqual } from 'node:assert';
 
 const A_CONTENT = `
 import Meta from '../../components/a.tsx';
+import { e1 } from 'module1';
 const global = "global";
 export default function Index({}) {
 	return <Meta title={"string"} description={global}/>;
@@ -27,6 +28,7 @@ const A_COMPONENT_CONTENT = `
 import Head from 'next/head';
 import NestedComponent from '../components/b.tsx';
 import notAComponent from '../utils';
+import { e, e1 } from 'module1';
 notAComponent();
 const a = "content";
 const { b } = { b: "content" };
@@ -37,7 +39,7 @@ export default function Meta({ title, description }) {
 	return (<>
 	<Head>
 		<title>{title}</title>
-		<meta name="application-name" content={a + b + c() + d()} />
+		<meta name="application-name" content={a + b + c() + d() + e} />
 	</Head>
 	<NestedComponent desc={description} />
 	</>)
@@ -115,12 +117,13 @@ describe('next 13 replace-next-head-v2', function () {
 			data:
 				'import { Metadata } from "next";\n' +
 				"import Meta from '../../components/a.tsx';\n" +
+				"import { e1, e } from 'module1';\n" +
 				'const c = () => { };\n' +
 				'const { b } = { b: "content" };\n' +
 				'const a = "content";\n' +
 				'export const metadata: Metadata = {\n' +
 				'    title: `${title}`,\n' +
-				'    applicationName: a + b + c() + d(),\n' +
+				'    applicationName: a + b + c() + d() + e,\n' +
 				'    description: description,\n' +
 				'};\n' +
 				'const global = "global";\n' +

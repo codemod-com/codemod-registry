@@ -8,6 +8,7 @@ import tsmorph, {
 	SyntaxKind,
 	ImportDeclaration,
 	JsxElement,
+	ImportDeclarationStructure,
 } from 'ts-morph';
 
 import type {
@@ -30,8 +31,8 @@ type ParsedMetadataTag = {
 
 type Dependency = {
 	kind: SyntaxKind;
-	statementText: string;
-	definitionText: string;
+	text: string;
+	structure: ImportDeclarationStructure | null;
 };
 
 const openGraphWebsiteTags = [
@@ -183,6 +184,14 @@ export const buildContainer = <T>(initialValue: T) => {
 
 type Container<T> = ReturnType<typeof buildContainer<T>>;
 
+const getStructure = (node: Node) => {
+	if (Node.isImportDeclaration(node)) {
+		return node.getStructure();
+	}
+
+	return null;
+};
+
 const getDependenciesForIdentifiers = (identifiers: Identifier[]) => {
 	const dependencies: Record<string, Dependency> = {};
 
@@ -234,8 +243,8 @@ const getDependenciesForIdentifiers = (identifiers: Identifier[]) => {
 		}
 
 		dependencies[identifierName] = {
-			definitionText: firstDefinition.getText(),
-			statementText: foundAncestor.getText(),
+			text: foundAncestor.getText(),
+			structure: getStructure(foundAncestor),
 			kind: foundAncestor.getKind(),
 		};
 	});
@@ -1112,24 +1121,62 @@ const getPositionAfterImports = (sourceFile: SourceFile): number => {
 	return lastImportDeclaration.getChildIndex() + 1;
 };
 
+const mergeOrCreateImports = (
+	sourceFile: SourceFile,
+	{ moduleSpecifier, namedImports }: ImportDeclarationStructure,
+) => {
+	const importDeclarations = sourceFile.getImportDeclarations();
+
+	const importedModule =
+		importDeclarations.find((importDeclaration) => {
+			const text = importDeclaration.getModuleSpecifier().getText();
+			return text.substring(1, text.length - 1) === moduleSpecifier;
+		}) ?? null;
+
+	// create import
+	if (importedModule === null) {
+		sourceFile.addImportDeclaration({
+			namedImports,
+			moduleSpecifier,
+		});
+		return;
+	}
+
+	if (!Array.isArray(namedImports)) {
+		return;
+	}
+
+	namedImports.forEach((namedImport) => {
+		const oldNamedImports = importedModule
+			.getNamedImports()
+			.map((i) => i.getText());
+
+		const importName =
+			typeof namedImport === 'string' ? namedImport : namedImport.name;
+
+		if (!oldNamedImports.includes(importName)) {
+			importedModule.addNamedImport(importName);
+		}
+	});
+};
 const insertDependencies = (
 	sourceFile: SourceFile,
 	dependencies: Record<string, Dependency>,
 ) => {
 	let positionAfterImports = getPositionAfterImports(sourceFile);
 
-	Object.values(dependencies).forEach(({ kind, statementText }) => {
+	Object.values(dependencies).forEach(({ kind, text, structure }) => {
 		if (kind === SyntaxKind.Parameter) {
 			return;
 		}
 
-		if (kind === SyntaxKind.ImportDeclaration) {
-			sourceFile.insertStatements(0, statementText);
+		if (kind === SyntaxKind.ImportDeclaration && structure !== null) {
+			mergeOrCreateImports(sourceFile, structure);
 			positionAfterImports++;
 			return;
 		}
 
-		sourceFile.insertStatements(positionAfterImports, statementText);
+		sourceFile.insertStatements(positionAfterImports, text);
 	});
 };
 
