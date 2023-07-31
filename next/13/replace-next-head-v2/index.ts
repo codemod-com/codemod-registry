@@ -312,12 +312,7 @@ const handleHeadChildJsxElement = (
 	const children = jsxElement.getJsxChildren();
 
 	let text = '';
-	const shouldReplaceTag = true;
 	children.forEach((child) => {
-		if (!shouldReplaceTag) {
-			return;
-		}
-
 		if (Node.isJsxText(child)) {
 			const t = child.getFullText();
 			text += t;
@@ -331,7 +326,6 @@ const handleHeadChildJsxElement = (
 				...prev,
 				dependencies: getDependenciesForIdentifiers(identifiers),
 			}));
-
 
 			if (Node.isTemplateExpression(expression)) {
 				const t = expression.getFullText().replace(/\`/g, '');
@@ -362,10 +356,6 @@ const handleHeadChildJsxElement = (
 	);
 
 	if (name && knownNames.includes(name)) {
-		if (!shouldReplaceTag) {
-			return;
-		}
-
 		handleTag(parsedTag, metadataContainer);
 	}
 };
