@@ -412,4 +412,74 @@ describe('next 13 app-directory-boilerplate', function () {
 			layout.replace(/\W/gm, ''),
 		);
 	});
+
+	it('should create a new client side file', async function (this: Context) {
+		const index = `
+			import ErrorPage from 'next/error';
+
+			export default async function Index() {
+				return <ErrorPage statusCode={404} />;
+			}
+		`;
+
+		const [
+			upsertLayoutCommand,
+			upsertPageCommand,
+			deleteFileCommand,
+			upsertNotFoundFileCommand,
+		] = await transform({
+			'/opt/project/pages/index.tsx': index,
+		});
+
+		deepStrictEqual(upsertLayoutCommand?.kind, 'upsertFile');
+		deepStrictEqual(
+			upsertLayoutCommand?.path,
+			'/opt/project/app/layout.tsx',
+		);
+
+		deepStrictEqual(upsertPageCommand?.kind, 'upsertFile');
+		deepStrictEqual(upsertPageCommand?.path, '/opt/project/app/page.tsx');
+
+		const pageData = `
+			This file has been sourced from: /opt/project/pages/index.tsx
+			import NotFound from "./notFound";
+
+			export default async function Index() {
+			    return <NotFound />;
+			}
+		`;
+
+		deepStrictEqual(
+			upsertPageCommand?.data.replace(/\W/gm, ''),
+			pageData.replace(/\W/gm, ''),
+		);
+
+		// delete file command
+		deepStrictEqual(deleteFileCommand?.kind, 'deleteFile');
+		deepStrictEqual(
+			deleteFileCommand?.path,
+			'/opt/project/pages/index.tsx',
+		);
+
+		// upsert not found file command
+		deepStrictEqual(upsertNotFoundFileCommand?.kind, 'upsertFile');
+		deepStrictEqual(
+			upsertNotFoundFileCommand?.path,
+			'/opt/project/app/notFound.tsx',
+		);
+
+		const data = `
+			'use client';
+			import ErrorPage from 'next/error';
+			
+			const NotFound = () => <ErrorPage statusCode={404} />;
+			
+			export default NotFound;
+		`;
+
+		deepStrictEqual(
+			upsertNotFoundFileCommand?.data.replace(/\W/gm, ''),
+			data.replace(/\W/gm, ''),
+		);
+	});
 });
