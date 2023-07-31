@@ -61,6 +61,15 @@ export default function NotFound() {
 }
 `;
 
+const ROUTE_NOT_FOUND_COMPONENT = `
+'use client';
+import ErrorPage from 'next/error';
+
+const NotFound = () => <ErrorPage statusCode={404} />;
+
+export default NotFound;
+`;
+
 enum FilePurpose {
 	// root directory
 	ROOT_LAYOUT = 'ROOT_LAYOUT',
@@ -69,6 +78,7 @@ enum FilePurpose {
 	ROOT_NOT_FOUND = 'ROOT_NOT_FOUND',
 	// route directories
 	ROUTE_PAGE = 'ROUTE_PAGE',
+	ROUTE_NOT_FOUND_COMPONENT = 'ROUTE_NOT_FOUND_COMPONENT',
 }
 
 const map = new Map([
@@ -77,6 +87,7 @@ const map = new Map([
 	[FilePurpose.ROOT_NOT_FOUND, ROOT_NOT_FOUND_CONTENT],
 	[FilePurpose.ROOT_PAGE, ''],
 	[FilePurpose.ROUTE_PAGE, ''],
+	[FilePurpose.ROUTE_NOT_FOUND_COMPONENT, ROUTE_NOT_FOUND_COMPONENT],
 ]);
 
 const EXTENSION = '.tsx';
@@ -281,6 +292,24 @@ export const repomod: Repomod<Dependencies> = {
 				});
 			}
 
+			if (oldData.includes('next/error')) {
+				const notFoundPath = posix.format({
+					root: parsedPath.root,
+					dir: newDir,
+					ext: '.tsx',
+					name: 'notFound',
+				});
+
+				commands.push({
+					kind: 'upsertFile' as const,
+					path: notFoundPath,
+					options: {
+						...options,
+						filePurpose: FilePurpose.ROUTE_NOT_FOUND_COMPONENT,
+					},
+				});
+			}
+
 			return commands;
 		}
 
@@ -304,7 +333,7 @@ export const repomod: Repomod<Dependencies> = {
 
 			const oldData = await api.readFile(path);
 
-			return [
+			const commands: FileCommand[] = [
 				{
 					kind: 'upsertFile',
 					path: routePagePath,
@@ -320,6 +349,26 @@ export const repomod: Repomod<Dependencies> = {
 					path,
 				},
 			];
+
+			if (oldData.includes('next/error')) {
+				const notFoundPath = posix.format({
+					root: parsedPath.root,
+					dir: newDir,
+					ext: '.tsx',
+					name: 'notFound',
+				});
+
+				commands.push({
+					kind: 'upsertFile',
+					path: notFoundPath,
+					options: {
+						...options,
+						filePurpose: FilePurpose.ROUTE_NOT_FOUND_COMPONENT,
+					},
+				});
+			}
+
+			return commands;
 		}
 
 		return [];
@@ -409,6 +458,57 @@ export const repomod: Repomod<Dependencies> = {
 
 						jsxElement?.replaceWithText('');
 					});
+
+				let nextErrorComponentName = '';
+
+				oldSourceFile
+					.getImportDeclarations()
+					.filter((declaration) => {
+						return (
+							declaration
+								.getModuleSpecifier()
+								.getLiteralText() === 'next/error'
+						);
+					})
+					.forEach((declaration) => {
+						nextErrorComponentName =
+							declaration.getImportClause()?.getText() ?? '';
+
+						declaration.remove();
+					});
+
+				if (nextErrorComponentName !== '') {
+					oldSourceFile
+						.getDescendantsOfKind(SyntaxKind.JsxSelfClosingElement)
+						.filter((element) => {
+							return (
+								element.getTagNameNode().getText() ===
+									nextErrorComponentName &&
+								element
+									.getAttributes()
+									.some(({ compilerNode }) => {
+										return (
+											compilerNode.kind ===
+												SyntaxKind.JsxAttribute &&
+											compilerNode.name.getText() ===
+												'statusCode' &&
+											compilerNode.initializer?.kind ===
+												SyntaxKind.JsxExpression &&
+											compilerNode.initializer.expression?.getText() ===
+												'404'
+										);
+									})
+							);
+						})
+						.forEach((element) => {
+							element.replaceWithText('<NotFound />');
+
+							oldSourceFile.addImportDeclaration({
+								moduleSpecifier: './notFound',
+								defaultImport: 'NotFound',
+							});
+						});
+				}
 
 				oldSourceFile
 					.getStatementsWithComments()
