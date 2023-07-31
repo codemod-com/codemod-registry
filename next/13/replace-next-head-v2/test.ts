@@ -28,11 +28,16 @@ import Head from 'next/head';
 import NestedComponent from '../components/b.tsx';
 import notAComponent from '../utils';
 notAComponent();
+const a = "content";
+const { b } = { b: "content" };
+const c = () => {};
+function d() {}
 export default function Meta({ title, description }) {
 	notAComponent();
 	return (<>
 	<Head>
 		<title>{title}</title>
+		<meta name="application-name" content={a + b + c() + d()} />
 	</Head>
 	<NestedComponent desc={description} />
 	</>)
@@ -110,8 +115,12 @@ describe('next 13 replace-next-head-v2', function () {
 			data:
 				'import { Metadata } from "next";\n' +
 				"import Meta from '../../components/a.tsx';\n" +
+				'const c = () => { };\n' +
+				'const { b } = { b: "content" };\n' +
+				'const a = "content";\n' +
 				'export const metadata: Metadata = {\n' +
 				'    title: `${title}`,\n' +
+				'    applicationName: a + b + c() + d(),\n' +
 				'    description: description,\n' +
 				'};\n' +
 				'const global = "global";\n' +
