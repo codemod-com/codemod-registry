@@ -189,6 +189,66 @@ export const buildContainer = <T>(initialValue: T) => {
 
 type Container<T> = ReturnType<typeof buildContainer<T>>;
 
+const getDependenciesForIdentifiers = (identifiers: Identifier[]) => {
+	const dependencies: Record<string, Dependency> = {};
+
+	identifiers.forEach((identifier) => {
+		const parent = identifier.getParent();
+		const identifierChildIndex = identifier.getChildIndex();
+
+		if (
+			(Node.isPropertyAccessExpression(parent) ||
+				Node.isElementAccessExpression(parent)) &&
+			identifierChildIndex !== 0
+		) {
+			return;
+		}
+
+		const definitions = identifier.getDefinitionNodes();
+
+		const firstDefinition = definitions[0] ?? null;
+
+		if (firstDefinition === null) {
+			return;
+		}
+
+		const syntaxes = [
+			SyntaxKind.Parameter,
+			SyntaxKind.VariableStatement,
+			SyntaxKind.ImportDeclaration,
+			SyntaxKind.FunctionDeclaration,
+		];
+
+		let foundAncestor = null as Node | null;
+
+		syntaxes.forEach((s) => {
+			if (foundAncestor) {
+				return;
+			}
+
+			const ancestor = firstDefinition.getFirstAncestorByKind(s) ?? null;
+
+			if (ancestor !== null) {
+				foundAncestor = ancestor;
+			}
+		});
+
+		const identifierName = identifier.getText();
+
+		if (foundAncestor === null) {
+			return;
+		}
+
+		dependencies[identifierName] = {
+			definitionText: firstDefinition.getText(),
+			statementText: foundAncestor.getText(),
+			kind: foundAncestor.getKind(),
+		};
+	});
+
+	return dependencies;
+};
+
 const handleJsxSelfClosingElement = (
 	jsxSelfClosingElement: JsxSelfClosingElement,
 	metadataContainer: Container<Record<string, any>>,
@@ -214,64 +274,10 @@ const handleJsxSelfClosingElement = (
 					SyntaxKind.Identifier,
 				);
 
-				let dependencies: Record<string, Dependency> = {};
-
-				identifiers.forEach((identifier) => {
-					const parent = identifier.getParent();
-					const identifierChildIndex = identifier.getChildIndex();
-
-					if (
-						(Node.isPropertyAccessExpression(parent) ||
-							Node.isElementAccessExpression(parent)) &&
-						identifierChildIndex !== 0
-					) {
-						return;
-					}
-
-					const definitions = identifier.getDefinitionNodes();
-
-					const firstDefinition = definitions[0] ?? null;
-
-					if (firstDefinition === null) {
-						return;
-					}
-
-					const syntaxes = [
-						SyntaxKind.Parameter,
-						SyntaxKind.VariableStatement,
-						SyntaxKind.ImportDeclaration,
-						SyntaxKind.FunctionDeclaration,
-					];
-
-					let foundAncestor = null as Node | null;
-
-					syntaxes.forEach((s) => {
-						if(foundAncestor) {
-							return;
-						}
-						
-						const ancestor =
-							firstDefinition.getFirstAncestorByKind(s) ?? null;
-
-						if (ancestor !== null) {
-							foundAncestor = ancestor;
-						}
-					});
-
-					const identifierName = identifier.getText();
-
-					if (foundAncestor === null) {
-						return;
-					}
-
-					dependencies[identifierName] = {
-						definitionText: firstDefinition.getText(),
-						statementText: foundAncestor.getText(),
-						kind: foundAncestor.getKind(),
-					};
-				});
-
-				settingsContainer.set((prev) => ({ ...prev, dependencies }));
+				settingsContainer.set((prev) => ({
+					...prev,
+					dependencies: getDependenciesForIdentifiers(identifiers),
+				}));
 
 				attributesObject[name] =
 					initializer.getExpression()?.getText() ?? '';
@@ -306,7 +312,7 @@ const handleHeadChildJsxElement = (
 	const children = jsxElement.getJsxChildren();
 
 	let text = '';
-	let shouldReplaceTag = true;
+	const shouldReplaceTag = true;
 	children.forEach((child) => {
 		if (!shouldReplaceTag) {
 			return;
@@ -321,7 +327,11 @@ const handleHeadChildJsxElement = (
 				SyntaxKind.Identifier,
 			);
 
-			identifiers.forEach((identifier) => {});
+			settingsContainer.set((prev) => ({
+				...prev,
+				dependencies: getDependenciesForIdentifiers(identifiers),
+			}));
+
 
 			if (Node.isTemplateExpression(expression)) {
 				const t = expression.getFullText().replace(/\`/g, '');
@@ -854,8 +864,8 @@ const defaultCompilerOptions = {
 export const buildComponentMetadata = (
 	sourceFile: SourceFile,
 ): {
-	metadata: Record<string, unknown>,
-	dependencies: Record<string, Dependency>,
+	metadata: Record<string, unknown>;
+	dependencies: Record<string, Dependency>;
 } => {
 	const metadataContainer = buildContainer<Record<string, any>>({});
 	const settingsContainer = buildContainer<Record<string, any>>({});
@@ -1125,10 +1135,10 @@ const insertDependencies = (
 	let positionAfterImports = getPositionAfterImports(sourceFile);
 
 	Object.values(dependencies).forEach(({ kind, statementText }) => {
-		if(kind  === SyntaxKind.Parameter) {
+		if (kind === SyntaxKind.Parameter) {
 			return;
 		}
-		
+
 		if (kind === SyntaxKind.ImportDeclaration) {
 			sourceFile.insertStatements(0, statementText);
 			positionAfterImports++;
@@ -1195,7 +1205,9 @@ export const repomod: Repomod<Dependencies> = {
 
 		try {
 			const metadata = JSON.parse(options.metadata ?? '');
-			const dependencies = JSON.parse(options.dependencies ?? '') as Record<string, Dependency>;
+			const dependencies = JSON.parse(
+				options.dependencies ?? '',
+			) as Record<string, Dependency>;
 
 			insertMetadata(sourceFile, metadata);
 			insertDependencies(sourceFile, dependencies);
