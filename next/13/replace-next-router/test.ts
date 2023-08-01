@@ -1500,7 +1500,7 @@ describe('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it.only('should ensure that `useRouter` import is updated', () => {
+	it('should ensure that `useRouter` import is updated', () => {
 		const beforeText = `
 		import { useRouter } from "next/router";
 		
