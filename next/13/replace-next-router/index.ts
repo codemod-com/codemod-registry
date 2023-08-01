@@ -279,6 +279,7 @@ const handleQueryIdentifierNode = (
 const handleVariableDeclarationWithRouter = (
 	variableDeclaration: VariableDeclaration,
 	requiresPathname: Container<Set<string>>,
+	usesRouter: Container<boolean>,
 ) => {
 	const nameNode = variableDeclaration.getNameNode();
 
@@ -302,8 +303,12 @@ const handleVariableDeclarationWithRouter = (
 
 		if (count === elements.length) {
 			variableDeclaration.remove();
+			usesRouter.set(() => false);
+			return;
 		}
 	}
+
+	usesRouter.set(() => true);
 };
 
 const handleVariableDeclaration = (
@@ -328,7 +333,11 @@ const handleVariableDeclaration = (
 						requiresPathname.set((array) => array.add('pathname')),
 				);
 			} else if (Node.isVariableDeclaration(parent)) {
-				handleVariableDeclarationWithRouter(parent, requiresPathname);
+				handleVariableDeclarationWithRouter(
+					parent,
+					requiresPathname,
+					usesRouter,
+				);
 			} else if (Node.isArrayLiteralExpression(parent)) {
 				usesRouter.set(() => true);
 			}
