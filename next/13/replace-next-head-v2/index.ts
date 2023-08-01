@@ -894,7 +894,7 @@ const initTsMorphProject = async (
 
 	const allFilePaths = await unifiedFileSystem.getFilePaths(
 		rootPath,
-		['**/*.{jsx,tsx,ts,js}'],
+		['**/*.{jsx,tsx,ts,js,cjs,ejs}'],
 		[],
 	);
 

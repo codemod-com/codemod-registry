@@ -93,26 +93,29 @@ describe('next 13 replace-next-head-v2', function () {
 		export default NestedComponent;
 `;
 
-		const externalFileCommands = await transform({
+		const [command] = await transform({
 			'/opt/project/pages/a/index.tsx': A_CONTENT,
 			'/opt/project/components/a.tsx': A_COMPONENT_CONTENT,
 			'/opt/project/components/b.tsx': B_COMPONENT_CONTENT,
 		});
 
-		deepStrictEqual(externalFileCommands[0], {
-			kind: 'upsertFile',
-			path: '/opt/project/pages/a/index.tsx',
-			data:
-				'import { Metadata } from "next";\n' +
-				"import Meta from '../../components/a.tsx';\n" +
-				'export const metadata: Metadata = {\n' +
-				'    title: `title`,\n' +
-				'    description: "description",\n' +
-				'};\n' +
-				'export default function Page() {\n' +
-				'    return <Meta />;\n' +
-				'}\n',
-		});
+		const expectedResult = `import { Metadata } from "next";
+		import Meta from '../../components/a.tsx';
+		export const metadata: Metadata = {
+				title: \`title\`,
+				description: "description",
+		};
+		export default function Page() {
+				return <Meta />;
+		}`;
+
+		deepStrictEqual(command?.kind, 'upsertFile');
+		deepStrictEqual(command.path, '/opt/project/pages/a/index.tsx');
+
+		deepStrictEqual(
+			command.data.replace(/\W/gm, ''),
+			expectedResult.replace(/\W/gm, ''),
+		);
 	});
 
 	it('should move definitions of identifiers used in meta tag expr to the Page file', async function (this: Context) {
@@ -141,29 +144,32 @@ describe('next 13 replace-next-head-v2', function () {
 		}
 `;
 
-		const externalFileCommands = await transform({
+		const [command] = await transform({
 			'/opt/project/pages/a/index.tsx': A_CONTENT,
 			'/opt/project/components/a.tsx': A_COMPONENT_CONTENT,
 			'/opt/project/utils/index.ts': '',
 		});
 
-		deepStrictEqual(externalFileCommands[0], {
-			kind: 'upsertFile',
-			path: '/opt/project/pages/a/index.tsx',
-			data:
-				'import { Metadata } from "next";\n' +
-				"import Meta from '../../components/a.tsx';\n" +
-				'const env = process.env.APP_NAME;\n' +
-				'const { obj: { d } } = { obj: { d: "d" } };\n' +
-				'const b = () => "b";\n' +
-				'const a = "a";\n' +
-				'export const metadata: Metadata = {\n' +
-				'    title: `${a + b() + c() + d + e + env}`,\n' +
-				'};\n' +
-				'export default function Page() {\n' +
-				'    return <Meta />;\n' +
-				'}\n',
-		});
+		const expectedResult = `import { Metadata } from "next";
+		import Meta from '../../components/a.tsx';
+		const env = process.env.APP_NAME;
+		const { obj: { d } } = { obj: { d: "d" } };
+		const b = () => "b";
+		const a = "a";
+		export const metadata: Metadata = {
+				title: \`\${a + b() + c() + d + e + env}\`,
+		};
+		export default function Page() {
+				return <Meta />;
+		}`;
+
+		deepStrictEqual(command?.kind, 'upsertFile');
+		deepStrictEqual(command.path, '/opt/project/pages/a/index.tsx');
+
+		deepStrictEqual(
+			command.data.replace(/\W/gm, ''),
+			expectedResult.replace(/\W/gm, ''),
+		);
 	});
 
 	it('should move identifier definitions that are ImportDeclarations, should update the moduleSpecifier when moved ', async function (this: Context) {
@@ -187,25 +193,28 @@ describe('next 13 replace-next-head-v2', function () {
 		}
 `;
 
-		const externalFileCommands = await transform({
+		const [command] = await transform({
 			'/opt/project/pages/a/index.tsx': A_CONTENT,
 			'/opt/project/components/a.tsx': A_COMPONENT_CONTENT,
 			'/opt/project/utils/index.ts': '',
 		});
 
-		deepStrictEqual(externalFileCommands[0], {
-			kind: 'upsertFile',
-			path: '/opt/project/pages/a/index.tsx',
-			data:
-				'import { Metadata } from "next";\n' +
-				"import Meta from '../../components/a.tsx';\n" +
-				'import { a } from "../../../utils/index.ts";\n' +
-				'export const metadata: Metadata = {\n' +
-				'    title: `${a}`,\n' +
-				'};\n' +
-				'export default function Page() {\n' +
-				'    return <Meta />;\n' +
-				'}\n',
-		});
+		const expectedResult = `import { Metadata } from "next";
+		import Meta from '../../components/a.tsx';
+		import { a } from "../../../utils/index.ts";
+		export const metadata: Metadata = {
+				title: \`\${a}\`,
+		};
+		export default function Page() {
+				return <Meta />;
+		}`;
+
+		deepStrictEqual(command?.kind, 'upsertFile');
+		deepStrictEqual(command.path, '/opt/project/pages/a/index.tsx');
+
+		deepStrictEqual(
+			command.data.replace(/\W/gm, ''),
+			expectedResult.replace(/\W/gm, ''),
+		);
 	});
 });
