@@ -1222,16 +1222,16 @@ describe('next 13 remove-get-static-props', function () {
 			type PageProps = {
 					params: Params
 			};
-	
-			export async function generateStaticParams() {
-				return (await getStaticPaths({})).paths;
-			}
 		
 			export async function getStaticPaths() {
 				return {
 						paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
 									fallback: true,
 				};
+			}
+
+			export async function generateStaticParams() {
+				return (await getStaticPaths({})).paths;
 			}
 
 			export async function getStaticProps({ params }) {
@@ -1311,15 +1311,15 @@ describe('next 13 remove-get-static-props', function () {
 					params: Params
 			};
 			
-			export async function generateStaticParams() {
-				return (await getStaticPaths({})).paths;
-			}
-			
 			export async function getStaticPaths() {
 				return {
 						paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
 									fallback: false,
 				};
+			}
+
+			export async function generateStaticParams() {
+				return (await getStaticPaths({})).paths;
 			}
 
 			export async function getStaticProps({ params }) {
@@ -1398,15 +1398,15 @@ describe('next 13 remove-get-static-props', function () {
 					params: Params
 			};
 
-			export async function generateStaticParams() {
-				return (await getStaticPaths({})).paths;
-			}
-
 			export async function getStaticPaths() {
 				return {
 						paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
 									fallback: 'blocking',
 				};
+			}
+
+			export async function generateStaticParams() {
+				return (await getStaticPaths({})).paths;
 			}
 
 			export async function getStaticProps({ params }) {
