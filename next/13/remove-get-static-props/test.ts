@@ -329,7 +329,7 @@ describe('next 13 remove-get-static-props', function () {
 				const props = await getData({ params });
 				return null;
 			}
-			
+
 			export default SingleAppPage;
 		`;
 
@@ -339,6 +339,7 @@ describe('next 13 remove-get-static-props', function () {
 		};
 
 		const actualOutput = transform(fileInfo, buildApi('tsx'));
+
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),
@@ -392,7 +393,7 @@ describe('next 13 remove-get-static-props', function () {
 				const props = await getData({ params });
 				return null;
 			}
-			
+
 			export default SingleAppPage;
 		`;
 
@@ -454,7 +455,7 @@ describe('next 13 remove-get-static-props', function () {
 				const props = await getData({ params });
 				return null;
 			}
-			
+
 			export default SingleAppPage;
 		`;
 
@@ -1363,6 +1364,7 @@ describe('next 13 remove-get-static-props', function () {
 			OUTPUT.replace(/\W/gm, ''),
 		);
 	});
+
 	it('should transform fallback property correctly', function () {
 		const INPUT = `
 			import PostLayout from '@/components/post-layout';
@@ -1445,6 +1447,95 @@ describe('next 13 remove-get-static-props', function () {
 		};
 
 		const actualOutput = transform(fileInfo, buildApi('tsx'));
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should move the default export to the bottom of the file', function () {
+		const INPUT = `
+			import PostLayout from '@/components/post-layout';
+
+			export default function Post({ post }) {
+				return <PostLayout post={post} />;
+			}
+
+			export async function getStaticPaths() {
+				return {
+					paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
+					fallback: 'blocking',
+				};
+			}
+
+			export async function getStaticProps({ params }) {
+				const res = await fetch(\`https://.../posts/\${params.id}\`);
+				const post = await res.json();
+
+				return { props: { post } };
+			}
+		`;
+
+		const OUTPUT = `
+			import { notFound, redirect } from "next/navigation";
+			import PostLayout from '@/components/post-layout';
+		
+			type Params = {
+				[key: string]: string | string[] | undefined
+			};
+
+			type PageProps = {
+					params: Params
+			};
+
+			export async function getStaticPaths() {
+				return {
+						paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
+									fallback: 'blocking',
+				};
+			}
+
+			export async function generateStaticParams() {
+				return (await getStaticPaths({})).paths;
+			}
+
+			export async function getStaticProps({ params }) {
+				const res = await fetch(\`https://.../posts/\${params.id}\`);
+				const post = await res.json();
+
+				return { props: { post } };
+			}
+
+			async function getData({ params }: { params: Params }) {
+				const result = await getStaticProps({ params });
+				
+				if("redirect" in result) {
+					redirect(result.redirect.destination);
+				}
+				
+				if("notFound" in result) {
+					notFound();
+				}
+				
+				return "props" in result ? result.props : {};
+			}
+
+			export default async function Post({ params }: PageProps) {
+				const {post} = await getData({params});
+
+				return <PostLayout post={post} />;
+			}
+
+			export const dynamicParams = true;
+		`;
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, buildApi('tsx'));
+
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),

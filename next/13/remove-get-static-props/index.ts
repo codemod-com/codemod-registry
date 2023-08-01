@@ -48,12 +48,10 @@ const getFirstIndexAfterImports = (j: JSCodeshift, file: Collection<File>) => {
 
 const getFirstIndexAfterExportNamedFunctionDeclaration = (
 	j: JSCodeshift,
-	file: Collection<File>,
+	body: unknown[],
 	functionName: string,
 ): number => {
-	const programBody = file.find(j.Program).paths()[0]?.value.body ?? [];
-
-	const lastImportDeclarationIndex = findLastIndex(programBody, (node) => {
+	const lastImportDeclarationIndex = findLastIndex(body, (node) => {
 		// function declaration within an export named declaration
 		if (
 			j.ExportNamedDeclaration.check(node) &&
@@ -76,6 +74,14 @@ const getFirstIndexAfterExportNamedFunctionDeclaration = (
 				j.Identifier.check(declaration.id) &&
 				declaration.id.name === functionName
 			);
+		}
+
+		if (
+			j.FunctionDeclaration.check(node) &&
+			j.Identifier.check(node.id) &&
+			node.id.name === functionName
+		) {
+			return true;
 		}
 
 		return false;
@@ -127,7 +133,7 @@ const addGenerateStaticParamsFunctionDeclaration: ModFunction<File, 'write'> = (
 		program.value.body.splice(
 			getFirstIndexAfterExportNamedFunctionDeclaration(
 				j,
-				root,
+				root.find(j.Program).paths()[0]?.value.body ?? [],
 				'getStaticPaths',
 			),
 			0,
@@ -229,7 +235,11 @@ const addGetDataFunction: ModFunction<File, 'write'> = (j, root, settings) => {
 	}
 
 	programNode.value.body.splice(
-		getFirstIndexAfterExportNamedFunctionDeclaration(j, root, functionName),
+		getFirstIndexAfterExportNamedFunctionDeclaration(
+			j,
+			root.find(j.Program).paths()[0]?.value.body ?? [],
+			functionName,
+		),
 		0,
 		getDataFunctionDeclaration.value,
 	);
@@ -721,6 +731,21 @@ const addGetDataVariableDeclaration: ModFunction<
 	return [addedVariableDeclaration, []];
 };
 
+const getExportDefaultName = (
+	j: JSCodeshift,
+	declaration: unknown,
+): string | null => {
+	if (!j.ExportDefaultDeclaration.check(declaration)) {
+		return null;
+	}
+
+	if (!j.Identifier.check(declaration.declaration)) {
+		return null;
+	}
+
+	return declaration.declaration.name;
+};
+
 export default function transform(
 	file: FileInfo,
 	api: API,
@@ -771,6 +796,88 @@ export default function transform(
 	if (!dirtyFlag) {
 		return undefined;
 	}
+
+	// move the default export behind getData
+	root.find(j.Program).forEach((program) => {
+		const body = program.value.body.slice();
+
+		const index = body.findIndex((statement) =>
+			j.ExportDefaultDeclaration.check(statement),
+		);
+
+		if (index === -1) {
+			return;
+		}
+
+		const [exportDefaultDeclaration] = body.splice(index, 1);
+
+		// e.g. export default Name;
+		const exportDefaultName = getExportDefaultName(
+			j,
+			exportDefaultDeclaration,
+		);
+
+		if (!exportDefaultDeclaration) {
+			return;
+		}
+
+		const namedFunctionIndex = body.findIndex((statement) => {
+			if (j.FunctionDeclaration.check(statement)) {
+				return (
+					j.Identifier.check(statement.id) &&
+					statement.id.name === exportDefaultName
+				);
+			}
+
+			if (
+				!j.ExportNamedDeclaration.check(statement) ||
+				!j.VariableDeclaration.check(statement.declaration)
+			) {
+				return false;
+			}
+
+			const [declaration] = statement.declaration.declarations;
+
+			if (
+				!j.VariableDeclarator.check(declaration) ||
+				!j.Identifier.check(declaration.id)
+			) {
+				return false;
+			}
+
+			return declaration.id.name === exportDefaultName;
+		});
+
+		if (namedFunctionIndex !== -1) {
+			const [namedFunction] = body.splice(index, 1);
+
+			const newIndex = getFirstIndexAfterExportNamedFunctionDeclaration(
+				j,
+				body,
+				'getData',
+			);
+
+			if (newIndex === 0 || namedFunction === undefined) {
+				return;
+			}
+
+			body.splice(newIndex, 0, namedFunction);
+		}
+
+		const newIndex = getFirstIndexAfterExportNamedFunctionDeclaration(
+			j,
+			body,
+			exportDefaultName ?? 'getData',
+		);
+
+		if (newIndex === 0) {
+			return;
+		}
+
+		body.splice(newIndex, 0, exportDefaultDeclaration);
+
+		program.value.body = body;
+	});
 
 	return root.toSource();
 }
