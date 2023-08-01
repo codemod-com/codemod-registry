@@ -1529,7 +1529,7 @@ describe('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it.only('should ensure that `useRouter` import is added when `router` is used as a short-hand property', () => {
+	it('should ensure that `useRouter` import is added when `router` is used as a short-hand property', () => {
 		const beforeText = `
 		import { useRouter } from "next/router";
 		
