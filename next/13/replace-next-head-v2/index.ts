@@ -1164,9 +1164,8 @@ const findComponentPropValue = (
 			}
 		});
 
-		const jsxAttributes = component?.getDescendantsOfKind(
-			SyntaxKind.JsxAttribute,
-		) ?? [];
+		const jsxAttributes =
+			component?.getDescendantsOfKind(SyntaxKind.JsxAttribute) ?? [];
 
 		jsxAttributes.forEach((jsxAttribute) => {
 			const name = jsxAttribute.getNameNode().getText();
