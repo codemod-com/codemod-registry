@@ -124,10 +124,12 @@ const addGenerateStaticParamsFunctionDeclaration: ModFunction<File, 'write'> = (
 	const generateStaticParamsMethod = generateStaticParamsMethodFactory(j);
 
 	root.find(j.Program).forEach((program) => {
-		const insertPosition = getFirstIndexAfterImports(j, root);
-
 		program.value.body.splice(
-			insertPosition,
+			getFirstIndexAfterExportNamedFunctionDeclaration(
+				j,
+				root,
+				'getStaticPaths',
+			),
 			0,
 			generateStaticParamsMethod,
 		);
@@ -164,10 +166,8 @@ const addPageParamsTypeAlias: ModFunction<File, 'write'> = (j, root) => {
 	);
 
 	root.find(j.Program).forEach((program) => {
-		const insertPosition = getFirstIndexAfterImports(j, root);
-
 		program.value.body.splice(
-			insertPosition,
+			getFirstIndexAfterImports(j, root),
 			0,
 			...[pageParamsType, pagePropsType],
 		);
