@@ -303,7 +303,6 @@ const handleVariableDeclarationWithRouter = (
 
 		if (count === elements.length) {
 			variableDeclaration.remove();
-			usesRouter.set(() => false);
 			return;
 		}
 	}
