@@ -1146,7 +1146,7 @@ const findComponentPropValue = (
 		},
 	);
 
-	let propValue!: JsxExpression | StringLiteral;
+	let propValue: JsxExpression | StringLiteral | undefined;
 
 	identifiers.forEach((identifier) => {
 		const refs = identifier.findReferencesAsNodes();
@@ -1164,27 +1164,23 @@ const findComponentPropValue = (
 			}
 		});
 
-		if (!component) {
-			return;
-		}
+		const jsxAttributes = component?.getDescendantsOfKind(
+			SyntaxKind.JsxAttribute,
+		) ?? [];
 
-		const attributes = component.getAttributes();
+		jsxAttributes.forEach((jsxAttribute) => {
+			const name = jsxAttribute.getNameNode().getText();
 
-		attributes.forEach((attribute) => {
-			if (Node.isJsxAttribute(attribute)) {
-				const name = attribute.getNameNode().getText();
+			if (name !== propName) {
+				return;
+			}
 
-				if (name !== propName) {
-					return;
-				}
-
-				const initializer = attribute.getInitializer();
-				if (
-					Node.isJsxExpression(initializer) ||
-					Node.isStringLiteral(initializer)
-				) {
-					propValue = initializer;
-				}
+			const initializer = jsxAttribute.getInitializer();
+			if (
+				Node.isJsxExpression(initializer) ||
+				Node.isStringLiteral(initializer)
+			) {
+				propValue = initializer;
 			}
 		});
 	});
