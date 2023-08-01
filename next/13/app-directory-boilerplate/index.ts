@@ -518,6 +518,8 @@ export const repomod: Repomod<Dependencies> = {
 
 							if (filePurpose === FilePurpose.ROUTE_PAGE) {
 								if (
+									structure.moduleSpecifier !==
+										'./notFound' &&
 									structure.moduleSpecifier.startsWith('./')
 								) {
 									structure.moduleSpecifier = `.${structure.moduleSpecifier}`;
