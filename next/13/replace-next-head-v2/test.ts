@@ -217,4 +217,68 @@ describe('next 13 replace-next-head-v2', function () {
 			expectedResult.replace(/\W/gm, ''),
 		);
 	});
+	it('should move identifier definitions that are ImportDeclarations, should update the moduleSpecifier when moved ', async function (this: Context) {
+		const A_CONTENT = `
+		import Meta from '../../components/a.tsx';
+		const title="title";
+		
+		export default function Page() {
+			return <Meta title={title} description={description} />;
+		}
+`;
+
+		const A_COMPONENT_CONTENT = `
+		import Head from 'next/head';
+		import NestedComponent from '../components/b';
+		
+		const description="description";
+		
+		export default function Meta({ title }) {
+			return (<>
+			<Head>
+				<title>{title}</title>
+			</Head>
+			<NestedComponent description={description} />
+			</>)
+		}
+`;
+
+		const B_COMPONENT_CONTENT = `
+		import Head from 'next/head';
+			
+		export default function NestedComponent({ description }) {
+			return <Head>
+			<meta name="description" content={description} />
+			</Head>
+		}
+		
+		export default NestedComponent;
+`;
+
+		const [command] = await transform({
+			'/opt/project/pages/a/index.tsx': A_CONTENT,
+			'/opt/project/components/a.tsx': A_COMPONENT_CONTENT,
+			'/opt/project/components/b.tsx': B_COMPONENT_CONTENT,
+		});
+
+		const expectedResult = `import { Metadata } from "next";
+		import Meta from '../../components/a.tsx';
+		const description = "description";
+		export const metadata: Metadata = {
+				title: \`\${title}\`,
+				description: description,
+		};
+		const title = "title";
+		export default function Page() {
+				return <Meta title={title} description={description}/>;
+		}`;
+
+		deepStrictEqual(command?.kind, 'upsertFile');
+		deepStrictEqual(command.path, '/opt/project/pages/a/index.tsx');
+
+		deepStrictEqual(
+			command.data.replace(/\W/gm, ''),
+			expectedResult.replace(/\W/gm, ''),
+		);
+	});
 });
