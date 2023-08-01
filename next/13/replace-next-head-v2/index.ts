@@ -17,7 +17,7 @@ import type {
 } from '@intuita-inc/repomod-engine-api';
 import type { fromMarkdown } from 'mdast-util-from-markdown';
 import type { visit } from 'unist-util-visit';
-import { posix } from 'node:path';
+import { posix, relative } from 'node:path';
 /**
  * Copied from "../replace-next-head"
  */
@@ -850,7 +850,7 @@ let project: tsmorph.Project | null = null;
 
 const defaultCompilerOptions = {
 	allowJs: true,
-	module: ModuleKind.ESNext,
+	module: ModuleKind.CommonJS,
 	traceResolution: true,
 };
 
@@ -894,9 +894,10 @@ const initTsMorphProject = async (
 
 	const allFilePaths = await unifiedFileSystem.getFilePaths(
 		rootPath,
-		['**/*.{jsx,tsx}'],
+		['**/*.{jsx,tsx,ts,js}'],
 		[],
 	);
+
 	for (const path of allFilePaths) {
 		const content = await unifiedFileSystem.readFile(path);
 		project.createSourceFile(path, content);
@@ -933,6 +934,24 @@ const collectedImportedIdentifiers = (sourceFile: SourceFile) => {
 	return result;
 };
 
+const resolveModuleName = (path: string, containingPath: string) => {
+	if (project === null) {
+		return null;
+	}
+
+	return (
+		tsmorph.ts.resolveModuleName(
+			path,
+			containingPath,
+			project.getCompilerOptions(),
+			project.getModuleResolutionHost(),
+			undefined,
+			undefined,
+			ModuleKind.CommonJS,
+		).resolvedModule?.resolvedFileName ?? null
+	);
+};
+
 const buildComponentTreeNode = async (
 	tsmorph: Dependencies['tsmorph'],
 	containingPath: string,
@@ -958,25 +977,44 @@ const buildComponentTreeNode = async (
 	const { metadata, dependencies } = buildComponentMetadata(sourceFile);
 
 	treeNode.metadata = metadata;
-	treeNode.dependencies = dependencies;
+
+	treeNode.dependencies = Object.entries(dependencies ?? {}).reduce(
+		(acc, [key, val]) => {
+			if (
+				val.kind === SyntaxKind.ImportDeclaration &&
+				val.structure !== null
+			) {
+				const resolvedName =
+					resolveModuleName(
+						val.structure.moduleSpecifier ?? '',
+						containingPath,
+					) ?? '';
+
+				acc[key] = {
+					...val,
+					structure: {
+						...val.structure,
+						moduleSpecifier: resolvedName,
+					},
+				};
+
+				return acc;
+			}
+
+			acc[key] = val;
+
+			return acc;
+		},
+		{} as Record<string, Dependency>,
+	);
 
 	const importIdentifiersByImportPath =
 		collectedImportedIdentifiers(sourceFile);
 
 	const paths = importIdentifiersByImportPath.keys();
 	for (const path of paths) {
-		const resolvedPath = tsmorph.ts.resolveModuleName(
-			path,
-			containingPath,
-			project.getCompilerOptions(),
-			project.getModuleResolutionHost(),
-			undefined,
-			undefined,
-			ModuleKind.ESNext,
-		);
-
 		const resolvedFileName =
-			resolvedPath.resolvedModule?.resolvedFileName ?? null;
+			resolveModuleName(path, containingPath) ?? null;
 
 		if (resolvedFileName === null) {
 			continue;
@@ -1124,20 +1162,30 @@ const getPositionAfterImports = (sourceFile: SourceFile): number => {
 const mergeOrCreateImports = (
 	sourceFile: SourceFile,
 	{ moduleSpecifier, namedImports }: ImportDeclarationStructure,
+	path: string,
 ) => {
 	const importDeclarations = sourceFile.getImportDeclarations();
 
 	const importedModule =
 		importDeclarations.find((importDeclaration) => {
-			const text = importDeclaration.getModuleSpecifier().getText();
-			return text.substring(1, text.length - 1) === moduleSpecifier;
+			const oldSpecifierText = importDeclaration
+				.getModuleSpecifier()
+				.getText();
+
+			// compare by absolute paths
+			const oldPath = resolveModuleName(
+				oldSpecifierText.substring(1, oldSpecifierText.length - 1),
+				path,
+			);
+
+			return oldPath === moduleSpecifier;
 		}) ?? null;
 
 	// create import
 	if (importedModule === null) {
 		sourceFile.addImportDeclaration({
 			namedImports,
-			moduleSpecifier,
+			moduleSpecifier: relative(path, moduleSpecifier),
 		});
 		return;
 	}
@@ -1162,6 +1210,7 @@ const mergeOrCreateImports = (
 const insertDependencies = (
 	sourceFile: SourceFile,
 	dependencies: Record<string, Dependency>,
+	path: string,
 ) => {
 	let positionAfterImports = getPositionAfterImports(sourceFile);
 
@@ -1171,7 +1220,7 @@ const insertDependencies = (
 		}
 
 		if (kind === SyntaxKind.ImportDeclaration && structure !== null) {
-			mergeOrCreateImports(sourceFile, structure);
+			mergeOrCreateImports(sourceFile, structure, path);
 			positionAfterImports++;
 			return;
 		}
@@ -1193,19 +1242,14 @@ export const repomod: Repomod<Dependencies> = {
 			return [];
 		}
 
-		if (project === null) {
-			await initTsMorphProject(tsmorph, unifiedFileSystem, projectDir);
-		}
+		await initTsMorphProject(tsmorph, unifiedFileSystem, projectDir);
 
 		const componentTree = await buildComponentTree(tsmorph, path);
 
 		const mergedMetadata = mergeMetadata(componentTree);
 		const mergedDependencies = mergeDependencies(componentTree);
 
-		if (
-			Object.keys(mergedMetadata).length === 0 ||
-			Object.keys(mergedDependencies).length === 0
-		) {
+		if (Object.keys(mergedMetadata).length === 0) {
 			return [];
 		}
 
@@ -1237,11 +1281,11 @@ export const repomod: Repomod<Dependencies> = {
 		try {
 			const metadata = JSON.parse(options.metadata ?? '');
 			const dependencies = JSON.parse(
-				options.dependencies ?? '',
+				options.dependencies ?? '{}',
 			) as Record<string, Dependency>;
 
 			insertMetadata(sourceFile, metadata);
-			insertDependencies(sourceFile, dependencies);
+			insertDependencies(sourceFile, dependencies, path);
 
 			return {
 				kind: 'upsertData',

@@ -15,50 +15,6 @@ import { mdxFromMarkdown, mdxToMarkdown } from 'mdast-util-mdx';
 import { visit } from 'unist-util-visit';
 import { deepStrictEqual } from 'node:assert';
 
-const A_CONTENT = `
-import Meta from '../../components/a.tsx';
-import { e1 } from 'module1';
-const global = "global";
-export default function Index({}) {
-	return <Meta title={"string"} description={global}/>;
-}
-`;
-
-const A_COMPONENT_CONTENT = `
-import Head from 'next/head';
-import NestedComponent from '../components/b.tsx';
-import notAComponent from '../utils';
-import { e, e1 } from 'module1';
-notAComponent();
-const a = "content";
-const { b } = { b: "content" };
-const c = () => {};
-function d() {}
-export default function Meta({ title, description }) {
-	notAComponent();
-	return (<>
-	<Head>
-		<title>{title}</title>
-		<meta name="application-name" content={a + b + c() + d() + e} />
-	</Head>
-	<NestedComponent desc={description} />
-	</>)
-}
-
-`;
-
-const B_COMPONENT_CONTENT = `
-import Head from 'next/head';
-
-export default function NestedComponent({ description }) {
-	return <Head>
-	<meta name="description" content={description} />
-	</Head>
-}
-
-export default NestedComponent;
-`;
-
 const transform = async (json: DirectoryJSON) => {
 	const volume = Volume.fromJSON(json);
 
@@ -104,7 +60,39 @@ const transform = async (json: DirectoryJSON) => {
 };
 
 describe('next 13 replace-next-head-v2', function () {
-	it('should merge inject metadata to the page', async function (this: Context) {
+	it('should find and merge metadata in Page child components', async function (this: Context) {
+		const A_CONTENT = `
+		import Meta from '../../components/a.tsx';
+		export default function Page() {
+			return <Meta />;
+		}
+`;
+
+		const A_COMPONENT_CONTENT = `
+		import Head from 'next/head';
+		import NestedComponent from '../components/b.tsx';
+		export default function Meta() {
+			return (<>
+			<Head>
+				<title>title</title>
+			</Head>
+			<NestedComponent />
+			</>)
+		}
+`;
+
+		const B_COMPONENT_CONTENT = `
+		import Head from 'next/head';
+			
+		export default function NestedComponent() {
+			return <Head>
+			<meta name="description" content="description" />
+			</Head>
+		}
+		
+		export default NestedComponent;
+`;
+
 		const externalFileCommands = await transform({
 			'/opt/project/pages/a/index.tsx': A_CONTENT,
 			'/opt/project/components/a.tsx': A_COMPONENT_CONTENT,
@@ -117,18 +105,106 @@ describe('next 13 replace-next-head-v2', function () {
 			data:
 				'import { Metadata } from "next";\n' +
 				"import Meta from '../../components/a.tsx';\n" +
-				"import { e1, e } from 'module1';\n" +
-				'const c = () => { };\n' +
-				'const { b } = { b: "content" };\n' +
-				'const a = "content";\n' +
 				'export const metadata: Metadata = {\n' +
-				'    title: `${title}`,\n' +
-				'    applicationName: a + b + c() + d() + e,\n' +
-				'    description: description,\n' +
+				'    title: `title`,\n' +
+				'    description: "description",\n' +
 				'};\n' +
-				'const global = "global";\n' +
-				'export default function Index({}) {\n' +
-				'    return <Meta title={"string"} description={global}/>;\n' +
+				'export default function Page() {\n' +
+				'    return <Meta />;\n' +
+				'}\n',
+		});
+	});
+
+	it('should move definitions of identifiers used in meta tag expr to the Page file', async function (this: Context) {
+		const A_CONTENT = `
+		import Meta from '../../components/a.tsx';
+		export default function Page() {
+			return <Meta />;
+		}
+`;
+
+		const A_COMPONENT_CONTENT = `
+		import Head from 'next/head';
+		
+		const a = "a";
+		const b = () => "b";
+		function c() { return "c" };
+		const { obj: { d }} = { obj: { d: "d"} };
+		const env = process.env.APP_NAME;
+		
+		export default function Meta() {
+			return (<>
+			<Head>
+				<title>{a + b() + c() + d + e + env}</title>
+			</Head>
+			</>)
+		}
+`;
+
+		const externalFileCommands = await transform({
+			'/opt/project/pages/a/index.tsx': A_CONTENT,
+			'/opt/project/components/a.tsx': A_COMPONENT_CONTENT,
+			'/opt/project/utils/index.ts': '',
+		});
+
+		deepStrictEqual(externalFileCommands[0], {
+			kind: 'upsertFile',
+			path: '/opt/project/pages/a/index.tsx',
+			data:
+				'import { Metadata } from "next";\n' +
+				"import Meta from '../../components/a.tsx';\n" +
+				'const env = process.env.APP_NAME;\n' +
+				'const { obj: { d } } = { obj: { d: "d" } };\n' +
+				'const b = () => "b";\n' +
+				'const a = "a";\n' +
+				'export const metadata: Metadata = {\n' +
+				'    title: `${a + b() + c() + d + e + env}`,\n' +
+				'};\n' +
+				'export default function Page() {\n' +
+				'    return <Meta />;\n' +
+				'}\n',
+		});
+	});
+
+	it('should move identifier definitions that are ImportDeclarations, should update the moduleSpecifier when moved ', async function (this: Context) {
+		const A_CONTENT = `
+		import Meta from '../../components/a.tsx';
+		export default function Page() {
+			return <Meta />;
+		}
+`;
+
+		const A_COMPONENT_CONTENT = `
+		import Head from 'next/head';
+		import { a } from '../utils';
+		
+		export default function Meta() {
+			return (<>
+			<Head>
+				<title>{a}</title>
+			</Head>
+			</>)
+		}
+`;
+
+		const externalFileCommands = await transform({
+			'/opt/project/pages/a/index.tsx': A_CONTENT,
+			'/opt/project/components/a.tsx': A_COMPONENT_CONTENT,
+			'/opt/project/utils/index.ts': '',
+		});
+
+		deepStrictEqual(externalFileCommands[0], {
+			kind: 'upsertFile',
+			path: '/opt/project/pages/a/index.tsx',
+			data:
+				'import { Metadata } from "next";\n' +
+				"import Meta from '../../components/a.tsx';\n" +
+				'import { a } from "../../../utils/index.ts";\n' +
+				'export const metadata: Metadata = {\n' +
+				'    title: `${a}`,\n' +
+				'};\n' +
+				'export default function Page() {\n' +
+				'    return <Meta />;\n' +
 				'}\n',
 		});
 	});
