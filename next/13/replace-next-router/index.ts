@@ -339,6 +339,8 @@ const handleVariableDeclaration = (
 				);
 			} else if (Node.isArrayLiteralExpression(parent)) {
 				usesRouter.set(() => true);
+			} else if (Node.isShorthandPropertyAssignment(parent)) {
+				usesRouter.set(() => true);
 			}
 		});
 

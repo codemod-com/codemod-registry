@@ -1529,6 +1529,34 @@ describe('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
+	it('should ensure that `useRouter` import is added when `router` is used as a short-hand property', () => {
+		const beforeText = `
+		import { useRouter } from "next/router";
+		
+		export default function CustomThemeProvider() {
+		  const router = useRouter();
+
+		  return (
+			<ThemeProvider {...getThemeProviderProps({ props, router })} />
+		  );
+	`;
+
+		const afterText = `
+		import { useRouter } from "next/navigation";
+		
+		export default function CustomThemeProvider() {
+		  const router = useRouter();
+		
+		  return (
+			<ThemeProvider {...getThemeProviderProps({ props, router })} />
+		  );
+	`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(actual, expected);
+	});
+
 	// BreadcrumbContainer
 	// AppCard
 });
