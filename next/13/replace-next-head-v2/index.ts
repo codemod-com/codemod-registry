@@ -231,7 +231,10 @@ const getDependenciesForIdentifiers = (identifiers: Identifier[]) => {
 				return;
 			}
 
-			const ancestor = firstDefinition.getFirstAncestorByKind(s) ?? null;
+			const ancestor =
+				firstDefinition.getKind() === s
+					? firstDefinition
+					: firstDefinition.getFirstAncestorByKind(s) ?? null;
 
 			if (ancestor !== null) {
 				foundAncestor = ancestor;
@@ -1102,56 +1105,51 @@ const mergeMetadata = (
 		}, currentComponentMetadata);
 };
 
-const findComponentPropValue = (
-	path: string,
-	componentPath: string,
-	propName: string,
-): JsxExpression | StringLiteral | null => {
-	const sourceFile = project?.getSourceFile(path) ?? null;
-
-	if (sourceFile === null) {
-		return null;
-	}
-
-	const importDeclarations = sourceFile?.getImportDeclarations();
+const findComponentByModuleSpecifier = (
+	sourceFile: SourceFile,
+	componentAbsolutePath: string,
+) => {
+	const importDeclarations = sourceFile.getImportDeclarations();
+	const sourceFilePath = sourceFile.getFilePath().toString();
 
 	const componentImportDeclaration = importDeclarations.find(
 		(importDeclaration) => {
-			const oldSpecifierText = importDeclaration
+			const moduleSpecifierText = importDeclaration
 				.getModuleSpecifier()
 				.getText();
 
-			const importAbsolutePath = resolveModuleName(
-				oldSpecifierText.substring(1, oldSpecifierText.length - 1),
-				path,
+			const modulePath = moduleSpecifierText.substring(
+				1,
+				moduleSpecifierText.length - 1,
 			);
 
-			return importAbsolutePath === componentPath;
+			const importAbsolutePath = resolveModuleName(
+				modulePath,
+				sourceFilePath,
+			);
+
+			return importAbsolutePath === componentAbsolutePath;
 		},
 	);
 
-	const identifiers: Identifier[] = [];
+	const importedIdentifiers: Identifier[] = [];
 
-	const defImport = componentImportDeclaration?.getDefaultImport();
+	const defaultImport = componentImportDeclaration?.getDefaultImport();
 
-	if (defImport) {
-		identifiers.push(defImport);
+	if (defaultImport) {
+		importedIdentifiers.push(defaultImport);
 	}
 
 	(componentImportDeclaration?.getNamedImports() ?? []).forEach(
 		(namedImport) => {
-			const namedNode = namedImport.getNameNode();
-
-			identifiers.push(namedNode);
+			importedIdentifiers.push(namedImport.getNameNode());
 		},
 	);
 
-	let propValue: JsxExpression | StringLiteral | undefined;
+	let component: JsxSelfClosingElement | JsxOpeningElement | undefined;
 
-	identifiers.forEach((identifier) => {
+	importedIdentifiers.forEach((identifier) => {
 		const refs = identifier.findReferencesAsNodes();
-
-		let component: JsxSelfClosingElement | JsxOpeningElement | undefined;
 
 		refs.forEach((ref) => {
 			const parent = ref.getParent();
@@ -1163,25 +1161,43 @@ const findComponentPropValue = (
 				component = parent;
 			}
 		});
+	});
 
-		const jsxAttributes =
-			component?.getDescendantsOfKind(SyntaxKind.JsxAttribute) ?? [];
+	return component ?? null;
+};
 
-		jsxAttributes.forEach((jsxAttribute) => {
-			const name = jsxAttribute.getNameNode().getText();
+const findComponentPropValue = (
+	path: string,
+	componentPath: string,
+	propName: string,
+): JsxExpression | StringLiteral | null => {
+	const sourceFile = project?.getSourceFile(path) ?? null;
 
-			if (name !== propName) {
-				return;
-			}
+	if (sourceFile === null) {
+		return null;
+	}
 
-			const initializer = jsxAttribute.getInitializer();
-			if (
-				Node.isJsxExpression(initializer) ||
-				Node.isStringLiteral(initializer)
-			) {
-				propValue = initializer;
-			}
-		});
+	const component = findComponentByModuleSpecifier(sourceFile, componentPath);
+
+	let propValue: JsxExpression | StringLiteral | undefined;
+
+	const jsxAttributes =
+		component?.getDescendantsOfKind(SyntaxKind.JsxAttribute) ?? [];
+
+	jsxAttributes.forEach((jsxAttribute) => {
+		const name = jsxAttribute.getNameNode().getText();
+
+		if (name !== propName) {
+			return;
+		}
+
+		const initializer = jsxAttribute.getInitializer();
+		if (
+			Node.isJsxExpression(initializer) ||
+			Node.isStringLiteral(initializer)
+		) {
+			propValue = initializer;
+		}
 	});
 
 	return propValue ?? null;
@@ -1199,17 +1215,17 @@ const mergeDependencies = (
 			const mapped = Object.entries(childTreeNode.dependencies).reduce(
 				(acc, [identifierName, value]) => {
 					if (value.kind === SyntaxKind.Parameter) {
-						const propsValue = findComponentPropValue(
+						const propValue = findComponentPropValue(
 							treeNode.path,
 							childTreeNode.path,
 							identifierName,
 						);
 
-						if (propsValue === null) {
+						if (propValue === null) {
 							return acc;
 						}
 
-						const identifiers = propsValue.getDescendantsOfKind(
+						const identifiers = propValue.getDescendantsOfKind(
 							SyntaxKind.Identifier,
 						);
 
@@ -1218,17 +1234,27 @@ const mergeDependencies = (
 
 						Object.entries(newDependencies).forEach(
 							([identifier, dependency]) => {
-								if (
-									rootPath === treeNode.path &&
-									dependency.kind !==
-										SyntaxKind.ImportDeclaration
-								) {
+								if (rootPath === treeNode.path) {
 									return;
 								}
 
 								acc[identifier] = dependency;
 							},
 						);
+
+						if (
+							Node.isJsxExpression(propValue) &&
+							propValue.getExpression()?.getText() !==
+								identifierName
+						) {
+							acc[identifierName] = {
+								kind: SyntaxKind.VariableStatement,
+								text: `const ${identifierName} = ${propValue
+									.getExpression()
+									?.getText()}`,
+								structure: null,
+							};
+						}
 
 						return acc;
 					}
