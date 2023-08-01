@@ -9,6 +9,8 @@ import tsmorph, {
 	ImportDeclaration,
 	JsxElement,
 	ImportDeclarationStructure,
+	JsxExpression,
+	StringLiteral,
 } from 'ts-morph';
 
 import type {
@@ -1100,16 +1102,152 @@ const mergeMetadata = (
 		}, currentComponentMetadata);
 };
 
+const findComponentPropValue = (
+	path: string,
+	componentPath: string,
+	propName: string,
+): JsxExpression | StringLiteral | null => {
+	const sourceFile = project?.getSourceFile(path) ?? null;
+
+	if (sourceFile === null) {
+		return null;
+	}
+
+	const importDeclarations = sourceFile?.getImportDeclarations();
+
+	const componentImportDeclaration = importDeclarations.find(
+		(importDeclaration) => {
+			const oldSpecifierText = importDeclaration
+				.getModuleSpecifier()
+				.getText();
+
+			const importAbsolutePath = resolveModuleName(
+				oldSpecifierText.substring(1, oldSpecifierText.length - 1),
+				path,
+			);
+
+			return importAbsolutePath === componentPath;
+		},
+	);
+
+	const identifiers: Identifier[] = [];
+
+	const defImport = componentImportDeclaration?.getDefaultImport();
+
+	if (defImport) {
+		identifiers.push(defImport);
+	}
+
+	(componentImportDeclaration?.getNamedImports() ?? []).forEach(
+		(namedImport) => {
+			const namedNode = namedImport.getNameNode();
+
+			identifiers.push(namedNode);
+		},
+	);
+
+	let propValue!: JsxExpression | StringLiteral;
+
+	identifiers.forEach((identifier) => {
+		const refs = identifier.findReferencesAsNodes();
+
+		let component: JsxSelfClosingElement | JsxOpeningElement | undefined;
+
+		refs.forEach((ref) => {
+			const parent = ref.getParent();
+
+			if (
+				Node.isJsxSelfClosingElement(parent) ||
+				Node.isJsxOpeningElement(parent)
+			) {
+				component = parent;
+			}
+		});
+
+		if (!component) {
+			return;
+		}
+
+		const attributes = component.getAttributes();
+
+		attributes.forEach((attribute) => {
+			if (Node.isJsxAttribute(attribute)) {
+				const name = attribute.getNameNode().getText();
+
+				if (name !== propName) {
+					return;
+				}
+
+				const initializer = attribute.getInitializer();
+				if (
+					Node.isJsxExpression(initializer) ||
+					Node.isStringLiteral(initializer)
+				) {
+					propValue = initializer;
+				}
+			}
+		});
+	});
+
+	return propValue ?? null;
+};
+
 const mergeDependencies = (
 	treeNode: ComponentTreeNode,
-): Record<string, unknown> => {
+	rootPath: string,
+): ComponentTreeNode => {
 	const currentComponentDependencies = treeNode.dependencies;
 
-	return Object.entries(treeNode.components)
-		.map((arr) => mergeDependencies(arr[1]))
-		.reduce((mergedDependencies, childDependencies) => {
-			return { ...mergedDependencies, ...childDependencies };
+	treeNode.dependencies = Object.entries(treeNode.components)
+		.map((arr) => mergeDependencies(arr[1], rootPath))
+		.reduce((mergedDependencies, childTreeNode) => {
+			const mapped = Object.entries(childTreeNode.dependencies).reduce(
+				(acc, [identifierName, value]) => {
+					if (value.kind === SyntaxKind.Parameter) {
+						const propsValue = findComponentPropValue(
+							treeNode.path,
+							childTreeNode.path,
+							identifierName,
+						);
+
+						if (propsValue === null) {
+							return acc;
+						}
+
+						const identifiers = propsValue.getDescendantsOfKind(
+							SyntaxKind.Identifier,
+						);
+
+						const newDependencies =
+							getDependenciesForIdentifiers(identifiers);
+
+						Object.entries(newDependencies).forEach(
+							([identifier, dependency]) => {
+								if (
+									rootPath === treeNode.path &&
+									dependency.kind !==
+										SyntaxKind.ImportDeclaration
+								) {
+									return;
+								}
+
+								acc[identifier] = dependency;
+							},
+						);
+
+						return acc;
+					}
+
+					acc[identifierName] = value;
+					return acc;
+				},
+				{} as Record<string, Dependency>,
+			);
+
+			return { ...mergedDependencies, ...mapped };
 		}, currentComponentDependencies);
+
+	return treeNode;
 };
 
 const insertMetadata = (
@@ -1152,11 +1290,7 @@ const getPositionAfterImports = (sourceFile: SourceFile): number => {
 	const lastImportDeclaration =
 		sourceFile.getLastChildByKind(SyntaxKind.ImportDeclaration) ?? null;
 
-	if (lastImportDeclaration === null) {
-		return 0;
-	}
-
-	return lastImportDeclaration.getChildIndex() + 1;
+	return (lastImportDeclaration?.getChildIndex() ?? 0) + 1;
 };
 
 const mergeOrCreateImports = (
@@ -1207,6 +1341,7 @@ const mergeOrCreateImports = (
 		}
 	});
 };
+
 const insertDependencies = (
 	sourceFile: SourceFile,
 	dependencies: Record<string, Dependency>,
@@ -1247,7 +1382,10 @@ export const repomod: Repomod<Dependencies> = {
 		const componentTree = await buildComponentTree(tsmorph, path);
 
 		const mergedMetadata = mergeMetadata(componentTree);
-		const mergedDependencies = mergeDependencies(componentTree);
+		const { dependencies: mergedDependencies } = mergeDependencies(
+			componentTree,
+			path,
+		);
 
 		if (Object.keys(mergedMetadata).length === 0) {
 			return [];
