@@ -43,9 +43,45 @@ const getFirstIndexAfterImports = (j: JSCodeshift, file: Collection<File>) => {
 		j.ImportDeclaration.check(node),
 	);
 
-	return lastImportDeclarationIndex === -1
-		? 0
-		: lastImportDeclarationIndex + 1;
+	return lastImportDeclarationIndex + 1;
+};
+
+const getFirstIndexAfterExportNamedFunctionDeclaration = (
+	j: JSCodeshift,
+	file: Collection<File>,
+	functionName: string,
+): number => {
+	const programBody = file.find(j.Program).paths()[0]?.value.body ?? [];
+
+	const lastImportDeclarationIndex = findLastIndex(programBody, (node) => {
+		// function declaration within an export named declaration
+		if (
+			j.ExportNamedDeclaration.check(node) &&
+			j.FunctionDeclaration.check(node.declaration) &&
+			j.Identifier.check(node.declaration.id) &&
+			node.declaration.id.name === functionName
+		) {
+			return true;
+		}
+
+		// variable declarator within an export named declaration
+		if (
+			j.ExportNamedDeclaration.check(node) &&
+			j.VariableDeclaration.check(node.declaration)
+		) {
+			const [declaration] = node.declaration.declarations;
+
+			return (
+				j.VariableDeclarator.check(declaration) &&
+				j.Identifier.check(declaration.id) &&
+				declaration.id.name === functionName
+			);
+		}
+
+		return false;
+	});
+
+	return lastImportDeclarationIndex + 1;
 };
 
 /**
@@ -180,12 +216,9 @@ const addImportStatement: ModFunction<File, 'write'> = (j, root, settings) => {
 };
 
 const addGetDataFunction: ModFunction<File, 'write'> = (j, root, settings) => {
-	const { functionName } = settings;
+	const functionName = settings.functionName as string;
 
-	const getDataFunctionDeclaration = getDataMethodFactory(
-		j,
-		functionName as string,
-	);
+	const getDataFunctionDeclaration = getDataMethodFactory(j, functionName);
 
 	const program = root.find(j.Program);
 
@@ -196,7 +229,7 @@ const addGetDataFunction: ModFunction<File, 'write'> = (j, root, settings) => {
 	}
 
 	programNode.value.body.splice(
-		getFirstIndexAfterImports(j, root),
+		getFirstIndexAfterExportNamedFunctionDeclaration(j, root, functionName),
 		0,
 		getDataFunctionDeclaration.value,
 	);

@@ -34,35 +34,34 @@ describe('next 13 remove-get-static-props', function () {
 	      `;
 
 		const OUTPUT = `
-		import { notFound, redirect } from "next/navigation";
-		
-		type Params = {
-			[key: string]: string | string[] | undefined
-		};
+			import { notFound, redirect } from "next/navigation";
+			
+			type Params = {
+				[key: string]: string | string[] | undefined
+			};
 
-		type PageProps = {
-				params: Params
-		};
-	
-		async function getData({ params }: { params: Params }) {
-			const result = await getStaticProps({ params });
-			
-			if("redirect" in result) {
-					redirect(result.redirect.destination);
-			}
-			
-			if("notFound" in result) {
-					notFound();
-			}
-			
-			return "props" in result ? result.props : {};
-		}
+			type PageProps = {
+					params: Params
+			};
 
-			export
-			async function getStaticProps() {
+			export async function getStaticProps() {
 				const users = await promise;
 
 				return { props: { users } };
+			}
+
+			async function getData({ params }: { params: Params }) {
+				const result = await getStaticProps({ params });
+				
+				if("redirect" in result) {
+						redirect(result.redirect.destination);
+				}
+				
+				if("notFound" in result) {
+						notFound();
+				}
+				
+				return "props" in result ? result.props : {};
 			}
 
 			export default async function Component({ params }: PageProps) {
@@ -101,32 +100,34 @@ describe('next 13 remove-get-static-props', function () {
 	      `;
 
 		const OUTPUT = `
-		import { notFound, redirect } from "next/navigation";
-		type Params = {
-			[key: string]: string | string[] | undefined
-		};
+			import { notFound, redirect } from "next/navigation";
+			
+			type Params = {
+				[key: string]: string | string[] | undefined
+			};
 
-		type PageProps = {
-				params: Params
-		};
-		async function getData({ params }: { params: Params }) {
-			const result = await getStaticProps({ params });
-			
-			if("redirect" in result) {
-					redirect(result.redirect.destination);
-			}
-			
-			if("notFound" in result) {
-					notFound();
-			}
-			
-			return "props" in result ? result.props : {};
-		}
+			type PageProps = {
+					params: Params
+			};
 
 			export async function getStaticProps(context: GetStaticPropsContext) {
 				const users = await promise(context.params);
 				const res = { props: { users } };
 				return res;
+			}
+
+			async function getData({ params }: { params: Params }) {
+				const result = await getStaticProps({ params });
+				
+				if("redirect" in result) {
+						redirect(result.redirect.destination);
+				}
+				
+				if("notFound" in result) {
+						notFound();
+				}
+				
+				return "props" in result ? result.props : {};
 			}
 
 			export default async function Component({ params }: PageProps) {
@@ -172,7 +173,12 @@ describe('next 13 remove-get-static-props', function () {
 			type PageProps = {
 					params: Params
 			};
-			
+
+			export async function getStaticProps() {
+				const allPosts = await promise;
+				return { props: { allPosts } };
+			}
+
 			async function getData({ params }: { params: Params }) {
 				const result = await getStaticProps({ params });
 				
@@ -185,12 +191,6 @@ describe('next 13 remove-get-static-props', function () {
 				}
 				
 				return "props" in result ? result.props : {};
-			}
-
-			export 
-			async function getStaticProps() {
-				const allPosts = await promise;
-				return { props: { allPosts } };
 			}
 
 			export default async function Component({ params }: PageProps) {
@@ -228,36 +228,35 @@ describe('next 13 remove-get-static-props', function () {
 	      `;
 
 		const OUTPUT = `
-		import { notFound, redirect } from "next/navigation";
-		
-		type Params = {
-			[key: string]: string | string[] | undefined
-		};
+			import { notFound, redirect } from "next/navigation";
+			
+			type Params = {
+				[key: string]: string | string[] | undefined
+			};
 
-		type PageProps = {
-				params: Params
-		};
-		
-		async function getData({ params }: { params: Params }) {
-			const result = await getStaticProps({ params });
-			
-			if("redirect" in result) {
-					redirect(result.redirect.destination);
-			}
-			
-			if("notFound" in result) {
-					notFound();
-			}
-			
-			return "props" in result ? result.props : {};
-		}
+			type PageProps = {
+					params: Params
+			};
 
-			export 
-			async function getStaticProps() {
+			export async function getStaticProps() {
 				const users = await promise;
 				const groups = await anotherPromise;
 
 				return { props: { users, groups }, revalidate: 1 };
+			}
+
+			async function getData({ params }: { params: Params }) {
+				const result = await getStaticProps({ params });
+				
+				if("redirect" in result) {
+					redirect(result.redirect.destination);
+				}
+				
+				if("notFound" in result) {
+					notFound();
+				}
+				
+				return "props" in result ? result.props : {};
 			}
 
 			export default async function Component({ params }: PageProps) {
@@ -297,41 +296,41 @@ describe('next 13 remove-get-static-props', function () {
 	    `;
 
 		const OUTPUT = `
-		import { notFound, redirect } from "next/navigation";
-		
-		type Params = {
-			[key: string]: string | string[] | undefined
-		};
+			import { notFound, redirect } from "next/navigation";
+			
+			type Params = {
+				[key: string]: string | string[] | undefined
+			};
 
-		type PageProps = {
-				params: Params
-		};
-		
-		async function getData({ params }: { params: Params }) {
-			const result = await getStaticProps({ params });
-			
-			if("redirect" in result) {
-					redirect(result.redirect.destination);
-			}
-			
-			if("notFound" in result) {
-					notFound();
-			}
-			
-			return "props" in result ? result.props : {};
-		}
+			type PageProps = {
+					params: Params
+			};
 
 			export async function getStaticProps() {
 				const users = await promise;
 				return { props: { users } };
 			}
 
+			async function getData({ params }: { params: Params }) {
+				const result = await getStaticProps({ params });
+				
+				if("redirect" in result) {
+						redirect(result.redirect.destination);
+				}
+				
+				if("notFound" in result) {
+						notFound();
+				}
+				
+				return "props" in result ? result.props : {};
+			}
+
 			async function SingleAppPage({ params }: PageProps) {
 				const props = await getData({ params });
 				return null;
-		}
-		
-		export default SingleAppPage;
+			}
+			
+			export default SingleAppPage;
 		`;
 
 		const fileInfo: FileInfo = {
@@ -361,40 +360,40 @@ describe('next 13 remove-get-static-props', function () {
 	    `;
 
 		const OUTPUT = `
-		import { notFound, redirect } from "next/navigation";
-		
-		type Params = {
-			[key: string]: string | string[] | undefined
-		};
+			import { notFound, redirect } from "next/navigation";
+			
+			type Params = {
+				[key: string]: string | string[] | undefined
+			};
 
-		type PageProps = {
+			type PageProps = {
 				params: Params
-		};
-		
-		async function getData({ params }: { params: Params }) {
-			const result = await getStaticProps({ params });
-			
-			if("redirect" in result) {
-					redirect(result.redirect.destination);
-			}
-			
-			if("notFound" in result) {
-					notFound();
-			}
-			
-			return "props" in result ? result.props : {};
-		}
+			};
 
 			export async function getStaticProps() {
 				return { props: { a } };
 			}
 
+			async function getData({ params }: { params: Params }) {
+				const result = await getStaticProps({ params });
+				
+				if("redirect" in result) {
+						redirect(result.redirect.destination);
+				}
+				
+				if("notFound" in result) {
+						notFound();
+				}
+				
+				return "props" in result ? result.props : {};
+			}
+
 			export async function SingleAppPage({ params }: PageProps) {
 				const props = await getData({ params });
 				return null;
-		}
-		
-		export default SingleAppPage;
+			}
+			
+			export default SingleAppPage;
 		`;
 
 		const fileInfo: FileInfo = {
@@ -420,7 +419,6 @@ describe('next 13 remove-get-static-props', function () {
 			}
 			
 			export default SingleAppPage;
-			
 	    `;
 
 		const OUTPUT = `
@@ -433,7 +431,11 @@ describe('next 13 remove-get-static-props', function () {
 			type PageProps = {
 					params: Params
 			};
-			
+
+			export async function getStaticProps() {
+				return { props: { a } };
+			}
+
 			async function getData({ params }: { params: Params }) {
 				const result = await getStaticProps({ params });
 				
@@ -448,16 +450,12 @@ describe('next 13 remove-get-static-props', function () {
 				return "props" in result ? result.props : {};
 			}
 
-			export async function getStaticProps() {
-				return { props: { a } };
-			}
-
 			export const SingleAppPage = async ({ params }: PageProps) => {
 				const props = await getData({ params });
 				return null;
-		}
-		
-		export default SingleAppPage;
+			}
+			
+			export default SingleAppPage;
 		`;
 
 		const fileInfo: FileInfo = {
@@ -488,41 +486,41 @@ describe('next 13 remove-get-static-props', function () {
 	    `;
 
 		const OUTPUT = `
-		import { notFound, redirect } from "next/navigation";
-		
-		type Params = {
-			[key: string]: string | string[] | undefined
-		};
+			import { notFound, redirect } from "next/navigation";
+			
+			type Params = {
+				[key: string]: string | string[] | undefined
+			};
 
-		type PageProps = {
-				params: Params
-		};
-		
-		async function getData({ params }: { params: Params }) {
-			const result = await getStaticProps({ params });
-			
-			if("redirect" in result) {
-					redirect(result.redirect.destination);
-			}
-			
-			if("notFound" in result) {
-					notFound();
-			}
-			
-			return "props" in result ? result.props : {};
-		}
+			type PageProps = {
+					params: Params
+			};
 
 			export async function getStaticProps() {
 				sideEffect();
 				return { props: { } };
 			}
 
+			async function getData({ params }: { params: Params }) {
+				const result = await getStaticProps({ params });
+				
+				if("redirect" in result) {
+						redirect(result.redirect.destination);
+				}
+				
+				if("notFound" in result) {
+						notFound();
+				}
+				
+				return "props" in result ? result.props : {};
+			}
+
 			export const SingleAppPage = async ({ params }: PageProps) => {
 				await getData({ params });
 				return null;
-		}
-		
-		export default SingleAppPage;
+			}
+			
+			export default SingleAppPage;
 		`;
 
 		const fileInfo: FileInfo = {
@@ -550,33 +548,33 @@ describe('next 13 remove-get-static-props', function () {
 	    `;
 
 		const OUTPUT = `
-		import { notFound, redirect } from "next/navigation";
-		
-		type Params = {
-			[key: string]: string | string[] | undefined
-		};
+			import { notFound, redirect } from "next/navigation";
+			
+			type Params = {
+				[key: string]: string | string[] | undefined
+			};
 
-		type PageProps = {
-				params: Params
-		};
-		
-		async function getData({ params }: { params: Params }) {
-			const result = await getStaticProps({ params });
-			
-			if("redirect" in result) {
-					redirect(result.redirect.destination);
-			}
-			
-			if("notFound" in result) {
-					notFound();
-			}
-			
-			return "props" in result ? result.props : {};
-		}
+			type PageProps = {
+					params: Params
+			};
 		
 			export async function getStaticProps() {
 				const users = await promise;
 				return { props: { users } };
+			}
+
+			async function getData({ params }: { params: Params }) {
+				const result = await getStaticProps({ params });
+				
+				if("redirect" in result) {
+						redirect(result.redirect.destination);
+				}
+				
+				if("notFound" in result) {
+						notFound();
+				}
+				
+				return "props" in result ? result.props : {};
 			}
 
 			const Home = async ({ params }: PageProps) => {
@@ -621,24 +619,24 @@ describe('next 13 remove-get-static-props', function () {
 			type PageProps = {
 					params: Params
 			};
-			
-			async function getData({ params }: { params: Params }) {
-				const result = await getStaticProps({ params });
-				
-				if("redirect" in result) {
-						redirect(result.redirect.destination);
-				}
-				
-				if("notFound" in result) {
-						notFound();
-				}
-				
-				return "props" in result ? result.props : {};
-			}
 
 			export async function getStaticProps() {
 				const users = await promise;
 				return { props: { users } };
+			}
+
+			async function getData({ params }: { params: Params }) {
+				const result = await getStaticProps({ params });
+				
+				if("redirect" in result) {
+					redirect(result.redirect.destination);
+				}
+				
+				if("notFound" in result) {
+					notFound();
+				}
+				
+				return "props" in result ? result.props : {};
 			}
 
 			const Home = async ({ params }: PageProps) => {
@@ -685,7 +683,12 @@ describe('next 13 remove-get-static-props', function () {
 			type PageProps = {
 					params: Params
 			};
-			
+
+			export async function getStaticProps() {
+				const users = await promise;
+				return { props: { users } };
+			}
+
 			async function getData({ params }: { params: Params }) {
 				const result = await getStaticProps({ params });
 				
@@ -698,11 +701,6 @@ describe('next 13 remove-get-static-props', function () {
 				}
 				
 				return "props" in result ? result.props : {};
-			}
-
-			export async function getStaticProps() {
-				const users = await promise;
-				return { props: { users } };
 			}
 
 			const AppPage: AppPageType['default'] = async function AppPage({ params }: PageProps) {
@@ -750,9 +748,16 @@ describe('next 13 remove-get-static-props', function () {
 			};
 	
 			type PageProps = {
-					params: Params
+				params: Params
 			};
-			
+
+			export async function getStaticProps() {
+				const users = await promise;
+				const groups = await anotherPromise;
+
+				return { props: { users, groups }, revalidate: 1 };
+			}
+
 			async function getData({ params }: { params: Params }) {
 				const result = await getStaticProps({ params });
 				
@@ -765,14 +770,6 @@ describe('next 13 remove-get-static-props', function () {
 				}
 				
 				return "props" in result ? result.props : {};
-			}
-
-			export
-			async function getStaticProps() {
-				const users = await promise;
-				const groups = await anotherPromise;
-
-				return { props: { users, groups }, revalidate: 1 };
 			}
 
 			export default async function Component({params}: PageProps) {
@@ -818,37 +815,36 @@ describe('next 13 remove-get-static-props', function () {
 	      `;
 
 		const OUTPUT = `
-		import { notFound, redirect } from "next/navigation";
-		import x from "y";
-		
-		type Params = {
-			[key: string]: string | string[] | undefined
-		};
+			import { notFound, redirect } from "next/navigation";
+			import x from "y";
+			
+			type Params = {
+				[key: string]: string | string[] | undefined
+			};
 
-		type PageProps = {
+			type PageProps = {
 				params: Params
-		};
+			};
 		
-		async function getData({ params }: { params: Params }) {
-			const result = await getStaticProps({ params });
-			
-			if("redirect" in result) {
-					redirect(result.redirect.destination);
-			}
-			
-			if("notFound" in result) {
-					notFound();
-			}
-			
-			return "props" in result ? result.props : {};
-		}
-		
-			export
-			async function getStaticProps() {
+			export async function getStaticProps() {
 				const users = await promise;
 				const groups = await anotherPromise;
 
 				return { props: { users, groups }, revalidate: 1 };
+			}
+
+			async function getData({ params }: { params: Params }) {
+				const result = await getStaticProps({ params });
+				
+				if("redirect" in result) {
+					redirect(result.redirect.destination);
+				}
+				
+				if("notFound" in result) {
+					notFound();
+				}
+				
+				return "props" in result ? result.props : {};
 			}
 
 			export default async function Component({ params }: PageProps) {
@@ -894,37 +890,36 @@ describe('next 13 remove-get-static-props', function () {
 	      `;
 
 		const OUTPUT = `
-		import { notFound, redirect } from "next/navigation";
-		import x from "y";
-		
-		type Params = {
-			[key: string]: string | string[] | undefined
-		};
+			import { notFound, redirect } from "next/navigation";
+			import x from "y";
+			
+			type Params = {
+				[key: string]: string | string[] | undefined
+			};
 
-		type PageProps = {
-				params: Params
-		};
-		
-			async function getData({ params }: { params: Params }) {
-				const result = await getStaticProps({ params });
-				
-				if("redirect" in result) {
-						redirect(result.redirect.destination);
-				}
-				
-				if("notFound" in result) {
-						notFound();
-				}
-				
-				return "props" in result ? result.props : {};
-			}
-		
-			export const getStaticProps = 
-			 async () => {
+			type PageProps = {
+					params: Params
+			};
+
+			export const getStaticProps = async () => {
 				const users = await promise;
 				const groups = await anotherPromise;
 
 				return { props: { users, groups }, revalidate: 1 };
+			}
+
+			async function getData({ params }: { params: Params }) {
+				const result = await getStaticProps({ params });
+				
+				if("redirect" in result) {
+					redirect(result.redirect.destination);
+				}
+				
+				if("notFound" in result) {
+					notFound();
+				}
+				
+				return "props" in result ? result.props : {};
 			}
 
 			export default async function Component({ params }: PageProps) {
@@ -944,6 +939,7 @@ describe('next 13 remove-get-static-props', function () {
 		};
 
 		const actualOutput = transform(fileInfo, buildApi('tsx'));
+
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT?.replace(/\W/gm, ''),
@@ -973,17 +969,28 @@ describe('next 13 remove-get-static-props', function () {
 	      `;
 
 		const OUTPUT = `
-		import { notFound, redirect } from "next/navigation";
-		import x from "y";
-		
-		type Params = {
-			[key: string]: string | string[] | undefined
-		};
+			import { notFound, redirect } from "next/navigation";
+			import x from "y";
+			
+			type Params = {
+				[key: string]: string | string[] | undefined
+			};
 
-		type PageProps = {
+			type PageProps = {
 				params: Params
-		};
-		
+			};
+
+			export const getStaticProps =  async () => {
+				const users = await promise;
+				const groups = await anotherPromise;
+
+				if(false) {
+					return { props: { users, groups }}
+				}
+
+				return { props: { users, groups }, revalidate: 1 };
+			}
+
 			async function getData({ params }: { params: Params }) {
 				const result = await getStaticProps({ params });
 				
@@ -996,18 +1003,6 @@ describe('next 13 remove-get-static-props', function () {
 				}
 				
 				return "props" in result ? result.props : {};
-			}
-
-			export const getStaticProps =  
-			 async () => {
-				const users = await promise;
-				const groups = await anotherPromise;
-
-				if(false) {
-					return { props: { users, groups }}
-				}
-
-				return { props: { users, groups }, revalidate: 1 };
 			}
 
 			export default async function Component({ params }: PageProps) {
@@ -1036,6 +1031,7 @@ describe('next 13 remove-get-static-props', function () {
 	it('should not duplicate revalidate prop', function () {
 		const INPUT = `
 			import x from "y";
+			
 			export const getStaticProps = async () => {
 				const users = await promise;
 				const groups = await anotherPromise;
@@ -1056,17 +1052,28 @@ describe('next 13 remove-get-static-props', function () {
 	      `;
 
 		const OUTPUT = `
-		import { notFound, redirect } from "next/navigation";
-		import x from "y";
-		
-		type Params = {
-			[key: string]: string | string[] | undefined
-		};
+			import { notFound, redirect } from "next/navigation";
+			import x from "y";
+			
+			type Params = {
+				[key: string]: string | string[] | undefined
+			};
 
-		type PageProps = {
-				params: Params
-		};
+			type PageProps = {
+					params: Params
+			};
 		
+			export const getStaticProps = async () => {
+				const users = await promise;
+				const groups = await anotherPromise;
+
+				if(false) {
+					return { props: { users, groups }, revalidate: 1}
+				}
+
+				return { props: { users, groups }, revalidate: 1 };
+			}
+
 			async function getData({ params }: { params: Params }) {
 				const result = await getStaticProps({ params });
 				
@@ -1079,18 +1086,6 @@ describe('next 13 remove-get-static-props', function () {
 				}
 				
 				return "props" in result ? result.props : {};
-			}
-		
-			export const getStaticProps = 
-			 async () => {
-				const users = await promise;
-				const groups = await anotherPromise;
-
-				if(false) {
-					return { props: { users, groups }, revalidate: 1}
-				}
-
-				return { props: { users, groups }, revalidate: 1 };
 			}
 
 			export default async function Component({ params }: PageProps) {
@@ -1119,22 +1114,23 @@ describe('next 13 remove-get-static-props', function () {
 
 	it('should replace getServerSideProps', function () {
 		const INPUT = `
-		export async function getServerSideProps() {
-			const res = await fetch(\`https://...\`);
-			const projects = await res.json();
+			export async function getServerSideProps() {
+				const res = await fetch(\`https://...\`);
+				const projects = await res.json();
 
-			return { props: { projects } };
-		}
+				return { props: { projects } };
+			}
 
-		export default function Dashboard({ projects }) {
-			return (
-				<ul>
-					{projects.map((project) => (
-						<li key={project.id}>{project.name}</li>
-					))}
-				</ul>
-			);
-		} `;
+			export default function Dashboard({ projects }) {
+				return (
+					<ul>
+						{projects.map((project) => (
+							<li key={project.id}>{project.name}</li>
+						))}
+					</ul>
+				);
+			}
+		`;
 
 		const OUTPUT = `
 			import { notFound, redirect } from "next/navigation";
@@ -1143,9 +1139,16 @@ describe('next 13 remove-get-static-props', function () {
 			};
 	
 			type PageProps = {
-					params: Params
+				params: Params
 			};
-			
+		
+			export async function getServerSideProps() {
+				const res = await fetch(\`https://...\`);
+				const projects = await res.json();
+
+				return { props: { projects } };
+			}
+
 			async function getData({ params }: { params: Params }) {
 				const result = await getServerSideProps({ params });
 				
@@ -1158,14 +1161,6 @@ describe('next 13 remove-get-static-props', function () {
 				}
 				
 				return "props" in result ? result.props : {};
-			}
-		
-			export
-			async function getServerSideProps() {
-				const res = await fetch(\`https://...\`);
-				const projects = await res.json();
-
-				return { props: { projects } };
 			}
 
 			export default async function Dashboard({ params }: PageProps) {
@@ -1195,80 +1190,78 @@ describe('next 13 remove-get-static-props', function () {
 
 	it('should handle getStaticPaths', function () {
 		const INPUT = `
-		import PostLayout from '@/components/post-layout';
+			import PostLayout from '@/components/post-layout';
 
-		export async function getStaticPaths() {
-			return {
-				paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
-				fallback: true,
-			};
-		}
+			export async function getStaticPaths() {
+				return {
+					paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
+					fallback: true,
+				};
+			}
 
-		export async function getStaticProps({ params }) {
-			const res = await fetch(\`https://.../posts/\${params.id}\`);
-			const post = await res.json();
+			export async function getStaticProps({ params }) {
+				const res = await fetch(\`https://.../posts/\${params.id}\`);
+				const post = await res.json();
 
-			return { props: { post } };
-		}
+				return { props: { post } };
+			}
 
-		export default function Post({ post }) {
-			return <PostLayout post={post} />;
-		}
-	`;
+			export default function Post({ post }) {
+				return <PostLayout post={post} />;
+			}
+		`;
 
 		const OUTPUT = `
-		import { notFound, redirect } from "next/navigation";
-		import PostLayout from '@/components/post-layout';
-	
-		type Params = {
-			[key: string]: string | string[] | undefined
-		};
-
-		type PageProps = {
-				params: Params
-		};
+			import { notFound, redirect } from "next/navigation";
+			import PostLayout from '@/components/post-layout';
 		
-		async function getData({ params }: { params: Params }) {
-			const result = await getStaticProps({ params });
-			
-			if("redirect" in result) {
-					redirect(result.redirect.destination);
-			}
-			
-			if("notFound" in result) {
-					notFound();
-			}
-			
-			return "props" in result ? result.props : {};
-		}
+			type Params = {
+				[key: string]: string | string[] | undefined
+			};
+
+			type PageProps = {
+					params: Params
+			};
 	
-		export async function generateStaticParams() {
-			return (await getStaticPaths({})).paths;
-		}
+			export async function generateStaticParams() {
+				return (await getStaticPaths({})).paths;
+			}
 		
-		export 
-	  async function getStaticPaths() {
-	    return {
-	            paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
-							fallback: true,
-	    };
-	  }
+			export async function getStaticPaths() {
+				return {
+						paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
+									fallback: true,
+				};
+			}
 
-		export
-		async function getStaticProps({ params }) {
-			const res = await fetch(\`https://.../posts/\${params.id}\`);
-			const post = await res.json();
+			export async function getStaticProps({ params }) {
+				const res = await fetch(\`https://.../posts/\${params.id}\`);
+				const post = await res.json();
 
-			return { props: { post } };
-		}
+				return { props: { post } };
+			}
 
-		export default async function Post({ params }: PageProps) {
-			const {post} = await getData({params});
+			async function getData({ params }: { params: Params }) {
+				const result = await getStaticProps({ params });
+				
+				if("redirect" in result) {
+						redirect(result.redirect.destination);
+				}
+				
+				if("notFound" in result) {
+						notFound();
+				}
+				
+				return "props" in result ? result.props : {};
+			}
 
-			return <PostLayout post={post} />;
-		}
+			export default async function Post({ params }: PageProps) {
+				const {post} = await getData({params});
 
-		export const dynamicParams = true;
+				return <PostLayout post={post} />;
+			}
+
+			export const dynamicParams = true;
 		`;
 
 		const fileInfo: FileInfo = {
@@ -1285,80 +1278,78 @@ describe('next 13 remove-get-static-props', function () {
 
 	it('should transform fallback property correctly 2', function () {
 		const INPUT = `
-		import PostLayout from '@/components/post-layout';
+			import PostLayout from '@/components/post-layout';
 
-		export async function getStaticPaths() {
-			return {
-				paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
-				fallback: false,
-			};
-		}
+			export async function getStaticPaths() {
+				return {
+					paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
+					fallback: false,
+				};
+			}
 
-		export async function getStaticProps({ params }) {
-			const res = await fetch(\`https://.../posts/\${params.id}\`);
-			const post = await res.json();
+			export async function getStaticProps({ params }) {
+				const res = await fetch(\`https://.../posts/\${params.id}\`);
+				const post = await res.json();
 
-			return { props: { post } };
-		}
+				return { props: { post } };
+			}
 
-		export default function Post({ post }) {
-			return <PostLayout post={post} />;
-		}
-	`;
+			export default function Post({ post }) {
+				return <PostLayout post={post} />;
+			}
+		`;
 
 		const OUTPUT = `
-		import { notFound, redirect } from "next/navigation";
-		import PostLayout from '@/components/post-layout';
-	
-		type Params = {
-			[key: string]: string | string[] | undefined
-		};
-
-		type PageProps = {
-				params: Params
-		};
+			import { notFound, redirect } from "next/navigation";
+			import PostLayout from '@/components/post-layout';
 		
-		async function getData({ params }: { params: Params }) {
-			const result = await getStaticProps({ params });
+			type Params = {
+				[key: string]: string | string[] | undefined
+			};
+
+			type PageProps = {
+					params: Params
+			};
 			
-			if("redirect" in result) {
-					redirect(result.redirect.destination);
+			export async function generateStaticParams() {
+				return (await getStaticPaths({})).paths;
 			}
 			
-			if("notFound" in result) {
-					notFound();
+			export async function getStaticPaths() {
+				return {
+						paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
+									fallback: false,
+				};
 			}
-			
-			return "props" in result ? result.props : {};
-		}
-		
-		export async function generateStaticParams() {
-			return (await getStaticPaths({})).paths;
-		}
-		
-		export 
-	  async function getStaticPaths() {
-	    return {
-	            paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
-							fallback: false,
-	    };
-	  }
 
-		export 
-		async function getStaticProps({ params }) {
-			const res = await fetch(\`https://.../posts/\${params.id}\`);
-			const post = await res.json();
+			export async function getStaticProps({ params }) {
+				const res = await fetch(\`https://.../posts/\${params.id}\`);
+				const post = await res.json();
 
-			return { props: { post } };
-		}
+				return { props: { post } };
+			}
 
-		export default async function Post({ params }: PageProps) {
-			const {post} = await getData({params});
+			async function getData({ params }: { params: Params }) {
+				const result = await getStaticProps({ params });
+				
+				if("redirect" in result) {
+						redirect(result.redirect.destination);
+				}
+				
+				if("notFound" in result) {
+						notFound();
+				}
+				
+				return "props" in result ? result.props : {};
+			}
 
-			return <PostLayout post={post} />;
-		}
+			export default async function Post({ params }: PageProps) {
+				const {post} = await getData({params});
 
-		export const dynamicParams = false;
+				return <PostLayout post={post} />;
+			}
+
+			export const dynamicParams = false;
 		`;
 
 		const fileInfo: FileInfo = {
@@ -1374,81 +1365,78 @@ describe('next 13 remove-get-static-props', function () {
 	});
 	it('should transform fallback property correctly', function () {
 		const INPUT = `
-		import PostLayout from '@/components/post-layout';
+			import PostLayout from '@/components/post-layout';
 
-		export async function getStaticPaths() {
-			return {
-				paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
-				fallback: 'blocking',
-			};
-		}
+			export async function getStaticPaths() {
+				return {
+					paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
+					fallback: 'blocking',
+				};
+			}
 
-		export async function getStaticProps({ params }) {
-			const res = await fetch(\`https://.../posts/\${params.id}\`);
-			const post = await res.json();
+			export async function getStaticProps({ params }) {
+				const res = await fetch(\`https://.../posts/\${params.id}\`);
+				const post = await res.json();
 
-			return { props: { post } };
-		}
+				return { props: { post } };
+			}
 
-		export default function Post({ post }) {
-			return <PostLayout post={post} />;
-		}
-	`;
+			export default function Post({ post }) {
+				return <PostLayout post={post} />;
+			}
+		`;
 
 		const OUTPUT = `
-		import { notFound, redirect } from "next/navigation";
-		import PostLayout from '@/components/post-layout';
-	
-		type Params = {
-			[key: string]: string | string[] | undefined
-		};
-
-		type PageProps = {
-				params: Params
-		};
+			import { notFound, redirect } from "next/navigation";
+			import PostLayout from '@/components/post-layout';
 		
-		async function getData({ params }: { params: Params }) {
-			const result = await getStaticProps({ params });
-			
-			if("redirect" in result) {
+			type Params = {
+				[key: string]: string | string[] | undefined
+			};
+
+			type PageProps = {
+					params: Params
+			};
+
+			export async function generateStaticParams() {
+				return (await getStaticPaths({})).paths;
+			}
+
+			export async function getStaticPaths() {
+				return {
+						paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
+									fallback: 'blocking',
+				};
+			}
+
+			export async function getStaticProps({ params }) {
+				const res = await fetch(\`https://.../posts/\${params.id}\`);
+				const post = await res.json();
+
+				return { props: { post } };
+			}
+
+			async function getData({ params }: { params: Params }) {
+				const result = await getStaticProps({ params });
+				
+				if("redirect" in result) {
 					redirect(result.redirect.destination);
-			}
-			
-			if("notFound" in result) {
+				}
+				
+				if("notFound" in result) {
 					notFound();
+				}
+				
+				return "props" in result ? result.props : {};
 			}
-			
-			return "props" in result ? result.props : {};
-		}
-	
 
-		export async function generateStaticParams() {
-			return (await getStaticPaths({})).paths;
-		}
+			export default async function Post({ params }: PageProps) {
+				const {post} = await getData({params});
 
-		export
-	  async function getStaticPaths() {
-	    return {
-	            paths: [{ params: { id: '1' } }, { params: { id: '2' } }],
-							fallback: 'blocking',
-	    };
-	  }
+				return <PostLayout post={post} />;
+			}
 
-		export 
-		async function getStaticProps({ params }) {
-			const res = await fetch(\`https://.../posts/\${params.id}\`);
-			const post = await res.json();
-
-			return { props: { post } };
-		}
-
-		export default async function Post({ params }: PageProps) {
-			const {post} = await getData({params});
-
-			return <PostLayout post={post} />;
-		}
-
-		export const dynamicParams = true;
+			export const dynamicParams = true;
 		`;
 
 		const fileInfo: FileInfo = {
