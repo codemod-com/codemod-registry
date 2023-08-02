@@ -1294,7 +1294,7 @@ const insertGenerateMetadataFunctionDeclaration = (
 	sourceFile.addStatements(
 		`  
 			export async function generateMetadata(
-				{ params }: { params: Record<string, string | string[]>; },
+				{ params }: { params: Record<string, any>; },
 			): Promise<Metadata> {
 					const getStaticPropsResult  = await getStaticProps({ params });
 					

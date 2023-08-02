@@ -406,7 +406,7 @@ describe('next 13 replace-next-head-v2', function () {
 				return <Meta title={title} description={description}/>;
 		}
 		export async function generateMetadata({ params }: {
-				params: Record<string, string | string[]>;
+			params: Record<string, any>;
 		}): Promise<Metadata> {
 				const getStaticPropsResult = await getStaticProps({ params });
 				if (!('props' in getStaticPropsResult)) {
