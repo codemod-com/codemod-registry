@@ -206,14 +206,27 @@ const handleRouterPropertyAccessExpression = (
 			grandParentNode !== null &&
 			Node.isVariableDeclaration(grandParentNode)
 		) {
+			// replacing `const var = !router.isReady`
 			const initializer = grandParentNode.getInitializer();
-			// replacing `!router.isReady`
 			if (
 				Node.isPrefixUnaryExpression(initializer) &&
 				initializer.getOperatorToken() ===
 					ts.SyntaxKind.ExclamationToken
 			) {
 				initializer.replaceWithText('searchParams === null');
+			}
+		} else if (
+			grandParentNode !== null &&
+			Node.isIfStatement(grandParentNode)
+		) {
+			// replacing `if (!router.isReady)`
+			const condition = grandParentNode.getExpression();
+
+			if (
+				Node.isPrefixUnaryExpression(condition) &&
+				condition.getOperatorToken() === ts.SyntaxKind.ExclamationToken
+			) {
+				condition.replaceWithText('searchParams === null');
 			}
 		} else {
 			// replacing `router.isReady`

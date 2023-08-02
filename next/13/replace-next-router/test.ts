@@ -510,7 +510,7 @@ describe('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it('should replace router.isReady with useSearchParams', async function (this: Context) {
+	it('should replace router.isReady with useSearchParams in variable declaration', async function (this: Context) {
 		const beforeText = `
 	          import { useRouter } from 'next/router';
 
@@ -534,7 +534,7 @@ describe('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it('should replace !router.isReady with useSearchParams', async function (this: Context) {
+	it('should replace !router.isReady with useSearchParams in variable declaration', async function (this: Context) {
 		const beforeText = `
 	          import { useRouter } from 'next/router';
 
@@ -549,6 +549,33 @@ describe('next 13 replace-next-router', function () {
 			function Component() {
 				const searchParams = useSearchParams();
 	            const notReady = searchParams === null;
+			}
+	      `;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(actual, expected);
+	});
+
+	it('should replace !router.isReady with useSearchParams in `if` statement', async function (this: Context) {
+		const beforeText = `
+	          import { useRouter } from 'next/router';
+
+	          function Component() {
+	              const router = useRouter();
+				  if (!router.isReady) {
+					return null;
+				  }
+	          }
+	      `;
+		const afterText = `
+			import { useSearchParams } from "next/navigation";
+
+			function Component() {
+				const searchParams = useSearchParams();
+				if (searchParams === null) {
+					return null;
+				}
 			}
 	      `;
 
