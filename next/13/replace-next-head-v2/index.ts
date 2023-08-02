@@ -220,22 +220,13 @@ const getDependenciesForIdentifiers = (
 			.getSourceFile()
 			.getImportDeclarations()
 			.some((importDeclaration) => {
-				const namedImports = importDeclaration
-					.getImportClause()
-					?.getNamedBindings();
-
-				if (Node.isNamedImports(namedImports)) {
-					return namedImports
-						.getElements()
-						.some((importSpecifier) => {
-							return (
-								importSpecifier.getNameNode().getText() ===
-								identifier.getText()
-							);
-						});
-				}
-
-				return false;
+				return importDeclaration
+					.getNamedImports()
+					.some(
+						(importSpecifier) =>
+							importSpecifier.getNameNode().getText() ===
+							identifier.getText(),
+					);
 			});
 
 		const syntaxKinds = [
