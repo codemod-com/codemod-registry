@@ -416,6 +416,39 @@ export const repomod: Repomod<Dependencies> = {
 					input,
 				);
 
+				oldSourceFile.getFunctions().forEach((fn) => {
+					const id = fn.getName() ?? '';
+					if (
+						[
+							'getStaticProps',
+							'getServerSideProps',
+							'getStaticPaths',
+						].includes(id)
+					) {
+						fn.setIsExported(false);
+					}
+				});
+
+				oldSourceFile.getVariableStatements().forEach((statement) => {
+					const declarations = statement.getDeclarations();
+
+					declarations.forEach((declaration) => {
+						const id = declaration.getName() ?? '';
+
+						if (
+							[
+								'getStaticProps',
+								'getServerSideProps',
+								'getStaticPaths',
+							].includes(id)
+						) {
+							if (declaration.hasExportKeyword()) {
+								statement.setIsExported(false);
+							}
+						}
+					});
+				});
+
 				oldSourceFile
 					.getImportDeclarations()
 					.filter((declaration) => {

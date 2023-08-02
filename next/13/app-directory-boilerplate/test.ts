@@ -104,13 +104,13 @@ export const getStaticPath = () => {
 
 const A_C_DATA = `// This file has been sourced from: /opt/project/pages/[a]/c.tsx
 // TODO reimplement getServerSideProps with custom logic
-export const getServerSideProps = () => {
+const getServerSideProps = () => {
 };
 `;
 
 const A_C_MDX_DATA = `// This file has been sourced from: /opt/project/pages/[a]/c.mdx
 // TODO reimplement getServerSideProps with custom logic
-export const getServerSideProps = () => {
+const getServerSideProps = () => {
 };
 `;
 
@@ -185,7 +185,7 @@ describe('next 13 app-directory-boilerplate', function () {
 							return null;
 						}
 						
-						export const getStaticProps = async ({}) => {
+						const getStaticProps = async ({}) => {
 							return {
 								props: {},
 								revalidate: 10,
@@ -547,6 +547,52 @@ describe('next 13 app-directory-boilerplate', function () {
 		deepStrictEqual(
 			upsertNotFoundFileCommand?.data.replace(/\W/gm, ''),
 			data.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should remove export keyword from old data fetching methods', async function (this: Context) {
+		const index = `
+			export async function getStaticProps() {};
+			export const getStaticProps = async () => {};
+			
+			export async function getServerSideProps() {};
+			export const getServerSideProps = async () => {};
+			
+			export async function getStaticPaths() {};
+			export const getStaticPaths = async () => {};
+				
+			export default async function Index() {
+					return null;
+			}
+		`;
+
+		const [, command] = await transform({
+			'/opt/project/pages/index.tsx': index,
+		});
+
+		deepStrictEqual(command?.kind, 'upsertFile');
+
+		const pageData = `
+		// This file has been sourced from: /opt/project/pages/index.tsx
+		async function getStaticProps() { }
+		;
+		const getStaticProps = async () => { };
+		async function getServerSideProps() { };
+		
+		// TODO reimplement getServerSideProps with custom logic
+		const getServerSideProps = async () => { };
+		async function getStaticPaths() { };
+		
+		const getStaticPaths = async () => { };
+		
+		export default async function Index() {
+				return null;
+		}
+		`;
+
+		deepStrictEqual(
+			command?.data.replace(/(?!\.)\s/gm, ''),
+			pageData.replace(/(?!\.)\s/gm, ''),
 		);
 	});
 });
