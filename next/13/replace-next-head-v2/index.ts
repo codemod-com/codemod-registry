@@ -219,15 +219,15 @@ const getDependenciesForIdentifiers = (
 		const importDeclarationPresent = identifier
 			.getSourceFile()
 			.getImportDeclarations()
-			.some((importDeclaration) => {
-				return importDeclaration
+			.some((importDeclaration) =>
+				importDeclaration
 					.getNamedImports()
 					.some(
 						(importSpecifier) =>
 							importSpecifier.getNameNode().getText() ===
 							identifier.getText(),
-					);
-			});
+					),
+			);
 
 		const syntaxKinds = [
 			SyntaxKind.Parameter,
