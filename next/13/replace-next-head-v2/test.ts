@@ -404,21 +404,19 @@ describe('next 13 replace-next-head-v2', function () {
 				return <Meta title={title} description={description} appName={appName}/>;
 		}
 		export async function generateMetadata({ params }: {
-				params: Record<string | string[]>
+				params: Record<string | string[]>;
 		}): Promise<Metadata> {
 				const getStaticPropsResult = await getStaticProps({ params });
-				
 				if (!('props' in getStaticPropsResult)) {
 						return {};
 				}
-				
 				const { title, description, appName } = getStaticPropsResult.props;
 				return {
 						title: \`\${title}\`,
 						description: description,
 						applicationName: appName,
 				};
-		}`;
+}`;
 
 		deepStrictEqual(command?.kind, 'upsertFile');
 		deepStrictEqual(command.path, '/opt/project/pages/a/index.tsx');
