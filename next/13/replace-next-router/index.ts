@@ -221,7 +221,7 @@ const handleRouterPropertyAccessExpression = (
 		) {
 			// replacing `if (!router.isReady)`
 			const condition = grandParentNode.getExpression();
-			console.log(condition.getKindName());
+
 			if (
 				Node.isPrefixUnaryExpression(condition) &&
 				condition.getOperatorToken() === ts.SyntaxKind.ExclamationToken
