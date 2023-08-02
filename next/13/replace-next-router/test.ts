@@ -1523,7 +1523,7 @@ describe('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it('should ensure that `useRouter` import is updated [1]', () => {
+	it('should ensure that `useRouter` import is updated', () => {
 		const beforeText = `
 		import { useRouter } from "next/router";
 		
