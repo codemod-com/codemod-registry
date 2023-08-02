@@ -900,9 +900,8 @@ const initTsMorphProject = async (
 	const allFilePaths = await unifiedFileSystem.getFilePaths(
 		rootPath,
 		['**/*.{jsx,tsx,ts,js,cjs,ejs}'],
-		[],
+		['**/node_modules/**'],
 	);
-
 	for (const path of allFilePaths) {
 		const content = await unifiedFileSystem.readFile(path);
 		project.createSourceFile(path, content);
