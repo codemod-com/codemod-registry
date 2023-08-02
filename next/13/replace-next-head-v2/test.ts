@@ -175,24 +175,24 @@ describe('next 13 replace-next-head-v2', function () {
 
 	it('should move identifier definitions that are ImportDeclarations, should update the moduleSpecifier when moved ', async function (this: Context) {
 		const A_CONTENT = `
-		import Meta from '../../components/a.tsx';
-		export default function Page() {
-			return <Meta />;
-		}
-`;
+			import Meta from '../../components/a.tsx';
+			export default function Page() {
+				return <Meta />;
+			}
+		`;
 
 		const A_COMPONENT_CONTENT = `
-		import Head from 'next/head';
-		import { a } from '../utils';
-		
-		export default function Meta() {
-			return (<>
-			<Head>
-				<title>{a}</title>
-			</Head>
-			</>)
-		}
-`;
+			import Head from 'next/head';
+			import { a } from '../utils';
+			
+			export default function Meta() {
+				return (<>
+				<Head>
+					<title>{a}</title>
+				</Head>
+				</>)
+			}
+		`;
 
 		const [command] = await transform({
 			'/opt/project/pages/a/index.tsx': A_CONTENT,
@@ -200,15 +200,17 @@ describe('next 13 replace-next-head-v2', function () {
 			'/opt/project/utils/index.ts': '',
 		});
 
-		const expectedResult = `import { Metadata } from "next";
-		import Meta from '../../components/a.tsx';
-		import { a } from "../../../utils/index.ts";
-		export const metadata: Metadata = {
-				title: \`\${a}\`,
-		};
-		export default function Page() {
-				return <Meta />;
-		}`;
+		const expectedResult = `
+			import { Metadata } from "next";
+			import Meta from '../../components/a.tsx';
+			import { a } from "../../../utils/index.ts";
+			export const metadata: Metadata = {
+					title: \`\${a}\`,
+			};
+			export default function Page() {
+					return <Meta />;
+			}
+		`;
 
 		deepStrictEqual(command?.kind, 'upsertFile');
 		deepStrictEqual(command.path, '/opt/project/pages/a/index.tsx');
@@ -424,6 +426,57 @@ describe('next 13 replace-next-head-v2', function () {
 		deepStrictEqual(
 			command.data.replace(/\W/gm, ''),
 			expectedResult.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should copy the import, not the variable definition', async function (this: Context) {
+		const INDEX_DATA = `
+			import Head from 'next/head';
+			import { A } from '../lib/a';
+			
+			export default function Index() {
+				return <div>
+					<Head>
+						<title>{\`Title: \${A}\`}</title>
+					</Head>
+				</div>;
+			}
+		`;
+
+		const A_DATA = `
+			export const A = 'test';
+		`;
+
+		const [command] = await transform({
+			'/opt/project/pages/index.tsx': INDEX_DATA,
+			'/opt/project/lib/a.tsx': A_DATA,
+		});
+
+		deepStrictEqual(command?.kind, 'upsertFile');
+		deepStrictEqual(command.path, '/opt/project/pages/index.tsx');
+
+		const NEW_DATA = `
+			import { Metadata } from "next";
+			import Head from 'next/head';
+
+			import { A } from '../lib/a';
+
+			export const metadata: Metadata = {
+				title: \`Title: \${A}\`,
+			};
+
+			export default function Index() {
+				return <div>
+					<Head>
+						<title>{\`Title: \${A}\`}</title>
+					</Head>
+				</div>;
+			};
+		`;
+
+		deepStrictEqual(
+			command.data.replace(/\W/gm, ''),
+			NEW_DATA.replace(/\W/gm, ''),
 		);
 	});
 });
