@@ -355,4 +355,72 @@ describe('next 13 replace-next-head-v2', function () {
 			expectedResult.replace(/\W/gm, ''),
 		);
 	});
+
+	it('should create generateMetadata function if Page props referenced in child metadata', async function (this: Context) {
+		const A_CONTENT = `
+		import Meta from '../../components/a.tsx';
+		
+		export default function Page({ title, description, appName }) {
+			return <Meta title={title} description={description} appName={appName} />;
+		}
+`;
+
+		const A_COMPONENT_CONTENT = `
+		import Head from 'next/head';
+		import NestedComponent from '../components/b';
+		export default function Meta({ title, description, appName }) {
+			return (<>
+			<Head>
+				<title>{title}</title>
+				<meta name="description" content={description} />
+			</Head>
+			<NestedComponent appName={appName} />
+			</>)
+		}
+`;
+
+		const B_COMPONENT_CONTENT = `
+			import Head from 'next/head';
+				
+			export default function NestedComponent({ appName }) {
+				return <Head>
+				<meta name="application-name" content={appName} />
+				</Head>
+			}
+			
+			export default NestedComponent;
+`;
+
+		const [command] = await transform({
+			'/opt/project/pages/a/index.tsx': A_CONTENT,
+			'/opt/project/components/a.tsx': A_COMPONENT_CONTENT,
+			'/opt/project/components/b.tsx': B_COMPONENT_CONTENT,
+		});
+
+		const expectedResult = `
+			import { Metadata } from "next";
+			import Meta from '../../components/a.tsx';
+			export default function Page({ title, description, appName }) {
+			    return <Meta title={title} description={description} appName={appName}/>;
+			}
+			export async function generateMetadata({ params }: {
+			    params: Params;
+			}): Promise<Metadata> {
+			    const { props } = await getStaticProps({ params });
+			    const { title, description, appName } = props;
+			    return {
+			        title: \`\${title}\`,
+			        description: description,
+			        applicationName: appName,
+			    };
+		}`;
+
+		deepStrictEqual(command?.kind, 'upsertFile');
+		deepStrictEqual(command.path, '/opt/project/pages/a/index.tsx');
+
+		deepStrictEqual(
+			command.data.replace(/\W/gm, ''),
+			expectedResult.replace(/\W/gm, ''),
+		);
+	});
 });
