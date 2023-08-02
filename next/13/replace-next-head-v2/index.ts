@@ -194,63 +194,74 @@ const getStructure = (node: Node) => {
 	return null;
 };
 
-const getDependenciesForIdentifiers = (identifiers: Identifier[]) => {
+const getDependenciesForIdentifiers = (
+	identifiers: ReadonlyArray<Identifier>,
+) => {
 	const dependencies: Record<string, Dependency> = {};
 
 	identifiers.forEach((identifier) => {
 		const parent = identifier.getParent();
-		const identifierChildIndex = identifier.getChildIndex();
 
 		if (
 			(Node.isPropertyAccessExpression(parent) ||
 				Node.isElementAccessExpression(parent)) &&
-			identifierChildIndex !== 0
+			identifier.getChildIndex() !== 0
 		) {
 			return;
 		}
 
-		const definitions = identifier.getDefinitionNodes();
+		const [firstDefinition] = identifier.getDefinitionNodes();
 
-		const firstDefinition = definitions[0] ?? null;
-
-		if (firstDefinition === null) {
+		if (firstDefinition === undefined) {
 			return;
 		}
 
-		const syntaxes = [
+		const importDeclarationPresent = identifier
+			.getSourceFile()
+			.getImportDeclarations()
+			.some((importDeclaration) =>
+				importDeclaration
+					.getNamedImports()
+					.some(
+						(importSpecifier) =>
+							importSpecifier.getNameNode().getText() ===
+							identifier.getText(),
+					),
+			);
+
+		const syntaxKinds = [
 			SyntaxKind.Parameter,
 			SyntaxKind.VariableStatement,
 			SyntaxKind.ImportDeclaration,
 			SyntaxKind.FunctionDeclaration,
-		];
+		].filter(
+			(syntaxKind) =>
+				!importDeclarationPresent ||
+				syntaxKind === SyntaxKind.ImportDeclaration,
+		);
 
-		let foundAncestor = null as Node | null;
+		let ancestor: Node | null = null;
 
-		syntaxes.forEach((s) => {
-			if (foundAncestor) {
-				return;
-			}
-
-			const ancestor =
-				firstDefinition.getKind() === s
-					? firstDefinition
-					: firstDefinition.getFirstAncestorByKind(s) ?? null;
-
+		for (const syntaxKind of syntaxKinds) {
 			if (ancestor !== null) {
-				foundAncestor = ancestor;
+				continue;
 			}
-		});
 
-		const identifierName = identifier.getText();
+			ancestor =
+				firstDefinition.getKind() === syntaxKind
+					? firstDefinition
+					: firstDefinition.getFirstAncestorByKind(syntaxKind) ??
+					  null;
+		}
 
-		if (foundAncestor === null) {
+		if (ancestor === null) {
 			return;
 		}
 
-		dependencies[identifierName] = {
-			text: foundAncestor.getText(),
-			structure: getStructure(foundAncestor),
-			kind: foundAncestor.getKind(),
+		dependencies[identifier.getText()] = {
+			text: ancestor.getText(),
+			structure: getStructure(ancestor),
+			kind: ancestor.getKind(),
 		};
 	});
 
