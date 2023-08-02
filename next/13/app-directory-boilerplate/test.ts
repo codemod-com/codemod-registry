@@ -127,7 +127,23 @@ describe('next 13 app-directory-boilerplate', function () {
 			'/opt/project/pages/a/index.tsx': '',
 		});
 
-		deepStrictEqual(externalFileCommands.length, 11);
+		deepStrictEqual(externalFileCommands.length, 13);
+
+		ok(
+			externalFileCommands.some(
+				(command) =>
+					command.kind === 'deleteFile' &&
+					command.path === '/opt/project/pages/_app.jsx',
+			),
+		);
+
+		ok(
+			externalFileCommands.some(
+				(command) =>
+					command.kind === 'deleteFile' &&
+					command.path === '/opt/project/pages/_document.jsx',
+			),
+		);
 
 		ok(
 			externalFileCommands.some(
@@ -225,7 +241,7 @@ describe('next 13 app-directory-boilerplate', function () {
 			'/opt/project/pages/_document.jsx': '',
 		});
 
-		deepStrictEqual(externalFileCommands.length, 3);
+		deepStrictEqual(externalFileCommands.length, 5);
 
 		ok(
 			!externalFileCommands.some(
@@ -261,7 +277,7 @@ describe('next 13 app-directory-boilerplate', function () {
 			'/opt/project/pages/[a]/c.mdx': A_C_CONTENT,
 		});
 
-		deepStrictEqual(externalFileCommands.length, 7);
+		deepStrictEqual(externalFileCommands.length, 9);
 
 		ok(
 			externalFileCommands.some((command) => {

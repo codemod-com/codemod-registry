@@ -371,6 +371,15 @@ export const repomod: Repomod<Dependencies> = {
 			return commands;
 		}
 
+		if (parsedPath.name === '_app' || parsedPath.name === '_document') {
+			return [
+				{
+					kind: 'deleteFile',
+					path,
+				},
+			];
+		}
+
 		return [];
 	},
 	handleData: async (api, path, __, options) => {
