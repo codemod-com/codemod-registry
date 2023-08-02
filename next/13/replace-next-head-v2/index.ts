@@ -1243,6 +1243,7 @@ const mergeDependencies = (
 						const newDependencies =
 							getDependenciesForIdentifiers(identifiers);
 
+						//add dependencies of propValue
 						Object.entries(newDependencies).forEach(
 							([identifier, dependency]) => {
 								if (
@@ -1256,16 +1257,16 @@ const mergeDependencies = (
 							},
 						);
 
-						if (
-							Node.isJsxExpression(propValue) &&
-							propValue.getExpression()?.getText() !==
-								identifierName
-						) {
+						// add propValue declaration
+
+						const propValueText = Node.isJsxExpression(propValue)
+							? propValue.getExpression()?.getText() ?? ''
+							: propValue.getText();
+
+						if (propValueText !== identifierName) {
 							acc[identifierName] = {
 								kind: SyntaxKind.VariableStatement,
-								text: `const ${identifierName} = ${propValue
-									.getExpression()
-									?.getText()}`,
+								text: `const ${identifierName} = ${propValueText}`,
 								structure: null,
 							};
 						}
@@ -1293,7 +1294,7 @@ const insertGenerateMetadataFunctionDeclaration = (
 	sourceFile.addStatements(
 		`  
 			export async function generateMetadata(
-				{ params }: { params: Record<string | string[]>; },
+				{ params }: { params: Record<string, string | string[]>; },
 			): Promise<Metadata> {
 					const getStaticPropsResult  = await getStaticProps({ params });
 					
@@ -1432,7 +1433,7 @@ const insertDependencies = (
 };
 
 export const repomod: Repomod<Dependencies> = {
-	includePatterns: ['**/pages/**/*.{jsx,tsx}'],
+	includePatterns: ['**/pages/**/*.{jsx,tsx,js,ts,cjs,ejs}'],
 	excludePatterns: ['**/node_modules/**', '**/pages/api/**'],
 	handleFile: async (api, path, options) => {
 		const { unifiedFileSystem, tsmorph } = api.getDependencies();
@@ -1447,7 +1448,6 @@ export const repomod: Repomod<Dependencies> = {
 		await initTsMorphProject(tsmorph, unifiedFileSystem, projectDir);
 
 		const componentTree = await buildComponentTree(tsmorph, path);
-
 		const mergedMetadata = mergeMetadata(componentTree);
 		const { dependencies: mergedDependencies } = mergeDependencies(
 			componentTree,

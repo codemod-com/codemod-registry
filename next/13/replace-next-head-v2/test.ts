@@ -351,7 +351,6 @@ describe('next 13 replace-next-head-v2', function () {
 
 		deepStrictEqual(command?.kind, 'upsertFile');
 		deepStrictEqual(command.path, '/opt/project/pages/a/index.tsx');
-
 		deepStrictEqual(
 			command.data.replace(/\W/gm, ''),
 			expectedResult.replace(/\W/gm, ''),
@@ -362,21 +361,21 @@ describe('next 13 replace-next-head-v2', function () {
 		const A_CONTENT = `
 		import Meta from '../../components/a.tsx';
 		
-		export default function Page({ title, description, appName }) {
-			return <Meta title={title} description={description} appName={appName} />;
+		export default function Page({ title, description }) {
+			return <Meta title={title} description={description} />;
 		}
 `;
 
 		const A_COMPONENT_CONTENT = `
 		import Head from 'next/head';
 		import NestedComponent from '../components/b';
-		export default function Meta({ title, description, appName }) {
+		export default function Meta({ title, description }) {
 			return (<>
 			<Head>
 				<title>{title}</title>
 				<meta name="description" content={description} />
 			</Head>
-			<NestedComponent appName={appName} />
+			<NestedComponent appName={"appName"} />
 			</>)
 		}
 `;
@@ -402,17 +401,18 @@ describe('next 13 replace-next-head-v2', function () {
 		const expectedResult = `
 		import { Metadata } from "next";
 		import Meta from '../../components/a.tsx';
-		export default function Page({ title, description, appName }) {
-				return <Meta title={title} description={description} appName={appName}/>;
+		const appName = "appName";
+		export default function Page({ title, description }) {
+				return <Meta title={title} description={description}/>;
 		}
 		export async function generateMetadata({ params }: {
-				params: Record<string | string[]>;
+				params: Record<string, string | string[]>;
 		}): Promise<Metadata> {
 				const getStaticPropsResult = await getStaticProps({ params });
 				if (!('props' in getStaticPropsResult)) {
 						return {};
 				}
-				const { title, description, appName } = getStaticPropsResult.props;
+				const { title, description } = getStaticPropsResult.props;
 				return {
 						title: \`\${title}\`,
 						description: description,
