@@ -1276,7 +1276,7 @@ const mergeDependencies = (
 
 const insertGenerateMetadataFunctionDeclaration = (
 	sourceFile: SourceFile,
-	metadataObject: Record<string, any>,
+	metadataObject: Record<string, unknown>,
 	propsParameterText: string,
 ) => {
 	sourceFile.addStatements(
@@ -1284,8 +1284,13 @@ const insertGenerateMetadataFunctionDeclaration = (
 			export async function generateMetadata(
 				{ params }: { params: Params },
 			): Promise<Metadata> {
-					const { props }  = await getStaticProps({ params });
-				  const ${propsParameterText} = props;
+					const getStaticPropsResult  = await getStaticProps({ params });
+					
+					if (!('props' in getStaticPropsResult)) {
+						return {}
+					}
+					
+				  const ${propsParameterText} = getStaticPropsResult.props;
 					
 					return ${buildMetadataObjectStr(metadataObject)};
 					}	`,

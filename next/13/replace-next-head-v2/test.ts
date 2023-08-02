@@ -398,26 +398,32 @@ describe('next 13 replace-next-head-v2', function () {
 		});
 
 		const expectedResult = `
-			import { Metadata } from "next";
-			import Meta from '../../components/a.tsx';
-			export default function Page({ title, description, appName }) {
-			    return <Meta title={title} description={description} appName={appName}/>;
-			}
-			export async function generateMetadata({ params }: {
-			    params: Params;
-			}): Promise<Metadata> {
-			    const { props } = await getStaticProps({ params });
-			    const { title, description, appName } = props;
-			    return {
-			        title: \`\${title}\`,
-			        description: description,
-			        applicationName: appName,
-			    };
+		import { Metadata } from "next";
+		import Meta from '../../components/a.tsx';
+		export default function Page({ title, description, appName }) {
+				return <Meta title={title} description={description} appName={appName}/>;
+		}
+		export async function generateMetadata({ params }: {
+				params: Record<string | string[]>
+		}): Promise<Metadata> {
+				const getStaticPropsResult = await getStaticProps({ params });
+				
+				if (!('props' in getStaticPropsResult)) {
+						return {};
+				}
+				
+				const { title, description, appName } = getStaticPropsResult.props;
+				return {
+						title: \`\${title}\`,
+						description: description,
+						applicationName: appName,
+				};
 		}`;
 
 		deepStrictEqual(command?.kind, 'upsertFile');
 		deepStrictEqual(command.path, '/opt/project/pages/a/index.tsx');
 
+		console.log(command.data, 'd?');
 		deepStrictEqual(
 			command.data.replace(/\W/gm, ''),
 			expectedResult.replace(/\W/gm, ''),
