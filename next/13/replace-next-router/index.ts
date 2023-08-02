@@ -199,8 +199,26 @@ const handleRouterPropertyAccessExpression = (
 
 		onReplacedWithPathname();
 	} else if (nodeName === 'isReady') {
+		const parentNode = node.getParent();
 		onReplacedWithSearchParams();
-		node.replaceWithText('searchParams !== null');
+		const grandParentNode = parentNode?.getParent() ?? null;
+		if (
+			grandParentNode !== null &&
+			Node.isVariableDeclaration(grandParentNode)
+		) {
+			const initializer = grandParentNode.getInitializer();
+			// replacing `!router.isReady`
+			if (
+				Node.isPrefixUnaryExpression(initializer) &&
+				initializer.getOperatorToken() ===
+					ts.SyntaxKind.ExclamationToken
+			) {
+				initializer.replaceWithText('searchParams === null');
+			}
+		} else {
+			// replacing `router.isReady`
+			node.replaceWithText('searchParams !== null');
+		}
 	} else if (nodeName === 'asPath') {
 		const parentNode = node.getParent();
 
