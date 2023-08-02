@@ -534,6 +534,29 @@ describe('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
+	it('should replace !router.isReady with useSearchParams', async function (this: Context) {
+		const beforeText = `
+	          import { useRouter } from 'next/router';
+
+	          function Component() {
+	              const router = useRouter();
+	              const notReady = !router.isReady;
+	          }
+	      `;
+		const afterText = `
+			import { useSearchParams } from "next/navigation";
+
+			function Component() {
+				const searchParams = useSearchParams();
+	            const notReady = searchParams === null;
+			}
+	      `;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(actual, expected);
+	});
+
 	it('should replace useRouter().isReady with true', async function (this: Context) {
 		const beforeText = `
 	          import { useRouter } from 'next/router';
@@ -1500,28 +1523,23 @@ describe('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it('should ensure that `useRouter` import is updated', () => {
+	it('should ensure that `useRouter` import is updated [1]', () => {
 		const beforeText = `
 		import { useRouter } from "next/router";
 		
-		export default function Verify() {
+		function Test() {
 		  const router = useRouter();
 		  const x = router;
-		  return (
-			<div />
-		  );
+		}
 	`;
 
 		const afterText = `
 		import { useRouter } from "next/navigation";
 		
-		export default function Verify() {
+		function Test() {
 		  const router = useRouter();
 		  const x = router;
-		
-		  return (
-			<div />
-		  );
+		}
 	`;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
@@ -1539,6 +1557,7 @@ describe('next 13 replace-next-router', function () {
 		  return (
 			<ThemeProvider {...getThemeProviderProps({ props, router })} />
 		  );
+		}
 	`;
 
 		const afterText = `
@@ -1550,6 +1569,7 @@ describe('next 13 replace-next-router', function () {
 		  return (
 			<ThemeProvider {...getThemeProviderProps({ props, router })} />
 		  );
+		}
 	`;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
