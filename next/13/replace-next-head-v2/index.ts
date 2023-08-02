@@ -900,7 +900,7 @@ const initTsMorphProject = async (
 	const allFilePaths = await unifiedFileSystem.getFilePaths(
 		rootPath,
 		['**/*.{jsx,tsx,ts,js,cjs,ejs}'],
-		[],
+		['**/node_modules/**'],
 	);
 
 	for (const path of allFilePaths) {
@@ -1234,7 +1234,10 @@ const mergeDependencies = (
 
 						Object.entries(newDependencies).forEach(
 							([identifier, dependency]) => {
-								if (rootPath === treeNode.path) {
+								if (
+									rootPath === treeNode.path &&
+									dependency.kind !== SyntaxKind.Parameter
+								) {
 									return;
 								}
 
@@ -1271,9 +1274,28 @@ const mergeDependencies = (
 	return treeNode;
 };
 
+const insertGenerateMetadataFunctionDeclaration = (
+	sourceFile: SourceFile,
+	metadataObject: Record<string, any>,
+	propsParameterText: string,
+) => {
+	sourceFile.addStatements(
+		`  
+			export async function generateMetadata(
+				{ params }: { params: Params },
+			): Promise<Metadata> {
+					const { props }  = await getStaticProps({ params });
+				  const ${propsParameterText} = props;
+					
+					return ${buildMetadataObjectStr(metadataObject)};
+					}	`,
+	);
+};
+
 const insertMetadata = (
 	sourceFile: SourceFile,
 	metadataObject: Record<string, unknown>,
+	param: (Dependency & { kind: SyntaxKind.Parameter }) | null,
 ) => {
 	if (Object.keys(metadataObject).length === 0) {
 		return undefined;
@@ -1281,10 +1303,18 @@ const insertMetadata = (
 
 	const positionAfterImports = getPositionAfterImports(sourceFile);
 
-	sourceFile.insertStatements(
-		positionAfterImports,
-		buildMetadataStatement(metadataObject),
-	);
+	if (param !== null) {
+		insertGenerateMetadataFunctionDeclaration(
+			sourceFile,
+			metadataObject,
+			param.text,
+		);
+	} else {
+		sourceFile.insertStatements(
+			positionAfterImports,
+			buildMetadataStatement(metadataObject),
+		);
+	}
 
 	const importAlreadyExists = sourceFile
 		.getImportDeclarations()
@@ -1443,7 +1473,13 @@ export const repomod: Repomod<Dependencies> = {
 				options.dependencies ?? '{}',
 			) as Record<string, Dependency>;
 
-			insertMetadata(sourceFile, metadata);
+			const param =
+				Object.values(dependencies).find(
+					(d): d is Dependency & { kind: SyntaxKind.Parameter } =>
+						d.kind === SyntaxKind.Parameter,
+				) ?? null;
+
+			insertMetadata(sourceFile, metadata, param);
 			insertDependencies(sourceFile, dependencies, path);
 
 			return {
