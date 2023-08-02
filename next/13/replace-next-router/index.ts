@@ -199,38 +199,58 @@ const handleRouterPropertyAccessExpression = (
 
 		onReplacedWithPathname();
 	} else if (nodeName === 'isReady') {
-		const parentNode = node.getParent();
 		onReplacedWithSearchParams();
-		const grandParentNode = parentNode?.getParent() ?? null;
-		if (
-			grandParentNode !== null &&
-			Node.isVariableDeclaration(grandParentNode)
-		) {
-			// replacing `const var = !router.isReady`
-			const initializer = grandParentNode.getInitializer();
-			if (
-				Node.isPrefixUnaryExpression(initializer) &&
-				initializer.getOperatorToken() ===
-					ts.SyntaxKind.ExclamationToken
-			) {
-				initializer.replaceWithText('searchParams === null');
-			}
-		} else if (
-			grandParentNode !== null &&
-			Node.isIfStatement(grandParentNode)
-		) {
-			// replacing `if (!router.isReady)`
-			const condition = grandParentNode.getExpression();
-
-			if (
-				Node.isPrefixUnaryExpression(condition) &&
-				condition.getOperatorToken() === ts.SyntaxKind.ExclamationToken
-			) {
-				condition.replaceWithText('searchParams === null');
-			}
-		} else {
+		try {
 			// replacing `router.isReady`
 			node.replaceWithText('searchParams !== null');
+		} catch (_err) {
+			// replacing `!router.isReady`
+			const parentNode = node.getParent();
+			const grandParentNode = parentNode?.getParent() ?? null;
+			if (grandParentNode === null) {
+				return;
+			}
+
+			if (Node.isVariableDeclaration(grandParentNode)) {
+				// replacing `const var = !router.isReady`
+				const initializer = grandParentNode.getInitializer();
+				if (
+					Node.isPrefixUnaryExpression(initializer) &&
+					initializer.getOperatorToken() ===
+						ts.SyntaxKind.ExclamationToken
+				) {
+					initializer.replaceWithText('searchParams === null');
+				}
+			} else if (Node.isIfStatement(grandParentNode)) {
+				// replacing `if (!router.isReady)`
+				const condition = grandParentNode.getExpression();
+
+				if (
+					Node.isPrefixUnaryExpression(condition) &&
+					condition.getOperatorToken() ===
+						ts.SyntaxKind.ExclamationToken
+				) {
+					condition.replaceWithText('searchParams === null');
+				}
+			} else if (Node.isConditionalExpression(grandParentNode)) {
+				// replacing `if (!router.isReady)`
+
+				const condition = grandParentNode.getCondition();
+
+				if (
+					Node.isPrefixUnaryExpression(condition) &&
+					condition.getOperatorToken() ===
+						ts.SyntaxKind.ExclamationToken
+				) {
+					const operand = condition.getOperand();
+					if (
+						Node.isPropertyAccessExpression(operand) &&
+						operand.getText() === 'router.isReady'
+					) {
+						condition.replaceWithText('searchParams === null');
+					}
+				}
+			}
 		}
 	} else if (nodeName === 'asPath') {
 		const parentNode = node.getParent();

@@ -534,6 +534,29 @@ describe('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
+	it('should replace router.isReady with useSearchParams in ternary variable assignment', async function (this: Context) {
+		const beforeText = `
+	          import { useRouter } from 'next/router';
+
+	          function Component() {
+	              const router = useRouter();
+				  const ready = router.isReady ? true : false;
+	          }
+	      `;
+		const afterText = `
+			import { useSearchParams } from "next/navigation";
+
+			function Component() {
+				const searchParams = useSearchParams();
+				const ready = searchParams !== null ? true : false;
+			}
+	      `;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(actual, expected);
+	});
+
 	it('should replace !router.isReady with useSearchParams in variable declaration', async function (this: Context) {
 		const beforeText = `
 	          import { useRouter } from 'next/router';
@@ -549,6 +572,29 @@ describe('next 13 replace-next-router', function () {
 			function Component() {
 				const searchParams = useSearchParams();
 	            const notReady = searchParams === null;
+			}
+	      `;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(actual, expected);
+	});
+
+	it('should replace !router.isReady with useSearchParams in ternary variable assignment', async function (this: Context) {
+		const beforeText = `
+	          import { useRouter } from 'next/router';
+
+	          function Component() {
+	              const router = useRouter();
+				  const ready = !router.isReady ? false : true;
+	          }
+	      `;
+		const afterText = `
+			import { useSearchParams } from "next/navigation";
+
+			function Component() {
+				const searchParams = useSearchParams();
+				const ready = searchParams === null ? false : true;
 			}
 	      `;
 
