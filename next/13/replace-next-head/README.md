@@ -1,4 +1,4 @@
-# Replace Next Head V2
+# Replace Next Head
 
 ## Description
 
