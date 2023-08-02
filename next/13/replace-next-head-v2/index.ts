@@ -210,7 +210,8 @@ const getDependenciesForIdentifiers = (
 			return;
 		}
 
-		const [firstDefinition] = identifier.getDefinitionNodes();
+		const [firstDefinition] =
+			identifier.getSymbol()?.getDeclarations() ?? [];
 
 		if (firstDefinition === undefined) {
 			return;
