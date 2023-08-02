@@ -429,7 +429,7 @@ describe('next 13 replace-next-head-v2', function () {
 		);
 	});
 
-	it('should copy the import, not the variable definition', async function (this: Context) {
+	it('should copy the clause import, not the variable definition', async function (this: Context) {
 		const INDEX_DATA = `
 			import Head from 'next/head';
 			import { A } from '../lib/a';
@@ -460,6 +460,57 @@ describe('next 13 replace-next-head-v2', function () {
 			import Head from 'next/head';
 
 			import { A } from '../lib/a';
+
+			export const metadata: Metadata = {
+				title: \`Title: \${A}\`,
+			};
+
+			export default function Index() {
+				return <div>
+					<Head>
+						<title>{\`Title: \${A}\`}</title>
+					</Head>
+				</div>;
+			};
+		`;
+
+		deepStrictEqual(
+			command.data.replace(/\W/gm, ''),
+			NEW_DATA.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should copy the default import, not the variable definition', async function (this: Context) {
+		const INDEX_DATA = `
+			import Head from 'next/head';
+			import A from '../lib/a';
+			
+			export default function Index() {
+				return <div>
+					<Head>
+						<title>{\`Title: \${A}\`}</title>
+					</Head>
+				</div>;
+			}
+		`;
+
+		const A_DATA = `
+			export default const A = 'test';
+		`;
+
+		const [command] = await transform({
+			'/opt/project/pages/index.tsx': INDEX_DATA,
+			'/opt/project/lib/a.tsx': A_DATA,
+		});
+
+		deepStrictEqual(command?.kind, 'upsertFile');
+		deepStrictEqual(command.path, '/opt/project/pages/index.tsx');
+
+		const NEW_DATA = `
+			import { Metadata } from "next";
+			import Head from 'next/head';
+
+			import A from '../lib/a';
 
 			export const metadata: Metadata = {
 				title: \`Title: \${A}\`,
