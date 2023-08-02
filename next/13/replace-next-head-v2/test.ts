@@ -423,7 +423,6 @@ describe('next 13 replace-next-head-v2', function () {
 		deepStrictEqual(command?.kind, 'upsertFile');
 		deepStrictEqual(command.path, '/opt/project/pages/a/index.tsx');
 
-		console.log(command.data, 'd?');
 		deepStrictEqual(
 			command.data.replace(/\W/gm, ''),
 			expectedResult.replace(/\W/gm, ''),
