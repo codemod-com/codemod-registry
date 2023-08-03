@@ -1,5 +1,6 @@
 import {
 	API,
+	ASTNode,
 	ArrowFunctionExpression,
 	Collection,
 	File,
@@ -94,7 +95,7 @@ const getFirstIndexAfterExportNamedFunctionDeclaration = (
  * factories
  */
 
-const generateStaticParamsMethodFactory = (j: JSCodeshift) => {
+const generateStaticParamsFunctionFactory = (j: JSCodeshift) => {
 	const functionDeclaration = j(`async function generateStaticParams() {
 		return (await getStaticPaths({})).paths;
 	}`)
@@ -104,10 +105,13 @@ const generateStaticParamsMethodFactory = (j: JSCodeshift) => {
 	return j.exportNamedDeclaration(functionDeclaration.value);
 };
 
-const getDataMethodFactory = (j: JSCodeshift, decoratedMethodName: string) => {
+const getDataFunctionFactory = (
+	j: JSCodeshift,
+	decoratedFunctionName: string,
+) => {
 	return j(`
 	async function getData({ params }: { params: Params }) {
-		const result = await ${decoratedMethodName}({ params });
+		const result = await ${decoratedFunctionName}({ params });
 		
 		if("redirect" in result) {
 			redirect(result.redirect.destination);	
@@ -127,7 +131,7 @@ const addGenerateStaticParamsFunctionDeclaration: ModFunction<File, 'write'> = (
 	j,
 	root,
 ) => {
-	const generateStaticParamsMethod = generateStaticParamsMethodFactory(j);
+	const generateStaticParamsFunction = generateStaticParamsFunctionFactory(j);
 
 	root.find(j.Program).forEach((program) => {
 		program.value.body.splice(
@@ -137,7 +141,7 @@ const addGenerateStaticParamsFunctionDeclaration: ModFunction<File, 'write'> = (
 				'getStaticPaths',
 			),
 			0,
-			generateStaticParamsMethod,
+			generateStaticParamsFunction,
 		);
 	});
 
@@ -221,10 +225,14 @@ const addImportStatement: ModFunction<File, 'write'> = (j, root, settings) => {
 	return [false, []];
 };
 
-const addGetDataFunction: ModFunction<File, 'write'> = (j, root, settings) => {
+const addGetDataFunctionAsWrapper: ModFunction<File, 'write'> = (
+	j,
+	root,
+	settings,
+) => {
 	const functionName = settings.functionName as string;
 
-	const getDataFunctionDeclaration = getDataMethodFactory(j, functionName);
+	const getDataFunctionDeclaration = getDataFunctionFactory(j, functionName);
 
 	const program = root.find(j.Program);
 
@@ -260,7 +268,178 @@ const addGetDataFunction: ModFunction<File, 'write'> = (j, root, settings) => {
 	];
 };
 
-const DATA_FETCHING_METHOD_NAMES = ['getServerSideProps', 'getStaticProps'];
+const deepCloneCollection = <T extends ASTNode>(
+	j: JSCodeshift,
+	root: Collection<T>,
+) => {
+	return j(root.toSource());
+};
+
+const addGetDataFunctionInline: ModFunction<File, 'write'> = (
+	j,
+	root,
+	settings,
+) => {
+	const clonedFunctionCollection = deepCloneCollection(
+		j,
+		settings.function as Collection<FunctionDeclaration>,
+	);
+
+	const clonedFunctionDeclarationCollection = clonedFunctionCollection.find(
+		j.FunctionDeclaration,
+	);
+	const clonedFArrowFunctionExpressionCollection =
+		clonedFunctionCollection.find(j.ArrowFunctionExpression);
+
+	const clonedFunction =
+		clonedFunctionDeclarationCollection.paths()[0] ??
+		clonedFArrowFunctionExpressionCollection.paths()[0] ??
+		null;
+
+	if (clonedFunction === null) {
+		return [false, []];
+	}
+
+	let usedRedirect = false;
+	let usedNotFound = false;
+
+	clonedFunctionCollection
+		.find(j.ReturnStatement)
+		.forEach((returnStatementPath) => {
+			const { argument } = returnStatementPath.value;
+
+			if (j.ObjectExpression.check(argument)) {
+				j(argument)
+					.find(j.ObjectProperty)
+					.forEach((property) => {
+						if (
+							!j.ObjectExpression.check(property.value.value) ||
+							!j.Identifier.check(property.value.key)
+						) {
+							return;
+						}
+
+						const { key, value } = property.value;
+
+						if (key.name === 'props') {
+							returnStatementPath.value.argument = value;
+						}
+
+						if (key.name === 'redirect') {
+							j(value)
+								.find(j.ObjectProperty, {
+									key: {
+										type: 'Identifier',
+										name: 'destination',
+									},
+								})
+								.forEach((objectPropertyPath) => {
+									if (
+										!j.StringLiteral.check(
+											objectPropertyPath.value.value,
+										) &&
+										!j.Identifier.check(
+											objectPropertyPath.value.value,
+										)
+									) {
+										return;
+									}
+
+									returnStatementPath.value.argument =
+										j.callExpression(
+											j.identifier('redirect'),
+											[objectPropertyPath.value.value],
+										);
+								});
+
+							usedRedirect = true;
+						}
+
+						if (key.name === 'notFound') {
+							returnStatementPath.value.argument =
+								j.callExpression(j.identifier('notFound'), []);
+
+							usedNotFound = true;
+						}
+					});
+			}
+		});
+
+	const objPattern = j.objectPattern([
+		j.property.from({
+			kind: 'init',
+			key: j.identifier('params'),
+			value: j.identifier('params'),
+			shorthand: true,
+		}),
+	]);
+	const objectTypeAnnotation = j.objectTypeAnnotation([
+		j.objectTypeProperty(
+			j.identifier('params'),
+			j.genericTypeAnnotation(j.identifier('Params'), null),
+			false,
+		),
+	]);
+	const typeAnnotation = j.typeAnnotation(objectTypeAnnotation);
+	objPattern.typeAnnotation = typeAnnotation;
+
+	const getDataFunctionDeclaration = j.functionDeclaration.from({
+		params: [objPattern],
+		body:
+			clonedFunction.value.body.type === 'BlockStatement'
+				? clonedFunction.value.body
+				: j.blockStatement([]),
+		id: j.identifier('getData'),
+		async: true,
+	});
+
+	const program = root.find(j.Program);
+
+	const programNode = program.paths()[0] ?? null;
+
+	if (programNode === null) {
+		return [false, []];
+	}
+
+	programNode.value.body.splice(
+		getFirstIndexAfterExportNamedFunctionDeclaration(
+			j,
+			root.find(j.Program).paths()[0]?.value.body ?? [],
+			settings.functionName as string,
+		),
+		0,
+		getDataFunctionDeclaration,
+	);
+
+	const lazyModFunctions: LazyModFunction[] = [];
+
+	const specifierNames: string[] = [];
+
+	if (usedNotFound) {
+		specifierNames.push('notFound');
+	}
+
+	if (usedRedirect) {
+		specifierNames.push('redirect');
+	}
+
+	if (specifierNames.length !== 0) {
+		lazyModFunctions.push([
+			addImportStatement,
+			root,
+			{
+				specifierNames: specifierNames.join(),
+				sourceName: 'next/navigation',
+			},
+		]);
+	}
+
+	lazyModFunctions.push([addPageParamsTypeAlias, root, {}]);
+
+	return [true, lazyModFunctions];
+};
+
+const DATA_FETCHING_FUNCTION_NAMES = ['getServerSideProps', 'getStaticProps'];
 
 export const findFunctionDeclarations: ModFunction<File, 'read'> = (
 	j,
@@ -280,23 +459,22 @@ export const findFunctionDeclarations: ModFunction<File, 'read'> = (
 			return;
 		}
 
-		if (DATA_FETCHING_METHOD_NAMES.includes(id.name)) {
+		if (DATA_FETCHING_FUNCTION_NAMES.includes(id.name)) {
 			lazyModFunctions.push(
 				[
-					addGetDataFunction,
-					root,
+					findReturnStatements,
+					functionDeclarationCollection,
 					{
 						...settings,
 						functionName: id.name,
 					},
 				],
-				[findReturnStatements, functionDeclarationCollection, settings],
 				[findComponentFunctionDefinition, root, settings],
 			);
 		}
 
 		if (id.name === 'getStaticPaths') {
-			const newSettings = { ...settings, methodName: 'getStaticPaths' };
+			const newSettings = { ...settings, functionName: 'getStaticPaths' };
 
 			lazyModFunctions.push(
 				[
@@ -331,20 +509,15 @@ export const findArrowFunctionExpressions: ModFunction<File, 'read'> = (
 				return;
 			}
 
-			if (DATA_FETCHING_METHOD_NAMES.includes(id.name)) {
+			if (DATA_FETCHING_FUNCTION_NAMES.includes(id.name)) {
 				lazyModFunctions.push(
 					[
-						addGetDataFunction,
-						root,
+						findReturnStatements,
+						j(arrowFunctionExpressionPath),
 						{
 							...settings,
 							functionName: id.name,
 						},
-					],
-					[
-						findReturnStatements,
-						j(arrowFunctionExpressionPath),
-						settings,
 					],
 					[findComponentFunctionDefinition, root, settings],
 				);
@@ -353,7 +526,7 @@ export const findArrowFunctionExpressions: ModFunction<File, 'read'> = (
 			if (id.name === 'getStaticPaths') {
 				const newSettings = {
 					...settings,
-					methodName: 'getStaticPaths',
+					functionName: 'getStaticPaths',
 				};
 
 				lazyModFunctions.push(
@@ -381,10 +554,11 @@ export const findReturnStatements: ModFunction<FunctionDeclaration, 'read'> = (
 ) => {
 	const lazyModFunctions: LazyModFunction[] = [];
 
-	root.find(j.ReturnStatement).forEach((returnStatementPath) => {
-		const returnStatementCollection = j(returnStatementPath);
+	const returnStatementCollection = root.find(j.ReturnStatement);
 
-		if (settings.methodName === 'getStaticPaths') {
+	returnStatementCollection.forEach((returnStatementPath) => {
+		const returnStatementCollection = j(returnStatementPath);
+		if (settings.functionName === 'getStaticPaths') {
 			lazyModFunctions.push([
 				findFallbackObjectProperty,
 				returnStatementCollection,
@@ -401,6 +575,27 @@ export const findReturnStatements: ModFunction<FunctionDeclaration, 'read'> = (
 		]);
 	});
 
+	if (settings.functionName === 'getStaticPaths') {
+		return [false, lazyModFunctions];
+	}
+
+	const functionCanBeInlined = returnStatementCollection.every(
+		(returnStatementPath) =>
+			j.ObjectExpression.check(returnStatementPath.value.argument),
+	);
+
+	const file = root.closest(j.File);
+
+	if (functionCanBeInlined) {
+		lazyModFunctions.push([
+			addGetDataFunctionInline,
+			file,
+			{ ...settings, function: root },
+		]);
+	} else {
+		lazyModFunctions.push([addGetDataFunctionAsWrapper, file, settings]);
+	}
+
 	return [false, lazyModFunctions];
 };
 
@@ -416,7 +611,6 @@ export const findFallbackObjectProperty: ModFunction<any, 'read'> = (
 	const lazyModFunctions: LazyModFunction[] = [];
 
 	const fileCollection = root.closest(j.File);
-
 	root.find(j.ObjectProperty, {
 		key: {
 			type: 'Identifier',
@@ -756,7 +950,7 @@ export default function transform(
 
 	const root = j(file.source);
 
-	const hasGetStaticPathsMethod =
+	const hasGetStaticPathsFunction =
 		root.find(j.FunctionDeclaration, {
 			id: {
 				type: 'Identifier',
@@ -765,7 +959,7 @@ export default function transform(
 		}).length !== 0;
 
 	const settings = {
-		includeParams: hasGetStaticPathsMethod,
+		includeParams: hasGetStaticPathsFunction,
 	};
 
 	const lazyModFunctions: LazyModFunction[] = [
