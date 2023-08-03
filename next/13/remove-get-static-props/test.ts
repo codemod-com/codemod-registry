@@ -34,6 +34,7 @@ describe('next 13 remove-get-static-props', function () {
 	      `;
 
 		const OUTPUT = `
+		import { GetStaticPropsContext } from "next";
 		type Params = {
 			[key: string]: string | string[] | undefined
 		};
@@ -49,9 +50,7 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 			async function getData(
-				{
-						params
-				}: { params: Params }
+				props: GetStaticPropsContext
 		) {
 				const users = await promise;
 
@@ -157,6 +156,8 @@ describe('next 13 remove-get-static-props', function () {
 	      `;
 
 		const OUTPUT = `
+		import { GetStaticPropsContext } from "next";
+		
 			type Params = {
 				[key: string]: string | string[] | undefined
 			};
@@ -170,7 +171,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { allPosts } };
 			}
 
-			async function getData({ params }: { params: Params }) {
+			async function getData(props: GetStaticPropsContext) {
 				const allPosts = await promise;
 				return  { allPosts };
 			}
@@ -209,6 +210,7 @@ describe('next 13 remove-get-static-props', function () {
 	      `;
 
 		const OUTPUT = `
+		import { GetStaticPropsContext } from "next";
 			type Params = {
 				[key: string]: string | string[] | undefined
 			};
@@ -224,7 +226,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { users, groups }, revalidate: 1 };
 			}
 			
-			async function getData({ params }: { params: Params }) {
+			async function getData(props: GetStaticPropsContext) {
 				const users = await promise;
 				const groups = await anotherPromise;
 
@@ -268,6 +270,7 @@ describe('next 13 remove-get-static-props', function () {
 	    `;
 
 		const OUTPUT = `
+		import { GetStaticPropsContext } from "next";
 			type Params = {
 				[key: string]: string | string[] | undefined
 			};
@@ -281,7 +284,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { users } };
 			}
 			
-			async function getData({ params }: { params: Params }) {
+			async function getData(props: GetStaticPropsContext) {
 				const users = await promise;
 				return { users };
 			}
@@ -322,6 +325,7 @@ describe('next 13 remove-get-static-props', function () {
 	    `;
 
 		const OUTPUT = `
+		import { GetStaticPropsContext } from "next";
 			type Params = {
 				[key: string]: string | string[] | undefined
 			};
@@ -334,7 +338,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { a } };
 			}
 
-			async function getData({ params }: { params: Params }) {
+			async function getData(props: GetStaticPropsContext) {
 				return { a } ;
 			}
 			
@@ -372,6 +376,7 @@ describe('next 13 remove-get-static-props', function () {
 	    `;
 
 		const OUTPUT = `
+		import { GetStaticPropsContext } from "next";
 			type Params = {
 				[key: string]: string | string[] | undefined
 			};
@@ -384,7 +389,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { a } };
 			}
 
-			async function getData({ params }: { params: Params }) {
+			async function getData(props: GetStaticPropsContext) {
 				return { a } ;
 			}
 			
@@ -424,6 +429,7 @@ describe('next 13 remove-get-static-props', function () {
 	    `;
 
 		const OUTPUT = `
+		import { GetStaticPropsContext } from "next";
 			type Params = {
 				[key: string]: string | string[] | undefined
 			};
@@ -437,7 +443,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { a } };
 			}
 			
-			async function getData({ params }: { params: Params }) {
+			async function getData(props: GetStaticPropsContext) {
 				sideEffect();
 				return { a } ;
 			}
@@ -475,6 +481,7 @@ describe('next 13 remove-get-static-props', function () {
 	    `;
 
 		const OUTPUT = `
+		import { GetStaticPropsContext } from "next";
 			type Params = {
 				[key: string]: string | string[] | undefined
 			};
@@ -488,7 +495,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { users } };
 			}
 			
-			async function getData({ params }: { params: Params }) {
+			async function getData(props: GetStaticPropsContext) {
 				const users = await promise;
 				return { users } ;
 			}
@@ -526,7 +533,7 @@ describe('next 13 remove-get-static-props', function () {
 	    `;
 
 		const OUTPUT = `
-			
+		import { GetStaticPropsContext } from "next";
 			type Params = {
 				[key: string]: string | string[] | undefined
 			};
@@ -540,7 +547,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { users } };
 			}
 			
-			async function getData({ params }: { params: Params }) {
+			async function getData(props: GetStaticPropsContext) {
 				const users = await promise;
 				return { users } ;
 			}
@@ -580,6 +587,7 @@ describe('next 13 remove-get-static-props', function () {
 	    `;
 
 		const OUTPUT = `
+		import { GetStaticPropsContext } from "next";
 			type Params = {
 				[key: string]: string | string[] | undefined
 			};
@@ -593,7 +601,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { users } };
 			}
 			
-			async function getData({ params }: { params: Params }) {
+			async function getData(props: GetStaticPropsContext) {
 				const users = await promise;
 				return { users } ;
 			}
@@ -635,7 +643,8 @@ describe('next 13 remove-get-static-props', function () {
 			}
 	      `;
 
-		const OUTPUT = `	
+		const OUTPUT = `
+		import { GetStaticPropsContext } from "next";
 			type Params = {
 				[key: string]: string | string[] | undefined
 			};
@@ -651,7 +660,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { users, groups }, revalidate: 1 };
 			}
 
-			async function getData({ params }: { params: Params }) {
+			async function getData(props: GetStaticPropsContext) {
 				const users = await promise;
 				const groups = await anotherPromise;
 				return { users, groups } ;
@@ -700,6 +709,7 @@ describe('next 13 remove-get-static-props', function () {
 	      `;
 
 		const OUTPUT = `
+		import { GetStaticPropsContext } from "next";
 			import x from "y";
 			
 			type Params = {
@@ -717,7 +727,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { users, groups }, revalidate: 1 };
 			}
 			
-			async function getData({ params }: { params: Params }) {
+			async function getData(props: GetStaticPropsContext) {
 				const users = await promise;
 				const groups = await anotherPromise;
 				return { users, groups } ;
@@ -766,6 +776,7 @@ describe('next 13 remove-get-static-props', function () {
 	      `;
 
 		const OUTPUT = `
+		import { GetStaticPropsContext } from "next";
 			import x from "y";
 			
 			type Params = {
@@ -783,7 +794,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { users, groups }, revalidate: 1 };
 			}
 
-			async function getData({ params }: { params: Params }) {
+			async function getData(props: GetStaticPropsContext) {
 				const users = await promise;
 				const groups = await anotherPromise;
 				return { users, groups } ;
@@ -836,6 +847,7 @@ describe('next 13 remove-get-static-props', function () {
 	      `;
 
 		const OUTPUT = `
+		import { GetStaticPropsContext } from "next";
 			import x from "y";
 			
 			type Params = {
@@ -857,7 +869,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { users, groups }, revalidate: 1 };
 			}
 			
-			async function getData({ params }: { params: Params }) {
+			async function getData(props: GetStaticPropsContext) {
 				const users = await promise;
 				const groups = await anotherPromise;
 				
@@ -915,6 +927,7 @@ describe('next 13 remove-get-static-props', function () {
 	      `;
 
 		const OUTPUT = `
+		import { GetStaticPropsContext } from "next";
 			import x from "y";
 			
 			type Params = {
@@ -936,7 +949,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { users, groups }, revalidate: 1 };
 			}
 			
-			async function getData({ params }: { params: Params }) {
+			async function getData(props: GetStaticPropsContext) {
 				const users = await promise;
 				const groups = await anotherPromise;
 				
@@ -992,6 +1005,7 @@ describe('next 13 remove-get-static-props', function () {
 		`;
 
 		const OUTPUT = `
+		import { GetServerSidePropsContext } from "next";
 			type Params = {
 				[key: string]: string | string[] | undefined
 			};
@@ -1007,7 +1021,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { projects } };
 			}
 
-			async function getData({ params }: { params: Params }) {
+			async function getData(props: GetServerSidePropsContext) {
 				const res = await fetch(\`https://...\`);
 				const projects = await res.json();
 				
@@ -1063,6 +1077,7 @@ describe('next 13 remove-get-static-props', function () {
 		`;
 
 		const OUTPUT = `
+		import { GetStaticPropsContext } from "next";
 			import PostLayout from '@/components/post-layout';
 		
 			type Params = {
@@ -1091,7 +1106,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { post } };
 			}
 
-			async function getData({ params }: { params: Params }) {
+			async function getData({ params }: GetStaticPropsContext) {
 				const res = await fetch(\`https://.../posts/\${params.id}\`);
 				const post = await res.json();
 				
@@ -1143,6 +1158,7 @@ describe('next 13 remove-get-static-props', function () {
 		`;
 
 		const OUTPUT = `
+		import { GetStaticPropsContext } from "next";
 			import PostLayout from '@/components/post-layout';
 		
 			type Params = {
@@ -1171,7 +1187,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { post } };
 			}
 
-			async function getData({ params }: { params: Params }) {
+			async function getData({ params }: GetStaticPropsContext) {
 				const res = await fetch(\`https://.../posts/\${params.id}\`);
 				const post = await res.json();
 				
@@ -1223,6 +1239,7 @@ describe('next 13 remove-get-static-props', function () {
 		`;
 
 		const OUTPUT = `
+		import { GetStaticPropsContext } from "next";
 			import PostLayout from '@/components/post-layout';
 		
 			type Params = {
@@ -1251,7 +1268,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { post } };
 			}
 
-			async function getData({ params }: { params: Params }) {
+			async function getData({ params }: GetStaticPropsContext) {
 				const res = await fetch(\`https://.../posts/\${params.id}\`);
 				const post = await res.json();
 				
@@ -1303,6 +1320,7 @@ describe('next 13 remove-get-static-props', function () {
 		`;
 
 		const OUTPUT = `
+		import { GetStaticPropsContext } from "next";
 			import PostLayout from '@/components/post-layout';
 		
 			type Params = {
@@ -1331,7 +1349,7 @@ describe('next 13 remove-get-static-props', function () {
 				return { props: { post } };
 			}
 
-			async function getData({ params }: { params: Params }) {
+			async function getData({ params }: GetStaticPropsContext) {
 				const res = await fetch(\`https://.../posts/\${params.id}\`);
 				const post = await res.json();
 				

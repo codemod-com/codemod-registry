@@ -365,26 +365,46 @@ const addGetDataFunctionInline: ModFunction<File, 'write'> = (
 			}
 		});
 
-	const objPattern = j.objectPattern([
-		j.property.from({
-			kind: 'init',
-			key: j.identifier('params'),
-			value: j.identifier('params'),
-			shorthand: true,
-		}),
-	]);
-	const objectTypeAnnotation = j.objectTypeAnnotation([
-		j.objectTypeProperty(
-			j.identifier('params'),
-			j.genericTypeAnnotation(j.identifier('Params'), null),
-			false,
-		),
-	]);
-	const typeAnnotation = j.typeAnnotation(objectTypeAnnotation);
-	objPattern.typeAnnotation = typeAnnotation;
+	// const objPattern = j.objectPattern([
+	// 	j.property.from({
+	// 		kind: 'init',
+	// 		key: j.identifier('params'),
+	// 		value: j.identifier('params'),
+	// 		shorthand: true,
+	// 	}),
+	// ]);
+	// const objectTypeAnnotation = j.objectTypeAnnotation([
+	// 	j.objectTypeProperty(
+	// 		j.identifier('params'),
+	// 		j.genericTypeAnnotation(j.identifier('Params'), null),
+	// 		false,
+	// 	),
+	// ]);
+	// const typeAnnotation = j.typeAnnotation(objectTypeAnnotation);
+	// objPattern.typeAnnotation = typeAnnotation;
+
+	const contextTypeName =
+		settings.functionName === 'getStaticProps'
+			? 'GetStaticPropsContext'
+			: 'GetServerSidePropsContext';
+
+	const params = clonedFunction.value.params.length
+		? clonedFunction.value.params
+		: [j.identifier('props')];
+
+	params.forEach((p) => {
+		if (
+			(j.ObjectPattern.check(p) || j.Identifier.check(p)) &&
+			!p.typeAnnotation
+		) {
+			p.typeAnnotation = j.tsTypeAnnotation(
+				j.tsTypeReference(j.identifier(contextTypeName)),
+			);
+		}
+	});
 
 	const getDataFunctionDeclaration = j.functionDeclaration.from({
-		params: [objPattern],
+		params,
 		body:
 			clonedFunction.value.body.type === 'BlockStatement'
 				? clonedFunction.value.body
@@ -430,6 +450,17 @@ const addGetDataFunctionInline: ModFunction<File, 'write'> = (
 			{
 				specifierNames: specifierNames.join(),
 				sourceName: 'next/navigation',
+			},
+		]);
+	}
+
+	if (params.length !== 0) {
+		lazyModFunctions.push([
+			addImportStatement,
+			root,
+			{
+				specifierNames: contextTypeName,
+				sourceName: 'next',
 			},
 		]);
 	}
