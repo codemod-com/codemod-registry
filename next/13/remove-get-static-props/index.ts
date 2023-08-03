@@ -95,7 +95,7 @@ const getFirstIndexAfterExportNamedFunctionDeclaration = (
  * factories
  */
 
-const generateStaticParamsMethodFactory = (j: JSCodeshift) => {
+const generateStaticParamsFunctionFactory = (j: JSCodeshift) => {
 	const functionDeclaration = j(`async function generateStaticParams() {
 		return (await getStaticPaths({})).paths;
 	}`)
@@ -105,7 +105,7 @@ const generateStaticParamsMethodFactory = (j: JSCodeshift) => {
 	return j.exportNamedDeclaration(functionDeclaration.value);
 };
 
-const getDataMethodFactory = (
+const getDataFunctionFactory = (
 	j: JSCodeshift,
 	decoratedFunctionName: string,
 ) => {
@@ -131,7 +131,7 @@ const addGenerateStaticParamsFunctionDeclaration: ModFunction<File, 'write'> = (
 	j,
 	root,
 ) => {
-	const generateStaticParamsMethod = generateStaticParamsMethodFactory(j);
+	const generateStaticParamsFunction = generateStaticParamsFunctionFactory(j);
 
 	root.find(j.Program).forEach((program) => {
 		program.value.body.splice(
@@ -141,7 +141,7 @@ const addGenerateStaticParamsFunctionDeclaration: ModFunction<File, 'write'> = (
 				'getStaticPaths',
 			),
 			0,
-			generateStaticParamsMethod,
+			generateStaticParamsFunction,
 		);
 	});
 
@@ -232,7 +232,7 @@ const addGetDataFunctionAsWrapper: ModFunction<File, 'write'> = (
 ) => {
 	const functionName = settings.functionName as string;
 
-	const getDataFunctionDeclaration = getDataMethodFactory(j, functionName);
+	const getDataFunctionDeclaration = getDataFunctionFactory(j, functionName);
 
 	const program = root.find(j.Program);
 
@@ -439,7 +439,7 @@ const addGetDataFunctionInline: ModFunction<File, 'write'> = (
 	return [true, lazyModFunctions];
 };
 
-const DATA_FETCHING_METHOD_NAMES = ['getServerSideProps', 'getStaticProps'];
+const DATA_FETCHING_FUNCTION_NAMES = ['getServerSideProps', 'getStaticProps'];
 
 export const findFunctionDeclarations: ModFunction<File, 'read'> = (
 	j,
@@ -459,7 +459,7 @@ export const findFunctionDeclarations: ModFunction<File, 'read'> = (
 			return;
 		}
 
-		if (DATA_FETCHING_METHOD_NAMES.includes(id.name)) {
+		if (DATA_FETCHING_FUNCTION_NAMES.includes(id.name)) {
 			lazyModFunctions.push(
 				[
 					findReturnStatements,
@@ -509,7 +509,7 @@ export const findArrowFunctionExpressions: ModFunction<File, 'read'> = (
 				return;
 			}
 
-			if (DATA_FETCHING_METHOD_NAMES.includes(id.name)) {
+			if (DATA_FETCHING_FUNCTION_NAMES.includes(id.name)) {
 				lazyModFunctions.push(
 					[
 						findReturnStatements,
@@ -579,14 +579,14 @@ export const findReturnStatements: ModFunction<FunctionDeclaration, 'read'> = (
 		return [false, lazyModFunctions];
 	}
 
-	const methodCanBeInlined = returnStatementCollection.every(
+	const functionCanBeInlined = returnStatementCollection.every(
 		(returnStatementPath) =>
 			j.ObjectExpression.check(returnStatementPath.value.argument),
 	);
 
 	const file = root.closest(j.File);
 
-	if (methodCanBeInlined) {
+	if (functionCanBeInlined) {
 		lazyModFunctions.push([
 			addGetDataFunctionInline,
 			file,
@@ -950,7 +950,7 @@ export default function transform(
 
 	const root = j(file.source);
 
-	const hasGetStaticPathsMethod =
+	const hasGetStaticPathsFunction =
 		root.find(j.FunctionDeclaration, {
 			id: {
 				type: 'Identifier',
@@ -959,7 +959,7 @@ export default function transform(
 		}).length !== 0;
 
 	const settings = {
-		includeParams: hasGetStaticPathsMethod,
+		includeParams: hasGetStaticPathsFunction,
 	};
 
 	const lazyModFunctions: LazyModFunction[] = [
