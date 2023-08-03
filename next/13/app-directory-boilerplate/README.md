@@ -15,6 +15,8 @@ The boilerplate includes the following:
 -   the placeholder `error.tsx` file which replaces `pages/_error.tsx` files.
 -   the placeholder `not-found.tsx` file which replaces `pages/404.tsx` files.
 
+If the codemod detects that a `getStaticProps` function is not used, it will be removed. Otherwise, it will remove the `export` keyword from the function definition.
+
 ## Example
 
 If you have the following directory:
@@ -40,13 +42,10 @@ The codemod will generate the following corresponding directory:
   ├── error.tsx
   ├── not-found.tsx
   ├── a
-        ├── page.tsx
-        ├── layout.tsx
+        └── page.tsx
   └── b
         └── c
-              ├── page.tsx
-              └── layout.tsx
-
+              └── page.tsx
 ```
 
 ## Applicability Criteria
