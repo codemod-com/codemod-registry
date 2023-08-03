@@ -34,35 +34,29 @@ describe('next 13 remove-get-static-props', function () {
 	      `;
 
 		const OUTPUT = `
-			import { notFound, redirect } from "next/navigation";
-			
-			type Params = {
-				[key: string]: string | string[] | undefined
-			};
+		type Params = {
+			[key: string]: string | string[] | undefined
+		};
 
-			type PageProps = {
-					params: Params
-			};
-
+		type PageProps = {
+				params: Params
+		};
+		
 			export async function getStaticProps() {
 				const users = await promise;
 
 				return { props: { users } };
 			}
 
-			async function getData({ params }: { params: Params }) {
-				const result = await getStaticProps({ params });
-				
-				if("redirect" in result) {
-						redirect(result.redirect.destination);
-				}
-				
-				if("notFound" in result) {
-						notFound();
-				}
-				
-				return "props" in result ? result.props : {};
-			}
+			async function getData(
+				{
+						params
+				}: { params: Params }
+		) {
+				const users = await promise;
+
+				return { users };
+		}
 
 			export default async function Component({ params }: PageProps) {
 				const {users} = await getData({
@@ -79,7 +73,6 @@ describe('next 13 remove-get-static-props', function () {
 		};
 
 		const actualOutput = transform(fileInfo, buildApi('tsx'));
-
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),
@@ -164,8 +157,6 @@ describe('next 13 remove-get-static-props', function () {
 	      `;
 
 		const OUTPUT = `
-			import { notFound, redirect } from "next/navigation";
-			
 			type Params = {
 				[key: string]: string | string[] | undefined
 			};
@@ -173,24 +164,15 @@ describe('next 13 remove-get-static-props', function () {
 			type PageProps = {
 					params: Params
 			};
-
+			
 			export async function getStaticProps() {
 				const allPosts = await promise;
 				return { props: { allPosts } };
 			}
 
 			async function getData({ params }: { params: Params }) {
-				const result = await getStaticProps({ params });
-				
-				if("redirect" in result) {
-						redirect(result.redirect.destination);
-				}
-				
-				if("notFound" in result) {
-						notFound();
-				}
-				
-				return "props" in result ? result.props : {};
+				const allPosts = await promise;
+				return  { allPosts };
 			}
 
 			export default async function Component({ params }: PageProps) {
@@ -206,7 +188,6 @@ describe('next 13 remove-get-static-props', function () {
 		};
 
 		const actualOutput = transform(fileInfo, buildApi('tsx'));
-
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),
@@ -228,8 +209,6 @@ describe('next 13 remove-get-static-props', function () {
 	      `;
 
 		const OUTPUT = `
-			import { notFound, redirect } from "next/navigation";
-			
 			type Params = {
 				[key: string]: string | string[] | undefined
 			};
@@ -244,19 +223,12 @@ describe('next 13 remove-get-static-props', function () {
 
 				return { props: { users, groups }, revalidate: 1 };
 			}
-
+			
 			async function getData({ params }: { params: Params }) {
-				const result = await getStaticProps({ params });
-				
-				if("redirect" in result) {
-					redirect(result.redirect.destination);
-				}
-				
-				if("notFound" in result) {
-					notFound();
-				}
-				
-				return "props" in result ? result.props : {};
+				const users = await promise;
+				const groups = await anotherPromise;
+
+				return { users, groups };
 			}
 
 			export default async function Component({ params }: PageProps) {
@@ -296,8 +268,6 @@ describe('next 13 remove-get-static-props', function () {
 	    `;
 
 		const OUTPUT = `
-			import { notFound, redirect } from "next/navigation";
-			
 			type Params = {
 				[key: string]: string | string[] | undefined
 			};
@@ -310,19 +280,10 @@ describe('next 13 remove-get-static-props', function () {
 				const users = await promise;
 				return { props: { users } };
 			}
-
+			
 			async function getData({ params }: { params: Params }) {
-				const result = await getStaticProps({ params });
-				
-				if("redirect" in result) {
-						redirect(result.redirect.destination);
-				}
-				
-				if("notFound" in result) {
-						notFound();
-				}
-				
-				return "props" in result ? result.props : {};
+				const users = await promise;
+				return { users };
 			}
 
 			async function SingleAppPage({ params }: PageProps) {
@@ -361,8 +322,6 @@ describe('next 13 remove-get-static-props', function () {
 	    `;
 
 		const OUTPUT = `
-			import { notFound, redirect } from "next/navigation";
-			
 			type Params = {
 				[key: string]: string | string[] | undefined
 			};
@@ -376,19 +335,9 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 			async function getData({ params }: { params: Params }) {
-				const result = await getStaticProps({ params });
-				
-				if("redirect" in result) {
-						redirect(result.redirect.destination);
-				}
-				
-				if("notFound" in result) {
-						notFound();
-				}
-				
-				return "props" in result ? result.props : {};
+				return { a } ;
 			}
-
+			
 			export async function SingleAppPage({ params }: PageProps) {
 				const props = await getData({ params });
 				return null;
@@ -423,8 +372,6 @@ describe('next 13 remove-get-static-props', function () {
 	    `;
 
 		const OUTPUT = `
-			import { notFound, redirect } from "next/navigation";
-			
 			type Params = {
 				[key: string]: string | string[] | undefined
 			};
@@ -438,19 +385,9 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 			async function getData({ params }: { params: Params }) {
-				const result = await getStaticProps({ params });
-				
-				if("redirect" in result) {
-						redirect(result.redirect.destination);
-				}
-				
-				if("notFound" in result) {
-						notFound();
-				}
-				
-				return "props" in result ? result.props : {};
+				return { a } ;
 			}
-
+			
 			export const SingleAppPage = async ({ params }: PageProps) => {
 				const props = await getData({ params });
 				return null;
@@ -475,7 +412,7 @@ describe('next 13 remove-get-static-props', function () {
 		const INPUT = `
 			export async function getStaticProps() {
 				sideEffect();
-				return { props: { } };
+				return { props: { a } };
 			}
 
 			export const SingleAppPage = () => {
@@ -487,8 +424,6 @@ describe('next 13 remove-get-static-props', function () {
 	    `;
 
 		const OUTPUT = `
-			import { notFound, redirect } from "next/navigation";
-			
 			type Params = {
 				[key: string]: string | string[] | undefined
 			};
@@ -499,21 +434,12 @@ describe('next 13 remove-get-static-props', function () {
 
 			export async function getStaticProps() {
 				sideEffect();
-				return { props: { } };
+				return { props: { a } };
 			}
-
+			
 			async function getData({ params }: { params: Params }) {
-				const result = await getStaticProps({ params });
-				
-				if("redirect" in result) {
-						redirect(result.redirect.destination);
-				}
-				
-				if("notFound" in result) {
-						notFound();
-				}
-				
-				return "props" in result ? result.props : {};
+				sideEffect();
+				return { a } ;
 			}
 
 			export const SingleAppPage = async ({ params }: PageProps) => {
@@ -549,8 +475,6 @@ describe('next 13 remove-get-static-props', function () {
 	    `;
 
 		const OUTPUT = `
-			import { notFound, redirect } from "next/navigation";
-			
 			type Params = {
 				[key: string]: string | string[] | undefined
 			};
@@ -563,19 +487,10 @@ describe('next 13 remove-get-static-props', function () {
 				const users = await promise;
 				return { props: { users } };
 			}
-
+			
 			async function getData({ params }: { params: Params }) {
-				const result = await getStaticProps({ params });
-				
-				if("redirect" in result) {
-						redirect(result.redirect.destination);
-				}
-				
-				if("notFound" in result) {
-						notFound();
-				}
-				
-				return "props" in result ? result.props : {};
+				const users = await promise;
+				return { users } ;
 			}
 
 			const Home = async ({ params }: PageProps) => {
@@ -611,7 +526,6 @@ describe('next 13 remove-get-static-props', function () {
 	    `;
 
 		const OUTPUT = `
-			import { notFound, redirect } from "next/navigation";
 			
 			type Params = {
 				[key: string]: string | string[] | undefined
@@ -625,21 +539,12 @@ describe('next 13 remove-get-static-props', function () {
 				const users = await promise;
 				return { props: { users } };
 			}
-
+			
 			async function getData({ params }: { params: Params }) {
-				const result = await getStaticProps({ params });
-				
-				if("redirect" in result) {
-					redirect(result.redirect.destination);
-				}
-				
-				if("notFound" in result) {
-					notFound();
-				}
-				
-				return "props" in result ? result.props : {};
+				const users = await promise;
+				return { users } ;
 			}
-
+			
 			const Home = async ({ params }: PageProps) => {
 				const { users } = await getData({ params });
 				return (<><Component users={users} /></>)
@@ -675,8 +580,6 @@ describe('next 13 remove-get-static-props', function () {
 	    `;
 
 		const OUTPUT = `
-			import { notFound, redirect } from "next/navigation";
-			
 			type Params = {
 				[key: string]: string | string[] | undefined
 			};
@@ -689,19 +592,10 @@ describe('next 13 remove-get-static-props', function () {
 				const users = await promise;
 				return { props: { users } };
 			}
-
+			
 			async function getData({ params }: { params: Params }) {
-				const result = await getStaticProps({ params });
-				
-				if("redirect" in result) {
-						redirect(result.redirect.destination);
-				}
-				
-				if("notFound" in result) {
-						notFound();
-				}
-				
-				return "props" in result ? result.props : {};
+				const users = await promise;
+				return { users } ;
 			}
 
 			const AppPage: AppPageType['default'] = async function AppPage({ params }: PageProps) {
@@ -741,9 +635,7 @@ describe('next 13 remove-get-static-props', function () {
 			}
 	      `;
 
-		const OUTPUT = `
-			import { notFound, redirect } from "next/navigation";
-			
+		const OUTPUT = `	
 			type Params = {
 				[key: string]: string | string[] | undefined
 			};
@@ -760,17 +652,9 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 			async function getData({ params }: { params: Params }) {
-				const result = await getStaticProps({ params });
-				
-				if("redirect" in result) {
-						redirect(result.redirect.destination);
-				}
-				
-				if("notFound" in result) {
-						notFound();
-				}
-				
-				return "props" in result ? result.props : {};
+				const users = await promise;
+				const groups = await anotherPromise;
+				return { users, groups } ;
 			}
 
 			export default async function Component({params}: PageProps) {
@@ -816,7 +700,6 @@ describe('next 13 remove-get-static-props', function () {
 	      `;
 
 		const OUTPUT = `
-			import { notFound, redirect } from "next/navigation";
 			import x from "y";
 			
 			type Params = {
@@ -833,21 +716,13 @@ describe('next 13 remove-get-static-props', function () {
 
 				return { props: { users, groups }, revalidate: 1 };
 			}
-
+			
 			async function getData({ params }: { params: Params }) {
-				const result = await getStaticProps({ params });
-				
-				if("redirect" in result) {
-					redirect(result.redirect.destination);
-				}
-				
-				if("notFound" in result) {
-					notFound();
-				}
-				
-				return "props" in result ? result.props : {};
+				const users = await promise;
+				const groups = await anotherPromise;
+				return { users, groups } ;
 			}
-
+			
 			export default async function Component({ params }: PageProps) {
 				const { users, groups } = await getData(params);
 
@@ -891,7 +766,6 @@ describe('next 13 remove-get-static-props', function () {
 	      `;
 
 		const OUTPUT = `
-			import { notFound, redirect } from "next/navigation";
 			import x from "y";
 			
 			type Params = {
@@ -910,19 +784,11 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 			async function getData({ params }: { params: Params }) {
-				const result = await getStaticProps({ params });
-				
-				if("redirect" in result) {
-					redirect(result.redirect.destination);
-				}
-				
-				if("notFound" in result) {
-					notFound();
-				}
-				
-				return "props" in result ? result.props : {};
+				const users = await promise;
+				const groups = await anotherPromise;
+				return { users, groups } ;
 			}
-
+			
 			export default async function Component({ params }: PageProps) {
 				const { users, groups } = await getData({ params });
 
@@ -970,7 +836,6 @@ describe('next 13 remove-get-static-props', function () {
 	      `;
 
 		const OUTPUT = `
-			import { notFound, redirect } from "next/navigation";
 			import x from "y";
 			
 			type Params = {
@@ -991,19 +856,16 @@ describe('next 13 remove-get-static-props', function () {
 
 				return { props: { users, groups }, revalidate: 1 };
 			}
-
+			
 			async function getData({ params }: { params: Params }) {
-				const result = await getStaticProps({ params });
+				const users = await promise;
+				const groups = await anotherPromise;
 				
-				if("redirect" in result) {
-						redirect(result.redirect.destination);
+				if(false) {
+					return  { users, groups }
 				}
 				
-				if("notFound" in result) {
-						notFound();
-				}
-				
-				return "props" in result ? result.props : {};
+				return { users, groups } ;
 			}
 
 			export default async function Component({ params }: PageProps) {
@@ -1053,7 +915,6 @@ describe('next 13 remove-get-static-props', function () {
 	      `;
 
 		const OUTPUT = `
-			import { notFound, redirect } from "next/navigation";
 			import x from "y";
 			
 			type Params = {
@@ -1074,19 +935,16 @@ describe('next 13 remove-get-static-props', function () {
 
 				return { props: { users, groups }, revalidate: 1 };
 			}
-
+			
 			async function getData({ params }: { params: Params }) {
-				const result = await getStaticProps({ params });
+				const users = await promise;
+				const groups = await anotherPromise;
 				
-				if("redirect" in result) {
-						redirect(result.redirect.destination);
+				if(false) {
+					return  { users, groups }
 				}
 				
-				if("notFound" in result) {
-						notFound();
-				}
-				
-				return "props" in result ? result.props : {};
+				return { users, groups } ;
 			}
 
 			export default async function Component({ params }: PageProps) {
@@ -1134,7 +992,6 @@ describe('next 13 remove-get-static-props', function () {
 		`;
 
 		const OUTPUT = `
-			import { notFound, redirect } from "next/navigation";
 			type Params = {
 				[key: string]: string | string[] | undefined
 			};
@@ -1151,17 +1008,10 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 			async function getData({ params }: { params: Params }) {
-				const result = await getServerSideProps({ params });
+				const res = await fetch(\`https://...\`);
+				const projects = await res.json();
 				
-				if("redirect" in result) {
-						redirect(result.redirect.destination);
-				}
-				
-				if("notFound" in result) {
-						notFound();
-				}
-				
-				return "props" in result ? result.props : {};
+				return { projects } ;
 			}
 
 			export default async function Dashboard({ params }: PageProps) {
@@ -1213,7 +1063,6 @@ describe('next 13 remove-get-static-props', function () {
 		`;
 
 		const OUTPUT = `
-			import { notFound, redirect } from "next/navigation";
 			import PostLayout from '@/components/post-layout';
 		
 			type Params = {
@@ -1243,17 +1092,10 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 			async function getData({ params }: { params: Params }) {
-				const result = await getStaticProps({ params });
+				const res = await fetch(\`https://.../posts/\${params.id}\`);
+				const post = await res.json();
 				
-				if("redirect" in result) {
-						redirect(result.redirect.destination);
-				}
-				
-				if("notFound" in result) {
-						notFound();
-				}
-				
-				return "props" in result ? result.props : {};
+				return { post } ;
 			}
 
 			export default async function Post({ params }: PageProps) {
@@ -1301,7 +1143,6 @@ describe('next 13 remove-get-static-props', function () {
 		`;
 
 		const OUTPUT = `
-			import { notFound, redirect } from "next/navigation";
 			import PostLayout from '@/components/post-layout';
 		
 			type Params = {
@@ -1331,17 +1172,10 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 			async function getData({ params }: { params: Params }) {
-				const result = await getStaticProps({ params });
+				const res = await fetch(\`https://.../posts/\${params.id}\`);
+				const post = await res.json();
 				
-				if("redirect" in result) {
-						redirect(result.redirect.destination);
-				}
-				
-				if("notFound" in result) {
-						notFound();
-				}
-				
-				return "props" in result ? result.props : {};
+				return { post } ;
 			}
 
 			export default async function Post({ params }: PageProps) {
@@ -1389,7 +1223,6 @@ describe('next 13 remove-get-static-props', function () {
 		`;
 
 		const OUTPUT = `
-			import { notFound, redirect } from "next/navigation";
 			import PostLayout from '@/components/post-layout';
 		
 			type Params = {
@@ -1419,17 +1252,10 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 			async function getData({ params }: { params: Params }) {
-				const result = await getStaticProps({ params });
+				const res = await fetch(\`https://.../posts/\${params.id}\`);
+				const post = await res.json();
 				
-				if("redirect" in result) {
-					redirect(result.redirect.destination);
-				}
-				
-				if("notFound" in result) {
-					notFound();
-				}
-				
-				return "props" in result ? result.props : {};
+				return { post } ;
 			}
 
 			export default async function Post({ params }: PageProps) {
@@ -1477,7 +1303,6 @@ describe('next 13 remove-get-static-props', function () {
 		`;
 
 		const OUTPUT = `
-			import { notFound, redirect } from "next/navigation";
 			import PostLayout from '@/components/post-layout';
 		
 			type Params = {
@@ -1507,17 +1332,10 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 			async function getData({ params }: { params: Params }) {
-				const result = await getStaticProps({ params });
+				const res = await fetch(\`https://.../posts/\${params.id}\`);
+				const post = await res.json();
 				
-				if("redirect" in result) {
-					redirect(result.redirect.destination);
-				}
-				
-				if("notFound" in result) {
-					notFound();
-				}
-				
-				return "props" in result ? result.props : {};
+				return { post } ;
 			}
 
 			export default async function Post({ params }: PageProps) {
@@ -1536,6 +1354,66 @@ describe('next 13 remove-get-static-props', function () {
 
 		const actualOutput = transform(fileInfo, buildApi('tsx'));
 
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should wrap original getStaticProps when at least one of returnStatement argument is not ObjectExpression', function () {
+		const INPUT = `
+			export async function getStaticProps() {
+				return fetchData();
+			}
+
+			export default function Component({ users }) {
+				return users.map(user => <b>user</b>)
+	          }
+	      `;
+
+		const OUTPUT = `
+		import { notFound, redirect } from "next/navigation";
+		type Params = {
+			[key: string]: string | string[] | undefined
+		};
+
+		type PageProps = {
+				params: Params
+		};
+		
+			export async function getStaticProps() {
+				return fetchData();
+			}
+
+			async function getData({ params }: { params: Params }) {
+				const result = await getStaticProps({ params });
+				
+				if("redirect" in result) {
+						redirect(result.redirect.destination);
+				}
+				
+				if("notFound" in result) {
+						notFound();
+				}
+				
+				return "props" in result ? result.props : {};
+		}
+
+			export default async function Component({ params }: PageProps) {
+				const {users} = await getData({
+					params, 
+				});
+
+				return users.map(user => <b>user</b>)
+			}
+		`;
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, buildApi('tsx'));
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),
