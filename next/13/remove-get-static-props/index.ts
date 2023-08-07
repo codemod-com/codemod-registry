@@ -516,6 +516,14 @@ export const findFunctionDeclarations: ModFunction<File, 'read'> = (
 				[addGenerateStaticParamsFunctionDeclaration, root, newSettings],
 			);
 		}
+
+		if (id.name === 'getStaticProps') {
+			lazyModFunctions.push([
+				addDynamicVariableDeclaration,
+				root,
+				settings,
+			]);
+		}
 	});
 
 	return [false, lazyModFunctions];
@@ -573,6 +581,14 @@ export const findArrowFunctionExpressions: ModFunction<File, 'read'> = (
 					],
 				);
 			}
+
+			if (id.name === 'getStaticProps') {
+				lazyModFunctions.push([
+					addDynamicVariableDeclaration,
+					root,
+					settings,
+				]);
+			}
 		});
 
 	return [false, lazyModFunctions];
@@ -628,6 +644,49 @@ export const findReturnStatements: ModFunction<FunctionDeclaration, 'read'> = (
 	}
 
 	return [false, lazyModFunctions];
+};
+
+export const addDynamicVariableDeclaration: ModFunction<File, 'write'> = (
+	j,
+	root,
+) => {
+	const exportNamedDeclarationAlreadyExists =
+		root.find(j.ExportNamedDeclaration, {
+			declaration: {
+				declarations: [
+					{
+						type: 'VariableDeclarator',
+						id: {
+							type: 'Identifier',
+							name: 'dynamic',
+						},
+					},
+				],
+			},
+		})?.length !== 0;
+
+	let dirtyFlag = false;
+
+	if (exportNamedDeclarationAlreadyExists) {
+		return [dirtyFlag, []];
+	}
+
+	const exportNamedDeclaration = j.exportNamedDeclaration(
+		j.variableDeclaration('const', [
+			j.variableDeclarator(
+				j.identifier('dynamic'),
+				j.stringLiteral('force-static'),
+			),
+		]),
+	);
+
+	root.find(j.Program).forEach((program) => {
+		dirtyFlag = true;
+
+		program.value.body.push(exportNamedDeclaration);
+	});
+
+	return [dirtyFlag, []];
 };
 
 /**
@@ -1074,7 +1133,7 @@ export default function transform(
 		});
 
 		if (namedFunctionIndex !== -1) {
-			const [namedFunction] = body.splice(index, 1);
+			const [namedFunction] = body.splice(namedFunctionIndex, 1);
 
 			const newIndex = getFirstIndexAfterExportNamedFunctionDeclaration(
 				j,
