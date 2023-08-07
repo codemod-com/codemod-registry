@@ -64,6 +64,8 @@ describe('next 13 remove-get-static-props', function () {
 
 				return users.map(user => <b>user</b>)
 			}
+			
+			export const dynamic = "force-static";
 		`;
 
 		const fileInfo: FileInfo = {
@@ -129,6 +131,8 @@ describe('next 13 remove-get-static-props', function () {
 
 				return users.map(user => <b>user</b>)
 			}
+			
+			export const dynamic = "force-static";
 		`;
 
 		const fileInfo: FileInfo = {
@@ -181,6 +185,8 @@ describe('next 13 remove-get-static-props', function () {
 
 				return edges.map(edge => <b>edge</b>)
 			}
+			
+			export const dynamic = "force-static";
 		`;
 
 		const fileInfo: FileInfo = {
@@ -240,6 +246,7 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 			export const revalidate = 1;
+			export const dynamic = "force-static";
 		`;
 
 		const fileInfo: FileInfo = {
@@ -248,6 +255,7 @@ describe('next 13 remove-get-static-props', function () {
 		};
 
 		const actualOutput = transform(fileInfo, buildApi('tsx'));
+
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),
@@ -295,6 +303,7 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 			export default SingleAppPage;
+			export const dynamic = "force-static";
 		`;
 
 		const fileInfo: FileInfo = {
@@ -303,7 +312,6 @@ describe('next 13 remove-get-static-props', function () {
 		};
 
 		const actualOutput = transform(fileInfo, buildApi('tsx'));
-
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),
@@ -348,6 +356,7 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 			export default SingleAppPage;
+			export const dynamic = "force-static";
 		`;
 
 		const fileInfo: FileInfo = {
@@ -399,6 +408,7 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 			export default SingleAppPage;
+			export const dynamic = "force-static";
 		`;
 
 		const fileInfo: FileInfo = {
@@ -454,6 +464,7 @@ describe('next 13 remove-get-static-props', function () {
 			}
 			
 			export default SingleAppPage;
+			export const dynamic = "force-static";
 		`;
 
 		const fileInfo: FileInfo = {
@@ -506,6 +517,7 @@ describe('next 13 remove-get-static-props', function () {
 			};
 			
 			export default Home;
+			export const dynamic = "force-static";
 		`;
 
 		const fileInfo: FileInfo = {
@@ -558,6 +570,7 @@ describe('next 13 remove-get-static-props', function () {
 			};
 			
 			export default Home;
+			export const dynamic = "force-static";
 		`;
 
 		const fileInfo: FileInfo = {
@@ -612,6 +625,7 @@ describe('next 13 remove-get-static-props', function () {
 			};
 			
 			export default AppPage;
+			export const dynamic = "force-static";
 		`;
 
 		const fileInfo: FileInfo = {
@@ -675,6 +689,7 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 			export const revalidate = 1;
+			export const dynamic = "force-static";
 		`;
 
 		const fileInfo: FileInfo = {
@@ -742,6 +757,7 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 			export const revalidate = 1;
+			export const dynamic = "force-static";
 		`;
 
 		const fileInfo: FileInfo = {
@@ -809,6 +825,7 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 			export const revalidate = 1;
+			export const dynamic = "force-static";
 		`;
 
 		const fileInfo: FileInfo = {
@@ -889,6 +906,7 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 			export const revalidate = 1;
+			export const dynamic = "force-static";
 		`;
 
 		const fileInfo: FileInfo = {
@@ -969,6 +987,7 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 			export const revalidate = 1;
+			export const dynamic = "force-static";
 		`;
 
 		const fileInfo: FileInfo = {
@@ -978,6 +997,60 @@ describe('next 13 remove-get-static-props', function () {
 
 		const actualOutput = transform(fileInfo, buildApi('tsx'));
 
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT?.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should add dynamic="force-static" if a page implements getStaticProps', function () {
+		const INPUT = `
+			
+		export const getStaticProps = async () => {
+			return { props: {}, revalidate: 1 }
+		}
+
+			export default async function Component() {
+				return null;
+			}
+	      `;
+
+		const OUTPUT = `
+		import { GetStaticPropsContext } from "next";
+			
+			type Params = {
+				[key: string]: string | string[] | undefined
+			};
+
+			type PageProps = {
+					params: Params
+			};
+		
+			export const getStaticProps = async () => {
+				return { props: {}, revalidate: 1 }
+			}
+			
+			async function getData(props: GetStaticPropsContext) {
+				return {};
+			}	
+			
+			export default async function Component({ params }: PageProps) {
+				await getData({ params });
+
+				return null;
+			}
+
+			export const revalidate = 1;
+			export const dynamic = "force-static";
+		`;
+
+		const fileInfo: FileInfo = {
+			path: 'index.js',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, buildApi('tsx'));
+		console.log(actualOutput, '?');
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT?.replace(/\W/gm, ''),
@@ -1120,6 +1193,7 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 			export const dynamicParams = true;
+			export const dynamic = "force-static";
 		`;
 
 		const fileInfo: FileInfo = {
@@ -1201,6 +1275,7 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 			export const dynamicParams = false;
+			export const dynamic = "force-static";
 		`;
 
 		const fileInfo: FileInfo = {
@@ -1282,6 +1357,7 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 			export const dynamicParams = true;
+			export const dynamic = "force-static";
 		`;
 
 		const fileInfo: FileInfo = {
@@ -1363,6 +1439,7 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 			export const dynamicParams = true;
+			export const dynamic = "force-static";
 		`;
 
 		const fileInfo: FileInfo = {
@@ -1424,6 +1501,8 @@ describe('next 13 remove-get-static-props', function () {
 
 				return users.map(user => <b>user</b>)
 			}
+			
+			export const dynamic = "force-static";
 		`;
 
 		const fileInfo: FileInfo = {
