@@ -209,7 +209,7 @@ const findJsxTagsByImportName = (
 	return jsxTags;
 };
 
-const replaceNextDocumentJsxTags = (sourceFile: SourceFile) => {
+export const replaceNextDocumentJsxTags = (sourceFile: SourceFile) => {
 	const nextDocumentJsxTags = findJsxTagsByImportName(
 		sourceFile,
 		'next/document',
@@ -236,7 +236,7 @@ const replaceNextDocumentJsxTags = (sourceFile: SourceFile) => {
 	});
 };
 
-const removeNextDocumentImport = (sourceFile: SourceFile) => {
+export const removeNextDocumentImport = (sourceFile: SourceFile) => {
 	const importDeclarations = sourceFile.getImportDeclarations();
 
 	const importDeclaration = importDeclarations.find((importDeclaration) => {
