@@ -173,6 +173,10 @@ const findJsxTagsByImportName = (
 		return moduleSpecifierText === moduleSpecifier;
 	});
 
+	if (importDeclaration === undefined) {
+		return [];
+	}
+
 	const importedIdentifiers: Identifier[] = [];
 
 	const defaultImport = importDeclaration?.getDefaultImport();
@@ -202,10 +206,10 @@ const findJsxTagsByImportName = (
 		});
 	});
 
-	return jsxTags ?? null;
+	return jsxTags;
 };
 
-const replaceNextDocumentJsxTags = (sourceFile: SourceFile): SourceFile => {
+const replaceNextDocumentJsxTags = (sourceFile: SourceFile) => {
 	const nextDocumentJsxTags = findJsxTagsByImportName(
 		sourceFile,
 		'next/document',
@@ -231,10 +235,9 @@ const replaceNextDocumentJsxTags = (sourceFile: SourceFile): SourceFile => {
 		}
 	});
 
-	return sourceFile;
 };
 
-const removeNextDocumentImport = (sourceFile: SourceFile): SourceFile => {
+const removeNextDocumentImport = (sourceFile: SourceFile) => {
 	const importDeclarations = sourceFile.getImportDeclarations();
 
 	const importDeclaration = importDeclarations.find((importDeclaration) => {
@@ -245,11 +248,7 @@ const removeNextDocumentImport = (sourceFile: SourceFile): SourceFile => {
 		return moduleSpecifierText === 'next/document';
 	});
 
-	if (importDeclaration !== undefined) {
-		importDeclaration.remove();
-	}
-
-	return sourceFile;
+	importDeclaration?.remove();
 };
 
 export const repomod: Repomod<Dependencies> = {
