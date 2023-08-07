@@ -229,7 +229,7 @@ const replaceNextDocumentJsxTags = (sourceFile: SourceFile): SourceFile => {
 		) {
 			tagNameNode.rename(tagName.toLowerCase());
 		}
-	});		
+	});
 
 	return sourceFile;
 };
@@ -237,22 +237,20 @@ const replaceNextDocumentJsxTags = (sourceFile: SourceFile): SourceFile => {
 const removeNextDocumentImport = (sourceFile: SourceFile): SourceFile => {
 	const importDeclarations = sourceFile.getImportDeclarations();
 
-		const importDeclaration = importDeclarations.find(
-			(importDeclaration) => {
-				const moduleSpecifierText = importDeclaration
-					.getModuleSpecifier()
-					.getText();
+	const importDeclaration = importDeclarations.find((importDeclaration) => {
+		const moduleSpecifierText = importDeclaration
+			.getModuleSpecifier()
+			.getText();
 
-				return moduleSpecifierText === 'next/document';
-			},
-		);
-		
-		if(importDeclaration !== undefined) {
-			importDeclaration.remove();
-		}
-		
-		return sourceFile;
-}
+		return moduleSpecifierText === 'next/document';
+	});
+
+	if (importDeclaration !== undefined) {
+		importDeclaration.remove();
+	}
+
+	return sourceFile;
+};
 
 export const repomod: Repomod<Dependencies> = {
 	includePatterns: ['**/pages/**/*.{js,jsx,ts,tsx,cjs,mjs,mdx}'],
