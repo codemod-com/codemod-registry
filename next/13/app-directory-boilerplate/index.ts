@@ -1,5 +1,12 @@
 import { ParsedPath, posix } from 'node:path';
-import tsmorph, { SyntaxKind } from 'ts-morph';
+import tsmorph, {
+	Identifier,
+	JsxOpeningElement,
+	JsxSelfClosingElement,
+	Node,
+	SourceFile,
+	SyntaxKind,
+} from 'ts-morph';
 import type { Repomod } from '@intuita-inc/repomod-engine-api';
 import type { fromMarkdown } from 'mdast-util-from-markdown';
 import type { visit } from 'unist-util-visit';
@@ -150,6 +157,97 @@ const getCssImportDeclarationsFromUnderscoreApp = async (
 				.includes('.css');
 		})
 		.map((importDeclaration) => importDeclaration.print());
+};
+
+const findJsxTagsByImportName = (
+	sourceFile: SourceFile,
+	moduleSpecifier: string,
+) => {
+	const importDeclarations = sourceFile.getImportDeclarations();
+
+	const importDeclaration = importDeclarations.find((importDeclaration) => {
+		const moduleSpecifierText = importDeclaration
+			.getModuleSpecifier()
+			.getText();
+
+		return moduleSpecifierText === moduleSpecifier;
+	});
+
+	if (importDeclaration === undefined) {
+		return [];
+	}
+
+	const importedIdentifiers: Identifier[] = [];
+
+	const defaultImport = importDeclaration?.getDefaultImport();
+
+	if (defaultImport) {
+		importedIdentifiers.push(defaultImport);
+	}
+
+	(importDeclaration?.getNamedImports() ?? []).forEach((namedImport) => {
+		importedIdentifiers.push(namedImport.getNameNode());
+	});
+
+	const jsxTags: (JsxSelfClosingElement | JsxOpeningElement)[] = [];
+
+	importedIdentifiers.forEach((identifier) => {
+		const refs = identifier.findReferencesAsNodes();
+
+		refs.forEach((ref) => {
+			const parent = ref.getParent();
+
+			if (
+				Node.isJsxSelfClosingElement(parent) ||
+				Node.isJsxOpeningElement(parent)
+			) {
+				jsxTags.push(parent);
+			}
+		});
+	});
+
+	return jsxTags;
+};
+
+export const replaceNextDocumentJsxTags = (sourceFile: SourceFile) => {
+	const nextDocumentJsxTags = findJsxTagsByImportName(
+		sourceFile,
+		'next/document',
+	);
+
+	nextDocumentJsxTags.forEach((jsxTag) => {
+		const tagNameNode = jsxTag.getTagNameNode();
+		const tagName = tagNameNode.getText();
+
+		if (tagName === 'Main') {
+			return;
+		}
+
+		if (tagName === 'NextScript') {
+			jsxTag.replaceWithText('');
+		}
+
+		if (
+			Node.isIdentifier(tagNameNode) &&
+			['Html', 'Head'].includes(tagName)
+		) {
+			tagNameNode.rename(tagName.toLowerCase());
+		}
+	});
+};
+
+export const removeNextDocumentImport = (sourceFile: SourceFile) => {
+	const importDeclarations = sourceFile.getImportDeclarations();
+
+	const importDeclaration = importDeclarations.find((importDeclaration) => {
+		const moduleSpecifierText = importDeclaration
+			.getModuleSpecifier()
+			.getText();
+
+		return moduleSpecifierText === 'next/document';
+	});
+
+	importDeclaration?.remove();
 };
 
 export const repomod: Repomod<Dependencies> = {
