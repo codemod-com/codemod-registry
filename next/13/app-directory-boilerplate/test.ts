@@ -34,7 +34,7 @@ const A_B_CONTENT = `
 import { X } from "../../testABC";
 import { Y } from "./testDEF";
 
-export const getStaticPath = () => {
+export const getStaticPaths = () => {
 
 }
 `;
@@ -84,36 +84,6 @@ const transform = async (json: DirectoryJSON) => {
 	return executeRepomod(api, repomod, '/', {});
 };
 
-const A_B_DATA = `// This file has been sourced from: /opt/project/pages/[a]/[b].tsx
-import { X } from "../../../testABC";
-import { Y } from "../testDEF";
-// TODO reimplement getStaticPath as generateStaticParams
-export const getStaticPath = () => {
-};
-`;
-
-const A_B_MDX_DATA = `// This file has been sourced from: /opt/project/pages/[a]/[b].mdx
-import { X } from "../../../testABC";
-import { Y } from "../testDEF";
-
-
-// TODO reimplement getStaticPath as generateStaticParams
-export const getStaticPath = () => {
-};
-`;
-
-const A_C_DATA = `// This file has been sourced from: /opt/project/pages/[a]/c.tsx
-// TODO reimplement getServerSideProps with custom logic
-const getServerSideProps = () => {
-};
-`;
-
-const A_C_MDX_DATA = `// This file has been sourced from: /opt/project/pages/[a]/c.mdx
-// TODO reimplement getServerSideProps with custom logic
-const getServerSideProps = () => {
-};
-`;
-
 describe('next 13 app-directory-boilerplate', function () {
 	it('should build correct files', async function (this: Context) {
 		const externalFileCommands = await transform({
@@ -127,7 +97,7 @@ describe('next 13 app-directory-boilerplate', function () {
 			'/opt/project/pages/a/index.tsx': '',
 		});
 
-		deepStrictEqual(externalFileCommands.length, 13);
+		deepStrictEqual(externalFileCommands.length, 17);
 
 		ok(
 			externalFileCommands.some(
@@ -192,21 +162,16 @@ describe('next 13 app-directory-boilerplate', function () {
 			externalFileCommands.some((command) => {
 				return (
 					command.kind === 'upsertFile' &&
-					command.path === '/opt/project/app/page.tsx' &&
+					command.path === '/opt/project/app/components.tsx' &&
 					command.data.replace(/\W/gm, '') ===
-						`// This file has been sourced from: /opt/project/pages/index.jsx
-						import A from "./testQWE";
+						`
+						'use client';
+						// This file has been sourced from: /opt/project/pages/index.jsx
 						
 						export default function Index({}) {
 							return null;
 						}
-						
-						const getStaticProps = async ({}) => {
-							return {
-								props: {},
-								revalidate: 10,
-							};
-						};`.replace(/\W/gm, '')
+					;`.replace(/\W/gm, '')
 				);
 			}),
 		);
@@ -217,7 +182,16 @@ describe('next 13 app-directory-boilerplate', function () {
 					command.kind === 'upsertFile' &&
 					command.path === '/opt/project/app/[a]/c/page.tsx' &&
 					command.data.replace(/\W/gm, '') ===
-						A_C_DATA.replace(/\W/gm, '')
+						`
+						// This file has been sourced from: /opt/project/pages/[a]/c.tsx
+						import Components from "./components";
+						// TODO reimplement getServerSideProps with custom logic
+						const getServerSideProps = () => {
+						};
+						export default async function Page(props: any) {
+							return <Components {...props}/>;
+						}
+					`.replace(/\W/gm, '')
 				);
 			}),
 		);
@@ -226,9 +200,21 @@ describe('next 13 app-directory-boilerplate', function () {
 			externalFileCommands.some((command) => {
 				return (
 					command.kind === 'upsertFile' &&
-					command.path === '/opt/project/app/[a]/[b]/page.tsx' &&
+					command.path === '/opt/project/app/[a]/c/components.tsx' &&
 					command.data.replace(/\W/gm, '') ===
-						A_B_DATA.replace(/\W/gm, '')
+						"'use client';".replace(/\W/gm, '')
+				);
+			}),
+		);
+
+		ok(
+			externalFileCommands.some((command) => {
+				return (
+					command.kind === 'upsertFile' &&
+					command.path ===
+						'/opt/project/app/[a]/[b]/components.tsx' &&
+					command.data.replace(/\W/gm, '') ===
+						"'use client';".replace(/\W/gm, '')
 				);
 			}),
 		);
@@ -241,7 +227,7 @@ describe('next 13 app-directory-boilerplate', function () {
 			'/opt/project/pages/_document.jsx': '',
 		});
 
-		deepStrictEqual(externalFileCommands.length, 5);
+		deepStrictEqual(externalFileCommands.length, 6);
 
 		ok(
 			!externalFileCommands.some(
@@ -277,14 +263,15 @@ describe('next 13 app-directory-boilerplate', function () {
 			'/opt/project/pages/[a]/c.mdx': A_C_CONTENT,
 		});
 
-		deepStrictEqual(externalFileCommands.length, 9);
+		deepStrictEqual(externalFileCommands.length, 12);
 
 		ok(
 			externalFileCommands.some((command) => {
 				return (
 					command.kind === 'upsertFile' &&
-					command.path === '/opt/project/app/[a]/c/page.mdx' &&
-					command.data === A_C_MDX_DATA
+					command.path === '/opt/project/app/[a]/c/components.mdx' &&
+					command.data.replace(/\W/gm, '') ===
+						`'use client';`.replace(/\W/gm, '')
 				);
 			}),
 		);
@@ -293,8 +280,10 @@ describe('next 13 app-directory-boilerplate', function () {
 			externalFileCommands.some((command) => {
 				return (
 					command.kind === 'upsertFile' &&
-					command.path === '/opt/project/app/[a]/[b]/page.mdx' &&
-					command.data === A_B_MDX_DATA
+					command.path ===
+						'/opt/project/app/[a]/[b]/components.mdx' &&
+					command.data.replace(/\W/gm, '') ===
+						"'use client".replace(/\W/gm, '')
 				);
 			}),
 		);
@@ -302,34 +291,56 @@ describe('next 13 app-directory-boilerplate', function () {
 
 	it('should remove the Head tag', async function (this: Context) {
 		const content = `
-		import Head from 'next/head';
+			import Head from 'next/head';
 
-		export default async function Index() {
-			return <div>
-				<Head></Head>
-			</div>;
-		}
+			export default async function Index() {
+				return <div>
+					<Head></Head>
+				</div>;
+			}
 		`;
 
-		const newContent = `
-		// This file has been sourced from: /opt/project/pages/index.jsx
-
-		export default async function Index() {
-			return <div>
-			</div>;
-		}
-		`;
-
-		const [, upsertFileCommand, deleteIndexJsxCommand] = await transform({
+		const [
+			,
+			upsertPageCommand,
+			upsertComponentCommand,
+			deleteIndexJsxCommand,
+		] = await transform({
 			'/opt/project/pages/index.jsx': content,
 		});
 
-		deepStrictEqual(upsertFileCommand?.kind, 'upsertFile');
-		deepStrictEqual(upsertFileCommand?.path, '/opt/project/app/page.tsx');
+		//
+		deepStrictEqual(upsertPageCommand?.kind, 'upsertFile');
+		deepStrictEqual(upsertPageCommand?.path, '/opt/project/app/page.tsx');
 
 		deepStrictEqual(
-			upsertFileCommand?.data.replace(/\W/gm, ''),
-			newContent.replace(/\W/gm, ''),
+			upsertPageCommand?.data.replace(/\W/gm, ''),
+			`
+				// This file has been sourced from: /opt/project/pages/index.jsx
+				import Components from "./components";
+				export default async function Page(props: any) {
+					return <Components {...props}/>;
+				}
+			`.replace(/\W/gm, ''),
+		);
+
+		deepStrictEqual(upsertComponentCommand?.kind, 'upsertFile');
+		deepStrictEqual(
+			upsertComponentCommand?.path,
+			'/opt/project/app/components.tsx',
+		);
+
+		deepStrictEqual(
+			upsertComponentCommand?.data.replace(/\W/gm, ''),
+			`
+				'use client';
+				// This file has been sourced from: /opt/project/pages/index.jsx
+
+				export default async function Index() {
+					return <div>
+					</div>;
+				}
+			`.replace(/\W/gm, ''),
 		);
 
 		deepStrictEqual(deleteIndexJsxCommand?.kind, 'deleteFile');
@@ -341,33 +352,53 @@ describe('next 13 app-directory-boilerplate', function () {
 
 	it('should remove the Head tag when surrounded with ()', async function (this: Context) {
 		const content = `
-		import Head from "next/head";
+			import Head from "next/head";
 
-		export default function Index() {
-			return (
-				<Head></Head>
-			);
-		}
+			export default function Index() {
+				return (
+					<Head></Head>
+				);
+			}
 		`;
 
-		const newContent = `
-		// This file has been sourced from: /opt/project/pages/index.jsx
-
-		export default function Index() {
-			return null;
-		}
-		`;
-
-		const [, upsertFileCommand, deleteIndexJsxCommand] = await transform({
+		const [
+			,
+			upsertPageCommand,
+			upsertComponentCommand,
+			deleteIndexJsxCommand,
+		] = await transform({
 			'/opt/project/pages/index.jsx': content,
 		});
 
-		deepStrictEqual(upsertFileCommand?.kind, 'upsertFile');
-		deepStrictEqual(upsertFileCommand?.path, '/opt/project/app/page.tsx');
+		deepStrictEqual(upsertPageCommand?.kind, 'upsertFile');
+		deepStrictEqual(upsertPageCommand?.path, '/opt/project/app/page.tsx');
+		deepStrictEqual(
+			upsertPageCommand?.data.replace(/\W/gm, ''),
+			`
+				// This file has been sourced from: /opt/project/pages/index.jsx
+				import Components from "./components";
+				export default async function Page(props: any) {
+					return <Components {...props}/>;
+				}
+			`.replace(/\W/gm, ''),
+		);
+
+		deepStrictEqual(upsertComponentCommand?.kind, 'upsertFile');
+		deepStrictEqual(
+			upsertComponentCommand?.path,
+			'/opt/project/app/components.tsx',
+		);
 
 		deepStrictEqual(
-			upsertFileCommand?.data.replace(/\W/gm, ''),
-			newContent.replace(/\W/gm, ''),
+			upsertComponentCommand?.data.replace(/\W/gm, ''),
+			`
+				'use client';
+				// This file has been sourced from: /opt/project/pages/index.jsx
+
+				export default function Index() {
+					return null;
+				}
+			`.replace(/\W/gm, ''),
 		);
 
 		deepStrictEqual(deleteIndexJsxCommand?.kind, 'deleteFile');
@@ -441,8 +472,8 @@ describe('next 13 app-directory-boilerplate', function () {
 		const [
 			upsertLayoutCommand,
 			upsertPageCommand,
+			upsertComponentCommand,
 			deleteFileCommand,
-			upsertNotFoundFileCommand,
 		] = await transform({
 			'/opt/project/pages/index.tsx': index,
 		});
@@ -456,18 +487,35 @@ describe('next 13 app-directory-boilerplate', function () {
 		deepStrictEqual(upsertPageCommand?.kind, 'upsertFile');
 		deepStrictEqual(upsertPageCommand?.path, '/opt/project/app/page.tsx');
 
-		const pageData = `
-			This file has been sourced from: /opt/project/pages/index.tsx
-			import NotFound from "./notFound";
-
-			export default async function Index() {
-			    return <NotFound />;
-			}
-		`;
-
 		deepStrictEqual(
 			upsertPageCommand?.data.replace(/\W/gm, ''),
-			pageData.replace(/\W/gm, ''),
+			`
+				// This file has been sourced from: /opt/project/pages/index.tsx
+				
+				import Components from "./components";
+				export default async function Page(props: any) {
+					return <Components {...props}/>;
+				}
+			`.replace(/\W/gm, ''),
+		);
+
+		deepStrictEqual(upsertComponentCommand?.kind, 'upsertFile');
+		deepStrictEqual(
+			upsertComponentCommand?.path,
+			'/opt/project/app/components.tsx',
+		);
+
+		deepStrictEqual(
+			upsertComponentCommand?.data.replace(/\W/gm, ''),
+			`
+				'use client';
+				// This file has been sourced from: /opt/project/pages/index.tsx
+				import ErrorPage from "next/error";
+
+				export default async function Index() {
+					return <ErrorPage statusCode={404}/>;
+				}
+			`.replace(/\W/gm, ''),
 		);
 
 		// delete file command
@@ -475,27 +523,6 @@ describe('next 13 app-directory-boilerplate', function () {
 		deepStrictEqual(
 			deleteFileCommand?.path,
 			'/opt/project/pages/index.tsx',
-		);
-
-		// upsert not found file command
-		deepStrictEqual(upsertNotFoundFileCommand?.kind, 'upsertFile');
-		deepStrictEqual(
-			upsertNotFoundFileCommand?.path,
-			'/opt/project/app/notFound.tsx',
-		);
-
-		const data = `
-			'use client';
-			import ErrorPage from 'next/error';
-			
-			const NotFound = () => <ErrorPage statusCode={404} />;
-			
-			export default NotFound;
-		`;
-
-		deepStrictEqual(
-			upsertNotFoundFileCommand?.data.replace(/\W/gm, ''),
-			data.replace(/\W/gm, ''),
 		);
 	});
 
@@ -508,13 +535,10 @@ describe('next 13 app-directory-boilerplate', function () {
 			}
 		`;
 
-		const [
-			upsertPageCommand,
-			deleteFileCommand,
-			upsertNotFoundFileCommand,
-		] = await transform({
-			'/opt/project/pages/a/b/c.tsx': index,
-		});
+		const [upsertPageCommand, upsertComponentsCommand, deleteFileCommand] =
+			await transform({
+				'/opt/project/pages/a/b/c.tsx': index,
+			});
 
 		deepStrictEqual(upsertPageCommand?.kind, 'upsertFile');
 		deepStrictEqual(
@@ -522,18 +546,34 @@ describe('next 13 app-directory-boilerplate', function () {
 			'/opt/project/app/a/b/c/page.tsx',
 		);
 
-		const pageData = `
-			// This file has been sourced from: /opt/project/pages/a/b/c.tsx
-			import NotFound from "./notFound";
-
-			export default async function C() {
-			    return <NotFound />;
-			}
-		`;
-
 		deepStrictEqual(
 			upsertPageCommand?.data.replace(/(?!\.)\s/gm, ''),
-			pageData.replace(/(?!\.)\s/gm, ''),
+			`
+				// This file has been sourced from: /opt/project/pages/a/b/c.tsx
+				import Components from "./components";
+				export default async function Page(props: any) {
+					return <Components {...props}/>;
+				}
+			`.replace(/(?!\.)\s/gm, ''),
+		);
+
+		deepStrictEqual(upsertComponentsCommand?.kind, 'upsertFile');
+		deepStrictEqual(
+			upsertComponentsCommand?.path,
+			'/opt/project/app/a/b/c/components.tsx',
+		);
+
+		deepStrictEqual(
+			upsertComponentsCommand?.data.replace(/(?!\.)\s/gm, ''),
+			`
+				'use client';
+				// This file has been sourced from: /opt/project/pages/a/b/c.tsx
+				import ErrorPage from 'next/error';
+
+				export default async function C() {
+					return <ErrorPage statusCode={404}/>;
+				}
+			`.replace(/(?!\.)\s/gm, ''),
 		);
 
 		// delete file command
@@ -543,72 +583,121 @@ describe('next 13 app-directory-boilerplate', function () {
 			deleteFileCommand?.path,
 			'/opt/project/pages/a/b/c.tsx',
 		);
-
-		// upsert not found file command
-		deepStrictEqual(upsertNotFoundFileCommand?.kind, 'upsertFile');
-		deepStrictEqual(
-			upsertNotFoundFileCommand?.path,
-			'/opt/project/app/a/b/c/notFound.tsx',
-		);
-
-		const data = `
-			'use client';
-			import ErrorPage from 'next/error';
-
-			const NotFound = () => <ErrorPage statusCode={404} />;
-
-			export default NotFound;
-		`;
-
-		deepStrictEqual(
-			upsertNotFoundFileCommand?.data.replace(/\W/gm, ''),
-			data.replace(/\W/gm, ''),
-		);
 	});
 
-	it('should remove export keyword from old data fetching methods', async function (this: Context) {
+	it('should remove export keyword from old data fetching functions', async function (this: Context) {
 		const index = `
-			export async function getStaticProps() {};
-			export const getStaticProps = async () => {};
-			
-			export async function getServerSideProps() {};
-			export const getServerSideProps = async () => {};
-			
-			export async function getStaticPaths() {};
-			export const getStaticPaths = async () => {};
-				
-			export default async function Index() {
-					return null;
+			export async function getStaticProps() {}
+			export async function getServerSideProps() {}
+			export async function getStaticPaths() {}
+
+			export default function Index() {
+				return null;
 			}
 		`;
 
-		const [, command] = await transform({
+		const [, pageCommand, componentsCommand] = await transform({
 			'/opt/project/pages/index.tsx': index,
 		});
 
-		deepStrictEqual(command?.kind, 'upsertFile');
+		{
+			deepStrictEqual(pageCommand?.kind, 'upsertFile');
+			deepStrictEqual(pageCommand?.path, '/opt/project/app/page.tsx');
 
-		const pageData = `
-		// This file has been sourced from: /opt/project/pages/index.tsx
-		async function getStaticProps() { }
-		;
-		const getStaticProps = async () => { };
-		async function getServerSideProps() { };
-		
-		// TODO reimplement getServerSideProps with custom logic
-		const getServerSideProps = async () => { };
-		async function getStaticPaths() { };
-		
-		const getStaticPaths = async () => { };
-		
-		export default async function Index() {
-				return null;
+			deepStrictEqual(
+				pageCommand?.data.replace(/\W/gm, ''),
+				`
+					// This file has been sourced from: /opt/project/pages/index.tsx
+					import Components from "./components";
+					async function getStaticProps() { }
+					async function getServerSideProps() { }
+					async function getStaticPaths() { }
+					
+					export default async function Page(props: any) {
+						return <Components {...props}/>;
+					}
+				`.replace(/\W/gm, ''),
+			);
 		}
+
+		{
+			deepStrictEqual(componentsCommand?.kind, 'upsertFile');
+			deepStrictEqual(
+				componentsCommand?.path,
+				'/opt/project/app/components.tsx',
+			);
+
+			deepStrictEqual(
+				componentsCommand?.data.replace(/(?!\.)\s/gm, ''),
+				`
+					'use client';
+					// This file has been sourced from: /opt/project/pages/index.tsx
+					
+					export default function Index() {
+						return null;
+					}
+				`.replace(/(?!\.)\s/gm, ''),
+			);
+		}
+	});
+
+	it('should remove export keyword from old data fetching arrow functions', async function (this: Context) {
+		const index = `
+			export const getStaticProps = async () => {};
+			export const getServerSideProps = async () => {};
+			export const getStaticPaths = async () => {};
+
+			export default function Index() {
+				return null;
+			}
 		`;
 
-		deepStrictEqual(
-			command?.data.replace(/(?!\.)\s/gm, ''),
-			pageData.replace(/(?!\.)\s/gm, ''),
-		);
+		const [, pageCommand, componentsCommand] = await transform({
+			'/opt/project/pages/index.tsx': index,
+		});
+
+		{
+			deepStrictEqual(pageCommand?.kind, 'upsertFile');
+			deepStrictEqual(pageCommand?.path, '/opt/project/app/page.tsx');
+
+			deepStrictEqual(
+				pageCommand?.data.replace(/\W/gm, ''),
+				`
+					// This file has been sourced from: /opt/project/pages/index.tsx
+					import Components from "./components";
+					
+					const getStaticProps = async () => { };
+					
+					// TODO reimplement getServerSideProps with custom logic
+					const getServerSideProps = async () => { };
+					
+					const getStaticPaths = async () => { };
+					
+					export default async function Page(props: any) {
+						return <Components {...props}/>;
+					}
+				`.replace(/\W/gm, ''),
+			);
+		}
+
+		{
+			deepStrictEqual(componentsCommand?.kind, 'upsertFile');
+			deepStrictEqual(
+				componentsCommand?.path,
+				'/opt/project/app/components.tsx',
+			);
+
+			deepStrictEqual(
+				componentsCommand?.data.replace(/(?!\.)\s/gm, ''),
+				`
+					'use client';
+					// This file has been sourced from: /opt/project/pages/index.tsx
+					
+					export default function Index() {
+						return null;
+					}
+				`.replace(/(?!\.)\s/gm, ''),
+			);
+		}
 	});
 });
