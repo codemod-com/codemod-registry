@@ -234,7 +234,6 @@ const replaceNextDocumentJsxTags = (sourceFile: SourceFile) => {
 			tagNameNode.rename(tagName.toLowerCase());
 		}
 	});
-
 };
 
 const removeNextDocumentImport = (sourceFile: SourceFile) => {
