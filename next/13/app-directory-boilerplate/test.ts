@@ -465,11 +465,15 @@ describe('next 13 app-directory-boilerplate', function () {
 		);
 
 		const layout = `
-		export default function Document() {
+		export default function RootLayout({
+			children,
+		}: {
+			children: React.ReactNode
+		}) {
     	return (<html lang="en">
     		<head />
     		<body>
-     			<Main />
+     			{ children }
 				</body>
 				</html>);
     }

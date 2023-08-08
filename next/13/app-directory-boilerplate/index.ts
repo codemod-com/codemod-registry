@@ -218,6 +218,7 @@ const replaceNextDocumentJsxTags = (sourceFile: SourceFile) => {
 		const tagName = tagNameNode.getText();
 
 		if (tagName === 'Main') {
+			jsxTag.replaceWithText('{ children }');
 			return;
 		}
 
@@ -250,6 +251,36 @@ const removeNextDocumentImport = (sourceFile: SourceFile) => {
 	});
 
 	importDeclaration?.remove();
+};
+
+const updateLayoutComponent = (sourceFile: SourceFile) => {
+	const layoutComponent = sourceFile
+		.getFunctions()
+		.find((f) => f.isDefaultExport());
+
+	if (layoutComponent === undefined) {
+		return;
+	}
+
+	layoutComponent.rename('RootLayout');
+
+	const param = layoutComponent.getParameters()[0];
+
+	if (param === undefined) {
+		layoutComponent.addParameter({
+			name: `{children}`,
+			type: `{
+				children: React.ReactNode
+			}`,
+		});
+		return;
+	}
+
+	param.replaceWithText(`{
+		children,
+	}: {
+		children: React.ReactNode
+	}`);
 };
 
 export const repomod: Repomod<Dependencies> = {
@@ -811,6 +842,7 @@ export const repomod: Repomod<Dependencies> = {
 
 			replaceNextDocumentJsxTags(sourceFile);
 			removeNextDocumentImport(sourceFile);
+			updateLayoutComponent(sourceFile);
 
 			return {
 				kind: 'upsertData',
