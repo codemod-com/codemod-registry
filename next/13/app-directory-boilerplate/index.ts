@@ -1,4 +1,4 @@
-import { ParsedPath, posix } from 'node:path';
+import { ParsedPath, join, posix } from 'node:path';
 import tsmorph, {
 	Identifier,
 	JsxOpeningElement,
@@ -20,28 +20,6 @@ type Dependencies = Readonly<{
 	stringifyMdx?: (tree: Root) => string;
 	visitMdxAst?: typeof visit;
 }>;
-
-const ROOT_LAYOUT_CONTENT = `
-// remove the following lines if you do not use metadata in the root layout
-// import { Metadata } from 'next';
- 
-// export const metadata: Metadata = {
-// 	title: '',
-// 	description: '',
-// };
-
-export default function RootLayout({
-	children,
-}: {
-	children: React.ReactNode;
-}) {
-	return (
-		<html lang="en">
-			<body>{children}</body>
-	  	</html>
-	);
-}
-`;
 
 const ROOT_ERROR_CONTENT = `
 'use client';
@@ -89,7 +67,7 @@ enum FilePurpose {
 }
 
 const map = new Map([
-	[FilePurpose.ROOT_LAYOUT, ROOT_LAYOUT_CONTENT],
+	[FilePurpose.ROOT_LAYOUT, ''],
 	[FilePurpose.ROOT_ERROR, ROOT_ERROR_CONTENT],
 	[FilePurpose.ROOT_NOT_FOUND, ROOT_NOT_FOUND_CONTENT],
 	[FilePurpose.ROOT_PAGE, ''],
@@ -106,6 +84,23 @@ type Unpromisify<T> = T extends Promise<infer U> ? U : never;
 type FileCommand = Unpromisify<
 	ReturnType<NonNullable<Repomod<Dependencies>['handleFile']>>
 >[number];
+
+const resolveExtensionlessFilePath = (
+	extensionlessFilePath: string,
+	fileApi: FileAPI,
+): string | null => {
+	let resolvedPath: string | null = null;
+
+	['jsx', 'tsx', 'js', 'ts'].forEach((ext) => {
+		const path = `${extensionlessFilePath}.${ext}`;
+
+		if (fileApi.exists(path)) {
+			resolvedPath = path;
+		}
+	});
+
+	return resolvedPath;
+};
 
 const getCssImportDeclarationsFromUnderscoreApp = async (
 	parsedPath: ParsedPath,
@@ -170,7 +165,10 @@ const findJsxTagsByImportName = (
 			.getModuleSpecifier()
 			.getText();
 
-		return moduleSpecifierText === moduleSpecifier;
+		return (
+			moduleSpecifierText.substring(1, moduleSpecifierText.length - 1) ===
+			moduleSpecifier
+		);
 	});
 
 	if (importDeclaration === undefined) {
@@ -209,7 +207,7 @@ const findJsxTagsByImportName = (
 	return jsxTags;
 };
 
-export const replaceNextDocumentJsxTags = (sourceFile: SourceFile) => {
+const replaceNextDocumentJsxTags = (sourceFile: SourceFile) => {
 	const nextDocumentJsxTags = findJsxTagsByImportName(
 		sourceFile,
 		'next/document',
@@ -225,6 +223,7 @@ export const replaceNextDocumentJsxTags = (sourceFile: SourceFile) => {
 
 		if (tagName === 'NextScript') {
 			jsxTag.replaceWithText('');
+			return;
 		}
 
 		if (
@@ -236,7 +235,7 @@ export const replaceNextDocumentJsxTags = (sourceFile: SourceFile) => {
 	});
 };
 
-export const removeNextDocumentImport = (sourceFile: SourceFile) => {
+const removeNextDocumentImport = (sourceFile: SourceFile) => {
 	const importDeclarations = sourceFile.getImportDeclarations();
 
 	const importDeclaration = importDeclarations.find((importDeclaration) => {
@@ -244,7 +243,10 @@ export const removeNextDocumentImport = (sourceFile: SourceFile) => {
 			.getModuleSpecifier()
 			.getText();
 
-		return moduleSpecifierText === 'next/document';
+		return (
+			moduleSpecifierText.substring(1, moduleSpecifierText.length - 1) ===
+			'next/document'
+		);
 	});
 
 	importDeclaration?.remove();
@@ -345,15 +347,6 @@ export const repomod: Repomod<Dependencies> = {
 			const commands: FileCommand[] = [
 				{
 					kind: 'upsertFile' as const,
-					path: rootLayoutPath,
-					options: {
-						...options,
-						filePurpose: FilePurpose.ROOT_LAYOUT,
-						cssImportDeclarations,
-					},
-				},
-				{
-					kind: 'upsertFile' as const,
 					path: rootPagePath,
 					options: {
 						...options,
@@ -367,6 +360,33 @@ export const repomod: Repomod<Dependencies> = {
 					path,
 				},
 			];
+
+			const extensiolessUnderscoreDocumentPath = join(
+				parsedPath.dir,
+				'_document',
+			);
+			const underscoreDocumentPath = resolveExtensionlessFilePath(
+				extensiolessUnderscoreDocumentPath,
+				api,
+			);
+
+			if (underscoreDocumentPath !== null) {
+				const underscoreDocumentData = await api.readFile(
+					underscoreDocumentPath,
+				);
+
+				commands.unshift({
+					kind: 'upsertFile' as const,
+					path: rootLayoutPath,
+					options: {
+						...options,
+						underscoreDocumentPath,
+						underscoreDocumentData,
+						filePurpose: FilePurpose.ROOT_LAYOUT,
+						cssImportDeclarations,
+					},
+				});
+			}
 
 			if (rootErrorPathIncluded) {
 				commands.push({
@@ -764,7 +784,10 @@ export const repomod: Repomod<Dependencies> = {
 			};
 		}
 
-		if (filePurpose === FilePurpose.ROOT_LAYOUT) {
+		if (
+			filePurpose === FilePurpose.ROOT_LAYOUT &&
+			options.underscoreDocumentData
+		) {
 			const { tsmorph } = api.getDependencies();
 
 			const project = new tsmorph.Project({
@@ -775,13 +798,19 @@ export const repomod: Repomod<Dependencies> = {
 				},
 			});
 
-			const sourceFile = project.createSourceFile(path, content);
+			const sourceFile = project.createSourceFile(
+				path,
+				options.underscoreDocumentData,
+			);
 
 			const cssImportDeclarations = options.cssImportDeclarations ?? '';
 
 			if (cssImportDeclarations !== '') {
 				sourceFile.insertStatements(0, `${cssImportDeclarations}\n`);
 			}
+
+			replaceNextDocumentJsxTags(sourceFile);
+			removeNextDocumentImport(sourceFile);
 
 			return {
 				kind: 'upsertData',
