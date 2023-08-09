@@ -1,11 +1,16 @@
-import { ParsedPath, join, posix } from 'node:path';
+import { join, posix } from 'node:path';
 import tsmorph, {
+	ArrowFunction,
+	FunctionDeclaration,
 	Identifier,
 	JsxOpeningElement,
 	JsxSelfClosingElement,
 	Node,
 	SourceFile,
 	SyntaxKind,
+	FunctionExpression,
+	ImportDeclaration,
+	VariableStatement,
 } from 'ts-morph';
 import type { Repomod } from '@intuita-inc/repomod-engine-api';
 import type { fromMarkdown } from 'mdast-util-from-markdown';
@@ -102,58 +107,6 @@ const resolveExtensionlessFilePath = (
 	return resolvedPath;
 };
 
-const getCssImportDeclarationsFromUnderscoreApp = async (
-	parsedPath: ParsedPath,
-	fileApi: FileAPI,
-	tsmorph: Dependencies['tsmorph'],
-): Promise<ReadonlyArray<string>> => {
-	const underscodeAppJsxPath = posix.format({
-		...parsedPath,
-		name: '_app',
-		ext: '.jsx',
-		base: undefined,
-	});
-
-	const underscodeAppTsxPath = posix.format({
-		...parsedPath,
-		name: '_app',
-		ext: '.tsx',
-		base: undefined,
-	});
-
-	const path = fileApi.exists(underscodeAppJsxPath)
-		? underscodeAppJsxPath
-		: fileApi.exists(underscodeAppTsxPath)
-		? underscodeAppTsxPath
-		: null;
-
-	if (path === null) {
-		return [];
-	}
-
-	const data = await fileApi.readFile(path);
-
-	const project = new tsmorph.Project({
-		useInMemoryFileSystem: true,
-		skipFileDependencyResolution: true,
-		compilerOptions: {
-			allowJs: true,
-		},
-	});
-
-	const sourceFile = project.createSourceFile(path, data);
-
-	return sourceFile
-		.getImportDeclarations()
-		.filter((importDeclaration) => {
-			return importDeclaration
-				.getModuleSpecifier()
-				.getText()
-				.includes('.css');
-		})
-		.map((importDeclaration) => importDeclaration.print());
-};
-
 const findJsxTagsByImportName = (
 	sourceFile: SourceFile,
 	moduleSpecifier: string,
@@ -218,7 +171,6 @@ const replaceNextDocumentJsxTags = (sourceFile: SourceFile) => {
 		const tagName = tagNameNode.getText();
 
 		if (tagName === 'Main') {
-			jsxTag.replaceWithText('{ children }');
 			return;
 		}
 
@@ -283,12 +235,119 @@ const updateLayoutComponent = (sourceFile: SourceFile) => {
 	}`);
 };
 
+const extractStatements = (sourceFile: SourceFile) => {
+	const statements = sourceFile.getStatements();
+
+	const exportAssignment = statements.find((s) => Node.isExportAssignment(s));
+	const exportedIdentifierName = exportAssignment
+		?.getFirstDescendantByKind(SyntaxKind.Identifier)
+		?.getText();
+
+	let component:
+		| ArrowFunction
+		| FunctionExpression
+		| FunctionDeclaration
+		| undefined;
+
+	const functionDeclarations: FunctionDeclaration[] = [];
+	const importDeclarations: ImportDeclaration[] = [];
+	const variableStatements: VariableStatement[] = [];
+
+	statements.forEach((s) => {
+		if (Node.isExportAssignment(s)) {
+			return;
+		}
+
+		if (Node.isImportDeclaration(s)) {
+			importDeclarations.push(s);
+		}
+
+		if (Node.isVariableStatement(s)) {
+			const declaration = s.getFirstDescendantByKind(
+				SyntaxKind.VariableDeclaration,
+			);
+			const initializer = declaration?.getInitializer();
+
+			if (
+				declaration?.getName() === exportedIdentifierName &&
+				(Node.isArrowFunction(initializer) ||
+					Node.isFunctionExpression(initializer))
+			) {
+				component = initializer;
+				return;
+			}
+
+			variableStatements.push(s);
+		}
+
+		if (Node.isFunctionDeclaration(s)) {
+			if (s.isDefaultExport() || s.getName() === exportedIdentifierName) {
+				component = s;
+				return;
+			}
+
+			functionDeclarations.push(s);
+		}
+	});
+
+	const returnStatement = component?.getFirstDescendantByKind(
+		SyntaxKind.ReturnStatement,
+	);
+
+	returnStatement
+		?.getDescendantsOfKind(SyntaxKind.JsxSelfClosingElement)
+		.find(
+			(jsxElement) =>
+				jsxElement.getTagNameNode().getText() === 'Component',
+		)
+		?.replaceWithText('{ children }');
+
+	return {
+		functionDeclarations: functionDeclarations.map((f) => f.getText()),
+		importDeclarations: importDeclarations.map((f) => f.getText()),
+		variableStatements: variableStatements.map((v) => v.getText()),
+		returnExpression: returnStatement?.getExpression()?.getText(),
+	};
+};
+
+const getPositionAfterImports = (sourceFile: SourceFile): number => {
+	const lastImportDeclaration =
+		sourceFile.getLastChildByKind(SyntaxKind.ImportDeclaration) ?? null;
+
+	return (lastImportDeclaration?.getChildIndex() ?? 0) + 1;
+};
+
+const injectStatements = (
+	sourceFile: SourceFile,
+	functionDeclarations: string[],
+	importDeclarations: string[],
+	variableDeclarations: string[],
+	returnStatement: string,
+) => {
+	const mainJsxTag = sourceFile
+		.getDescendantsOfKind(SyntaxKind.JsxSelfClosingElement)
+		.find((jsxElement) => jsxElement.getTagNameNode().getText() === 'Main');
+
+	mainJsxTag?.replaceWithText(returnStatement);
+
+	sourceFile.insertStatements(0, importDeclarations.join('\n'));
+
+	const positionAfterImports = getPositionAfterImports(sourceFile);
+
+	sourceFile.insertStatements(
+		positionAfterImports,
+		functionDeclarations.join('\n'),
+	);
+	sourceFile.insertStatements(
+		positionAfterImports,
+		variableDeclarations.join('\n'),
+	);
+};
+
 export const repomod: Repomod<Dependencies> = {
 	includePatterns: ['**/pages/**/*.{js,jsx,ts,tsx,cjs,mjs,mdx}'],
 	excludePatterns: ['**/node_modules/**', '**/pages/api/**'],
 	handleFile: async (api, path, options) => {
-		const { tsmorph } = api.getDependencies();
-
 		const parsedPath = posix.parse(path);
 		const directoryNames = parsedPath.dir.split(posix.sep);
 		const endsWithPages =
@@ -367,14 +426,6 @@ export const repomod: Repomod<Dependencies> = {
 
 			const oldData = await api.readFile(path);
 
-			const cssImportDeclarations = (
-				await getCssImportDeclarationsFromUnderscoreApp(
-					parsedPath,
-					api,
-					tsmorph,
-				)
-			).join('\n');
-
 			const commands: FileCommand[] = [
 				{
 					kind: 'upsertFile' as const,
@@ -401,10 +452,19 @@ export const repomod: Repomod<Dependencies> = {
 				api,
 			);
 
-			if (underscoreDocumentPath !== null) {
+			const extensionlessUnderscoreAppPath = join(parsedPath.dir, '_app');
+
+			const underscoreAppPath = resolveExtensionlessFilePath(
+				extensionlessUnderscoreAppPath,
+				api,
+			);
+
+			if (underscoreDocumentPath !== null && underscoreAppPath !== null) {
 				const underscoreDocumentData = await api.readFile(
 					underscoreDocumentPath,
 				);
+
+				const underscoreAppData = await api.readFile(underscoreAppPath);
 
 				commands.unshift({
 					kind: 'upsertFile' as const,
@@ -413,8 +473,9 @@ export const repomod: Repomod<Dependencies> = {
 						...options,
 						underscoreDocumentPath,
 						underscoreDocumentData,
+						underscoreAppPath,
+						underscoreAppData,
 						filePurpose: FilePurpose.ROOT_LAYOUT,
-						cssImportDeclarations,
 					},
 				});
 			}
@@ -817,7 +878,9 @@ export const repomod: Repomod<Dependencies> = {
 
 		if (
 			filePurpose === FilePurpose.ROOT_LAYOUT &&
-			options.underscoreDocumentData
+			options.underscoreDocumentData &&
+			options.underscoreAppData &&
+			options.underscoreAppPath
 		) {
 			const { tsmorph } = api.getDependencies();
 
@@ -829,20 +892,33 @@ export const repomod: Repomod<Dependencies> = {
 				},
 			});
 
+			const underscoreAppFile = project.createSourceFile(
+				options.underscoreAppPath,
+				options.underscoreAppData,
+			);
+
+			const {
+				functionDeclarations,
+				importDeclarations,
+				variableStatements,
+				returnExpression,
+			} = extractStatements(underscoreAppFile);
+
 			const sourceFile = project.createSourceFile(
 				path,
 				options.underscoreDocumentData,
 			);
 
-			const cssImportDeclarations = options.cssImportDeclarations ?? '';
-
-			if (cssImportDeclarations !== '') {
-				sourceFile.insertStatements(0, `${cssImportDeclarations}\n`);
-			}
-
 			replaceNextDocumentJsxTags(sourceFile);
 			removeNextDocumentImport(sourceFile);
 			updateLayoutComponent(sourceFile);
+			injectStatements(
+				sourceFile,
+				functionDeclarations,
+				importDeclarations,
+				variableStatements,
+				returnExpression ?? '{ children }',
+			);
 
 			return {
 				kind: 'upsertData',

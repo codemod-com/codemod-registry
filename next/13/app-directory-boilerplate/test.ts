@@ -114,7 +114,7 @@ const getServerSideProps = () => {
 };
 `;
 
-describe('next 13 app-directory-boilerplate', function () {
+describe.only('next 13 app-directory-boilerplate', function () {
 	it('should build correct files', async function (this: Context) {
 		const externalFileCommands = await transform({
 			'/opt/project/pages/index.jsx': INDEX_CONTENT,
@@ -453,7 +453,24 @@ describe('next 13 app-directory-boilerplate', function () {
 		}
 	 `;
 
+		const _app = `
+	import { Analytics } from "@vercel/analytics/react";
+	import "react-static-tweets/styles.css";
+	import { MDXProvider } from "@mdx-js/react";
+	const components = {};
+
+	export default function App({ Component, pageProps }) {
+		return 	<>
+		<MDXProvider components={components}>
+			<Component {...pageProps} />
+		</MDXProvider>
+		<Analytics />
+	</>
+	}
+`;
+
 		const [upsertLayoutCommand] = await transform({
+			'/opt/project/pages/_app.tsx': _app,
 			'/opt/project/pages/_document.tsx': _document,
 			'/opt/project/pages/index.tsx': index,
 		});
@@ -465,18 +482,26 @@ describe('next 13 app-directory-boilerplate', function () {
 		);
 
 		const layout = `
-		export default function RootLayout({
-			children,
-		}: {
-			children: React.ReactNode
-		}) {
-    	return (<html lang="en">
-    		<head />
-    		<body>
-     			{ children }
-				</body>
-				</html>);
-    }
+		import { Analytics } from "@vercel/analytics/react";
+import "react-static-tweets/styles.css";
+import { MDXProvider } from "@mdx-js/react";
+const components = {};
+export default function RootLayout({ children }: {
+  children: React.ReactNode;
+}) {
+  return (<html lang="en">
+    <head />
+    <body>
+      <>
+        <MDXProvider components={components}>
+          {children}
+        </MDXProvider>
+        <Analytics />
+      </>
+
+    </body>
+  </html>);
+}
 		`;
 
 		deepStrictEqual(
@@ -502,6 +527,7 @@ describe('next 13 app-directory-boilerplate', function () {
 		] = await transform({
 			'/opt/project/pages/index.tsx': index,
 			'/opt/project/pages/_document.tsx': '',
+			'/opt/project/pages/_app.tsx': '',
 		});
 
 		deepStrictEqual(upsertLayoutCommand?.kind, 'upsertFile');
