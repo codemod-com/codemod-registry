@@ -1,6 +1,6 @@
 ---
 name: Report faulty codemod
-about: Create a report to help us improve
+about: Report codemod incorrect output
 title: "[faulty output]"
 labels: invalid
 assignees: ''
@@ -11,10 +11,8 @@ assignees: ''
 
 ---
 
-> :warning: Use this to report issues only related to faulty codemods.
-
 ### Faulty codemod
-Mention the codemod you ran which resulted in an incorrect output. [e.g. `next/13/app-router-recipe`]
+Mention the codemod you ran which resulted in incorrect output. [e.g. `next/13/app-router-recipe`]
 
 
 ### Code before transformation
@@ -36,7 +34,7 @@ Mention the codemod you ran which resulted in an incorrect output. [e.g. `next/1
 A general estimation of the severity of this issue. This can be estimated based on the number of files affected and the difficulty of manually fixing the faulty output while reviewing Intuita's dry run results.
 
 ### Environment:
- - Intuita extension version: [e.g. v0.36.5]
+ - Intuita CLI version: [e.g. v0.0.21]
  - OS: [e.g. MacOS 13.0.1]
  - Node.js version: [e.g. v16.16.0]
 
