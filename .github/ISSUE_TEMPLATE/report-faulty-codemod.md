@@ -1,22 +1,44 @@
 ---
 name: Report faulty codemod
-about: ''
-title: ''
-labels: ''
+about: Create a report to help us improve
+title: "[faulty output]"
+labels: invalid
 assignees: ''
+
 ---
 
 :warning::warning: Please do not include any proprietary code in the issue. :warning::warning:
 
 ---
 
-### Codemod:
+> :warning: Use this to report issues only related to faulty codemods.
 
-**1. Code before transformation (Input for codemod)**
-**2. Expected code after transformation (Desired output of codemod)**
+### Faulty codemod
+Mention the codemod you ran which resulted in an incorrect output. [e.g. `next/13/app-router-recipe`]
 
-**3. Faulty code obtained after running the current version of the codemod (Actual output of codemod)**
 
----
+### Code before transformation
+```jsx
+//insert your code before transformation here
+```
 
-**Additional context**
+### Expected code after transformation
+```jsx
+//insert the expected **correct** output here
+```
+
+### Actual code after transformation
+```jsx
+//insert the actual **faulty** output here
+```
+
+### Estimated severity
+A general estimation of the severity of this issue. This can be estimated based on the number of files affected and the difficulty of manually fixing the faulty output while reviewing Intuita's dry run results.
+
+### Environment:
+ - Intuita extension version: [e.g. v0.36.5]
+ - OS: [e.g. MacOS 13.0.1]
+ - Node.js version: [e.g. v16.16.0]
+
+### Additional context
+Add any other context about the problem here. This might include the target project, explanation of faulty output related to business logic, relevant links, etc.
