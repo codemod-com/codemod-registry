@@ -3,12 +3,15 @@
 	"name": "msw/1/passthrough",
 	"description": "The codemod transforms `req.passthrough()` to `req.passthrough()` and updates import statement as needed",
 	"engine": "jscodeshift",
-	"extensions": ["js*", "ts*"],
+	"extensions": [
+		"js*",
+		"ts*"
+	],
 	"dependencies": [
 		{
 			"name": "msw",
 			"range": "<1"
 		}
 	],
-	"owner": "intuita"
+	"owner": "Intuita"
 }
