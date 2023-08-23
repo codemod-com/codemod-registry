@@ -1,8 +1,8 @@
 {
     "schemaVersion": "[vx.x.x]",
-    "name": "[piranha/delete_cleanup_str_in_list]",
+    "name": "[delete_cleanup_str_in_list]",
     "engine": "[piranha]",
     "language": "[py]",
-    "dependencyVersionLowerThan": ["[]", "[vx.x.x]"],
+    "dependencyVersionLowerThan": ["[does not apply]", "[vx.x.x]"],
     "owner": "[Imported from Uber/piranha/test-resources/py/delete_cleanup_str_in_list/configurations repository by Kevin Tran]"
 }
