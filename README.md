@@ -20,5 +20,3 @@ The codemods in this registry can be run easily using [Intuita’s VS Code Exten
 
 To contribute to the codemod registry, please read [our guide on adding your codemods to the codemod registry](https://docs.intuita.io/docs/codemod-registry/importing-codemods).
 If you are not a codemod developer, but you would like to have the community contribute on developing a codemod you’re interested in, then feel free to [request a codemod here](https://feedback.intuita.io/codemod-requests).
-
-

@@ -11,7 +11,7 @@ This codemod **safely** transforms `req.passthrough()` to `passthrough()` and up
 ```ts
 import { rest } from 'msw';
 rest.get('/resource', () => {
-    return req.passthrough();
+	return req.passthrough();
 });
 ```
 
@@ -23,7 +23,6 @@ rest.get('/resource', () => {
 	return passthrough();
 });
 ```
-
 
 ## Applicability Criteria
 
