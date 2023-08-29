@@ -215,8 +215,8 @@ function getTSTypes(
 			collected.push({
 				component: getComponentName(path),
 				types: path
-					//@ts-expect-error any
-					.filter(
+				.filter(
+						//@ts-expect-error any
 						({ value }) => propertyTypes.includes(value.type),
 						null,
 					)
