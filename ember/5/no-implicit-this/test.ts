@@ -475,7 +475,7 @@ describe('ember 5 no-implicit-this', function () {
 		);
 	});
 
-    /* test fails; 
+	/* test fails; 
 	   test is copied from https://github.com/ember-codemods/ember-no-implicit-this-codemod/tree/master/transforms/no-implicit-this/__testfixtures__
 	*/
 	// it('paths', function () {
