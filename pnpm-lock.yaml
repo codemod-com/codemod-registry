@@ -41,6 +41,9 @@ devDependencies:
   '@typescript-eslint/parser':
     specifier: ^6.2.0
     version: 6.2.0(eslint@8.45.0)(typescript@5.1.6)
+  ast-types:
+    specifier: ^0.14.2
+    version: 0.14.2
   chai:
     specifier: ^4.3.7
     version: 4.3.7
