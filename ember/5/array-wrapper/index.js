@@ -13,13 +13,11 @@ export default function transformer(file, api) {
 		callee: {
 			name: 'A',
 		},
-	})
-	.replaceWith(() => {
+	}).replaceWith(() => {
 		root.find(j.ImportSpecifier, {
 			imported: { name: 'A' },
 			local: { name: 'A' },
-		})
-		.replaceWith(() => {
+		}).replaceWith(() => {
 			return j.importSpecifier(j.identifier('A'), j.identifier('emberA'));
 		});
 
