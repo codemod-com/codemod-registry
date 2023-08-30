@@ -66,6 +66,6 @@ jscodeshift
 
 ### Owner
 
-Mark Skelton https://github.com/mskelton/ratchet
+[Mark Skelton](https://github.com/mskelton/ratchet)
 
 ### Links for more info
