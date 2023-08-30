@@ -164,7 +164,7 @@ describe('next 13 app-directory-boilerplate', function () {
 					command.kind === 'upsertFile' &&
 					command.path === '/opt/project/app/components.tsx' &&
 					command.data.replace(/\W/gm, '') ===
-					`
+						`
 					'use client';
 					// This file has been sourced from: /opt/project/pages/index.jsx
 					
@@ -181,7 +181,8 @@ describe('next 13 app-directory-boilerplate', function () {
 				return (
 					command.kind === 'upsertFile' &&
 					command.path === '/opt/project/app/[a]/c/page.tsx' &&
-					command.data.replace(/\W/gm, '') === `
+					command.data.replace(/\W/gm, '') ===
+						`
 						// This file has been sourced from: /opt/project/pages/[a]/c.tsx
 						import Components from "./components";
 						// TODO reimplement getServerSideProps with custom logic
@@ -199,9 +200,10 @@ describe('next 13 app-directory-boilerplate', function () {
 			externalFileCommands.some((command) => {
 				return (
 					command.kind === 'upsertFile' &&
-					command.path === '/opt/project/app/[a]/[b]/components.tsx' &&
+					command.path ===
+						'/opt/project/app/[a]/[b]/components.tsx' &&
 					command.data.replace(/\W/gm, '') ===
-					"'use client';".replace(/\W/gm, '')
+						"'use client';".replace(/\W/gm, '')
 				);
 			}),
 		);
@@ -257,7 +259,8 @@ describe('next 13 app-directory-boilerplate', function () {
 				return (
 					command.kind === 'upsertFile' &&
 					command.path === '/opt/project/app/[a]/c/page.mdx' &&
-					command.data.replace(/\W/gm, '') === `
+					command.data.replace(/\W/gm, '') ===
+						`
 						// This file has been sourced from: /opt/project/pages/[a]/c.mdx
 						import Components from "./components";
 
@@ -277,7 +280,8 @@ describe('next 13 app-directory-boilerplate', function () {
 				return (
 					command.kind === 'upsertFile' &&
 					command.path === '/opt/project/app/[a]/[b]/page.mdx' &&
-					command.data.replace(/\W/gm, '') === `
+					command.data.replace(/\W/gm, '') ===
+						`
 						// This file has been sourced from: /opt/project/pages/[a]/[b].mdx
 						import Components from "./components";
 						export default async function Page(props: any) {
@@ -555,6 +559,7 @@ export default function RootLayout({ children }: {
 			}
 		`;
 
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const [upsertPageCommand, _, deleteFileCommand] = await transform({
 			'/opt/project/pages/a/b/c.tsx': index,
 		});
