@@ -81,13 +81,11 @@ const EXTENSION = '.tsx';
 type FileAPI = Parameters<NonNullable<Repomod<Dependencies>['handleFile']>>[0];
 type DataAPI = Parameters<NonNullable<Repomod<Dependencies>['handleData']>>[0];
 
-type Unpromisify<T> = T extends Promise<infer U> ? U : never;
-
-type FileCommand = Unpromisify<
+type FileCommand = Awaited<
 	ReturnType<NonNullable<Repomod<Dependencies>['handleFile']>>
 >[number];
 
-type DataCommand = Unpromisify<
+type DataCommand = Awaited<
 	ReturnType<NonNullable<Repomod<Dependencies>['handleData']>>
 >;
 
