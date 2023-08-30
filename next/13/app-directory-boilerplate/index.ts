@@ -708,510 +708,253 @@ const injectStatements = (
 	);
 };
 
-export const repomod: Repomod<Dependencies> = {
-	includePatterns: ['**/pages/**/*.{js,jsx,ts,tsx,cjs,mjs,mdx}'],
-	excludePatterns: ['**/node_modules/**', '**/pages/api/**'],
-	handleFile: async (api, path, options) => {
-		const parsedPath = posix.parse(path);
-		const directoryNames = parsedPath.dir.split(posix.sep);
-		const endsWithPages =
-			directoryNames.length > 0 &&
-			directoryNames.lastIndexOf('pages') === directoryNames.length - 1;
+const handleFile: Repomod<Dependencies>['handleFile'] = async (
+	api,
+	path,
+	options,
+) => {
+	const parsedPath = posix.parse(path);
+	const directoryNames = parsedPath.dir.split(posix.sep);
+	const endsWithPages =
+		directoryNames.length > 0 &&
+		directoryNames.lastIndexOf('pages') === directoryNames.length - 1;
 
-		const nameIsIndex = parsedPath.name === 'index';
+	const nameIsIndex = parsedPath.name === 'index';
 
-		if (endsWithPages && nameIsIndex) {
-			const newDir = directoryNames
-				.slice(0, -1)
-				.concat('app')
-				.join(posix.sep);
+	if (endsWithPages && nameIsIndex) {
+		const newDir = directoryNames
+			.slice(0, -1)
+			.concat('app')
+			.join(posix.sep);
 
-			const rootLayoutPath = posix.format({
-				root: parsedPath.root,
-				dir: newDir,
-				ext: EXTENSION,
-				name: 'layout',
-			});
+		const rootLayoutPath = posix.format({
+			root: parsedPath.root,
+			dir: newDir,
+			ext: EXTENSION,
+			name: 'layout',
+		});
 
-			const rootErrorPath = posix.format({
-				root: parsedPath.root,
-				dir: newDir,
-				ext: EXTENSION,
-				name: 'error',
-			});
+		const rootErrorPath = posix.format({
+			root: parsedPath.root,
+			dir: newDir,
+			ext: EXTENSION,
+			name: 'error',
+		});
 
-			const rootNotFoundPath = posix.format({
-				root: parsedPath.root,
-				dir: newDir,
-				ext: EXTENSION,
-				name: 'not-found',
-			});
+		const rootNotFoundPath = posix.format({
+			root: parsedPath.root,
+			dir: newDir,
+			ext: EXTENSION,
+			name: 'not-found',
+		});
 
-			const rootPagePath = posix.format({
-				root: parsedPath.root,
-				dir: newDir,
-				ext: EXTENSION,
-				name: 'page',
-			});
+		const rootPagePath = posix.format({
+			root: parsedPath.root,
+			dir: newDir,
+			ext: EXTENSION,
+			name: 'page',
+		});
 
-			const jsxErrorPath = posix.format({
-				...parsedPath,
-				name: '_error',
-				ext: '.jsx',
-				base: undefined,
-			});
+		const jsxErrorPath = posix.format({
+			...parsedPath,
+			name: '_error',
+			ext: '.jsx',
+			base: undefined,
+		});
 
-			const tsxErrorPath = posix.format({
-				...parsedPath,
-				name: '_error',
-				ext: '.tsx',
-				base: undefined,
-			});
+		const tsxErrorPath = posix.format({
+			...parsedPath,
+			name: '_error',
+			ext: '.tsx',
+			base: undefined,
+		});
 
-			const rootErrorPathIncluded =
-				api.exists(jsxErrorPath) || api.exists(tsxErrorPath);
+		const rootErrorPathIncluded =
+			api.exists(jsxErrorPath) || api.exists(tsxErrorPath);
 
-			const jsxNotFoundPath = posix.format({
-				...parsedPath,
-				name: '_404',
-				ext: '.jsx',
-				base: undefined,
-			});
+		const jsxNotFoundPath = posix.format({
+			...parsedPath,
+			name: '_404',
+			ext: '.jsx',
+			base: undefined,
+		});
 
-			const tsxNotFoundPath = posix.format({
-				...parsedPath,
-				name: '_404',
-				ext: '.tsx',
-				base: undefined,
-			});
+		const tsxNotFoundPath = posix.format({
+			...parsedPath,
+			name: '_404',
+			ext: '.tsx',
+			base: undefined,
+		});
 
-			const rootNotFoundPathIncluded =
-				api.exists(jsxNotFoundPath) || api.exists(tsxNotFoundPath);
+		const rootNotFoundPathIncluded =
+			api.exists(jsxNotFoundPath) || api.exists(tsxNotFoundPath);
 
-			const oldData = await api.readFile(path);
+		const oldData = await api.readFile(path);
 
-			const commands: FileCommand[] = [
-				{
-					kind: 'upsertFile' as const,
-					path: rootPagePath,
-					options: {
-						...options,
-						filePurpose: FilePurpose.ROOT_PAGE,
-						oldPath: path,
-						oldData,
-					},
+		const commands: FileCommand[] = [
+			{
+				kind: 'upsertFile' as const,
+				path: rootPagePath,
+				options: {
+					...options,
+					filePurpose: FilePurpose.ROOT_PAGE,
+					oldPath: path,
+					oldData,
 				},
-				{
-					kind: 'deleteFile' as const,
-					path,
-				},
-			];
-
-			const extensiolessUnderscoreDocumentPath = join(
-				parsedPath.dir,
-				'_document',
-			);
-			const underscoreDocumentPath = resolveExtensionlessFilePath(
-				extensiolessUnderscoreDocumentPath,
-				api,
-			);
-
-			const extensionlessUnderscoreAppPath = join(parsedPath.dir, '_app');
-
-			const underscoreAppPath = resolveExtensionlessFilePath(
-				extensionlessUnderscoreAppPath,
-				api,
-			);
-
-			if (underscoreDocumentPath !== null && underscoreAppPath !== null) {
-				const underscoreDocumentData = await api.readFile(
-					underscoreDocumentPath,
-				);
-
-				const underscoreAppData = await api.readFile(underscoreAppPath);
-
-				commands.unshift({
-					kind: 'upsertFile' as const,
-					path: rootLayoutPath,
-					options: {
-						...options,
-						underscoreDocumentPath,
-						underscoreDocumentData,
-						underscoreAppPath,
-						underscoreAppData,
-						filePurpose: FilePurpose.ROOT_LAYOUT,
-					},
-				});
-			}
-
-			if (rootErrorPathIncluded) {
-				commands.push({
-					kind: 'upsertFile' as const,
-					path: rootErrorPath,
-					options: {
-						...options,
-						filePurpose: FilePurpose.ROOT_ERROR,
-					},
-				});
-			}
-
-			if (rootNotFoundPathIncluded) {
-				commands.push({
-					kind: 'upsertFile' as const,
-					path: rootNotFoundPath,
-					options: {
-						...options,
-						filePurpose: FilePurpose.ROOT_NOT_FOUND,
-					},
-				});
-			}
-
-			return commands;
-		}
-
-		if (!endsWithPages) {
-			const newDirArr = directoryNames.map((name) =>
-				name.replace('pages', 'app'),
-			);
-
-			if (!nameIsIndex) {
-				newDirArr.push(parsedPath.name);
-			}
-
-			const newDir = newDirArr.join(posix.sep);
-
-			const routePagePath = posix.format({
-				root: parsedPath.root,
-				dir: newDir,
-				ext: parsedPath.ext === '.mdx' ? '.mdx' : '.tsx',
-				name: 'page',
-			});
-
-			const oldData = await api.readFile(path);
-
-			const commands: FileCommand[] = [
-				{
-					kind: 'upsertFile',
-					path: routePagePath,
-					options: {
-						...options,
-						filePurpose: FilePurpose.ROUTE_PAGE,
-						oldPath: path,
-						oldData,
-					},
-				},
-				{
-					kind: 'deleteFile' as const,
-					path,
-				},
-			];
-
-			return commands;
-		}
-
-		if (parsedPath.name === '_app' || parsedPath.name === '_document') {
-			return [
-				{
-					kind: 'deleteFile',
-					path,
-				},
-			];
-		}
-
-		return [];
-	},
-	handleData: async (api, path, __, options) => {
-		const filePurpose = (options.filePurpose ?? null) as FilePurpose | null;
-
-		if (filePurpose === null) {
-			return {
-				kind: 'noop',
-			};
-		}
-
-		const content = map.get(filePurpose) ?? null;
-
-		if (content === null) {
-			return {
-				kind: 'noop',
-			};
-		}
-
-		if (
-			(filePurpose === FilePurpose.ROUTE_PAGE ||
-				filePurpose === FilePurpose.ROOT_PAGE) &&
-			options.oldPath
-		) {
-			const { tsmorph, parseMdx, stringifyMdx, visitMdxAst } =
-				api.getDependencies();
-
-			let sourcingStatementInserted = false;
-
-			const rewriteWithTsMorph = (input: string) => {
-				const project = new tsmorph.Project({
-					useInMemoryFileSystem: true,
-					skipFileDependencyResolution: true,
-					compilerOptions: {
-						allowJs: true,
-					},
-				});
-
-				const newSourceFile = project.createSourceFile(path, content);
-
-				const oldSourceFile = project.createSourceFile(
-					options.oldPath ?? '',
-					input,
-				);
-
-				oldSourceFile.getFunctions().forEach((fn) => {
-					const id = fn.getName() ?? '';
-					if (
-						[
-							'getStaticProps',
-							'getServerSideProps',
-							'getStaticPaths',
-						].includes(id)
-					) {
-						fn.setIsExported(false);
-					}
-				});
-
-				oldSourceFile.getVariableStatements().forEach((statement) => {
-					const declarations = statement.getDeclarations();
-
-					declarations.forEach((declaration) => {
-						const id = declaration.getName() ?? '';
-
-						if (
-							[
-								'getStaticProps',
-								'getServerSideProps',
-								'getStaticPaths',
-							].includes(id)
-						) {
-							if (declaration.hasExportKeyword()) {
-								statement.setIsExported(false);
-							}
-						}
-					});
-				});
-
-				oldSourceFile
-					.getImportDeclarations()
-					.filter((declaration) => {
-						return (
-							declaration
-								.getModuleSpecifier()
-								.getLiteralText() === 'next/head' &&
-							declaration.getImportClause()?.getText() === 'Head'
-						);
-					})
-					.forEach((declaration) => {
-						declaration.remove();
-					});
-
-				oldSourceFile
-					.getDescendantsOfKind(SyntaxKind.JsxOpeningElement)
-					.filter(
-						(jsxOpeningElement) =>
-							jsxOpeningElement.getTagNameNode().getText() ===
-							'Head',
-					)
-					.map((declaration) => {
-						return declaration.getFirstAncestorByKind(
-							SyntaxKind.JsxElement,
-						);
-					})
-					.forEach((jsxElement) => {
-						const parenthesizedExpressionParent =
-							jsxElement?.getParentIfKind(
-								SyntaxKind.ParenthesizedExpression,
-							) ?? null;
-
-						if (parenthesizedExpressionParent !== null) {
-							parenthesizedExpressionParent.replaceWithText(
-								'null',
-							);
-
-							return;
-						}
-
-						jsxElement?.replaceWithText('');
-					});
-
-				let nextErrorComponentName = '';
-
-				oldSourceFile
-					.getImportDeclarations()
-					.filter((declaration) => {
-						return (
-							declaration
-								.getModuleSpecifier()
-								.getLiteralText() === 'next/error'
-						);
-					})
-					.forEach((declaration) => {
-						nextErrorComponentName =
-							declaration.getImportClause()?.getText() ?? '';
-
-						declaration.remove();
-					});
-
-				if (nextErrorComponentName !== '') {
-					oldSourceFile
-						.getDescendantsOfKind(SyntaxKind.JsxSelfClosingElement)
-						.filter((element) => {
-							return (
-								element.getTagNameNode().getText() ===
-									nextErrorComponentName &&
-								element
-									.getAttributes()
-									.some(({ compilerNode }) => {
-										return (
-											compilerNode.kind ===
-												SyntaxKind.JsxAttribute &&
-											compilerNode.name.getText() ===
-												'statusCode' &&
-											compilerNode.initializer?.kind ===
-												SyntaxKind.JsxExpression &&
-											compilerNode.initializer.expression?.getText() ===
-												'404'
-										);
-									})
-							);
-						})
-						.forEach((element) => {
-							element.replaceWithText('<NotFound />');
-
-							oldSourceFile.addImportDeclaration({
-								moduleSpecifier: './notFound',
-								defaultImport: 'NotFound',
-							});
-						});
-				}
-
-				oldSourceFile
-					.getStatementsWithComments()
-					.forEach((statement) => {
-						if (tsmorph.Node.isImportDeclaration(statement)) {
-							const structure = statement.getStructure();
-
-							if (filePurpose === FilePurpose.ROUTE_PAGE) {
-								if (
-									structure.moduleSpecifier !==
-										'./notFound' &&
-									structure.moduleSpecifier.startsWith('./')
-								) {
-									structure.moduleSpecifier = `.${structure.moduleSpecifier}`;
-								} else if (
-									structure.moduleSpecifier.startsWith('../')
-								) {
-									structure.moduleSpecifier = `../${structure.moduleSpecifier}`;
-								}
-							}
-
-							newSourceFile.addImportDeclaration(structure);
-
-							return;
-						}
-
-						if (tsmorph.Node.isVariableStatement(statement)) {
-							const declarations = statement
-								.getDeclarationList()
-								.getDeclarations();
-
-							const getStaticPathUsed = declarations.some(
-								(declaration) => {
-									return (
-										declaration.getName() ===
-										'getStaticPath'
-									);
-								},
-							);
-
-							if (getStaticPathUsed) {
-								newSourceFile.addStatements(
-									`// TODO reimplement getStaticPath as generateStaticParams\n`,
-								);
-							}
-
-							const getServerSidePropsUsed = declarations.some(
-								(declaration) => {
-									return (
-										declaration.getName() ===
-										'getServerSideProps'
-									);
-								},
-							);
-
-							if (getServerSidePropsUsed) {
-								newSourceFile.addStatements(
-									`// TODO reimplement getServerSideProps with custom logic\n`,
-								);
-							}
-						}
-
-						newSourceFile.addStatements(statement.print());
-					});
-
-				if (!sourcingStatementInserted) {
-					newSourceFile.insertStatements(
-						0,
-						`// This file has been sourced from: ${options.oldPath}`,
-					);
-
-					sourcingStatementInserted = true;
-				}
-
-				return newSourceFile.print();
-			};
-
-			if (path.endsWith('.mdx')) {
-				if (parseMdx && stringifyMdx && visitMdxAst) {
-					const tree = parseMdx(options.oldData ?? '');
-
-					visitMdxAst(tree, (node) => {
-						if (node.type === 'mdxjsEsm') {
-							node.value = rewriteWithTsMorph(node.value);
-
-							delete node.data;
-							delete node.position;
-
-							return 'skip';
-						}
-					});
-
-					const data = stringifyMdx(tree);
-
-					return {
-						kind: 'upsertData',
-						path,
-						data,
-					};
-				} else {
-					return {
-						kind: 'noop',
-					};
-				}
-			}
-
-			const data = rewriteWithTsMorph(options.oldData ?? '');
-
-			return {
-				kind: 'upsertData',
+			},
+			{
+				kind: 'deleteFile' as const,
 				path,
-				data,
-			};
+			},
+		];
+
+		const extensiolessUnderscoreDocumentPath = join(
+			parsedPath.dir,
+			'_document',
+		);
+		const underscoreDocumentPath = resolveExtensionlessFilePath(
+			extensiolessUnderscoreDocumentPath,
+			api,
+		);
+
+		const extensionlessUnderscoreAppPath = join(parsedPath.dir, '_app');
+
+		const underscoreAppPath = resolveExtensionlessFilePath(
+			extensionlessUnderscoreAppPath,
+			api,
+		);
+
+		if (underscoreDocumentPath !== null && underscoreAppPath !== null) {
+			const underscoreDocumentData = await api.readFile(
+				underscoreDocumentPath,
+			);
+
+			const underscoreAppData = await api.readFile(underscoreAppPath);
+
+			commands.unshift({
+				kind: 'upsertFile' as const,
+				path: rootLayoutPath,
+				options: {
+					...options,
+					underscoreDocumentPath,
+					underscoreDocumentData,
+					underscoreAppPath,
+					underscoreAppData,
+					filePurpose: FilePurpose.ROOT_LAYOUT,
+				},
+			});
 		}
 
-		if (
-			filePurpose === FilePurpose.ROOT_LAYOUT &&
-			options.underscoreDocumentData &&
-			options.underscoreAppData &&
-			options.underscoreAppPath
-		) {
-			const { tsmorph } = api.getDependencies();
+		if (rootErrorPathIncluded) {
+			commands.push({
+				kind: 'upsertFile' as const,
+				path: rootErrorPath,
+				options: {
+					...options,
+					filePurpose: FilePurpose.ROOT_ERROR,
+				},
+			});
+		}
 
+		if (rootNotFoundPathIncluded) {
+			commands.push({
+				kind: 'upsertFile' as const,
+				path: rootNotFoundPath,
+				options: {
+					...options,
+					filePurpose: FilePurpose.ROOT_NOT_FOUND,
+				},
+			});
+		}
+
+		return commands;
+	}
+
+	if (!endsWithPages) {
+		const newDirArr = directoryNames.map((name) =>
+			name.replace('pages', 'app'),
+		);
+
+		if (!nameIsIndex) {
+			newDirArr.push(parsedPath.name);
+		}
+
+		const newDir = newDirArr.join(posix.sep);
+
+		const routePagePath = posix.format({
+			root: parsedPath.root,
+			dir: newDir,
+			ext: parsedPath.ext === '.mdx' ? '.mdx' : '.tsx',
+			name: 'page',
+		});
+
+		const oldData = await api.readFile(path);
+
+		const commands: FileCommand[] = [
+			{
+				kind: 'upsertFile',
+				path: routePagePath,
+				options: {
+					...options,
+					filePurpose: FilePurpose.ROUTE_PAGE,
+					oldPath: path,
+					oldData,
+				},
+			},
+			{
+				kind: 'deleteFile' as const,
+				path,
+			},
+		];
+
+		return commands;
+	}
+
+	if (parsedPath.name === '_app' || parsedPath.name === '_document') {
+		return [
+			{
+				kind: 'deleteFile',
+				path,
+			},
+		];
+	}
+
+	return [];
+};
+
+const handleData: Repomod<Dependencies>['handleData'] = async (
+	api,
+	path,
+	__,
+	options,
+) => {
+	const filePurpose = (options.filePurpose ?? null) as FilePurpose | null;
+
+	if (filePurpose === null) {
+		return {
+			kind: 'noop',
+		};
+	}
+
+	const content = map.get(filePurpose) ?? null;
+
+	if (content === null) {
+		return {
+			kind: 'noop',
+		};
+	}
+
+	if (
+		(filePurpose === FilePurpose.ROUTE_PAGE ||
+			filePurpose === FilePurpose.ROOT_PAGE) &&
+		options.oldPath
+	) {
+		const { tsmorph, parseMdx, stringifyMdx, visitMdxAst } =
+			api.getDependencies();
+
+		let sourcingStatementInserted = false;
+
+		const rewriteWithTsMorph = (input: string) => {
 			const project = new tsmorph.Project({
 				useInMemoryFileSystem: true,
 				skipFileDependencyResolution: true,
@@ -1220,45 +963,301 @@ export const repomod: Repomod<Dependencies> = {
 				},
 			});
 
-			const underscoreAppFile = project.createSourceFile(
-				options.underscoreAppPath,
-				options.underscoreAppData,
+			const newSourceFile = project.createSourceFile(path, content);
+
+			const oldSourceFile = project.createSourceFile(
+				options.oldPath ?? '',
+				input,
 			);
 
-			const {
-				functionDeclarations,
-				importDeclarations,
-				variableStatements,
-				returnExpression,
-			} = extractStatements(underscoreAppFile);
+			oldSourceFile.getFunctions().forEach((fn) => {
+				const id = fn.getName() ?? '';
+				if (
+					[
+						'getStaticProps',
+						'getServerSideProps',
+						'getStaticPaths',
+					].includes(id)
+				) {
+					fn.setIsExported(false);
+				}
+			});
 
-			const sourceFile = project.createSourceFile(
-				path,
-				options.underscoreDocumentData,
-			);
+			oldSourceFile.getVariableStatements().forEach((statement) => {
+				const declarations = statement.getDeclarations();
 
-			replaceNextDocumentJsxTags(sourceFile);
-			removeNextDocumentImport(sourceFile);
-			updateLayoutComponent(sourceFile);
-			injectStatements(
-				sourceFile,
-				functionDeclarations,
-				importDeclarations,
-				variableStatements,
-				returnExpression ?? '{ children }',
-			);
+				declarations.forEach((declaration) => {
+					const id = declaration.getName() ?? '';
 
-			return {
-				kind: 'upsertData',
-				path,
-				data: sourceFile.print(),
-			};
+					if (
+						[
+							'getStaticProps',
+							'getServerSideProps',
+							'getStaticPaths',
+						].includes(id)
+					) {
+						if (declaration.hasExportKeyword()) {
+							statement.setIsExported(false);
+						}
+					}
+				});
+			});
+
+			oldSourceFile
+				.getImportDeclarations()
+				.filter((declaration) => {
+					return (
+						declaration.getModuleSpecifier().getLiteralText() ===
+							'next/head' &&
+						declaration.getImportClause()?.getText() === 'Head'
+					);
+				})
+				.forEach((declaration) => {
+					declaration.remove();
+				});
+
+			oldSourceFile
+				.getDescendantsOfKind(SyntaxKind.JsxOpeningElement)
+				.filter(
+					(jsxOpeningElement) =>
+						jsxOpeningElement.getTagNameNode().getText() === 'Head',
+				)
+				.map((declaration) => {
+					return declaration.getFirstAncestorByKind(
+						SyntaxKind.JsxElement,
+					);
+				})
+				.forEach((jsxElement) => {
+					const parenthesizedExpressionParent =
+						jsxElement?.getParentIfKind(
+							SyntaxKind.ParenthesizedExpression,
+						) ?? null;
+
+					if (parenthesizedExpressionParent !== null) {
+						parenthesizedExpressionParent.replaceWithText('null');
+
+						return;
+					}
+
+					jsxElement?.replaceWithText('');
+				});
+
+			let nextErrorComponentName = '';
+
+			oldSourceFile
+				.getImportDeclarations()
+				.filter((declaration) => {
+					return (
+						declaration.getModuleSpecifier().getLiteralText() ===
+						'next/error'
+					);
+				})
+				.forEach((declaration) => {
+					nextErrorComponentName =
+						declaration.getImportClause()?.getText() ?? '';
+
+					declaration.remove();
+				});
+
+			if (nextErrorComponentName !== '') {
+				oldSourceFile
+					.getDescendantsOfKind(SyntaxKind.JsxSelfClosingElement)
+					.filter((element) => {
+						return (
+							element.getTagNameNode().getText() ===
+								nextErrorComponentName &&
+							element.getAttributes().some(({ compilerNode }) => {
+								return (
+									compilerNode.kind ===
+										SyntaxKind.JsxAttribute &&
+									compilerNode.name.getText() ===
+										'statusCode' &&
+									compilerNode.initializer?.kind ===
+										SyntaxKind.JsxExpression &&
+									compilerNode.initializer.expression?.getText() ===
+										'404'
+								);
+							})
+						);
+					})
+					.forEach((element) => {
+						element.replaceWithText('<NotFound />');
+
+						oldSourceFile.addImportDeclaration({
+							moduleSpecifier: './notFound',
+							defaultImport: 'NotFound',
+						});
+					});
+			}
+
+			oldSourceFile.getStatementsWithComments().forEach((statement) => {
+				if (tsmorph.Node.isImportDeclaration(statement)) {
+					const structure = statement.getStructure();
+
+					if (filePurpose === FilePurpose.ROUTE_PAGE) {
+						if (
+							structure.moduleSpecifier !== './notFound' &&
+							structure.moduleSpecifier.startsWith('./')
+						) {
+							structure.moduleSpecifier = `.${structure.moduleSpecifier}`;
+						} else if (
+							structure.moduleSpecifier.startsWith('../')
+						) {
+							structure.moduleSpecifier = `../${structure.moduleSpecifier}`;
+						}
+					}
+
+					newSourceFile.addImportDeclaration(structure);
+
+					return;
+				}
+
+				if (tsmorph.Node.isVariableStatement(statement)) {
+					const declarations = statement
+						.getDeclarationList()
+						.getDeclarations();
+
+					const getStaticPathUsed = declarations.some(
+						(declaration) => {
+							return declaration.getName() === 'getStaticPath';
+						},
+					);
+
+					if (getStaticPathUsed) {
+						newSourceFile.addStatements(
+							`// TODO reimplement getStaticPath as generateStaticParams\n`,
+						);
+					}
+
+					const getServerSidePropsUsed = declarations.some(
+						(declaration) => {
+							return (
+								declaration.getName() === 'getServerSideProps'
+							);
+						},
+					);
+
+					if (getServerSidePropsUsed) {
+						newSourceFile.addStatements(
+							`// TODO reimplement getServerSideProps with custom logic\n`,
+						);
+					}
+				}
+
+				newSourceFile.addStatements(statement.print());
+			});
+
+			if (!sourcingStatementInserted) {
+				newSourceFile.insertStatements(
+					0,
+					`// This file has been sourced from: ${options.oldPath}`,
+				);
+
+				sourcingStatementInserted = true;
+			}
+
+			return newSourceFile.print();
+		};
+
+		if (path.endsWith('.mdx')) {
+			if (parseMdx && stringifyMdx && visitMdxAst) {
+				const tree = parseMdx(options.oldData ?? '');
+
+				visitMdxAst(tree, (node) => {
+					if (node.type === 'mdxjsEsm') {
+						node.value = rewriteWithTsMorph(node.value);
+
+						delete node.data;
+						delete node.position;
+
+						return 'skip';
+					}
+				});
+
+				const data = stringifyMdx(tree);
+
+				return {
+					kind: 'upsertData',
+					path,
+					data,
+				};
+			} else {
+				return {
+					kind: 'noop',
+				};
+			}
 		}
+
+		const data = rewriteWithTsMorph(options.oldData ?? '');
 
 		return {
 			kind: 'upsertData',
 			path,
-			data: content,
+			data,
 		};
-	},
+	}
+
+	if (
+		filePurpose === FilePurpose.ROOT_LAYOUT &&
+		options.underscoreDocumentData &&
+		options.underscoreAppData &&
+		options.underscoreAppPath
+	) {
+		const { tsmorph } = api.getDependencies();
+
+		const project = new tsmorph.Project({
+			useInMemoryFileSystem: true,
+			skipFileDependencyResolution: true,
+			compilerOptions: {
+				allowJs: true,
+			},
+		});
+
+		const underscoreAppFile = project.createSourceFile(
+			options.underscoreAppPath,
+			options.underscoreAppData,
+		);
+
+		const {
+			functionDeclarations,
+			importDeclarations,
+			variableStatements,
+			returnExpression,
+		} = extractStatements(underscoreAppFile);
+
+		const sourceFile = project.createSourceFile(
+			path,
+			options.underscoreDocumentData,
+		);
+
+		replaceNextDocumentJsxTags(sourceFile);
+		removeNextDocumentImport(sourceFile);
+		updateLayoutComponent(sourceFile);
+		injectStatements(
+			sourceFile,
+			functionDeclarations,
+			importDeclarations,
+			variableStatements,
+			returnExpression ?? '{ children }',
+		);
+
+		return {
+			kind: 'upsertData',
+			path,
+			data: sourceFile.print(),
+		};
+	}
+
+	return {
+		kind: 'upsertData',
+		path,
+		data: content,
+	};
+};
+
+export const repomod: Repomod<Dependencies> = {
+	includePatterns: ['**/pages/**/*.{js,jsx,ts,tsx,cjs,mjs,mdx}'],
+	excludePatterns: ['**/node_modules/**', '**/pages/api/**'],
+	handleFile,
+	handleData,
 };
