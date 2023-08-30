@@ -374,7 +374,6 @@ describe('next 13 app-directory-boilerplate', function () {
 		);
 	});
 
-	// @TODO uncomment and update this test when document and app merging is fully implemented
 	it('should move the CSS import statement from _app to layout', async function (this: Context) {
 		const _app = `
 		import { AppProps } from 'next/app'
@@ -386,7 +385,7 @@ describe('next 13 app-directory-boilerplate', function () {
 		
 		export default MyApp
 		`;
-		
+
 		const _document = `
 		import { Html, Main, NextScript } from 'next/document'
 
@@ -408,7 +407,7 @@ describe('next 13 app-directory-boilerplate', function () {
 			}
 		`;
 
-		const [upsertLayoutCommand] = await transform({
+		const [upsertLayoutCommand, upsertLayoutClientComponentCommand] = await transform({
 			'/opt/project/pages/_app.tsx': _app,
 			'/opt/project/pages/_document.tsx': _document,
 			'/opt/project/pages/index.tsx': index,
@@ -420,24 +419,46 @@ describe('next 13 app-directory-boilerplate', function () {
 			'/opt/project/app/layout.tsx',
 		);
 
+		deepStrictEqual(upsertLayoutClientComponentCommand?.kind, 'upsertFile');
+		deepStrictEqual(
+			upsertLayoutClientComponentCommand?.path,
+			'/opt/project/app/layout-client-component.tsx',
+		);
+
 		const layout = `
-		import { AppProps } from 'next/app';
-		import '../styles/index.css';
+		import LayoutClientComponent from './layout-client-component';
+		
 		export default function RootLayout({ children }: {
 				children: React.ReactNode;
 		}) {
 				return (<html lang="en">
 									<body>
-													{children}
+											<LayoutClientComponent />
 									</body>
 								</html>);
 		}
 		`;
 
-		console.log(upsertLayoutCommand?.data, '?data');
+		const layoutClientComponent = `
+		"use client"
+		import { AppProps } from 'next/app'
+		import '../styles/index.css'
+		
+		function LayoutClientComponent({ children }: { children: React.ReactNode }) {
+			return <> { children } </>
+		}
+		
+		export default LayoutClientComponent
+		`;
+
 		deepStrictEqual(
 			upsertLayoutCommand?.data.replace(/\W/gm, ''),
 			layout.replace(/\W/gm, ''),
+		);
+
+		deepStrictEqual(
+			upsertLayoutClientComponentCommand?.data.replace(/\W/gm, ''),
+			layoutClientComponent.replace(/\W/gm, ''),
 		);
 	});
 
@@ -479,7 +500,7 @@ describe('next 13 app-directory-boilerplate', function () {
 	}
 `;
 
-		const [upsertLayoutCommand] = await transform({
+		const [upsertLayoutCommand, upsertLayoutClientComponentCommand] = await transform({
 			'/opt/project/pages/_app.tsx': _app,
 			'/opt/project/pages/_document.tsx': _document,
 			'/opt/project/pages/index.tsx': index,
@@ -491,32 +512,54 @@ describe('next 13 app-directory-boilerplate', function () {
 			'/opt/project/app/layout.tsx',
 		);
 
-		const layout = `
-		import { Analytics } from "@vercel/analytics/react";
-import "react-static-tweets/styles.css";
-import { MDXProvider } from "@mdx-js/react";
-const components = {};
-export default function RootLayout({ children }: {
-  children: React.ReactNode;
-}) {
-  return (<html lang="en">
-    <head />
-    <body>
-      <>
-        <MDXProvider components={components}>
-          {children}
-        </MDXProvider>
-        <Analytics />
-      </>
+		deepStrictEqual(upsertLayoutClientComponentCommand?.kind, 'upsertFile');
+		deepStrictEqual(
+			upsertLayoutClientComponentCommand?.path,
+			'/opt/project/app/layout-client-component.tsx',
+		);
 
-    </body>
-  </html>);
-}
+		const layout = `
+		import LayoutClientComponent from './layout-client-component';
+		
+		export default function RootLayout({ children }: {
+			children: React.ReactNode;
+		}) {
+			return (<html lang="en">
+				<head />
+				<body>
+				<LayoutClientComponent />
+				</body>
+			</html>);
+		}
+		`;
+
+		const layoutClientComponent = `
+		"use client"
+		import { Analytics } from "@vercel/analytics/react";
+		import "react-static-tweets/styles.css";
+		import { MDXProvider } from "@mdx-js/react";
+		const components = {};
+
+		export default function LayoutClientComponent({ children }: { children: React.ReactNode }) {
+			return 	<>
+			<MDXProvider components={components}>
+				<>
+				{ children }
+				</>
+			</MDXProvider>
+			<Analytics />
+		</>
+	}
 		`;
 
 		deepStrictEqual(
 			upsertLayoutCommand?.data.replace(/\W/gm, ''),
 			layout.replace(/\W/gm, ''),
+		);
+
+		deepStrictEqual(
+			upsertLayoutClientComponentCommand?.data.replace(/\W/gm, ''),
+			layoutClientComponent.replace(/\W/gm, ''),
 		);
 	});
 

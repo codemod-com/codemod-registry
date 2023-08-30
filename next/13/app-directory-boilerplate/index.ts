@@ -10,8 +10,7 @@ import tsmorph, {
 	SourceFile,
 	SyntaxKind,
 	FunctionExpression,
-	ImportDeclaration,
-	VariableStatement,
+
 } from 'ts-morph';
 import type { Repomod } from '@intuita-inc/repomod-engine-api';
 import type { fromMarkdown } from 'mdast-util-from-markdown';
@@ -52,9 +51,10 @@ export default function NotFound() {
 }
 `;
 
-enum FilePurpose {
+const enum FilePurpose {
 	// root directory
 	ROOT_LAYOUT = 'ROOT_LAYOUT',
+	ROOT_LAYOUT_COMPONENT = 'ROOT_LAYOUT_COMPONENT',
 	ROOT_ERROR = 'ROOT_ERROR',
 	ROOT_PAGE = 'ROOT_PAGE',
 	ROOT_COMPONENTS = 'ROOT_COMPONENTS',
@@ -67,6 +67,7 @@ enum FilePurpose {
 const map = new Map([
 	// root directory
 	[FilePurpose.ROOT_LAYOUT, ''],
+	[FilePurpose.ROOT_LAYOUT_COMPONENT, ''],
 	[FilePurpose.ROOT_ERROR, ROOT_ERROR_CONTENT],
 	[FilePurpose.ROOT_PAGE, ''],
 	[FilePurpose.ROOT_COMPONENTS, ''],
@@ -95,7 +96,7 @@ const removeUnneededImportDeclarations = (sourceFile: SourceFile) => {
 		.filter((declaration) => {
 			if (
 				declaration.getModuleSpecifier().getLiteralText() ===
-					'next/head' &&
+				'next/head' &&
 				declaration.getImportClause()?.getText() === 'Head'
 			) {
 				return true;
@@ -599,13 +600,19 @@ const updateLayoutComponent = (sourceFile: SourceFile) => {
 	}`);
 };
 
-const extractStatements = (sourceFile: SourceFile) => {
-	const statements = sourceFile.getStatements();
+const findComponent = (sourceFile: SourceFile) => {
+	const defaultExportedFunctionDeclaration = sourceFile.getFunctions().find(f => f.isDefaultExport());
 
-	const exportAssignment = statements.find((s) => Node.isExportAssignment(s));
-	const exportedIdentifierName = exportAssignment
+	if (defaultExportedFunctionDeclaration !== undefined) {
+		return defaultExportedFunctionDeclaration;
+	}
+
+	const exportAssignment = sourceFile.getStatements().find((s) => Node.isExportAssignment(s));
+
+	const declarations = exportAssignment
 		?.getFirstDescendantByKind(SyntaxKind.Identifier)
-		?.getText();
+		?.getSymbol()?.getDeclarations() ?? [];
+
 
 	let component:
 		| ArrowFunction
@@ -613,48 +620,50 @@ const extractStatements = (sourceFile: SourceFile) => {
 		| FunctionDeclaration
 		| undefined;
 
-	const functionDeclarations: FunctionDeclaration[] = [];
-	const importDeclarations: ImportDeclaration[] = [];
-	const variableStatements: VariableStatement[] = [];
 
-	statements.forEach((s) => {
-		if (Node.isExportAssignment(s)) {
-			return;
-		}
-
-		if (Node.isImportDeclaration(s)) {
-			importDeclarations.push(s);
-		}
-
-		if (Node.isVariableStatement(s)) {
-			const declaration = s.getFirstDescendantByKind(
-				SyntaxKind.VariableDeclaration,
-			);
-			const initializer = declaration?.getInitializer();
+	declarations.forEach((d) => {
+		if (Node.isVariableDeclaration(d)) {
+			const initializer = d?.getInitializer();
 
 			if (
-				declaration?.getName() === exportedIdentifierName &&
 				(Node.isArrowFunction(initializer) ||
 					Node.isFunctionExpression(initializer))
 			) {
 				component = initializer;
 				return;
 			}
-
-			variableStatements.push(s);
 		}
 
-		if (Node.isFunctionDeclaration(s)) {
-			if (s.isDefaultExport() || s.getName() === exportedIdentifierName) {
-				component = s;
-				return;
-			}
-
-			functionDeclarations.push(s);
+		if (Node.isFunctionDeclaration(d)) {
+			component = d;
 		}
 	});
 
-	const returnStatement = component?.getFirstDescendantByKind(
+	return component ?? null;
+}
+
+const buildLayoutClientComponentFromUnderscoreApp = (sourceFile: SourceFile) => {
+	const component = findComponent(sourceFile);
+
+	if (component === null) {
+		return;
+	}
+
+	if (!Node.isArrowFunction(component)) {
+		component.rename('LayoutClientComponent');
+	}
+
+	const param = component.getParameters()[0];
+	param?.remove();
+
+	component.addParameter({
+		name: `{children}`,
+		type: `{
+				children: React.ReactNode
+			}`,
+	});
+
+	const returnStatement = component.getFirstDescendantByKind(
 		SyntaxKind.ReturnStatement,
 	);
 
@@ -664,49 +673,24 @@ const extractStatements = (sourceFile: SourceFile) => {
 			(jsxElement) =>
 				jsxElement.getTagNameNode().getText() === 'Component',
 		)
-		?.replaceWithText('{ children }');
+		?.replaceWithText('<>{ children }</>');
 
-	return {
-		functionDeclarations: functionDeclarations.map((f) => f.getText()),
-		importDeclarations: importDeclarations.map((f) => f.getText()),
-		variableStatements: variableStatements.map((v) => v.getText()),
-		returnExpression: returnStatement?.getExpression()?.getText(),
-	};
+
+	sourceFile.insertStatements(0, '"use client" \n');
 };
 
-const getPositionAfterImports = (sourceFile: SourceFile): number => {
-	const lastImportDeclaration =
-		sourceFile.getLastChildByKind(SyntaxKind.ImportDeclaration) ?? null;
-
-	return (lastImportDeclaration?.getChildIndex() ?? 0) + 1;
-};
-
-const injectStatements = (
+const injectLayoutClientComponent = (
 	sourceFile: SourceFile,
-	functionDeclarations: string[],
-	importDeclarations: string[],
-	variableDeclarations: string[],
-	returnStatement: string,
 ) => {
 	const mainJsxTag = sourceFile
 		.getDescendantsOfKind(SyntaxKind.JsxSelfClosingElement)
 		.find((jsxElement) => jsxElement.getTagNameNode().getText() === 'Main');
 
-	mainJsxTag?.replaceWithText(returnStatement);
+	mainJsxTag?.replaceWithText('<LayoutClientComponent />');
 
-	sourceFile.insertStatements(0, importDeclarations.join('\n'));
-
-	const positionAfterImports = getPositionAfterImports(sourceFile);
-
-	sourceFile.insertStatements(
-		positionAfterImports,
-		functionDeclarations.join('\n'),
-	);
-	sourceFile.insertStatements(
-		positionAfterImports,
-		variableDeclarations.join('\n'),
-	);
+	sourceFile.insertStatements(0, 'import LayoutClientComponent from "./layout-client-component"');
 };
+
 
 const handleFile: Repomod<Dependencies>['handleFile'] = async (
 	api,
@@ -850,14 +834,28 @@ const handleFile: Repomod<Dependencies>['handleFile'] = async (
 					root: parsedPath.root,
 					dir: newDir,
 					ext: EXTENSION,
+					name: 'layout-client-component',
+				}),
+				options: {
+					...options,
+					underscoreAppPath,
+					underscoreAppData,
+					filePurpose: FilePurpose.ROOT_LAYOUT_COMPONENT,
+				},
+			});
+
+			commands.unshift({
+				kind: 'upsertFile' as const,
+				path: posix.format({
+					root: parsedPath.root,
+					dir: newDir,
+					ext: EXTENSION,
 					name: 'layout',
 				}),
 				options: {
 					...options,
 					underscoreDocumentPath,
 					underscoreDocumentData,
-					underscoreAppPath,
-					underscoreAppData,
 					filePurpose: FilePurpose.ROOT_LAYOUT,
 				},
 			});
@@ -993,7 +991,37 @@ const handleData: Repomod<Dependencies>['handleData'] = async (
 
 	if (
 		filePurpose === FilePurpose.ROOT_LAYOUT &&
-		options.underscoreDocumentData &&
+		options.underscoreDocumentData
+	) {
+		const { tsmorph } = api.getDependencies();
+
+		const project = new tsmorph.Project({
+			useInMemoryFileSystem: true,
+			skipFileDependencyResolution: true,
+			compilerOptions: {
+				allowJs: true,
+			},
+		});
+
+		const sourceFile = project.createSourceFile(
+			path,
+			options.underscoreDocumentData,
+		);
+
+		replaceNextDocumentJsxTags(sourceFile);
+		removeNextDocumentImport(sourceFile);
+		updateLayoutComponent(sourceFile);
+		injectLayoutClientComponent(sourceFile);
+
+		return {
+			kind: 'upsertData',
+			path,
+			data: sourceFile.print(),
+		};
+	}
+
+	if (
+		filePurpose === FilePurpose.ROOT_LAYOUT_COMPONENT &&
 		options.underscoreAppData &&
 		options.underscoreAppPath
 	) {
@@ -1012,33 +1040,12 @@ const handleData: Repomod<Dependencies>['handleData'] = async (
 			options.underscoreAppData,
 		);
 
-		const {
-			functionDeclarations,
-			importDeclarations,
-			variableStatements,
-			returnExpression,
-		} = extractStatements(underscoreAppFile);
-
-		const sourceFile = project.createSourceFile(
-			path,
-			options.underscoreDocumentData,
-		);
-
-		replaceNextDocumentJsxTags(sourceFile);
-		removeNextDocumentImport(sourceFile);
-		updateLayoutComponent(sourceFile);
-		injectStatements(
-			sourceFile,
-			functionDeclarations,
-			importDeclarations,
-			variableStatements,
-			returnExpression ?? '{ children }',
-		);
+		buildLayoutClientComponentFromUnderscoreApp(underscoreAppFile);
 
 		return {
 			kind: 'upsertData',
 			path,
-			data: sourceFile.print(),
+			data: underscoreAppFile.print(),
 		};
 	}
 
