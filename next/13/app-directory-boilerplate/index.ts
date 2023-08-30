@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { join, posix } from 'node:path';
 import tsmorph, {
 	ArrowFunction,
