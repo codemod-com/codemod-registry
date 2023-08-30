@@ -727,13 +727,6 @@ const handleFile: Repomod<Dependencies>['handleFile'] = async (
 			.concat('app')
 			.join(posix.sep);
 
-		const rootLayoutPath = posix.format({
-			root: parsedPath.root,
-			dir: newDir,
-			ext: EXTENSION,
-			name: 'layout',
-		});
-
 		const rootErrorPath = posix.format({
 			root: parsedPath.root,
 			dir: newDir,
@@ -794,10 +787,30 @@ const handleFile: Repomod<Dependencies>['handleFile'] = async (
 		const commands: FileCommand[] = [
 			{
 				kind: 'upsertFile' as const,
-				path: rootPagePath,
+				path: posix.format({
+					root: parsedPath.root,
+					dir: newDir,
+					ext: EXTENSION,
+					name: 'page',
+				}),
 				options: {
 					...options,
 					filePurpose: FilePurpose.ROOT_PAGE,
+					oldPath: path,
+					oldData,
+				},
+			},
+			{
+				kind: 'upsertFile' as const,
+				path: posix.format({
+					root: parsedPath.root,
+					dir: newDir,
+					ext: EXTENSION,
+					name: 'components',
+				}),
+				options: {
+					...options,
+					filePurpose: FilePurpose.ROOT_COMPONENTS,
 					oldPath: path,
 					oldData,
 				},
@@ -833,7 +846,12 @@ const handleFile: Repomod<Dependencies>['handleFile'] = async (
 
 			commands.unshift({
 				kind: 'upsertFile' as const,
-				path: rootLayoutPath,
+				path: posix.format({
+					root: parsedPath.root,
+					dir: newDir,
+					ext: EXTENSION,
+					name: 'layout',
+				}),
 				options: {
 					...options,
 					underscoreDocumentPath,
@@ -881,22 +899,35 @@ const handleFile: Repomod<Dependencies>['handleFile'] = async (
 
 		const newDir = newDirArr.join(posix.sep);
 
-		const routePagePath = posix.format({
-			root: parsedPath.root,
-			dir: newDir,
-			ext: parsedPath.ext === '.mdx' ? '.mdx' : '.tsx',
-			name: 'page',
-		});
-
 		const oldData = await api.readFile(path);
 
 		const commands: FileCommand[] = [
 			{
 				kind: 'upsertFile',
-				path: routePagePath,
+				path: posix.format({
+					root: parsedPath.root,
+					dir: newDir,
+					ext: parsedPath.ext === '.mdx' ? '.mdx' : '.tsx',
+					name: 'page',
+				}),
 				options: {
 					...options,
 					filePurpose: FilePurpose.ROUTE_PAGE,
+					oldPath: path,
+					oldData,
+				},
+			},
+			{
+				kind: 'upsertFile',
+				path: posix.format({
+					root: parsedPath.root,
+					dir: newDir,
+					ext: parsedPath.ext === '.mdx' ? '.mdx' : '.tsx',
+					name: 'components',
+				}),
+				options: {
+					...options,
+					filePurpose: FilePurpose.ROUTE_COMPONENTS,
 					oldPath: path,
 					oldData,
 				},
@@ -945,256 +976,19 @@ const handleData: Repomod<Dependencies>['handleData'] = async (
 	}
 
 	if (
+		(filePurpose === FilePurpose.ROOT_COMPONENTS ||
+			filePurpose === FilePurpose.ROUTE_COMPONENTS) &&
+		options.oldPath
+	) {
+		return buildComponentsFileData(api, path, options, filePurpose);
+	}
+
+	if (
 		(filePurpose === FilePurpose.ROUTE_PAGE ||
 			filePurpose === FilePurpose.ROOT_PAGE) &&
 		options.oldPath
 	) {
-		const { tsmorph, parseMdx, stringifyMdx, visitMdxAst } =
-			api.getDependencies();
-
-		let sourcingStatementInserted = false;
-
-		const rewriteWithTsMorph = (input: string) => {
-			const project = new tsmorph.Project({
-				useInMemoryFileSystem: true,
-				skipFileDependencyResolution: true,
-				compilerOptions: {
-					allowJs: true,
-				},
-			});
-
-			const newSourceFile = project.createSourceFile(path, content);
-
-			const oldSourceFile = project.createSourceFile(
-				options.oldPath ?? '',
-				input,
-			);
-
-			oldSourceFile.getFunctions().forEach((fn) => {
-				const id = fn.getName() ?? '';
-				if (
-					[
-						'getStaticProps',
-						'getServerSideProps',
-						'getStaticPaths',
-					].includes(id)
-				) {
-					fn.setIsExported(false);
-				}
-			});
-
-			oldSourceFile.getVariableStatements().forEach((statement) => {
-				const declarations = statement.getDeclarations();
-
-				declarations.forEach((declaration) => {
-					const id = declaration.getName() ?? '';
-
-					if (
-						[
-							'getStaticProps',
-							'getServerSideProps',
-							'getStaticPaths',
-						].includes(id)
-					) {
-						if (declaration.hasExportKeyword()) {
-							statement.setIsExported(false);
-						}
-					}
-				});
-			});
-
-			oldSourceFile
-				.getImportDeclarations()
-				.filter((declaration) => {
-					return (
-						declaration.getModuleSpecifier().getLiteralText() ===
-							'next/head' &&
-						declaration.getImportClause()?.getText() === 'Head'
-					);
-				})
-				.forEach((declaration) => {
-					declaration.remove();
-				});
-
-			oldSourceFile
-				.getDescendantsOfKind(SyntaxKind.JsxOpeningElement)
-				.filter(
-					(jsxOpeningElement) =>
-						jsxOpeningElement.getTagNameNode().getText() === 'Head',
-				)
-				.map((declaration) => {
-					return declaration.getFirstAncestorByKind(
-						SyntaxKind.JsxElement,
-					);
-				})
-				.forEach((jsxElement) => {
-					const parenthesizedExpressionParent =
-						jsxElement?.getParentIfKind(
-							SyntaxKind.ParenthesizedExpression,
-						) ?? null;
-
-					if (parenthesizedExpressionParent !== null) {
-						parenthesizedExpressionParent.replaceWithText('null');
-
-						return;
-					}
-
-					jsxElement?.replaceWithText('');
-				});
-
-			let nextErrorComponentName = '';
-
-			oldSourceFile
-				.getImportDeclarations()
-				.filter((declaration) => {
-					return (
-						declaration.getModuleSpecifier().getLiteralText() ===
-						'next/error'
-					);
-				})
-				.forEach((declaration) => {
-					nextErrorComponentName =
-						declaration.getImportClause()?.getText() ?? '';
-
-					declaration.remove();
-				});
-
-			if (nextErrorComponentName !== '') {
-				oldSourceFile
-					.getDescendantsOfKind(SyntaxKind.JsxSelfClosingElement)
-					.filter((element) => {
-						return (
-							element.getTagNameNode().getText() ===
-								nextErrorComponentName &&
-							element.getAttributes().some(({ compilerNode }) => {
-								return (
-									compilerNode.kind ===
-										SyntaxKind.JsxAttribute &&
-									compilerNode.name.getText() ===
-										'statusCode' &&
-									compilerNode.initializer?.kind ===
-										SyntaxKind.JsxExpression &&
-									compilerNode.initializer.expression?.getText() ===
-										'404'
-								);
-							})
-						);
-					})
-					.forEach((element) => {
-						element.replaceWithText('<NotFound />');
-
-						oldSourceFile.addImportDeclaration({
-							moduleSpecifier: './notFound',
-							defaultImport: 'NotFound',
-						});
-					});
-			}
-
-			oldSourceFile.getStatementsWithComments().forEach((statement) => {
-				if (tsmorph.Node.isImportDeclaration(statement)) {
-					const structure = statement.getStructure();
-
-					if (filePurpose === FilePurpose.ROUTE_PAGE) {
-						if (
-							structure.moduleSpecifier !== './notFound' &&
-							structure.moduleSpecifier.startsWith('./')
-						) {
-							structure.moduleSpecifier = `.${structure.moduleSpecifier}`;
-						} else if (
-							structure.moduleSpecifier.startsWith('../')
-						) {
-							structure.moduleSpecifier = `../${structure.moduleSpecifier}`;
-						}
-					}
-
-					newSourceFile.addImportDeclaration(structure);
-
-					return;
-				}
-
-				if (tsmorph.Node.isVariableStatement(statement)) {
-					const declarations = statement
-						.getDeclarationList()
-						.getDeclarations();
-
-					const getStaticPathUsed = declarations.some(
-						(declaration) => {
-							return declaration.getName() === 'getStaticPath';
-						},
-					);
-
-					if (getStaticPathUsed) {
-						newSourceFile.addStatements(
-							`// TODO reimplement getStaticPath as generateStaticParams\n`,
-						);
-					}
-
-					const getServerSidePropsUsed = declarations.some(
-						(declaration) => {
-							return (
-								declaration.getName() === 'getServerSideProps'
-							);
-						},
-					);
-
-					if (getServerSidePropsUsed) {
-						newSourceFile.addStatements(
-							`// TODO reimplement getServerSideProps with custom logic\n`,
-						);
-					}
-				}
-
-				newSourceFile.addStatements(statement.print());
-			});
-
-			if (!sourcingStatementInserted) {
-				newSourceFile.insertStatements(
-					0,
-					`// This file has been sourced from: ${options.oldPath}`,
-				);
-
-				sourcingStatementInserted = true;
-			}
-
-			return newSourceFile.print();
-		};
-
-		if (path.endsWith('.mdx')) {
-			if (parseMdx && stringifyMdx && visitMdxAst) {
-				const tree = parseMdx(options.oldData ?? '');
-
-				visitMdxAst(tree, (node) => {
-					if (node.type === 'mdxjsEsm') {
-						node.value = rewriteWithTsMorph(node.value);
-
-						delete node.data;
-						delete node.position;
-
-						return 'skip';
-					}
-				});
-
-				const data = stringifyMdx(tree);
-
-				return {
-					kind: 'upsertData',
-					path,
-					data,
-				};
-			} else {
-				return {
-					kind: 'noop',
-				};
-			}
-		}
-
-		const data = rewriteWithTsMorph(options.oldData ?? '');
-
-		return {
-			kind: 'upsertData',
-			path,
-			data,
-		};
+		return buildPageFileData(api, path, options, filePurpose);
 	}
 
 	if (
