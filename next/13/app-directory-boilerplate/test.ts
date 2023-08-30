@@ -97,7 +97,7 @@ describe('next 13 app-directory-boilerplate', function () {
 			'/opt/project/pages/a/index.tsx': '',
 		});
 
-		deepStrictEqual(externalFileCommands.length, 17);
+		deepStrictEqual(externalFileCommands.length, 18);
 
 		ok(
 			externalFileCommands.some(
@@ -216,7 +216,7 @@ describe('next 13 app-directory-boilerplate', function () {
 			'/opt/project/pages/_document.jsx': '',
 		});
 
-		deepStrictEqual(externalFileCommands.length, 6);
+		deepStrictEqual(externalFileCommands.length, 7);
 
 		ok(
 			!externalFileCommands.some(
@@ -252,7 +252,7 @@ describe('next 13 app-directory-boilerplate', function () {
 			'/opt/project/pages/[a]/c.mdx': A_C_CONTENT,
 		});
 
-		deepStrictEqual(externalFileCommands.length, 12);
+		deepStrictEqual(externalFileCommands.length, 13);
 
 		ok(
 			externalFileCommands.some((command) => {
@@ -575,7 +575,7 @@ describe('next 13 app-directory-boilerplate', function () {
 		`;
 
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		const [upsertLayoutCommand, upsertPageCommand, _, deleteFileCommand] =
+		const [upsertLayoutCommand, , upsertPageCommand, _, deleteFileCommand] =
 			await transform({
 				'/opt/project/pages/index.tsx': index,
 				'/opt/project/pages/_document.tsx': '',
