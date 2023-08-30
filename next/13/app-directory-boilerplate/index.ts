@@ -10,7 +10,6 @@ import tsmorph, {
 	SourceFile,
 	SyntaxKind,
 	FunctionExpression,
-
 } from 'ts-morph';
 import type { Repomod } from '@intuita-inc/repomod-engine-api';
 import type { fromMarkdown } from 'mdast-util-from-markdown';
@@ -96,7 +95,7 @@ const removeUnneededImportDeclarations = (sourceFile: SourceFile) => {
 		.filter((declaration) => {
 			if (
 				declaration.getModuleSpecifier().getLiteralText() ===
-				'next/head' &&
+					'next/head' &&
 				declaration.getImportClause()?.getText() === 'Head'
 			) {
 				return true;
@@ -601,18 +600,23 @@ const updateLayoutComponent = (sourceFile: SourceFile) => {
 };
 
 const findComponent = (sourceFile: SourceFile) => {
-	const defaultExportedFunctionDeclaration = sourceFile.getFunctions().find(f => f.isDefaultExport());
+	const defaultExportedFunctionDeclaration = sourceFile
+		.getFunctions()
+		.find((f) => f.isDefaultExport());
 
 	if (defaultExportedFunctionDeclaration !== undefined) {
 		return defaultExportedFunctionDeclaration;
 	}
 
-	const exportAssignment = sourceFile.getStatements().find((s) => Node.isExportAssignment(s));
+	const exportAssignment = sourceFile
+		.getStatements()
+		.find((s) => Node.isExportAssignment(s));
 
-	const declarations = exportAssignment
-		?.getFirstDescendantByKind(SyntaxKind.Identifier)
-		?.getSymbol()?.getDeclarations() ?? [];
-
+	const declarations =
+		exportAssignment
+			?.getFirstDescendantByKind(SyntaxKind.Identifier)
+			?.getSymbol()
+			?.getDeclarations() ?? [];
 
 	let component:
 		| ArrowFunction
@@ -620,14 +624,13 @@ const findComponent = (sourceFile: SourceFile) => {
 		| FunctionDeclaration
 		| undefined;
 
-
 	declarations.forEach((d) => {
 		if (Node.isVariableDeclaration(d)) {
 			const initializer = d?.getInitializer();
 
 			if (
-				(Node.isArrowFunction(initializer) ||
-					Node.isFunctionExpression(initializer))
+				Node.isArrowFunction(initializer) ||
+				Node.isFunctionExpression(initializer)
 			) {
 				component = initializer;
 				return;
@@ -640,9 +643,11 @@ const findComponent = (sourceFile: SourceFile) => {
 	});
 
 	return component ?? null;
-}
+};
 
-const buildLayoutClientComponentFromUnderscoreApp = (sourceFile: SourceFile) => {
+const buildLayoutClientComponentFromUnderscoreApp = (
+	sourceFile: SourceFile,
+) => {
 	const component = findComponent(sourceFile);
 
 	if (component === null) {
@@ -675,22 +680,21 @@ const buildLayoutClientComponentFromUnderscoreApp = (sourceFile: SourceFile) => 
 		)
 		?.replaceWithText('<>{ children }</>');
 
-
 	sourceFile.insertStatements(0, '"use client" \n');
 };
 
-const injectLayoutClientComponent = (
-	sourceFile: SourceFile,
-) => {
+const injectLayoutClientComponent = (sourceFile: SourceFile) => {
 	const mainJsxTag = sourceFile
 		.getDescendantsOfKind(SyntaxKind.JsxSelfClosingElement)
 		.find((jsxElement) => jsxElement.getTagNameNode().getText() === 'Main');
 
 	mainJsxTag?.replaceWithText('<LayoutClientComponent />');
 
-	sourceFile.insertStatements(0, 'import LayoutClientComponent from "./layout-client-component"');
+	sourceFile.insertStatements(
+		0,
+		'import LayoutClientComponent from "./layout-client-component"',
+	);
 };
-
 
 const handleFile: Repomod<Dependencies>['handleFile'] = async (
 	api,
