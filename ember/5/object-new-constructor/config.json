@@ -1,0 +1,8 @@
+{
+	"schemaVersion": "1.0.0",
+	"name": "ember/5/object-new-constructor",
+	"description": "",
+	"engine": "jscodeshift",
+	"extensions": ["js*", "ts*"],
+	"dependencyVersionLowerThan": ["ember", "5.0.0"]
+}
