@@ -97,7 +97,7 @@ describe('next 13 app-directory-boilerplate', function () {
 			'/opt/project/pages/a/index.tsx': '',
 		});
 
-		deepStrictEqual(externalFileCommands.length, 17);
+		deepStrictEqual(externalFileCommands.length, 18);
 
 		ok(
 			externalFileCommands.some(
@@ -216,7 +216,7 @@ describe('next 13 app-directory-boilerplate', function () {
 			'/opt/project/pages/_document.jsx': '',
 		});
 
-		deepStrictEqual(externalFileCommands.length, 6);
+		deepStrictEqual(externalFileCommands.length, 7);
 
 		ok(
 			!externalFileCommands.some(
@@ -252,7 +252,7 @@ describe('next 13 app-directory-boilerplate', function () {
 			'/opt/project/pages/[a]/c.mdx': A_C_CONTENT,
 		});
 
-		deepStrictEqual(externalFileCommands.length, 12);
+		deepStrictEqual(externalFileCommands.length, 13);
 
 		ok(
 			externalFileCommands.some((command) => {
@@ -374,59 +374,94 @@ describe('next 13 app-directory-boilerplate', function () {
 		);
 	});
 
-	// @TODO uncomment and update this test when document and app merging is fully implemented
-	// it('should move the CSS import statement from _app to layout', async function (this: Context) {
-	// 	const _app = `
-	// 		import '../styles/index.css'
-	// 	`;
+	it('should move the CSS import statement from _app to layout', async function (this: Context) {
+		const _app = `
+		import { AppProps } from 'next/app'
+		import '../styles/index.css'
+		
+		function MyApp({ Component, pageProps }: AppProps) {
+			return <Component {...pageProps} />
+		}
+		
+		export default MyApp
+		`;
 
-	// 	const index = `
-	// 		export default async function Index() {
-	// 			return null;
-	// 		}
-	// 	`;
+		const _document = `
+		import { Html, Main, NextScript } from 'next/document'
 
-	// 	const [upsertLayoutCommand] = await transform({
-	// 		'/opt/project/pages/_app.tsx': _app,
-	// 		'/opt/project/pages/_document.tsx': _app,
-	// 		'/opt/project/pages/index.tsx': index,
-	// 	});
+		export default function Document() {
+			return (
+				<Html lang="en">
+					<body>
+						<Main />
+						<NextScript />
+					</body>
+				</Html>
+			)
+		}
+		`;
 
-	// 	deepStrictEqual(upsertLayoutCommand?.kind, 'upsertFile');
-	// 	deepStrictEqual(
-	// 		upsertLayoutCommand?.path,
-	// 		'/opt/project/app/layout.tsx',
-	// 	);
+		const index = `
+			export default async function Index() {
+				return null;
+			}
+		`;
 
-	// 	const layout = `
-	// 		import '../styles/index.css'
+		const [upsertLayoutCommand, upsertLayoutClientComponentCommand] =
+			await transform({
+				'/opt/project/pages/_app.tsx': _app,
+				'/opt/project/pages/_document.tsx': _document,
+				'/opt/project/pages/index.tsx': index,
+			});
 
-	// 		// remove the following lines if you do not use metadata in the root layout
-	// 		// import { Metadata } from 'next';
+		deepStrictEqual(upsertLayoutCommand?.kind, 'upsertFile');
+		deepStrictEqual(
+			upsertLayoutCommand?.path,
+			'/opt/project/app/layout.tsx',
+		);
 
-	// 		// export const metadata: Metadata = {
-	// 		// 	title: '',
-	// 		// 	description: '',
-	// 		// };
+		deepStrictEqual(upsertLayoutClientComponentCommand?.kind, 'upsertFile');
+		deepStrictEqual(
+			upsertLayoutClientComponentCommand?.path,
+			'/opt/project/app/layout-client-component.tsx',
+		);
 
-	// 		export default function RootLayout({
-	// 			children,
-	// 		}: {
-	// 			children: React.ReactNode;
-	// 		}) {
-	// 			return (
-	// 				<html lang="en">
-	// 					<body>{children}</body>
-	// 				</html>
-	// 			);
-	// 		}
-	// 	`;
+		const layout = `
+		import LayoutClientComponent from './layout-client-component';
+		
+		export default function RootLayout({ children }: {
+				children: React.ReactNode;
+		}) {
+				return (<html lang="en">
+									<body>
+											<LayoutClientComponent />
+									</body>
+								</html>);
+		}
+		`;
 
-	// 	deepStrictEqual(
-	// 		upsertLayoutCommand?.data.replace(/\W/gm, ''),
-	// 		layout.replace(/\W/gm, ''),
-	// 	);
-	// });
+		const layoutClientComponent = `
+		"use client"
+		import { AppProps } from 'next/app'
+		import '../styles/index.css'
+		
+		function LayoutClientComponent({ children }: { children: React.ReactNode }) {
+			return <> { children } </>
+		}
+		
+		export default LayoutClientComponent
+		`;
+
+		deepStrictEqual(
+			upsertLayoutCommand?.data.replace(/\W/gm, ''),
+			layout.replace(/\W/gm, ''),
+		);
+
+		deepStrictEqual(
+			upsertLayoutClientComponentCommand?.data.replace(/\W/gm, ''),
+			layoutClientComponent.replace(/\W/gm, ''),
+		);
+	});
 
 	it('should replace next/document tags with html tags in layout file', async function (this: Context) {
 		const index = `
@@ -466,11 +501,12 @@ describe('next 13 app-directory-boilerplate', function () {
 	}
 `;
 
-		const [upsertLayoutCommand] = await transform({
-			'/opt/project/pages/_app.tsx': _app,
-			'/opt/project/pages/_document.tsx': _document,
-			'/opt/project/pages/index.tsx': index,
-		});
+		const [upsertLayoutCommand, upsertLayoutClientComponentCommand] =
+			await transform({
+				'/opt/project/pages/_app.tsx': _app,
+				'/opt/project/pages/_document.tsx': _document,
+				'/opt/project/pages/index.tsx': index,
+			});
 
 		deepStrictEqual(upsertLayoutCommand?.kind, 'upsertFile');
 		deepStrictEqual(
@@ -478,32 +514,54 @@ describe('next 13 app-directory-boilerplate', function () {
 			'/opt/project/app/layout.tsx',
 		);
 
-		const layout = `
-		import { Analytics } from "@vercel/analytics/react";
-import "react-static-tweets/styles.css";
-import { MDXProvider } from "@mdx-js/react";
-const components = {};
-export default function RootLayout({ children }: {
-  children: React.ReactNode;
-}) {
-  return (<html lang="en">
-    <head />
-    <body>
-      <>
-        <MDXProvider components={components}>
-          {children}
-        </MDXProvider>
-        <Analytics />
-      </>
+		deepStrictEqual(upsertLayoutClientComponentCommand?.kind, 'upsertFile');
+		deepStrictEqual(
+			upsertLayoutClientComponentCommand?.path,
+			'/opt/project/app/layout-client-component.tsx',
+		);
 
-    </body>
-  </html>);
-}
+		const layout = `
+		import LayoutClientComponent from './layout-client-component';
+		
+		export default function RootLayout({ children }: {
+			children: React.ReactNode;
+		}) {
+			return (<html lang="en">
+				<head />
+				<body>
+				<LayoutClientComponent />
+				</body>
+			</html>);
+		}
+		`;
+
+		const layoutClientComponent = `
+		"use client"
+		import { Analytics } from "@vercel/analytics/react";
+		import "react-static-tweets/styles.css";
+		import { MDXProvider } from "@mdx-js/react";
+		const components = {};
+
+		export default function LayoutClientComponent({ children }: { children: React.ReactNode }) {
+			return 	<>
+			<MDXProvider components={components}>
+				<>
+				{ children }
+				</>
+			</MDXProvider>
+			<Analytics />
+		</>
+	}
 		`;
 
 		deepStrictEqual(
 			upsertLayoutCommand?.data.replace(/\W/gm, ''),
 			layout.replace(/\W/gm, ''),
+		);
+
+		deepStrictEqual(
+			upsertLayoutClientComponentCommand?.data.replace(/\W/gm, ''),
+			layoutClientComponent.replace(/\W/gm, ''),
 		);
 	});
 
@@ -517,7 +575,7 @@ export default function RootLayout({ children }: {
 		`;
 
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		const [upsertLayoutCommand, upsertPageCommand, _, deleteFileCommand] =
+		const [upsertLayoutCommand, , upsertPageCommand, _, deleteFileCommand] =
 			await transform({
 				'/opt/project/pages/index.tsx': index,
 				'/opt/project/pages/_document.tsx': '',
