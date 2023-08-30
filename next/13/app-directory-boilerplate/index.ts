@@ -95,7 +95,7 @@ const removeUnneededImportDeclarations = (sourceFile: SourceFile) => {
 		.filter((declaration) => {
 			if (
 				declaration.getModuleSpecifier().getLiteralText() ===
-					'next/head' &&
+				'next/head' &&
 				declaration.getImportClause()?.getText() === 'Head'
 			) {
 				return true;
@@ -599,7 +599,12 @@ const updateLayoutComponent = (sourceFile: SourceFile) => {
 	}`);
 };
 
-const findComponent = (sourceFile: SourceFile) => {
+type ComponentFunction = ArrowFunction
+	| FunctionExpression
+	| FunctionDeclaration;
+
+const findComponent = (sourceFile: SourceFile): ComponentFunction
+	| null => {
 	const defaultExportedFunctionDeclaration = sourceFile
 		.getFunctions()
 		.find((f) => f.isDefaultExport());
