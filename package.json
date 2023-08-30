@@ -24,7 +24,6 @@
 		"@typescript-eslint/parser": "^6.2.0",
 		"ast-types": "^0.14.2",
 		"chai": "^4.3.7",
-		"codemod-cli": "^3.2.0",
 		"debug": "^4.3.4",
 		"ember-codemods-telemetry-helpers": "^3.0.0",
 		"ember-template-recast": "^6.1.4",
