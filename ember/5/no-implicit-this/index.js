@@ -1,3 +1,11 @@
+/**
+ * This code is based on a public codemod, which is subject to the original license terms.
+ * Original codemod: https://github.com/ember-codemods/ember-no-implicit-this-codemod/blob/master/transforms/no-implicit-this/index.js
+ *
+ * License: MIT
+ * License URL: https://opensource.org/licenses/MIT
+ */
+
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import fs from 'node:fs';

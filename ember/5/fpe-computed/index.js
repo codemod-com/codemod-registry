@@ -1,3 +1,11 @@
+/**
+ * This code is based on a public codemod, which is subject to the original license terms.
+ * Original codemod: https://github.com/ember-codemods/ember-3x-codemods/blob/master/transforms/fpe-computed/index.js
+ *
+ * License: MIT
+ * License URL: https://opensource.org/licenses/MIT
+ */
+
 import codemodCLI from 'codemod-cli';
 
 const {
