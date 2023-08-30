@@ -10,16 +10,16 @@
 import EmberObject from '@ember/object';
 
 let Person = EmberObject.extend({
-  init() {
-    this._super(...arguments);
+	init() {
+		this._super(...arguments);
 
-    this.firstName = 'Betty';
-    this.lastName = 'Jones';
-  },
+		this.firstName = 'Betty';
+		this.lastName = 'Jones';
+	},
 
-  fullName: function() {
-    return `${this.firstName} ${this.lastName}`;
-  }.property('firstName', 'lastName')
+	fullName: function () {
+		return `${this.firstName} ${this.lastName}`;
+	}.property('firstName', 'lastName'),
 });
 
 let client = Person.create();
@@ -37,16 +37,16 @@ import { computed } from '@ember/object';
 import EmberObject from '@ember/object';
 
 let Person = EmberObject.extend({
-  init() {
-    this._super(...arguments);
+	init() {
+		this._super(...arguments);
 
-    this.firstName = 'Betty';
-    this.lastName = 'Jones';
-  },
+		this.firstName = 'Betty';
+		this.lastName = 'Jones';
+	},
 
-  fullName: computed('firstName', 'lastName', function() {
-    return `${this.firstName} ${this.lastName}`;
-  })
+	fullName: computed('firstName', 'lastName', function () {
+		return `${this.firstName} ${this.lastName}`;
+	}),
 });
 
 let client = Person.create();

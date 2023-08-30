@@ -8,21 +8,21 @@
 
 ```jsx
 export default Component.extend({
-click(event) {
-  let nativeEvent = event.originalEvent;
-}
+	click(event) {
+		let nativeEvent = event.originalEvent;
+	},
 });
 ```
 
 ### After:
 
 ```tsx
-import { normalizeEvent } from "ember-jquery-legacy";
+import { normalizeEvent } from 'ember-jquery-legacy';
 
 export default Component.extend({
-click(event) {
-  let nativeEvent = normalizeEvent(event);
-}
+	click(event) {
+		let nativeEvent = normalizeEvent(event);
+	},
 });
 ```
 

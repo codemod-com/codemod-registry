@@ -8,15 +8,15 @@
 
 ```hbs
 <SomeComponent as |foo hash components|>
-    {{foo}}
-    {{hash.property}}
-    
-    <components.foo as |property|>
-        {{property}}
-    </components.foo>
-    
-    <components.bar />
-	  
+	{{foo}}
+	{{hash.property}}
+
+	<components.foo as |property|>
+		{{property}}
+	</components.foo>
+
+	<components.bar />
+
 </SomeComponent>
 ```
 
@@ -24,15 +24,15 @@
 
 ```hbs
 <SomeComponent as |foo hash components|>
-    {{foo}}
-    {{hash.property}}
-    
-    <components.foo as |property|>
-        {{property}}
-    </components.foo>
-    
-    <components.bar />
-	  
+	{{foo}}
+	{{hash.property}}
+
+	<components.foo as |property|>
+		{{property}}
+	</components.foo>
+
+	<components.bar />
+
 </SomeComponent>
 ```
 

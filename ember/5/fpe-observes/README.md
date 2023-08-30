@@ -10,9 +10,9 @@
 import EmberObject from '@ember/object';
 
 export default EmberObject.extend({
-  valueObserver: function() {
-    // Executes whenever the "value" property changes
-  }.observes('value')
+	valueObserver: function () {
+		// Executes whenever the "value" property changes
+	}.observes('value'),
 });
 ```
 
@@ -22,9 +22,9 @@ export default EmberObject.extend({
 import EmberObject from '@ember/object';
 
 export default EmberObject.extend({
-  valueObserver: observer('value', function() {
-    // Executes whenever the "value" property changes
-  })
+	valueObserver: observer('value', function () {
+		// Executes whenever the "value" property changes
+	}),
 });
 ```
 

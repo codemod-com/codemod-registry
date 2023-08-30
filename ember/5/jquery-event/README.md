@@ -9,9 +9,9 @@
 ```jsx
 // your event handler:
 export default Component.extend({
-click(event) {
-  let x = event.originalEvent.clientX;
-}
+	click(event) {
+		let x = event.originalEvent.clientX;
+	},
 });
 ```
 
@@ -20,9 +20,9 @@ click(event) {
 ```tsx
 // your event handler:
 export default Component.extend({
-click(event) {
-  let x = event.clientX;
-}
+	click(event) {
+		let x = event.clientX;
+	},
 });
 ```
 

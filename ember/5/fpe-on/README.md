@@ -11,9 +11,9 @@ import EmberObject from '@ember/object';
 import { sendEvent } from '@ember/object/events';
 
 let Job = EmberObject.extend({
-  logCompleted: function() {
-    console.log('Job completed!');
-  }.on('completed')
+	logCompleted: function () {
+		console.log('Job completed!');
+	}.on('completed'),
 });
 
 let job = Job.create();
@@ -29,9 +29,9 @@ import EmberObject from '@ember/object';
 import { sendEvent } from '@ember/object/events';
 
 let Job = EmberObject.extend({
-  logCompleted: on('completed', function() {
-    console.log('Job completed!');
-  })
+	logCompleted: on('completed', function () {
+		console.log('Job completed!');
+	}),
 });
 
 let job = Job.create();

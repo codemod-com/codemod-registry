@@ -12,9 +12,9 @@
 import Component from '@ember/component';
 
 export default Component.extend({
-  waitForAnimation() {
-    this.$().on('transitionend', () => this.doSomething());
-  }
+	waitForAnimation() {
+		this.$().on('transitionend', () => this.doSomething());
+	},
 });
 ```
 
@@ -24,9 +24,11 @@ export default Component.extend({
 import Component from '@ember/component';
 
 export default Component.extend({
-  waitForAnimation() {
-    this.element.addEventListener('transitionend', () => this.doSomething());
-  }
+	waitForAnimation() {
+		this.element.addEventListener('transitionend', () =>
+			this.doSomething(),
+		);
+	},
 });
 ```
 
@@ -38,9 +40,9 @@ export default Component.extend({
 import Component from '@ember/component';
 
 export default Component.extend({
-  waitForAnimation() {
-    this.$('.animated').on('transitionend', () => this.doSomething());
-  }
+	waitForAnimation() {
+		this.$('.animated').on('transitionend', () => this.doSomething());
+	},
 });
 ```
 
@@ -50,9 +52,13 @@ export default Component.extend({
 import Component from '@ember/component';
 
 export default Component.extend({
-  waitForAnimation() {
-    this.element.querySelectorAll('.animated').forEach(el => el.addEventListener('transitionend', () => this.doSomething()));
-  }
+	waitForAnimation() {
+		this.element
+			.querySelectorAll('.animated')
+			.forEach((el) =>
+				el.addEventListener('transitionend', () => this.doSomething()),
+			);
+	},
 });
 ```
 
