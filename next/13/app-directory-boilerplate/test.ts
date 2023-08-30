@@ -519,16 +519,12 @@ export default function RootLayout({ children }: {
 			}
 		`;
 
-		const [
-			upsertLayoutCommand,
-			upsertPageCommand,
-			deleteFileCommand,
-			upsertNotFoundFileCommand,
-		] = await transform({
-			'/opt/project/pages/index.tsx': index,
-			'/opt/project/pages/_document.tsx': '',
-			'/opt/project/pages/_app.tsx': '',
-		});
+		const [upsertLayoutCommand, upsertPageCommand, deleteFileCommand] =
+			await transform({
+				'/opt/project/pages/index.tsx': index,
+				'/opt/project/pages/_document.tsx': '',
+				'/opt/project/pages/_app.tsx': '',
+			});
 
 		deepStrictEqual(upsertLayoutCommand?.kind, 'upsertFile');
 		deepStrictEqual(
@@ -559,27 +555,6 @@ export default function RootLayout({ children }: {
 			deleteFileCommand?.path,
 			'/opt/project/pages/index.tsx',
 		);
-
-		// upsert not found file command
-		deepStrictEqual(upsertNotFoundFileCommand?.kind, 'upsertFile');
-		deepStrictEqual(
-			upsertNotFoundFileCommand?.path,
-			'/opt/project/app/notFound.tsx',
-		);
-
-		const data = `
-			'use client';
-			import ErrorPage from 'next/error';
-			
-			const NotFound = () => <ErrorPage statusCode={404} />;
-			
-			export default NotFound;
-		`;
-
-		deepStrictEqual(
-			upsertNotFoundFileCommand?.data.replace(/\W/gm, ''),
-			data.replace(/\W/gm, ''),
-		);
 	});
 
 	it('should create a new client side file for a non-index page', async function (this: Context) {
@@ -591,11 +566,7 @@ export default function RootLayout({ children }: {
 			}
 		`;
 
-		const [
-			upsertPageCommand,
-			deleteFileCommand,
-			upsertNotFoundFileCommand,
-		] = await transform({
+		const [upsertPageCommand, deleteFileCommand] = await transform({
 			'/opt/project/pages/a/b/c.tsx': index,
 		});
 
@@ -625,27 +596,6 @@ export default function RootLayout({ children }: {
 		deepStrictEqual(
 			deleteFileCommand?.path,
 			'/opt/project/pages/a/b/c.tsx',
-		);
-
-		// upsert not found file command
-		deepStrictEqual(upsertNotFoundFileCommand?.kind, 'upsertFile');
-		deepStrictEqual(
-			upsertNotFoundFileCommand?.path,
-			'/opt/project/app/a/b/c/notFound.tsx',
-		);
-
-		const data = `
-			'use client';
-			import ErrorPage from 'next/error';
-
-			const NotFound = () => <ErrorPage statusCode={404} />;
-
-			export default NotFound;
-		`;
-
-		deepStrictEqual(
-			upsertNotFoundFileCommand?.data.replace(/\W/gm, ''),
-			data.replace(/\W/gm, ''),
 		);
 	});
 
