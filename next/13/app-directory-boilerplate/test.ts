@@ -34,7 +34,7 @@ const A_B_CONTENT = `
 import { X } from "../../testABC";
 import { Y } from "./testDEF";
 
-export const getStaticPath = () => {
+export const getStaticPaths = () => {
 
 }
 `;
@@ -84,36 +84,6 @@ const transform = async (json: DirectoryJSON) => {
 	return executeRepomod(api, repomod, '/', {});
 };
 
-const A_B_DATA = `// This file has been sourced from: /opt/project/pages/[a]/[b].tsx
-import { X } from "../../../testABC";
-import { Y } from "../testDEF";
-// TODO reimplement getStaticPath as generateStaticParams
-export const getStaticPath = () => {
-};
-`;
-
-const A_B_MDX_DATA = `// This file has been sourced from: /opt/project/pages/[a]/[b].mdx
-import { X } from "../../../testABC";
-import { Y } from "../testDEF";
-
-
-// TODO reimplement getStaticPath as generateStaticParams
-export const getStaticPath = () => {
-};
-`;
-
-const A_C_DATA = `// This file has been sourced from: /opt/project/pages/[a]/c.tsx
-// TODO reimplement getServerSideProps with custom logic
-const getServerSideProps = () => {
-};
-`;
-
-const A_C_MDX_DATA = `// This file has been sourced from: /opt/project/pages/[a]/c.mdx
-// TODO reimplement getServerSideProps with custom logic
-const getServerSideProps = () => {
-};
-`;
-
 describe('next 13 app-directory-boilerplate', function () {
 	it('should build correct files', async function (this: Context) {
 		const externalFileCommands = await transform({
@@ -127,7 +97,7 @@ describe('next 13 app-directory-boilerplate', function () {
 			'/opt/project/pages/a/index.tsx': '',
 		});
 
-		deepStrictEqual(externalFileCommands.length, 13);
+		deepStrictEqual(externalFileCommands.length, 17);
 
 		ok(
 			externalFileCommands.some(
@@ -192,21 +162,16 @@ describe('next 13 app-directory-boilerplate', function () {
 			externalFileCommands.some((command) => {
 				return (
 					command.kind === 'upsertFile' &&
-					command.path === '/opt/project/app/page.tsx' &&
+					command.path === '/opt/project/app/components.tsx' &&
 					command.data.replace(/\W/gm, '') ===
-						`// This file has been sourced from: /opt/project/pages/index.jsx
-						import A from "./testQWE";
-						
-						export default function Index({}) {
-							return null;
-						}
-						
-						const getStaticProps = async ({}) => {
-							return {
-								props: {},
-								revalidate: 10,
-							};
-						};`.replace(/\W/gm, '')
+					`
+					'use client';
+					// This file has been sourced from: /opt/project/pages/index.jsx
+					
+					export default function Index({}) {
+						return null;
+					}
+				;`.replace(/\W/gm, '')
 				);
 			}),
 		);
@@ -216,8 +181,16 @@ describe('next 13 app-directory-boilerplate', function () {
 				return (
 					command.kind === 'upsertFile' &&
 					command.path === '/opt/project/app/[a]/c/page.tsx' &&
-					command.data.replace(/\W/gm, '') ===
-						A_C_DATA.replace(/\W/gm, '')
+					command.data.replace(/\W/gm, '') === `
+						// This file has been sourced from: /opt/project/pages/[a]/c.tsx
+						import Components from "./components";
+						// TODO reimplement getServerSideProps with custom logic
+						const getServerSideProps = () => {
+						};
+						export default async function Page(props: any) {
+							return <Components {...props}/>;
+						}
+					`.replace(/\W/gm, '')
 				);
 			}),
 		);
@@ -226,9 +199,9 @@ describe('next 13 app-directory-boilerplate', function () {
 			externalFileCommands.some((command) => {
 				return (
 					command.kind === 'upsertFile' &&
-					command.path === '/opt/project/app/[a]/[b]/page.tsx' &&
+					command.path === '/opt/project/app/[a]/[b]/components.tsx' &&
 					command.data.replace(/\W/gm, '') ===
-						A_B_DATA.replace(/\W/gm, '')
+					"'use client';".replace(/\W/gm, '')
 				);
 			}),
 		);
@@ -241,7 +214,7 @@ describe('next 13 app-directory-boilerplate', function () {
 			'/opt/project/pages/_document.jsx': '',
 		});
 
-		deepStrictEqual(externalFileCommands.length, 5);
+		deepStrictEqual(externalFileCommands.length, 6);
 
 		ok(
 			!externalFileCommands.some(
@@ -277,14 +250,24 @@ describe('next 13 app-directory-boilerplate', function () {
 			'/opt/project/pages/[a]/c.mdx': A_C_CONTENT,
 		});
 
-		deepStrictEqual(externalFileCommands.length, 9);
+		deepStrictEqual(externalFileCommands.length, 12);
 
 		ok(
 			externalFileCommands.some((command) => {
 				return (
 					command.kind === 'upsertFile' &&
 					command.path === '/opt/project/app/[a]/c/page.mdx' &&
-					command.data === A_C_MDX_DATA
+					command.data.replace(/\W/gm, '') === `
+						// This file has been sourced from: /opt/project/pages/[a]/c.mdx
+						import Components from "./components";
+
+						// TODO reimplement getServerSideProps with custom logic
+						const getServerSideProps = () => {};
+
+						export default async function Page(props: any) {
+							return <Components>{ ...props } />;
+						}
+					`.replace(/\W/gm, '')
 				);
 			}),
 		);
@@ -294,7 +277,21 @@ describe('next 13 app-directory-boilerplate', function () {
 				return (
 					command.kind === 'upsertFile' &&
 					command.path === '/opt/project/app/[a]/[b]/page.mdx' &&
-					command.data === A_B_MDX_DATA
+					command.data.replace(/\W/gm, '') === `
+						// This file has been sourced from: /opt/project/pages/[a]/[b].mdx
+						import Components from "./components";
+						export default async function Page(props: any) {
+							return <Components>{ ...props } />
+						}
+						
+						import Components from "./components";
+
+						const getStaticPaths = () => {};
+
+						export default async function Page(props: any) {
+						    return <Components>{ ...props } />;
+						}
+					`.replace(/\W/gm, '')
 				);
 			}),
 		);
@@ -311,16 +308,8 @@ describe('next 13 app-directory-boilerplate', function () {
 		}
 		`;
 
-		const newContent = `
-		// This file has been sourced from: /opt/project/pages/index.jsx
-
-		export default async function Index() {
-			return <div>
-			</div>;
-		}
-		`;
-
-		const [upsertFileCommand, deleteIndexJsxCommand] = await transform({
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		const [upsertFileCommand, _, deleteIndexJsxCommand] = await transform({
 			'/opt/project/pages/index.jsx': content,
 		});
 
@@ -329,7 +318,13 @@ describe('next 13 app-directory-boilerplate', function () {
 
 		deepStrictEqual(
 			upsertFileCommand?.data.replace(/\W/gm, ''),
-			newContent.replace(/\W/gm, ''),
+			`
+				// This file has been sourced from: /opt/project/pages/index.jsx
+				import Components from "./components";
+				export default async function Page(props: any) {
+					return <Components {...props}/>;
+				}
+			`.replace(/\W/gm, ''),
 		);
 
 		deepStrictEqual(deleteIndexJsxCommand?.kind, 'deleteFile');
@@ -350,15 +345,8 @@ describe('next 13 app-directory-boilerplate', function () {
 		}
 		`;
 
-		const newContent = `
-		// This file has been sourced from: /opt/project/pages/index.jsx
-
-		export default function Index() {
-			return null;
-		}
-		`;
-
-		const [upsertFileCommand, deleteIndexJsxCommand] = await transform({
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		const [upsertFileCommand, _, deleteIndexJsxCommand] = await transform({
 			'/opt/project/pages/index.jsx': content,
 		});
 
@@ -367,7 +355,12 @@ describe('next 13 app-directory-boilerplate', function () {
 
 		deepStrictEqual(
 			upsertFileCommand?.data.replace(/\W/gm, ''),
-			newContent.replace(/\W/gm, ''),
+			`// This file has been sourced from: /opt/project/pages/index.jsx
+			import Components from "./components";
+			export default async function Page(props: any) {
+				return <Components {...props}/>;
+			}
+			`.replace(/\W/gm, ''),
 		);
 
 		deepStrictEqual(deleteIndexJsxCommand?.kind, 'deleteFile');
@@ -519,7 +512,8 @@ export default function RootLayout({ children }: {
 			}
 		`;
 
-		const [upsertLayoutCommand, upsertPageCommand, deleteFileCommand] =
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		const [upsertLayoutCommand, upsertPageCommand, _, deleteFileCommand] =
 			await transform({
 				'/opt/project/pages/index.tsx': index,
 				'/opt/project/pages/_document.tsx': '',
@@ -535,18 +529,13 @@ export default function RootLayout({ children }: {
 		deepStrictEqual(upsertPageCommand?.kind, 'upsertFile');
 		deepStrictEqual(upsertPageCommand?.path, '/opt/project/app/page.tsx');
 
-		const pageData = `
-			This file has been sourced from: /opt/project/pages/index.tsx
-			import NotFound from "./notFound";
-
-			export default async function Index() {
-			    return <NotFound />;
-			}
-		`;
-
 		deepStrictEqual(
 			upsertPageCommand?.data.replace(/\W/gm, ''),
-			pageData.replace(/\W/gm, ''),
+			`// This file has been sourced from: /opt/project/pages/index.tsx
+			import Components from "./components";
+			export default async function Page(props: any) {
+				return <Components {...props}/>;
+			}`.replace(/\W/gm, ''),
 		);
 
 		// delete file command
@@ -566,7 +555,7 @@ export default function RootLayout({ children }: {
 			}
 		`;
 
-		const [upsertPageCommand, deleteFileCommand] = await transform({
+		const [upsertPageCommand, _, deleteFileCommand] = await transform({
 			'/opt/project/pages/a/b/c.tsx': index,
 		});
 
@@ -576,18 +565,15 @@ export default function RootLayout({ children }: {
 			'/opt/project/app/a/b/c/page.tsx',
 		);
 
-		const pageData = `
-			// This file has been sourced from: /opt/project/pages/a/b/c.tsx
-			import NotFound from "./notFound";
-
-			export default async function C() {
-			    return <NotFound />;
-			}
-		`;
-
 		deepStrictEqual(
 			upsertPageCommand?.data.replace(/(?!\.)\s/gm, ''),
-			pageData.replace(/(?!\.)\s/gm, ''),
+			`// This file has been sourced from: /opt/project/pages/a/b/c.tsx
+			import Components from "./components";
+			
+			export default async function Page(props: any) {
+    			return <Components {...props}/>;
+			}
+			`.replace(/(?!\.)\s/gm, ''),
 		);
 
 		// delete file command
@@ -618,25 +604,24 @@ export default function RootLayout({ children }: {
 
 		deepStrictEqual(command?.kind, 'upsertFile');
 
-		const pageData = `
-		// This file has been sourced from: /opt/project/pages/index.tsx
-		async function getStaticProps() { }
-		;
-	
-		// TODO reimplement getServerSideProps with custom logic
-const getServerSideProps = async () => { };
-		
-
-		async function getStaticPaths() { };
-		
-		export default async function Index() {
-				return null;
-		}
-		`;
-
 		deepStrictEqual(
 			command?.data.replace(/(?!\.)\s/gm, ''),
-			pageData.replace(/(?!\.)\s/gm, ''),
+			`
+			// This file has been sourced from: /opt/project/pages/index.tsx
+			import Components from "./components";
+			
+			async function getStaticProps() { };
+			
+			// TODO reimplement getServerSideProps with custom logic
+			const getServerSideProps = async () => { };
+			
+			async function getStaticPaths() { };
+			
+			export default async function Page(props: any) {
+				return <Components {...props}/>;
+			}
+
+			`.replace(/(?!\.)\s/gm, ''),
 		);
 	});
 });
