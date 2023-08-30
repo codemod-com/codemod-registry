@@ -375,58 +375,71 @@ describe('next 13 app-directory-boilerplate', function () {
 	});
 
 	// @TODO uncomment and update this test when document and app merging is fully implemented
-	// it('should move the CSS import statement from _app to layout', async function (this: Context) {
-	// 	const _app = `
-	// 		import '../styles/index.css'
-	// 	`;
+	it('should move the CSS import statement from _app to layout', async function (this: Context) {
+		const _app = `
+		import { AppProps } from 'next/app'
+		import '../styles/index.css'
+		
+		function MyApp({ Component, pageProps }: AppProps) {
+			return <Component {...pageProps} />
+		}
+		
+		export default MyApp
+		`;
+		
+		const _document = `
+		import { Html, Main, NextScript } from 'next/document'
 
-	// 	const index = `
-	// 		export default async function Index() {
-	// 			return null;
-	// 		}
-	// 	`;
+		export default function Document() {
+			return (
+				<Html lang="en">
+					<body>
+						<Main />
+						<NextScript />
+					</body>
+				</Html>
+			)
+		}
+		`
 
-	// 	const [upsertLayoutCommand] = await transform({
-	// 		'/opt/project/pages/_app.tsx': _app,
-	// 		'/opt/project/pages/_document.tsx': _app,
-	// 		'/opt/project/pages/index.tsx': index,
-	// 	});
+		const index = `
+			export default async function Index() {
+				return null;
+			}
+		`;
 
-	// 	deepStrictEqual(upsertLayoutCommand?.kind, 'upsertFile');
-	// 	deepStrictEqual(
-	// 		upsertLayoutCommand?.path,
-	// 		'/opt/project/app/layout.tsx',
-	// 	);
+		const [upsertLayoutCommand] = await transform({
+			'/opt/project/pages/_app.tsx': _app,
+			'/opt/project/pages/_document.tsx': _document,
+			'/opt/project/pages/index.tsx': index,
+		});
 
-	// 	const layout = `
-	// 		import '../styles/index.css'
+		deepStrictEqual(upsertLayoutCommand?.kind, 'upsertFile');
+		deepStrictEqual(
+			upsertLayoutCommand?.path,
+			'/opt/project/app/layout.tsx',
+		);
 
-	// 		// remove the following lines if you do not use metadata in the root layout
-	// 		// import { Metadata } from 'next';
+		const layout = `
+		import { AppProps } from 'next/app';
+		import '../styles/index.css';
+		export default function RootLayout({ children }: {
+				children: React.ReactNode;
+		}) {
+				return (<html lang="en">
+									<body>
+													{children}
+									</body>
+								</html>);
+		}
+		`;
 
-	// 		// export const metadata: Metadata = {
-	// 		// 	title: '',
-	// 		// 	description: '',
-	// 		// };
-
-	// 		export default function RootLayout({
-	// 			children,
-	// 		}: {
-	// 			children: React.ReactNode;
-	// 		}) {
-	// 			return (
-	// 				<html lang="en">
-	// 					<body>{children}</body>
-	// 				</html>
-	// 			);
-	// 		}
-	// 	`;
-
-	// 	deepStrictEqual(
-	// 		upsertLayoutCommand?.data.replace(/\W/gm, ''),
-	// 		layout.replace(/\W/gm, ''),
-	// 	);
-	// });
+		console.log(upsertLayoutCommand?.data, '?data');
+		deepStrictEqual(
+			upsertLayoutCommand?.data.replace(/\W/gm, ''),
+			layout.replace(/\W/gm, ''),
+		);
+	});
 
 	it('should replace next/document tags with html tags in layout file', async function (this: Context) {
 		const index = `
