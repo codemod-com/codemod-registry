@@ -1704,4 +1704,44 @@ describe('next 13 replace-next-router', function () {
 
 		deepStrictEqual(actual, expected);
 	});
+
+	it("should transform the element-access-expression usages of the query property of the router's binding element", () => {
+		const beforeText = `
+		import { useRouter } from 'next/router';
+
+		function Component(): JSX.Element {
+			const { query } = useRouter();
+		  
+			const obj = useMemo(
+				() => objects?.find((f) => f.a === query.a),
+				[query.a],
+			);
+		  
+			const result =
+				typeof query['a-b-c'] === 'string'
+				? {
+					a: query['a-b-c'],
+				}
+				: obj;
+		`;
+
+		const afterText = `
+		import { useSearchParams } from "next/navigation";
+		
+		function Component(): JSX.Element {
+			const searchParams = useSearchParams();
+			const obj = useMemo(() => objects?.find((f) => f.a === searchParams?.get('a')), [searchParams?.get('a')]);
+			
+			const result = typeof searchParams?.get('a-b-c') === 'string'
+				? {
+					a: searchParams?.get('a-b-c'),
+				}
+				: obj;
+		}
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(actual, expected);
+	});
 });
