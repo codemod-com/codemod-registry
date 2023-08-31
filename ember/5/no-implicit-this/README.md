@@ -54,7 +54,7 @@ jscodeshift
 
 ### Estimated Time Saving
 
-~30 minutes per occurrence
+~5 minutes per occurrence
 
 ### Owner
 
