@@ -330,6 +330,7 @@ const handleQueryIdentifierNode = (
 const handleVariableDeclarationWithRouter = (
 	variableDeclaration: VariableDeclaration,
 	requiresPathname: Container<Set<string>>,
+	requiresSearchParams: Container<boolean>,
 	usesRouter: Container<boolean>,
 ) => {
 	const nameNode = variableDeclaration.getNameNode();
@@ -342,13 +343,33 @@ const handleVariableDeclarationWithRouter = (
 			const nameNode = element.getNameNode();
 			const propertyNameNode = element.getPropertyNameNode() ?? nameNode;
 
-			if (
-				Node.isIdentifier(propertyNameNode) &&
-				propertyNameNode.getText() === 'pathname'
-			) {
-				requiresPathname.set((set) => set.add(nameNode.getText()));
+			if (Node.isIdentifier(propertyNameNode)) {
+				if (propertyNameNode.getText() === 'pathname') {
+					requiresPathname.set((set) => set.add(nameNode.getText()));
 
-				++count;
+					++count;
+				} else if (propertyNameNode.getText() === 'query') {
+					propertyNameNode
+						.findReferencesAsNodes()
+						.forEach((referenceNode) => {
+							const parent = referenceNode.getParent();
+
+							if (Node.isPropertyAccessExpression(parent)) {
+								const nameNode = parent.getNameNode();
+
+								if (Node.isIdentifier(nameNode)) {
+									parent.replaceWithText(
+										`searchParams?.get("${nameNode.getText()}")`,
+									);
+								}
+							} else if (Node.isArrayLiteralExpression(parent)) {
+								referenceNode.replaceWithText('searchParams');
+							}
+						});
+
+					requiresSearchParams.set(() => true);
+					++count;
+				}
 			}
 		}
 
@@ -386,6 +407,7 @@ const handleVariableDeclaration = (
 				handleVariableDeclarationWithRouter(
 					parent,
 					requiresPathname,
+					requiresSearchParams,
 					usesRouter,
 				);
 			} else if (Node.isArrayLiteralExpression(parent)) {
@@ -503,6 +525,7 @@ const handleUseRouterCallExpression = (
 	labelContainer: Container<ReadonlyArray<string>>,
 ) => {
 	const parent = node.getParent();
+
 	if (Node.isVariableDeclaration(parent)) {
 		handleVariableDeclaration(
 			parent,
