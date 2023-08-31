@@ -376,9 +376,9 @@ function _getCustomHelpersFromConfig(configPath) {
  * Returns custom options object to support the custom helpers config path passed
  * by the user.
  */
-function getOptions(moreOptions) {
+function getOptions() {
 	let options = {
-		customHelpers: _getCustomHelpersFromConfig(moreOptions.config),
+		customHelpers: _getCustomHelpersFromConfig(),
 		telemetry: getTelemetry(),
 	};
 	return options;
@@ -421,7 +421,7 @@ function rewriteEmbeddedTemplates(file, options, api) {
 
 export default function transformer(file, api, moreOptions) {
 	let extension = path.extname(file.path).toLowerCase();
-	let options = Object.assign({}, DEFAULT_OPTIONS, getOptions(moreOptions));
+	let options = Object.assign({}, DEFAULT_OPTIONS, getOptions(), moreOptions);
 	if (extension === '.hbs') {
 		return rewriteTemplate(file.path, file.source, options);
 	} else if (extension === '.js' || extension === '.ts') {
