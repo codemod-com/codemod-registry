@@ -8,11 +8,6 @@ import {
 } from '@intuita-inc/repomod-engine-api';
 import { repomod } from './index.js';
 import tsmorph from 'ts-morph';
-import { fromMarkdown } from 'mdast-util-from-markdown';
-import { toMarkdown } from 'mdast-util-to-markdown';
-import { mdxjs } from 'micromark-extension-mdxjs';
-import { mdxFromMarkdown, mdxToMarkdown } from 'mdast-util-mdx';
-import { visit } from 'unist-util-visit';
 import { deepStrictEqual } from 'node:assert';
 
 const transform = async (json: DirectoryJSON) => {
@@ -31,28 +26,12 @@ const transform = async (json: DirectoryJSON) => {
 		fileSystemManager,
 	);
 
-	const parseMdx = (data: string) =>
-		fromMarkdown(data, {
-			extensions: [mdxjs()],
-			mdastExtensions: [mdxFromMarkdown()],
-		});
-
-	type Root = ReturnType<typeof fromMarkdown>;
-
-	const stringifyMdx = (tree: Root) =>
-		toMarkdown(tree, { extensions: [mdxToMarkdown()] });
-
+	
 	const api = buildApi<{
 		tsmorph: typeof tsmorph;
-		parseMdx: typeof parseMdx;
-		stringifyMdx: typeof stringifyMdx;
-		visitMdxAst: typeof visit;
 		unifiedFileSystem: UnifiedFileSystem;
 	}>(unifiedFileSystem, () => ({
 		tsmorph,
-		parseMdx,
-		stringifyMdx,
-		visitMdxAst: visit,
 		unifiedFileSystem,
 	}));
 
@@ -71,7 +50,7 @@ describe.only('next 13 replace-API-routes', function () {
 		}
 	`;
 
-		const [command] = await transform({
+		const [upsertFileCommand] = await transform({
 			'/opt/project/pages/api/hello.ts': A_CONTENT,
 		});
 
@@ -81,11 +60,14 @@ describe.only('next 13 replace-API-routes', function () {
 			return NextResponse.json({ message: 'Hello from Next.js!' })
 		}`;
 
-		deepStrictEqual(command?.kind, 'upsertFile');
-		deepStrictEqual(command.path, '/opt/project/app/api/hello/route.ts');
-
+		deepStrictEqual(upsertFileCommand?.kind, 'upsertFile');
+		deepStrictEqual(upsertFileCommand.path, '/opt/project/app/api/hello/route.ts');
+		
+		console.log(upsertFileCommand, '?')
+	
+		
 		deepStrictEqual(
-			command.data.replace(/\W/gm, ''),
+			upsertFileCommand.data.replace(/\W/gm, ''),
 			expectedResult.replace(/\W/gm, ''),
 		);
 	});
