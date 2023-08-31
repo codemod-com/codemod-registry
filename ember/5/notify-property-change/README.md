@@ -2,6 +2,8 @@
 
 ## Description
 
+This codemod removes all calls to `propertyWillChange` and replaces all calls to `propertyDidChange` with `notifyPropertyChange`.
+
 ## Example
 
 ### Before:
