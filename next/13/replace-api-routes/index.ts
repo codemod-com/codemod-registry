@@ -101,7 +101,13 @@ export type HTTPMethod = typeof HTTP_METHODS[number];
 const rewriteAPIRoute = (sourceFile: SourceFile) => {
 	const HTTPMethodHandlers = new Map<HTTPMethod, string>();
 
-	const handlerBody = findAPIRouteHandler(sourceFile)?.getBody() ?? null;
+	const handler = findAPIRouteHandler(sourceFile);
+
+	if (handler === null) {
+		return;
+	}
+
+	const handlerBody = handler.getBody() ?? null;
 
 	if (handlerBody === null) {
 		return;
@@ -127,6 +133,15 @@ const rewriteAPIRoute = (sourceFile: SourceFile) => {
 
 
 	const positionAfterImports = getPositionAfterImports(sourceFile);
+
+	// @TODO
+	const usesRequest = false;
+	const usesResponse = true;
+
+	if (usesRequest || usesResponse) {
+		sourceFile.insertStatements(0, `import { ${usesRequest ? 'NextRequest ,' : ''} ${usesResponse ? 'NextResponse' : ''} } from 'next/server'`)
+	}
+
 
 	Array.from(HTTPMethodHandlers).forEach(([method, handler]) => {
 		sourceFile.insertStatements(positionAfterImports, `export async function ${method}() 
