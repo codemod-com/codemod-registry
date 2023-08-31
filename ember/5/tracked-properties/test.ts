@@ -153,7 +153,7 @@ describe('ember 5 tracked-properties', function () {
 		);
 	});
 
-  it('chained-computed', function () {
+	it('chained-computed', function () {
 		const INPUT = `
     import Component from '@ember/component';
     import { computed, get } from '@ember/object';
@@ -218,7 +218,7 @@ describe('ember 5 tracked-properties', function () {
 		);
 	});
 
-  it('chained-complex', function () {
+	it('chained-complex', function () {
 		const INPUT = `
     import { tracked } from '@glimmer/tracking';
     import Component from '@glimmer/component';
@@ -288,7 +288,7 @@ describe('ember 5 tracked-properties', function () {
 		);
 	});
 
-  it('non-computed-decorators', function () {
+	it('non-computed-decorators', function () {
 		const INPUT = `
     import Component from '@ember/component';
     import { computed, get } from '@ember/object';
@@ -353,7 +353,7 @@ describe('ember 5 tracked-properties', function () {
 		);
 	});
 
-  it('read-only-computed-decorators', function () {
+	it('read-only-computed-decorators', function () {
 		const INPUT = `
     import Component from '@ember/component';
     import { computed, get } from '@ember/object';
@@ -429,7 +429,7 @@ describe('ember 5 tracked-properties', function () {
 		);
 	});
 
-  it('with-tracked', function () {
+	it('with-tracked', function () {
 		const INPUT = `
     import Component from '@ember/component';
     import { tracked } from '@glimmer/tracking';
@@ -473,5 +473,4 @@ describe('ember 5 tracked-properties', function () {
 			OUTPUT.replace(/\W/gm, ''),
 		);
 	});
-  
 });
