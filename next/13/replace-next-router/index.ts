@@ -324,6 +324,16 @@ const handleQueryIdentifierNode = (
 		node.replaceWithText('searchParams');
 
 		requiresSearchParams.set(() => true);
+	} else if (Node.isElementAccessExpression(parent)) {
+		const expression = parent.getArgumentExpression();
+
+		if (Node.isStringLiteral(expression)) {
+			parent.replaceWithText(
+				`searchParams?.get(${expression.getText()})`,
+			);
+
+			requiresSearchParams.set(() => true);
+		}
 	}
 };
 
