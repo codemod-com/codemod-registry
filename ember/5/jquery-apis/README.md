@@ -89,3 +89,5 @@ jscodeshift
 [Rajasegar Chandran](https://github.com/rajasegar)
 
 ### Links for more info
+
+-   https://github.com/ember-codemods/ember-3x-codemods/blob/master/transforms/jquery-apis
