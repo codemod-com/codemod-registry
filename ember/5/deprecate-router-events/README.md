@@ -2,6 +2,8 @@
 
 ## Description
 
+This codemod removes all calls to `willTransition` or `didTransition` events on the Router via usage of `routeWillChange` event listener and `routeDidChange` event listener.
+
 ## Example
 
 ### Before:
@@ -86,4 +88,4 @@ jscodeshift
 
 ### Links for more info
 
--   https://github.com/ember-codemods/ember-3x-codemods/blob/master/transforms/deprecate-router-events
+-   https://deprecations.emberjs.com/v3.x/#toc_deprecate-router-events
