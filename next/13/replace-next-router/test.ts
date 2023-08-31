@@ -1650,7 +1650,7 @@ describe('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it('should transform usages of the query property of the router\'s binding element', () => {
+	it("should transform usages of the query property of the router's binding element", () => {
 		const beforeText = `
 		import { useState, useEffect } from 'react';
 		import { useRouter } from 'next/router';
