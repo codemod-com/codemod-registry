@@ -434,7 +434,7 @@ describe('next 13 app-directory-boilerplate', function () {
 		}) {
 				return (<html lang="en">
 									<body>
-											<LayoutClientComponent />
+											<LayoutClientComponent> { children } </LayoutClientComponent>
 									</body>
 								</html>);
 		}
@@ -529,7 +529,7 @@ describe('next 13 app-directory-boilerplate', function () {
 			return (<html lang="en">
 				<head />
 				<body>
-				<LayoutClientComponent />
+				<LayoutClientComponent> { children } </LayoutClientComponent>
 				</body>
 			</html>);
 		}

@@ -693,7 +693,9 @@ const injectLayoutClientComponent = (sourceFile: SourceFile) => {
 		.getDescendantsOfKind(SyntaxKind.JsxSelfClosingElement)
 		.find((jsxElement) => jsxElement.getTagNameNode().getText() === 'Main');
 
-	mainJsxTag?.replaceWithText('<LayoutClientComponent />');
+	mainJsxTag?.replaceWithText(
+		'<LayoutClientComponent> { children } </LayoutClientComponent>',
+	);
 
 	sourceFile.insertStatements(
 		0,
