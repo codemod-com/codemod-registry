@@ -61,3 +61,5 @@ jscodeshift
 [NullVoxPopuli](https://github.com/NullVoxPopuli)
 
 ### Links for more info
+
+-   https://github.com/ember-codemods/ember-no-implicit-this-codemod/tree/master/transforms/no-implicit-this
