@@ -1,0 +1,8 @@
+{
+	"schemaVersion": "1.0.0",
+	"name": "next/13/replace-api-routes",
+	"description": "This codemod replaces API Routes with Route Handlers",
+	"engine": "repomod-engine",
+	"dependencyVersionLowerThan": ["next", "13.0.0"],
+	"owner": "intuita"
+}
