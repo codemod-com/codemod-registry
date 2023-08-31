@@ -41,7 +41,7 @@ sendEvent(job, 'completed'); // Logs 'Job completed!'
 
 ## Applicability Criteria
 
-Ember.js version higher or equal to 3.
+Ember.js version higher or equal to 3.11.
 
 ## Other Metadata
 
