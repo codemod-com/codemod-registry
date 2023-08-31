@@ -442,7 +442,6 @@ describe('next 13 app-directory-boilerplate', function () {
 
 		const layoutClientComponent = `
 		"use client"
-		import { AppProps } from 'next/app'
 		import '../styles/index.css'
 		
 		function LayoutClientComponent({ children }: { children: React.ReactNode }) {

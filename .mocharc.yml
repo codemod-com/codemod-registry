@@ -3,3 +3,4 @@ loader:
 full-trace: true
 bail: true
 spec: './**/test.ts'
+timeout: 5000

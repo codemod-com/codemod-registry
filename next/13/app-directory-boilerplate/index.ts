@@ -10,6 +10,7 @@ import tsmorph, {
 	SourceFile,
 	SyntaxKind,
 	FunctionExpression,
+	ImportDeclaration,
 } from 'ts-morph';
 import type { Repomod } from '@intuita-inc/repomod-engine-api';
 import type { fromMarkdown } from 'mdast-util-from-markdown';
@@ -89,45 +90,43 @@ type DataCommand = Awaited<
 	ReturnType<NonNullable<Repomod<Dependencies>['handleData']>>
 >;
 
-const removeUnneededImportDeclarations = (sourceFile: SourceFile) => {
-	sourceFile
-		.getImportDeclarations()
-		.filter((declaration) => {
-			if (
-				declaration.getModuleSpecifier().getLiteralText() ===
-					'next/head' &&
-				declaration.getImportClause()?.getText() === 'Head'
-			) {
-				return true;
+const removeUnusedImports = (sourceFile: SourceFile) => {
+	sourceFile.getImportDeclarations().forEach((importDeclaration) => {
+		const defaultImport = importDeclaration.getDefaultImport();
+
+		if (
+			defaultImport &&
+			defaultImport.findReferencesAsNodes().length === 1
+		) {
+			importDeclaration.remove();
+			return;
+		}
+
+		const namedImports = importDeclaration.getNamedImports();
+
+		if (namedImports.length === 0) {
+			return;
+		}
+
+		namedImports.forEach((namedImport) => {
+			const nameNode = namedImport.getNameNode();
+
+			if (nameNode.findReferencesAsNodes().length !== 1) {
+				return;
 			}
 
-			const defaultImport = declaration.getDefaultImport() ?? null;
-
-			if (defaultImport !== null) {
-				const text = defaultImport.getText();
-
-				return (
-					sourceFile
-						.getDescendantsOfKind(tsmorph.ts.SyntaxKind.Identifier)
-						.filter((identifier) => identifier.getText() === text)
-						.length === 1
-				);
-			}
-
-			return declaration.getNamedImports().every((namedImport) => {
-				const text = namedImport.getText();
-
-				return (
-					sourceFile
-						.getDescendantsOfKind(tsmorph.ts.SyntaxKind.Identifier)
-						.filter((identifier) => identifier.getText() === text)
-						.length === 1
-				);
-			});
-		})
-		.forEach((declaration) => {
-			declaration.remove();
+			namedImport.remove();
 		});
+
+		if (
+			importDeclaration.getImportClause() !== undefined ||
+			importDeclaration.getNamedImports().length !== 0
+		) {
+			return;
+		}
+
+		importDeclaration.remove();
+	});
 };
 
 const buildComponentsFileData = (
@@ -151,7 +150,7 @@ const buildComponentsFileData = (
 		});
 
 		const sourceFile = project.createSourceFile(
-			options.oldPath ?? '',
+			options.oldPath?.replace(/\.mdx$/, '.tsx') ?? '',
 			input,
 		);
 
@@ -187,8 +186,6 @@ const buildComponentsFileData = (
 				}
 			});
 		});
-
-		removeUnneededImportDeclarations(sourceFile);
 
 		sourceFile
 			.getDescendantsOfKind(SyntaxKind.JsxOpeningElement)
@@ -236,6 +233,8 @@ const buildComponentsFileData = (
 
 			sourcingStatementInserted = true;
 		}
+
+		removeUnusedImports(sourceFile);
 
 		return sourceFile.print();
 	};
@@ -297,7 +296,7 @@ const buildPageFileData = (
 		});
 
 		const sourceFile = project.createSourceFile(
-			options.oldPath ?? '',
+			options.oldPath?.replace(/\.mdx$/, '.tsx') ?? '',
 			input,
 		);
 
@@ -337,7 +336,7 @@ const buildPageFileData = (
 			});
 		});
 
-		removeUnneededImportDeclarations(sourceFile);
+		// removeUnneededImportDeclarations(sourceFile);
 
 		sourceFile
 			.getDescendantsOfKind(SyntaxKind.JsxOpeningElement)
@@ -414,6 +413,8 @@ const buildPageFileData = (
 		sourceFile.addStatements(`export default async function Page(props: any) {
 			return <Components {...props} />;
 		}`);
+
+		removeUnusedImports(sourceFile);
 
 		return sourceFile.print();
 	};
@@ -684,6 +685,8 @@ const buildLayoutClientComponentFromUnderscoreApp = (
 				jsxElement.getTagNameNode().getText() === 'Component',
 		)
 		?.replaceWithText('<>{ children }</>');
+
+	removeUnusedImports(sourceFile);
 
 	sourceFile.insertStatements(0, '"use client" \n');
 };
