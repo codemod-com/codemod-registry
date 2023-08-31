@@ -32,10 +32,9 @@ import path from 'node:path';
 import fs from 'node:fs';
 import recast from 'ember-template-recast';
 import { getTelemetry } from 'ember-codemods-telemetry-helpers';
-import codemodCLI from 'codemod-cli';
+
 import debugLib from 'debug';
 
-const { getOptions: getCLIOptions, jscodeshift } = codemodCLI;
 const debug = debugLib('ember-no-implicit-this-codemod:transform');
 
 const DEFAULT_OPTIONS = {};
@@ -378,9 +377,8 @@ function _getCustomHelpersFromConfig(configPath) {
  * by the user.
  */
 function getOptions() {
-	let cliOptions = getCLIOptions();
 	let options = {
-		customHelpers: _getCustomHelpersFromConfig(cliOptions.config),
+		customHelpers: _getCustomHelpersFromConfig(),
 		telemetry: getTelemetry(),
 	};
 	return options;
@@ -408,8 +406,9 @@ function rewriteTemplate(path, source, options) {
  * references where needed.
  */
 function rewriteEmbeddedTemplates(file, options, api) {
-	return jscodeshift
-		.getParser(api)(file.source)
+	const j = api.jscodeshift;
+	const root = j(file.source);
+	return root
 		.find('TaggedTemplateExpression', { tag: { type: 'Identifier' } })
 		.forEach((path) => {
 			if (isEmberTemplate(path)) {
@@ -420,9 +419,9 @@ function rewriteEmbeddedTemplates(file, options, api) {
 		.toSource();
 }
 
-export default function transformer(file, api) {
+export default function transformer(file, api, moreOptions) {
 	let extension = path.extname(file.path).toLowerCase();
-	let options = Object.assign({}, DEFAULT_OPTIONS, getOptions());
+	let options = Object.assign({}, DEFAULT_OPTIONS, getOptions(), moreOptions);
 	if (extension === '.hbs') {
 		return rewriteTemplate(file.path, file.source, options);
 	} else if (extension === '.js' || extension === '.ts') {
