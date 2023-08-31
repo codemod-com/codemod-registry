@@ -2,6 +2,8 @@
 
 ## Description
 
+This codemod replaces all calls to `this.$()` inside of an `Ember.Component` with `this.element` property, which provides a reference to a native DOM element.
+
 ## Example
 
 ## Events
@@ -90,4 +92,4 @@ jscodeshift
 
 ### Links for more info
 
--   https://github.com/ember-codemods/ember-3x-codemods/blob/master/transforms/jquery-apis
+-   https://deprecations.emberjs.com/v3.x/#toc_jquery-apis
