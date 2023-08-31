@@ -84,7 +84,7 @@ const transform = async (json: DirectoryJSON) => {
 	return executeRepomod(api, repomod, '/', {});
 };
 
-describe('next 13 app-directory-boilerplate', function () {
+describe.only('next 13 app-directory-boilerplate', function () {
 	it('should build correct files', async function (this: Context) {
 		const externalFileCommands = await transform({
 			'/opt/project/pages/index.jsx': INDEX_CONTENT,
@@ -434,7 +434,7 @@ describe('next 13 app-directory-boilerplate', function () {
 		}) {
 				return (<html lang="en">
 									<body>
-											<LayoutClientComponent />
+											<LayoutClientComponent> { children } </LayoutClientComponent>
 									</body>
 								</html>);
 		}
@@ -529,7 +529,7 @@ describe('next 13 app-directory-boilerplate', function () {
 			return (<html lang="en">
 				<head />
 				<body>
-				<LayoutClientComponent />
+				<LayoutClientComponent> { children } </LayoutClientComponent>
 				</body>
 			</html>);
 		}
