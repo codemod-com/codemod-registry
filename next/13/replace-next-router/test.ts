@@ -1650,6 +1650,58 @@ describe('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	// BreadcrumbContainer
-	// AppCard
+	it('should transform usages of the query property of the router\'s binding element', () => {
+		const beforeText = `
+		import { useState, useEffect } from 'react';
+		import { useRouter } from 'next/router';
+
+		export default function useX(): void {
+			const router = useRouter();
+			const { query } = router;
+
+			useEffect(
+				() => {
+					if (!router.isReady) {
+						return;
+					}
+
+					if (query.a === 'a') {
+						return;
+					}
+
+					if (typeof query.a === 'undefined') {
+						return;
+					}
+				},
+				[query, router]
+			);
+		}
+		`;
+
+		const afterText = `
+		import { useSearchParams } from "next/navigation";
+		import { useRouter } from "next/navigation";
+		import { useState, useEffect } from 'react';
+
+		export default function useX(): void {
+			const searchParams = useSearchParams();
+			const router = useRouter();
+			
+			useEffect(() => {
+				if (searchParams === null) {
+					return;
+				}
+				if (searchParams?.get("a") === 'a') {
+					return;
+				}
+				if (typeof searchParams?.get("a") === 'undefined') {
+					return;
+				}
+			}, [searchParams, router]);
+		}`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(actual, expected);
+	});
 });
