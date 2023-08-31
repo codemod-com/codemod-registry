@@ -580,7 +580,7 @@ describe('ember 5 es5-getter-ember-codemod', function () {
 		);
 	});
 
-    it('this-dot-getProperties-ts', function () {
+	it('this-dot-getProperties-ts', function () {
 		const INPUT = `
         class Thing {
             thisDotGetPropertiesMethod() {
@@ -638,7 +638,7 @@ describe('ember 5 es5-getter-ember-codemod', function () {
 		);
 	});
 
-    it('this-dot-getProperties', function () {
+	it('this-dot-getProperties', function () {
 		const INPUT = `
         class Thing {
             thisDotGetPropertiesMethod() {
