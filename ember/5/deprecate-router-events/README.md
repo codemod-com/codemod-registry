@@ -60,6 +60,8 @@ export default Router.extend({
 
 ## Applicability Criteria
 
+Ember.js version higher or equal to 3.
+
 ## Other Metadata
 
 ### Codemod Version

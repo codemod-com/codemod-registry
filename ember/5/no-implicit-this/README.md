@@ -38,6 +38,8 @@
 
 ## Applicability Criteria
 
+Ember.js version higher or equal to 1.
+
 ## Other Metadata
 
 ### Codemod Version
