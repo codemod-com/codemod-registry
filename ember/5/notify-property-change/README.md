@@ -28,7 +28,7 @@ object.notifyPropertyChange('someProperty');
 
 ## Applicability Criteria
 
-Ember.js version higher or equal to 3.
+Ember.js version higher or equal to 3.1.
 
 ## Other Metadata
 
