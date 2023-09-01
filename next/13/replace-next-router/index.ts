@@ -16,11 +16,14 @@ class FileLevelUsageManager {
 	private __pathnameUsed: boolean = false;
 	private __routerUsed: boolean = false;
 	private __searchParamsUsed: boolean = false;
+	private __paramsUsed: boolean = false;
 	private __useRouterCount: number = 0;
+	public useCallbackUsed: boolean = false;
 
 	private __useRouterPresent: boolean;
 	private __nextRouterPresent: boolean;
 	private __useSearchParamsPresent: boolean;
+	private __useParamsPresent: boolean;
 	private __usePathnamePresent: boolean;
 
 	public constructor(importDeclarations: ReadonlyArray<ImportDeclaration>) {
@@ -40,6 +43,12 @@ class FileLevelUsageManager {
 			importDeclarations,
 			'next/navigation',
 			'useSearchParams',
+		);
+
+		this.__useParamsPresent = hasImport(
+			importDeclarations,
+			'next/navigation',
+			'useParams',
 		);
 
 		this.__usePathnamePresent = hasImport(
@@ -65,6 +74,10 @@ class FileLevelUsageManager {
 		this.__searchParamsUsed = true;
 	}
 
+	public reportParamsUsed() {
+		this.__paramsUsed = true;
+	}
+
 	public hasAnyNextRouterImport() {
 		return this.__useRouterPresent || this.__nextRouterPresent;
 	}
@@ -78,6 +91,10 @@ class FileLevelUsageManager {
 		return this.__searchParamsUsed && !this.__useSearchParamsPresent;
 	}
 
+	public shouldImportUseParams(): boolean {
+		return this.__paramsUsed && !this.__useParamsPresent;
+	}
+
 	public shouldImportUsePathname(): boolean {
 		return this.__pathnameUsed && !this.__usePathnamePresent;
 	}
@@ -88,8 +105,12 @@ class FileLevelUsageManager {
 }
 
 class BlockLevelUsageManager {
+	private __getParamUsed: boolean = false;
+	private __paramsUsed: boolean = false;
 	private __searchParamsUsed: boolean = false;
+
 	private __routerUsed: boolean = false;
+
 	private __pathnames: Set<string> = new Set();
 	private __labels: Array<string> = [];
 
@@ -99,8 +120,16 @@ class BlockLevelUsageManager {
 		return this.__routerUsed;
 	}
 
+	public areParamsUsed(): boolean {
+		return this.__paramsUsed;
+	}
+
 	public areSearchParamsUsed(): boolean {
 		return this.__searchParamsUsed;
+	}
+
+	public isGetParamsUsed(): boolean {
+		return this.__getParamUsed;
 	}
 
 	public getPathnames(): ReadonlySet<string> {
@@ -117,6 +146,14 @@ class BlockLevelUsageManager {
 
 	public addLabel(label: string): void {
 		this.__labels.push(label);
+
+		this.reportGetParamUsage();
+	}
+
+	public reportGetParamUsage(): void {
+		this.__paramsUsed = true;
+		this.__searchParamsUsed = true;
+		this.__getParamUsed = true;
 	}
 
 	public reportSearchParamsUsage(): void {
@@ -224,11 +261,9 @@ const handleRouterPropertyAccessExpression = (
 			// e.g. router.query.a
 			const parentNodeName = parentNode.getName();
 
-			parentNode.replaceWithText(
-				`searchParams?.get("${parentNodeName}")`,
-			);
+			parentNode.replaceWithText(`getParam("${parentNodeName}")`);
 
-			blockLevelUsageManager.reportSearchParamsUsage();
+			blockLevelUsageManager.reportGetParamUsage();
 		} else if (Node.isSpreadAssignment(parentNode)) {
 			parentNode.replaceWithText(
 				`...Object.fromEntries(searchParams ?? new URLSearchParams())`,
@@ -270,11 +305,11 @@ const handleRouterPropertyAccessExpression = (
 				return;
 			}
 
-			const replacerText = `searchParams?.get(${argumentExpressionAsText})`;
+			const replacerText = `getParam(${argumentExpressionAsText})`;
 
 			parentNode.replaceWithText(replacerText);
 
-			blockLevelUsageManager.reportSearchParamsUsage();
+			blockLevelUsageManager.reportGetParamUsage();
 		} else {
 			node.replaceWithText('searchParams');
 			blockLevelUsageManager.reportSearchParamsUsage();
@@ -388,9 +423,9 @@ const handleQueryIdentifierNode = (
 	if (Node.isPropertyAccessExpression(parent)) {
 		const name = parent.getName();
 
-		parent.replaceWithText(`searchParams?.get('${name}')`);
+		parent.replaceWithText(`getParam('${name}')`);
 
-		blockLevelUsageManager.reportSearchParamsUsage();
+		blockLevelUsageManager.reportGetParamUsage();
 	} else if (Node.isVariableDeclaration(parent)) {
 		const variableDeclaration = parent;
 
@@ -415,8 +450,6 @@ const handleQueryIdentifierNode = (
 			labels.forEach((label) => {
 				blockLevelUsageManager.addLabel(label);
 			});
-
-			blockLevelUsageManager.reportSearchParamsUsage();
 		}
 	} else if (Node.isCallExpression(parent)) {
 		node.replaceWithText('searchParams');
@@ -426,11 +459,9 @@ const handleQueryIdentifierNode = (
 		const expression = parent.getArgumentExpression();
 
 		if (Node.isStringLiteral(expression)) {
-			parent.replaceWithText(
-				`searchParams?.get(${expression.getText()})`,
-			);
+			parent.replaceWithText(`getParam(${expression.getText()})`);
 
-			blockLevelUsageManager.reportSearchParamsUsage();
+			blockLevelUsageManager.reportGetParamUsage();
 		}
 	}
 };
@@ -465,15 +496,17 @@ const handleVariableDeclarationWithRouter = (
 
 								if (Node.isIdentifier(nameNode)) {
 									parent.replaceWithText(
-										`searchParams?.get("${nameNode.getText()}")`,
+										`getParam("${nameNode.getText()}")`,
 									);
+
+									blockLevelUsageManager.reportGetParamUsage();
 								}
 							} else if (Node.isArrayLiteralExpression(parent)) {
 								referenceNode.replaceWithText('searchParams');
+								blockLevelUsageManager.reportSearchParamsUsage();
 							}
 						});
 
-					blockLevelUsageManager.reportSearchParamsUsage();
 					++count;
 				}
 			}
@@ -604,7 +637,6 @@ const handleVariableDeclaration = (
 					blockLevelUsageManager.addLabel(label);
 				});
 
-				blockLevelUsageManager.reportSearchParamsUsage();
 				++count;
 			}
 		}
@@ -647,25 +679,29 @@ const handleUseRouterCallExpression = (
 				grandparent.remove();
 			}
 		} else if (text === 'query') {
-			blockLevelUsageManager.reportSearchParamsUsage();
-
 			if (Node.isCallExpression(grandparent)) {
 				parent.replaceWithText(
 					`...Object.fromEntries(searchParams ?? new URLSearchParams())`,
 				);
+
+				blockLevelUsageManager.reportSearchParamsUsage();
 			} else if (Node.isElementAccessExpression(grandparent)) {
 				const argumentExpression = grandparent.getArgumentExpression();
 
 				grandparent.replaceWithText(
-					`searchParams?.get(${argumentExpression?.print()})`,
+					`getParam(${argumentExpression?.print()})`,
 				);
+
+				blockLevelUsageManager.reportGetParamUsage();
 			} else if (Node.isPropertyAccessExpression(grandparent)) {
 				const nameNode = grandparent.getNameNode();
 
 				if (Node.isIdentifier(nameNode)) {
 					grandparent.replaceWithText(
-						`searchParams?.get("${nameNode.getText()}")`,
+						`getParam("${nameNode.getText()}")`,
 					);
+
+					blockLevelUsageManager.reportGetParamUsage();
 				}
 			} else if (Node.isAsExpression(grandparent)) {
 				const greatgrandparent = grandparent.getParent();
@@ -697,15 +733,15 @@ const handleUseRouterCallExpression = (
 							}
 						}
 
-						blockLevelUsageManager.reportSearchParamsUsage();
-
 						const text = properties
 							.map(({ name, propertyName }) => {
-								return `${name} = searchParams?.get("${propertyName}")`;
+								return `${name} = getParam("${propertyName}")`;
 							})
 							.join(',\n');
 
 						greatgrandparent.replaceWithText(text);
+
+						blockLevelUsageManager.reportGetParamUsage();
 					}
 				}
 			} else {
@@ -763,10 +799,24 @@ const handleUseRouterIdentifier = (
 		fileLevelUsageManager.reportRouterUsed();
 	}
 
+	if (blockLevelUsageManager.areParamsUsed()) {
+		statements.push('const params = useParams();');
+
+		fileLevelUsageManager.reportParamsUsed();
+	}
+
 	if (blockLevelUsageManager.areSearchParamsUsed()) {
 		statements.push('const searchParams = useSearchParams();');
 
 		fileLevelUsageManager.reportSearchParamsUsed();
+	}
+
+	if (blockLevelUsageManager.isGetParamsUsed()) {
+		statements.push(
+			'const getParam = useCallback((p: string) => params[p] ?? searchParams.get(p), [params, searchParams]);',
+		);
+
+		fileLevelUsageManager.useCallbackUsed = true;
 	}
 
 	for (const pathname of blockLevelUsageManager.getPathnames()) {
@@ -776,7 +826,7 @@ const handleUseRouterIdentifier = (
 	}
 
 	for (const label of blockLevelUsageManager.getLabels()) {
-		statements.push(`const ${label} = searchParams?.get("${label}")`);
+		statements.push(`const ${label} = getParam("${label}")`);
 	}
 
 	block.insertStatements(0, statements);
@@ -850,12 +900,36 @@ export const handleSourceFile = (
 		handleImportDeclaration(fileLevelUsageManager, importDeclaration),
 	);
 
+	if (fileLevelUsageManager.useCallbackUsed) {
+		const importDeclaration =
+			sourceFile
+				.getImportDeclarations()
+				.find(
+					(importDeclaration) =>
+						importDeclaration.getModuleSpecifierValue() === 'react',
+				) ?? null;
+
+		if (importDeclaration === null) {
+			sourceFile.addImportDeclaration({
+				moduleSpecifier: 'react',
+				namedImports: [
+					{
+						name: 'useCallback',
+					},
+				],
+			});
+		} else {
+			importDeclaration.addNamedImport('useCallback');
+		}
+	}
+
 	const namedImports = [
+		fileLevelUsageManager.shouldImportUseParams() ? 'useParams' : null,
+		fileLevelUsageManager.shouldImportUsePathname() ? 'usePathname' : null,
 		fileLevelUsageManager.shouldImportUseRouter() ? 'useRouter' : null,
 		fileLevelUsageManager.shouldImportUseSearchParams()
 			? 'useSearchParams'
 			: null,
-		fileLevelUsageManager.shouldImportUsePathname() ? 'usePathname' : null,
 	]
 		.filter((x): x is string => x !== null)
 		.sort();

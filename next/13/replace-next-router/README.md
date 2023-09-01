@@ -17,7 +17,7 @@ This codemod allows you to migrate the `useRouter` hook to the new `useRouter` h
 
 ### Before
 
-```jsx
+```tsx
 import { useRouter } from 'next/router';
 
 function Component() {
@@ -28,14 +28,21 @@ function Component() {
 
 ### After
 
-```jsx
-import { useSearchParams } from 'next/navigation';
+```tsx
+import { useParams, useSearchParams } from 'next/navigation';
+import { useCallback } from 'react';
 
 function Component() {
+	const params = useParams();
 	const searchParams = useSearchParams();
-	const a = searchParams?.get('a');
-	const b = searchParams?.get('b');
-	const c = searchParams?.get('c');
+	const getParam = useCallback(
+		(p: string) => params[p] ?? searchParams.get(p),
+		[params, searchParams],
+	);
+
+	const a = getParam('a');
+	const b = getParam('b');
+	const c = getParam('c');
 }
 ```
 

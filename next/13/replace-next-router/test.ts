@@ -45,13 +45,16 @@ describe('next 13 replace-next-router', function () {
 		`;
 
 		const afterText = `
-	      import { useSearchParams } from "next/navigation";
+			import { useParams, useSearchParams } from "next/navigation";
+			import { useCallback } from "react";
 
-	      function Component() {
-	          const searchParams = useSearchParams();
-	          const x = searchParams?.get("a");
-	      }
-	      `;
+			function Component() {
+				const params = useParams();
+				const searchParams = useSearchParams();
+				const getParam = useCallback((p: string) => params[p] ?? searchParams.get(p), [params, searchParams]);
+				const x = getParam("a");
+			}
+	    `;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
@@ -68,11 +71,14 @@ describe('next 13 replace-next-router', function () {
 		`;
 
 		const afterText = `
-			import { useSearchParams } from "next/navigation";
+			import { useParams, useSearchParams } from "next/navigation";
+			import { useCallback } from "react";
 
 			function Component() {
-	              const searchParams = useSearchParams();
-				const a = searchParams?.get("a");
+				const params = useParams();
+	            const searchParams = useSearchParams();
+			  	const getParam = useCallback((p: string) => params[p] ?? searchParams.get(p), [params, searchParams]);
+				const a = getParam("a");
 			}
 	      `;
 
@@ -93,11 +99,14 @@ describe('next 13 replace-next-router', function () {
 		`;
 
 		const afterText = `
-	          import { useSearchParams } from "next/navigation";
+	        import { useParams, useSearchParams } from "next/navigation";
+			import { useCallback } from "react";
 
 			function Component() {
-	              const searchParams = useSearchParams();
-	              const a = searchParams?.get('a');
+				const params = useParams();
+	            const searchParams = useSearchParams();
+			  	const getParam = useCallback((p: string) => params[p] ?? searchParams.get(p), [params, searchParams]);
+	            const a = getParam('a');
 			}
 	      `;
 
@@ -113,16 +122,19 @@ describe('next 13 replace-next-router', function () {
 			function Component() {
 				const { query } = useRouter();
 
-	              const a = query.a;
+	            const a = query.a;
 			}
 		`;
 
 		const afterText = `
-	          import { useSearchParams } from "next/navigation";
+	        import { useParams, useSearchParams } from "next/navigation";
+			import { useCallback } from "react";
 
 			function Component() {
+				const params = useParams();
 				const searchParams = useSearchParams();
-				const a = searchParams?.get('a');
+			  	const getParam = useCallback((p: string) => params[p] ?? searchParams.get(p), [params, searchParams]);
+				const a = getParam('a');
 			}
 			`;
 
@@ -169,12 +181,15 @@ describe('next 13 replace-next-router', function () {
 		`;
 
 		const afterText = `
-	          import { useSearchParams } from "next/navigation";
+	        import { useParams, useSearchParams } from "next/navigation";
+			import { useCallback } from "react";
 
 			function Component() {
+				const params = useParams();
 				const searchParams = useSearchParams();
+			  	const getParam = useCallback((p: string) => params[p] ?? searchParams.get(p), [params, searchParams]);
 
-				const a = searchParams?.get("a");
+				const a = getParam("a");
 			}
 	      `;
 
@@ -193,11 +208,15 @@ describe('next 13 replace-next-router', function () {
 		`;
 
 		const afterText = `
-	          import { useSearchParams } from "next/navigation";
+	        import { useParams, useSearchParams } from "next/navigation";
+			import { useCallback } from "react";
 
 			function Component() {
+				const params = useParams();
 				const searchParams = useSearchParams();
-	              const a = searchParams?.get("a");
+			  	const getParam = useCallback((p: string) => params[p] ?? searchParams.get(p), [params, searchParams]);
+
+	            const a = getParam("a");
 			}
 			`;
 
@@ -220,12 +239,15 @@ describe('next 13 replace-next-router', function () {
 		`;
 
 		const afterText = `
-	          import { useSearchParams } from "next/navigation";
+	        import { useParams, useSearchParams } from "next/navigation";
+			import { useCallback } from "react";
 
 			function Component() {
+				const params = useParams();
 				const searchParams = useSearchParams();
+			  	const getParam = useCallback((p: string) => params[p] ?? searchParams.get(p), [params, searchParams]);
 
-				const x = searchParams?.get("a");
+				const x = getParam("a");
 
 				const z = { ...Object.fromEntries(searchParams ?? new URLSearchParams()), b: 1 };
 			}
@@ -236,7 +258,7 @@ describe('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it('should replace router.query.a with searchParams?.get("a")', async function (this: Context) {
+	it('should replace router.query.a with getParam("a")', async function (this: Context) {
 		const beforeText = `
 			import { useRouter } from 'next/router';
 
@@ -253,16 +275,19 @@ describe('next 13 replace-next-router', function () {
 		`;
 
 		const afterText = `
-			import { useSearchParams } from "next/navigation";
+			import { useParams, useSearchParams } from "next/navigation";
+			import { useCallback } from "react";
 
 			const a = 1;
 
 			function Component() {
-				const searchParams = useSearchParams()
+				const params = useParams();
+				const searchParams = useSearchParams();
+			  	const getParam = useCallback((p: string) => params[p] ?? searchParams.get(p), [params, searchParams]);
 
 				const nextA = useMemo(
-					() => (searchParams?.get("a") ? null : searchParams?.get("b")),
-					[searchParams?.get("a"), searchParams?.get("b"), c],
+					() => (getParam("a") ? null : getParam("b")),
+					[getParam("a"), getParam("b"), c],
 				) ?? a;
 			}
 		`;
@@ -279,7 +304,7 @@ describe('next 13 replace-next-router', function () {
 			import { useRouter } from 'next/router';
 
 			function Component() {
-	              const router = useRouter();
+	            const router = useRouter();
 				const { a, b, c } = router.query;
 			}
 		`;
@@ -288,7 +313,7 @@ describe('next 13 replace-next-router', function () {
 			import { useSearchParams } from "next/navigation";
 
 			function Component() {
-	              const searchParams = useSearchParams();
+				const searchParams = useSearchParams();
 
 				const { a, b, c } = Object.fromEntries(searchParams?.entries() ?? []);
 			}
@@ -372,7 +397,7 @@ describe('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, undefined);
 	});
 
-	it('should replace { a } = query with a = searchParams?.get("a")', async function (this: Context) {
+	it('should replace { a } = query with a = getParam("a")', async function (this: Context) {
 		const beforeText = `
 			import { useRouter } from 'next/router';
 
@@ -383,13 +408,17 @@ describe('next 13 replace-next-router', function () {
 		`;
 
 		const afterText = `
-			import { useSearchParams } from "next/navigation";
+			import { useParams, useSearchParams } from "next/navigation";
+			import { useCallback } from "react";
 
 			function Component() {
+				const params = useParams();
 				const searchParams = useSearchParams();
-				const a = searchParams?.get("a");
-				const b = searchParams?.get("b");
-				const c = searchParams?.get("c");
+			  	const getParam = useCallback((p: string) => params[p] ?? searchParams.get(p), [params, searchParams]);
+
+				const a = getParam("a");
+				const b = getParam("b");
+				const c = getParam("c");
 			}
 		`;
 
@@ -706,12 +735,15 @@ describe('next 13 replace-next-router', function () {
 		`;
 
 		const afterText = `
-			import { useSearchParams } from "next/navigation";
+			import { useParams, useSearchParams } from "next/navigation";
+			import { useCallback } from "react";
 
 			export function Component() {
+				const params = useParams();
 				const searchParams = useSearchParams();
+			  	const getParam = useCallback((p: string) => params[p] ?? searchParams.get(p), [params, searchParams]);
 
-				if (searchParams?.get('a') && searchParams?.get('b')) {
+				if (getParam('a') && getParam('b')) {
 
 				}
 			}
@@ -761,13 +793,16 @@ describe('next 13 replace-next-router', function () {
 		`;
 
 		const afterText = `
-			import { useSearchParams } from "next/navigation";
+			import { useParams, useSearchParams } from "next/navigation";
+			import { useCallback } from "react";
 
 			const A = 'constant';
 
 			export function Component() {
+				const params = useParams();
 				const searchParams = useSearchParams();
-				const a = searchParams?.get(A);
+			  	const getParam = useCallback((p: string) => params[p] ?? searchParams.get(p), [params, searchParams]);
+				const a = getParam(A);
 			}
 		`;
 
@@ -786,11 +821,15 @@ describe('next 13 replace-next-router', function () {
 		`;
 
 		const afterText = `
-			import { useSearchParams } from "next/navigation";
+			import { useParams, useSearchParams } from "next/navigation";
+			import { useCallback } from "react";
 
 			export function Component() {
+				const params = useParams();
 				const searchParams = useSearchParams();
-				const b = searchParams?.get("a");
+			  	const getParam = useCallback((p: string) => params[p] ?? searchParams.get(p), [params, searchParams]);
+
+				const b = getParam("a");
 			}
 		`;
 
@@ -896,14 +935,17 @@ describe('next 13 replace-next-router', function () {
 		`;
 
 		const afterText = `
-			import { useSearchParams } from "next/navigation";
+			import { useParams, useSearchParams } from "next/navigation";
+			import { useCallback } from "react";
 
 			export default function DynamicRoutes() {
+				const params = useParams();
 				const searchParams = useSearchParams();
+			  	const getParam = useCallback((p: string) => params[p] ?? searchParams.get(p), [params, searchParams]);
 
 				return (
 					<div>
-						{searchParams?.get('a')}
+						{getParam('a')}
 					</div>
 				)
 			}
@@ -1237,7 +1279,7 @@ describe('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it('should replace "router.query[name]" with "searchParams?.get(name)"', () => {
+	it('should replace "router.query[name]" with "getParam(name)"', () => {
 		const beforeText = `
 			import { useRouter } from "next/router";
 
@@ -1251,12 +1293,15 @@ describe('next 13 replace-next-router', function () {
 		`;
 
 		const afterText = `
-			import { useSearchParams } from "next/navigation";
+			import { useParams, useSearchParams } from "next/navigation";
+			import { useCallback } from "react";
 
 			export default function Component() {
+				const params = useParams();
 				const searchParams = useSearchParams();
+			  	const getParam = useCallback((p: string) => params[p] ?? searchParams.get(p), [params, searchParams]);
 
-				const param = searchParams?.get("param");
+				const param = getParam("param");
 
 				return null;}
 				`;
@@ -1455,13 +1500,16 @@ describe('next 13 replace-next-router', function () {
 		`;
 
 		const afterText = `
-			import { useSearchParams } from "next/navigation";
+			import { useParams, useSearchParams } from "next/navigation";
+			import { useCallback } from "react";
 
 			export default function Component() {
+				const params = useParams();
 				const searchParams = useSearchParams();
+			  	const getParam = useCallback((p: string) => params[p] ?? searchParams.get(p), [params, searchParams]);
 
-				const param1 = searchParams?.get("param1");
-				const param2 = searchParams?.get("param2");
+				const param1 = getParam("param1");
+				const param2 = getParam("param2");
 
 				return null;}
 				`;
@@ -1676,21 +1724,24 @@ describe('next 13 replace-next-router', function () {
 		`;
 
 		const afterText = `
-		import { useRouter, useSearchParams } from "next/navigation";
-		import { useState, useEffect } from 'react';
+		import { useParams, useRouter, useSearchParams } from "next/navigation";
+		import { useState, useEffect, useCallback } from 'react';
 
 		export default function useX(): void {
+			const params = useParams();
 			const searchParams = useSearchParams();
+			const getParam = useCallback((p: string) => params[p] ?? searchParams.get(p), [params, searchParams]);
+			
 			const router = useRouter();
 			
 			useEffect(() => {
 				if (searchParams === null) {
 					return;
 				}
-				if (searchParams?.get("a") === 'a') {
+				if (getParam("a") === 'a') {
 					return;
 				}
-				if (typeof searchParams?.get("a") === 'undefined') {
+				if (typeof getParam("a") === 'undefined') {
 					return;
 				}
 			}, [searchParams, router]);
@@ -1722,15 +1773,18 @@ describe('next 13 replace-next-router', function () {
 		`;
 
 		const afterText = `
-		import { useSearchParams } from "next/navigation";
+		import { useParams, useSearchParams } from "next/navigation";
+		import { useCallback } from "react";
 		
 		function Component(): JSX.Element {
+			const params = useParams();
 			const searchParams = useSearchParams();
-			const obj = useMemo(() => objects?.find((f) => f.a === searchParams?.get('a')), [searchParams?.get('a')]);
+			const getParam = useCallback((p: string) => params[p] ?? searchParams.get(p), [params, searchParams]);
+			const obj = useMemo(() => objects?.find((f) => f.a === getParam('a')), [getParam('a')]);
 			
-			const result = typeof searchParams?.get('a-b-c') === 'string'
+			const result = typeof getParam('a-b-c') === 'string'
 				? {
-					a: searchParams?.get('a-b-c'),
+					a: getParam('a-b-c'),
 				}
 				: obj;
 		}
