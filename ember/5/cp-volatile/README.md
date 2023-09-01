@@ -2,6 +2,8 @@
 
 ## Description
 
+This codemod removes all calls to `volatile()` and ensures that native getters are directly used.
+
 ## Example
 
 ### Before:
@@ -52,4 +54,4 @@ jscodeshift
 
 ### Links for more info
 
--   https://github.com/ember-codemods/ember-3x-codemods/blob/master/transforms/cp-volatile
+-   https://deprecations.emberjs.com/v3.x/#toc_computed-property-volatile

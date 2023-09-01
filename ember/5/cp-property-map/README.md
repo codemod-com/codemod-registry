@@ -2,6 +2,8 @@
 
 ## Description
 
+`.property()` is a modifier that adds additional property dependencies to an existing computed property. For `filter`, `map`, and `sort` computed property macros, this codemod ensures they receive an array of additional dependent keys as a second parameter.
+
 ## Example
 
 ### Before:
@@ -52,4 +54,4 @@ jscodeshift
 
 ### Links for more info
 
--   https://github.com/ember-codemods/ember-3x-codemods/blob/master/transforms/cp-property-map
+-   https://deprecations.emberjs.com/v3.x/#toc_computed-property-property
