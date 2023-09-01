@@ -1,24 +1,21 @@
-import tsmorph, { ArrowFunction, FunctionDeclaration, FunctionExpression, Node, SyntaxKind, SourceFile, CallExpression, Statement } from 'ts-morph';
+import tsmorph, { ArrowFunction, FunctionDeclaration, FunctionExpression, Node, SyntaxKind, SourceFile, CallExpression } from 'ts-morph';
 
 import type {
 	Repomod,
 	UnifiedFileSystem,
 } from '@intuita-inc/repomod-engine-api';
-import type { fromMarkdown } from 'mdast-util-from-markdown';
-import type { visit } from 'unist-util-visit';
+
 import { posix } from 'node:path';
 import { ParsedPath } from 'path/posix';
 
-type Root = ReturnType<typeof fromMarkdown>;
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 type Dependencies = Readonly<{
 	tsmorph: typeof tsmorph;
-	parseMdx?: (data: string) => Root;
-	stringifyMdx?: (tree: Root) => string;
-	visitMdxAst?: typeof visit;
 	unifiedFileSystem: UnifiedFileSystem;
 }>;
+
+type Handler = ArrowFunction | FunctionExpression | FunctionDeclaration;
 
 
 const getNewDirectoryName = ({ dir, name }: ParsedPath) => {
@@ -33,9 +30,7 @@ const getNewDirectoryName = ({ dir, name }: ParsedPath) => {
 	return newDirectoryNameSegments.join(posix.sep);
 }
 
-type TheFunction = ArrowFunction | FunctionExpression | FunctionDeclaration;
-
-const findAPIRouteHandler = (sourceFile: SourceFile): TheFunction | null => {
+const findAPIRouteHandler = (sourceFile: SourceFile): Handler | null => {
 	const defaultExportedFunctionDeclaration = sourceFile
 		.getFunctions()
 		.find((f) => f.isDefaultExport());
@@ -122,7 +117,7 @@ const getCallExpressionName = (callExpression: CallExpression) => {
 	return expression.getName();
 }
 
-const rewriteResponseCallExpressions = (handler: TheFunction) => {
+const rewriteResponseCallExpressions = (handler: Handler) => {
 	const responseInit: ResponseInit = {};
 
 	const callExpressions = handler.getDescendantsOfKind(SyntaxKind.CallExpression).filter(callExpression => {
@@ -146,34 +141,48 @@ const rewriteResponseCallExpressions = (handler: TheFunction) => {
 		const idx = callExpression.getChildIndex();
 		handler.removeStatement(idx);
 		handler.insertStatements(idx, `return NextResponse.json(${callExpressionArg}, ${JSON.stringify(responseInit)})`)
-	
 	})
 
 }
 
+// const rewriteReqResImports = (sourceFile: SourceFile) => {
+// 	const importDeclaration = sourceFile.getImportDeclarations().find(d => unquotify(d.getModuleSpecifier().getText()) === 'next');
+
+// 	if (importDeclaration === undefined) {
+// 		return;
+// 	}
+
+// 	importDeclaration.setIsTypeOnly(false);
+
+// 	importDeclaration?.getDescendantsOfKind(SyntaxKind.Identifier).forEach(i => {
+// 		if (i.getText() === 'NextApiRequest') {
+// 			i.rename('NextRequest');
+
+// 			const importSpecifier = i.getFirstAncestorByKind(SyntaxKind.ImportSpecifier);
+// 			importSpecifier?.setIsTypeOnly(true);
+// 		}
+
+// 		if (i.getText() === 'NextApiResponse') {
+// 			i.rename('NextResponse')
+// 		}
+// 	})
+
+// 	importDeclaration?.getModuleSpecifier().replaceWithText(`'next/server'`);
+// }
+
 const rewriteReqResImports = (sourceFile: SourceFile) => {
 	const importDeclaration = sourceFile.getImportDeclarations().find(d => unquotify(d.getModuleSpecifier().getText()) === 'next');
+	importDeclaration?.remove();
+	
+	sourceFile.insertStatements(0, `import { type NextRequest, NextResponse } from 'next/server';`)
+}
 
-	if (importDeclaration === undefined) {
-		return;
-	}
-
-	importDeclaration.setIsTypeOnly(false);
-
-	importDeclaration?.getDescendantsOfKind(SyntaxKind.Identifier).forEach(i => {
-		if (i.getText() === 'NextApiRequest') {
-			i.rename('NextRequest');
-
-			const importSpecifier = i.getFirstAncestorByKind(SyntaxKind.ImportSpecifier);
-			importSpecifier?.setIsTypeOnly(true);
-		}
-
-		if (i.getText() === 'NextApiResponse') {
-			i.rename('NextResponse')
-		}
-	})
-
-	importDeclaration?.getModuleSpecifier().replaceWithText(`'next/server'`);
+const rewriteParams  = (handler: Handler) => {
+	const params = handler.getParameters();
+	
+	params[0]?.setType('NextRequest');
+	params[1]?.remove();
+	
 }
 
 const rewriteAPIRoute = (sourceFile: SourceFile) => {
@@ -184,7 +193,6 @@ const rewriteAPIRoute = (sourceFile: SourceFile) => {
 	if (handler === null) {
 		return;
 	}
-
 
 	const handlerBody = handler.getBody() ?? null;
 
@@ -213,26 +221,28 @@ const rewriteAPIRoute = (sourceFile: SourceFile) => {
 
 	const positionAfterImports = getPositionAfterImports(sourceFile);
 
-	const statements: Statement[] = [];
-	Array.from(HTTPMethodHandlers).forEach(([method, handler]) => {
-		const [statement] = sourceFile.insertStatements(positionAfterImports, `export async function ${method}() 
-			 ${handler}
+	Array.from(HTTPMethodHandlers).forEach(([method, methodHandler]) => {
+		const [statement] = sourceFile.insertStatements(positionAfterImports, `export async function ${method}(${handler.getParameters()[0]?.getText() ?? ''}) 
+			 ${methodHandler}
 			`);
-			
-		if (statement !== undefined) {
-			statements.push(statement);
-		}
+
+		rewriteResponseCallExpressions(statement as Handler);
+		rewriteParams(statement as Handler);
 	})
 
-
-	handler.replaceWithText('');
-
-	rewriteReqResImports(sourceFile);
-
-	statements.forEach(statement => {
-		rewriteResponseCallExpressions(statement as TheFunction);
-	})
+	const pos = Node.isFunctionDeclaration(handler) ? handler.getChildIndex() : handler.getFirstAncestorByKind(SyntaxKind.VariableStatement)?.getChildIndex();
 	
+	if(pos !== undefined) {
+		sourceFile.removeStatement(pos);
+	}
+	
+	const defaultExport = sourceFile.getDescendantsOfKind(SyntaxKind.ExportAssignment)[0];
+	
+	if(defaultExport) {
+		sourceFile.removeStatement(defaultExport.getChildIndex());
+	}
+	
+	rewriteReqResImports(sourceFile);
 }
 
 export const repomod: Repomod<Dependencies> = {

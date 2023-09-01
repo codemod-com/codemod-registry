@@ -39,6 +39,69 @@ const transform = async (json: DirectoryJSON) => {
 };
 
 describe.only('next 13 replace-API-routes', function () {
+
+	it('should transform API router handler: functionDeclaration', async function (this: Context) {
+		const A_CONTENT = `
+		export default function handler() {
+			if(req.method === 'GET') {
+				// GET block
+			}
+		}
+	`;
+
+		const [upsertFileCommand] = await transform({
+			'/opt/project/pages/api/hello.ts': A_CONTENT,
+		});
+
+		const expectedResult = `
+		import { type NextRequest, NextResponse } from 'next/server';
+		
+		export async function GET() {
+				// GET block
+		}
+		`;
+
+		deepStrictEqual(upsertFileCommand?.kind, 'upsertFile');
+		deepStrictEqual(upsertFileCommand.path, '/opt/project/app/api/hello/route.ts');
+		
+		deepStrictEqual(
+			upsertFileCommand.data.replace(/\W/gm, ''),
+			expectedResult.replace(/\W/gm, ''),
+		);
+	});
+	
+	it('should transform API router handler: arrow function', async function (this: Context) {
+		const A_CONTENT = `
+			const handler = () => {
+				if(req.method === 'GET') {
+					// GET block
+				}
+			}
+			
+			export default handler;
+	`;
+
+		const [upsertFileCommand] = await transform({
+			'/opt/project/pages/api/hello.ts': A_CONTENT,
+		});
+
+		const expectedResult = `
+		import { type NextRequest, NextResponse } from 'next/server';
+		
+		export async function GET() {
+				// GET block
+		}
+		`;
+
+		deepStrictEqual(upsertFileCommand?.kind, 'upsertFile');
+		deepStrictEqual(upsertFileCommand.path, '/opt/project/app/api/hello/route.ts');
+		
+		deepStrictEqual(
+			upsertFileCommand.data.replace(/\W/gm, ''),
+			expectedResult.replace(/\W/gm, ''),
+		);
+	});
+	
 	it('should split single handler to method handlers: should support all HTTP methods ', async function (this: Context) {
 		const A_CONTENT = `
 		export default function handler() {
@@ -69,6 +132,8 @@ describe.only('next 13 replace-API-routes', function () {
 		});
 
 		const expectedResult = `
+		import { type NextRequest, NextResponse } from 'next/server';
+		
 		export async function PATCH() {
 			// PATCH block
 		}
@@ -109,9 +174,9 @@ describe.only('next 13 replace-API-routes', function () {
 		});
 
 		const expectedResult = `
-		import { NextResponse } from 'next/server';
+		import { type NextRequest, NextResponse } from 'next/server';
 		
-		export async function GET(req, res) {
+		export async function GET(req: NextRequest) {
 				return NextResponse.json({ }, { "status": "1" })
 		}
 		`;
@@ -119,10 +184,71 @@ describe.only('next 13 replace-API-routes', function () {
 		deepStrictEqual(upsertFileCommand?.kind, 'upsertFile');
 		deepStrictEqual(upsertFileCommand.path, '/opt/project/app/api/hello/route.ts');
 
-		console.log(upsertFileCommand.data, '?')
 		deepStrictEqual(
 			upsertFileCommand.data.replace(/\W/gm, ''),
 			expectedResult.replace(/\W/gm, ''),
 		);
 	});
+	
+	it('should rewrite response callExpressions: support setHeader', async function (this: Context) {
+		const A_CONTENT = `
+		export default function handler(req, res) {
+			if(req.method === 'GET') {
+				res
+				.setHeader('a', ['b', 'c'])
+				.setHeader('a', ['b1', 'c1']).json({ })
+			}
+		}
+	`;
+
+		const [upsertFileCommand] = await transform({
+			'/opt/project/pages/api/hello.ts': A_CONTENT,
+		});
+
+		// const expectedResult = `
+		// import { type NextRequest, NextResponse } from 'next/server';
+		
+		// export async function GET(req: NextRequest) {
+		// 		return NextResponse.json({ }, { "headers": { "a": "b1, c1" })
+		// }
+		// `;
+
+		deepStrictEqual(upsertFileCommand?.kind, 'upsertFile');
+		deepStrictEqual(upsertFileCommand.path, '/opt/project/app/api/hello/route.ts');
+		
+		// NOT IMPLEMENTED
+		
+	});
+	
+	it('should rewrite response callExpressions: support appendHeader', async function (this: Context) {
+		const A_CONTENT = `
+		export default function handler(req, res) {
+			if(req.method === 'GET') {
+				res
+				.appendHeader('a', ['b', 'c'])
+				.appendHeader('a', ['b1', 'c1']).json({ })
+			}
+		}
+	`;
+
+		const [upsertFileCommand] = await transform({
+			'/opt/project/pages/api/hello.ts': A_CONTENT,
+		});
+
+		// const expectedResult = `
+		// import { type NextRequest, NextResponse } from 'next/server';
+		
+		// export async function GET(req: NextRequest) {
+		// 		return NextResponse.json({ }, { "headers": { "a": "b, c, b1, c1" })
+		// }
+		// `;
+
+		deepStrictEqual(upsertFileCommand?.kind, 'upsertFile');
+		deepStrictEqual(upsertFileCommand.path, '/opt/project/app/api/hello/route.ts');
+		
+		// NOT IMPLEMENTED
+		
+	});
+	
+	
 });
