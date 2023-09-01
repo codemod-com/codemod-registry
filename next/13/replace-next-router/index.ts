@@ -12,31 +12,11 @@ import { Node } from 'ts-morph';
 // how to fix router events (manually)
 // https://nextjs.org/docs/app/api-reference/functions/use-router#router-events
 
-export const buildContainer = <T>(initialValue: T) => {
-	let currentValue: T = initialValue;
-
-	const get = (): T => {
-		return currentValue;
-	};
-
-	const set = (callback: (previousValue: T) => T): void => {
-		currentValue = callback(currentValue);
-	};
-
-	return {
-		get,
-		set,
-	};
-};
-
-type Container<T> = ReturnType<typeof buildContainer<T>>;
-
 class FileLevelUsageManager {
-	private __pathnameUsed: Container<boolean> = buildContainer<boolean>(false);
-	private __routerUsed: Container<boolean> = buildContainer<boolean>(false);
-	private __searchParamsUsed: Container<boolean> =
-		buildContainer<boolean>(false);
-	private __useRouterCount = buildContainer<number>(0);
+	private __pathnameUsed: boolean = false;
+	private __routerUsed: boolean = false;
+	private __searchParamsUsed: boolean = false;
+	private __useRouterCount: number = 0;
 
 	private __useRouterPresent: boolean;
 	private __nextRouterPresent: boolean;
@@ -70,19 +50,19 @@ class FileLevelUsageManager {
 	}
 
 	public increaseUseRouterCount(count: number): void {
-		this.__useRouterCount.set((previousCount) => previousCount + count);
+		this.__useRouterCount += count;
 	}
 
 	public reportPathnameUsed() {
-		this.__pathnameUsed.set(() => true);
+		this.__pathnameUsed = true;
 	}
 
 	public reportRouterUsed() {
-		this.__routerUsed.set(() => true);
+		this.__routerUsed = true;
 	}
 
 	public reportSearchParamsUsed() {
-		this.__searchParamsUsed.set(() => true);
+		this.__searchParamsUsed = true;
 	}
 
 	public hasAnyNextRouterImport() {
@@ -91,19 +71,60 @@ class FileLevelUsageManager {
 
 	public shouldImportUseRouter(): boolean {
 		// TODO I don't understand this
-		return this.__useRouterCount.get() === 0 || this.__routerUsed.get();
+		return this.__useRouterCount === 0 || this.__routerUsed;
 	}
 
 	public shouldImportUseSearchParams(): boolean {
-		return this.__searchParamsUsed.get() && !this.__useSearchParamsPresent;
+		return this.__searchParamsUsed && !this.__useSearchParamsPresent;
 	}
 
 	public shouldImportUsePathname(): boolean {
-		return this.__pathnameUsed.get() && !this.__usePathnamePresent;
+		return this.__pathnameUsed && !this.__usePathnamePresent;
 	}
 
 	public shouldImportAppRouterInstance(): boolean {
 		return this.__nextRouterPresent;
+	}
+}
+
+class BlockLevelUsageManager {
+	private __searchParamsUsed: boolean = false;
+	private __routerUsed: boolean = false;
+	private __pathnames: Set<string> = new Set();
+	private __labels: Array<string> = [];
+
+	public constructor() {}
+
+	public isRouterUsed(): boolean {
+		return this.__routerUsed;
+	}
+
+	public areSearchParamsUsed(): boolean {
+		return this.__searchParamsUsed;
+	}
+
+	public getPathnames(): ReadonlySet<string> {
+		return this.__pathnames;
+	}
+
+	public getLabels(): ReadonlyArray<string> {
+		return this.__labels;
+	}
+
+	public addPathname(pathname: string): void {
+		this.__pathnames.add(pathname);
+	}
+
+	public addLabel(label: string): void {
+		this.__labels.push(label);
+	}
+
+	public reportSearchParamsUsage(): void {
+		this.__searchParamsUsed = true;
+	}
+
+	public reportRouterUsage(): void {
+		this.__routerUsed = true;
 	}
 }
 
@@ -191,10 +212,8 @@ const handlePushCallExpression = (node: CallExpression) => {
 
 // e.g. router.query
 const handleRouterPropertyAccessExpression = (
+	blockLevelUsageManager: BlockLevelUsageManager,
 	node: PropertyAccessExpression,
-	onReplacedWithSearchParams: () => void,
-	usesRouter: Container<boolean>,
-	onReplacedWithPathname: () => void,
 ) => {
 	const nodeName = node.getName();
 
@@ -209,13 +228,13 @@ const handleRouterPropertyAccessExpression = (
 				`searchParams?.get("${parentNodeName}")`,
 			);
 
-			onReplacedWithSearchParams();
+			blockLevelUsageManager.reportSearchParamsUsage();
 		} else if (Node.isSpreadAssignment(parentNode)) {
 			parentNode.replaceWithText(
 				`...Object.fromEntries(searchParams ?? new URLSearchParams())`,
 			);
 
-			onReplacedWithSearchParams();
+			blockLevelUsageManager.reportSearchParamsUsage();
 		} else if (Node.isVariableDeclaration(parentNode)) {
 			const variableDeclarationName = parentNode.getNameNode();
 
@@ -233,13 +252,13 @@ const handleRouterPropertyAccessExpression = (
 
 				parentNode.remove();
 
-				onReplacedWithSearchParams();
+				blockLevelUsageManager.reportSearchParamsUsage();
 			}
 		} else if (Node.isCallExpression(parentNode)) {
 			node.replaceWithText(
 				'...Object.fromEntries(searchParams ?? new URLSearchParams())',
 			);
-			onReplacedWithSearchParams();
+			blockLevelUsageManager.reportSearchParamsUsage();
 		} else if (Node.isElementAccessExpression(parentNode)) {
 			// e.g. router.query["param"]
 
@@ -255,10 +274,10 @@ const handleRouterPropertyAccessExpression = (
 
 			parentNode.replaceWithText(replacerText);
 
-			onReplacedWithSearchParams();
+			blockLevelUsageManager.reportSearchParamsUsage();
 		} else {
 			node.replaceWithText('searchParams');
-			onReplacedWithSearchParams();
+			blockLevelUsageManager.reportSearchParamsUsage();
 		}
 	} else if (nodeName === 'pathname') {
 		const parentNode = node.getParent();
@@ -273,9 +292,10 @@ const handleRouterPropertyAccessExpression = (
 			node.replaceWithText('pathname');
 		}
 
-		onReplacedWithPathname();
+		blockLevelUsageManager.addPathname('pathname');
 	} else if (nodeName === 'isReady') {
-		onReplacedWithSearchParams();
+		blockLevelUsageManager.reportSearchParamsUsage();
+
 		try {
 			// replacing `router.isReady`
 			node.replaceWithText('searchParams !== null');
@@ -339,15 +359,15 @@ const handleRouterPropertyAccessExpression = (
 			node.replaceWithText('pathname');
 		}
 
-		onReplacedWithPathname();
+		blockLevelUsageManager.addPathname('pathname');
 	} else if (nodeName === 'href') {
 		node.replaceWithText('pathname');
 
-		onReplacedWithPathname();
+		blockLevelUsageManager.addPathname('pathname');
 	} else if (nodeName === 'isFallback') {
 		node.replaceWithText('false');
 	} else if (nodeName === 'replace' || nodeName === 'push') {
-		usesRouter.set(() => true);
+		blockLevelUsageManager.reportRouterUsage();
 
 		const parentNode = node.getParent();
 		if (Node.isCallExpression(parentNode)) {
@@ -355,14 +375,13 @@ const handleRouterPropertyAccessExpression = (
 		}
 	} else {
 		// unrecognized node names
-		usesRouter.set(() => true);
+		blockLevelUsageManager.reportRouterUsage();
 	}
 };
 
 const handleQueryIdentifierNode = (
 	node: Identifier,
-	requiresSearchParams: Container<boolean>,
-	labelContainer: Container<ReadonlyArray<string>>,
+	blockLevelUsageManager: BlockLevelUsageManager,
 ) => {
 	const parent = node.getParent();
 
@@ -371,7 +390,7 @@ const handleQueryIdentifierNode = (
 
 		parent.replaceWithText(`searchParams?.get('${name}')`);
 
-		requiresSearchParams.set(() => true);
+		blockLevelUsageManager.reportSearchParamsUsage();
 	} else if (Node.isVariableDeclaration(parent)) {
 		const variableDeclaration = parent;
 
@@ -393,13 +412,16 @@ const handleQueryIdentifierNode = (
 
 			variableDeclaration.remove();
 
-			labelContainer.set(() => labels);
-			requiresSearchParams.set(() => true);
+			labels.forEach((label) => {
+				blockLevelUsageManager.addLabel(label);
+			});
+
+			blockLevelUsageManager.reportSearchParamsUsage();
 		}
 	} else if (Node.isCallExpression(parent)) {
 		node.replaceWithText('searchParams');
 
-		requiresSearchParams.set(() => true);
+		blockLevelUsageManager.reportSearchParamsUsage();
 	} else if (Node.isElementAccessExpression(parent)) {
 		const expression = parent.getArgumentExpression();
 
@@ -408,16 +430,14 @@ const handleQueryIdentifierNode = (
 				`searchParams?.get(${expression.getText()})`,
 			);
 
-			requiresSearchParams.set(() => true);
+			blockLevelUsageManager.reportSearchParamsUsage();
 		}
 	}
 };
 
 const handleVariableDeclarationWithRouter = (
 	variableDeclaration: VariableDeclaration,
-	requiresPathname: Container<Set<string>>,
-	requiresSearchParams: Container<boolean>,
-	usesRouter: Container<boolean>,
+	blockLevelUsageManager: BlockLevelUsageManager,
 ) => {
 	const nameNode = variableDeclaration.getNameNode();
 
@@ -431,7 +451,7 @@ const handleVariableDeclarationWithRouter = (
 
 			if (Node.isIdentifier(propertyNameNode)) {
 				if (propertyNameNode.getText() === 'pathname') {
-					requiresPathname.set((set) => set.add(nameNode.getText()));
+					blockLevelUsageManager.addPathname(nameNode.getText());
 
 					++count;
 				} else if (propertyNameNode.getText() === 'query') {
@@ -453,7 +473,7 @@ const handleVariableDeclarationWithRouter = (
 							}
 						});
 
-					requiresSearchParams.set(() => true);
+					blockLevelUsageManager.reportSearchParamsUsage();
 					++count;
 				}
 			}
@@ -465,15 +485,12 @@ const handleVariableDeclarationWithRouter = (
 		}
 	}
 
-	usesRouter.set(() => true);
+	blockLevelUsageManager.reportRouterUsage();
 };
 
 const handleVariableDeclaration = (
+	blockLevelUsageManager: BlockLevelUsageManager,
 	variableDeclaration: VariableDeclaration,
-	requiresSearchParams: Container<boolean>,
-	usesRouter: Container<boolean>,
-	requiresPathname: Container<Set<string>>,
-	labelContainer: Container<ReadonlyArray<string>>,
 ) => {
 	const bindingName = variableDeclaration.getNameNode();
 
@@ -483,23 +500,18 @@ const handleVariableDeclaration = (
 
 			if (Node.isPropertyAccessExpression(parent)) {
 				handleRouterPropertyAccessExpression(
+					blockLevelUsageManager,
 					parent,
-					() => requiresSearchParams.set(() => true),
-					usesRouter,
-					() =>
-						requiresPathname.set((array) => array.add('pathname')),
 				);
 			} else if (Node.isVariableDeclaration(parent)) {
 				handleVariableDeclarationWithRouter(
 					parent,
-					requiresPathname,
-					requiresSearchParams,
-					usesRouter,
+					blockLevelUsageManager,
 				);
 			} else if (Node.isArrayLiteralExpression(parent)) {
-				usesRouter.set(() => true);
+				blockLevelUsageManager.reportRouterUsage();
 			} else if (Node.isShorthandPropertyAssignment(parent)) {
-				usesRouter.set(() => true);
+				blockLevelUsageManager.reportRouterUsage();
 			}
 		});
 
@@ -526,8 +538,7 @@ const handleVariableDeclaration = (
 						if (Node.isIdentifier(node)) {
 							handleQueryIdentifierNode(
 								node,
-								requiresSearchParams,
-								labelContainer,
+								blockLevelUsageManager,
 							);
 						}
 					});
@@ -536,11 +547,11 @@ const handleVariableDeclaration = (
 				} else if (text === 'locale') {
 					++count;
 				} else if (text === 'pathname' || text === 'route') {
-					requiresPathname.set((set) => set.add(text));
+					blockLevelUsageManager.addPathname(text);
 
 					++count;
 				} else if (text === 'isReady') {
-					requiresSearchParams.set(() => true);
+					blockLevelUsageManager.reportSearchParamsUsage();
 
 					nameNode.findReferencesAsNodes().forEach((node) => {
 						node.replaceWithText('searchParams !== null');
@@ -564,7 +575,7 @@ const handleVariableDeclaration = (
 						}
 					});
 
-					requiresPathname.set((set) => set.add('pathname'));
+					blockLevelUsageManager.addPathname('pathname');
 				} else if (text === 'push' || text === 'replace') {
 					nameNode.findReferencesAsNodes().forEach((node) => {
 						const parent = node.getParent();
@@ -574,7 +585,7 @@ const handleVariableDeclaration = (
 						}
 					});
 
-					usesRouter.set(() => true);
+					blockLevelUsageManager.reportRouterUsage();
 				}
 			} else if (Node.isObjectBindingPattern(nameNode)) {
 				const elements = nameNode.getElements();
@@ -589,8 +600,11 @@ const handleVariableDeclaration = (
 					}
 				});
 
-				labelContainer.set(() => labels);
-				requiresSearchParams.set(() => true);
+				labels.forEach((label) => {
+					blockLevelUsageManager.addLabel(label);
+				});
+
+				blockLevelUsageManager.reportSearchParamsUsage();
 				++count;
 			}
 		}
@@ -604,22 +618,13 @@ const handleVariableDeclaration = (
 };
 
 const handleUseRouterCallExpression = (
+	blockLevelUsageManager: BlockLevelUsageManager,
 	node: CallExpression,
-	requiresSearchParams: Container<boolean>,
-	usesRouter: Container<boolean>,
-	requiresPathname: Container<Set<string>>,
-	labelContainer: Container<ReadonlyArray<string>>,
 ) => {
 	const parent = node.getParent();
 
 	if (Node.isVariableDeclaration(parent)) {
-		handleVariableDeclaration(
-			parent,
-			requiresSearchParams,
-			usesRouter,
-			requiresPathname,
-			labelContainer,
-		);
+		handleVariableDeclaration(blockLevelUsageManager, parent);
 	} else if (Node.isPropertyAccessExpression(parent)) {
 		const nameNode = parent.getNameNode();
 		const grandparent = parent.getParent();
@@ -631,10 +636,10 @@ const handleUseRouterCallExpression = (
 		const text = nameNode.getText();
 
 		if (text === 'isReady') {
-			requiresSearchParams.set(() => true);
+			blockLevelUsageManager.reportSearchParamsUsage();
 			parent.replaceWithText('searchParams !== null');
 		} else if (text === 'pathname') {
-			requiresPathname.set((set) => set.add('pathname'));
+			blockLevelUsageManager.addPathname('pathname');
 
 			const grandparent = parent.getParent();
 
@@ -642,24 +647,18 @@ const handleUseRouterCallExpression = (
 				grandparent.remove();
 			}
 		} else if (text === 'query') {
-			requiresSearchParams.set(() => true);
+			blockLevelUsageManager.reportSearchParamsUsage();
 
 			if (Node.isCallExpression(grandparent)) {
 				parent.replaceWithText(
 					`...Object.fromEntries(searchParams ?? new URLSearchParams())`,
 				);
-
-				requiresSearchParams.set(() => true);
 			} else if (Node.isElementAccessExpression(grandparent)) {
 				const argumentExpression = grandparent.getArgumentExpression();
 
 				grandparent.replaceWithText(
 					`searchParams?.get(${argumentExpression?.print()})`,
 				);
-
-				requiresSearchParams.set(() => true);
-
-				return;
 			} else if (Node.isPropertyAccessExpression(grandparent)) {
 				const nameNode = grandparent.getNameNode();
 
@@ -668,9 +667,6 @@ const handleUseRouterCallExpression = (
 						`searchParams?.get("${nameNode.getText()}")`,
 					);
 				}
-
-				requiresSearchParams.set(() => true);
-				return;
 			} else if (Node.isAsExpression(grandparent)) {
 				const greatgrandparent = grandparent.getParent();
 
@@ -701,7 +697,7 @@ const handleUseRouterCallExpression = (
 							}
 						}
 
-						requiresSearchParams.set(() => true);
+						blockLevelUsageManager.reportSearchParamsUsage();
 
 						const text = properties
 							.map(({ name, propertyName }) => {
@@ -715,8 +711,6 @@ const handleUseRouterCallExpression = (
 			} else {
 				parent.replaceWithText('searchParams');
 			}
-
-			return;
 		} else if (text === 'isFallback') {
 			parent.replaceWithText('false');
 		} else if (text === 'asPath') {
@@ -739,15 +733,15 @@ const handleUseRouterCallExpression = (
 
 				grandparent.remove();
 
-				requiresPathname.set((set) => set.add(vdName));
+				blockLevelUsageManager.addPathname(vdName);
 			}
 		}
 	}
 };
 
 const handleUseRouterIdentifier = (
-	node: Identifier,
 	fileLevelUsageManager: FileLevelUsageManager,
+	node: Identifier,
 ) => {
 	const block = node.getFirstAncestorByKind(ts.SyntaxKind.Block);
 
@@ -755,51 +749,34 @@ const handleUseRouterIdentifier = (
 		return;
 	}
 
-	const requiresSearchParams = buildContainer<boolean>(false);
-	const usesRouter = buildContainer<boolean>(false);
-	const requiresPathname = buildContainer<Set<string>>(new Set());
-	const labelContainer = buildContainer<ReadonlyArray<string>>([]);
+	const blockLevelUsageManager = new BlockLevelUsageManager();
 
 	const parent = node.getParent();
 
 	if (Node.isCallExpression(parent)) {
-		handleUseRouterCallExpression(
-			parent,
-			requiresSearchParams,
-			usesRouter,
-			requiresPathname,
-			labelContainer,
-		);
+		handleUseRouterCallExpression(blockLevelUsageManager, parent);
 	}
 
 	const statements: string[] = [];
 
-	if (usesRouter.get()) {
+	if (blockLevelUsageManager.isRouterUsed()) {
 		fileLevelUsageManager.reportRouterUsed();
 	}
 
-	if (requiresSearchParams.get()) {
+	if (blockLevelUsageManager.areSearchParamsUsed()) {
 		statements.push('const searchParams = useSearchParams();');
 
 		fileLevelUsageManager.reportSearchParamsUsed();
 	}
 
-	{
-		const pathnames = requiresPathname.get();
+	for (const pathname of blockLevelUsageManager.getPathnames()) {
+		statements.push(`const ${pathname} = usePathname();`);
 
-		for (const pathname of pathnames) {
-			statements.push(`const ${pathname} = usePathname();`);
-
-			fileLevelUsageManager.reportPathnameUsed();
-		}
+		fileLevelUsageManager.reportPathnameUsed();
 	}
 
-	{
-		const labels = labelContainer.get();
-
-		for (const label of labels) {
-			statements.push(`const ${label} = searchParams?.get("${label}")`);
-		}
+	for (const label of blockLevelUsageManager.getLabels()) {
+		statements.push(`const ${label} = searchParams?.get("${label}")`);
 	}
 
 	block.insertStatements(0, statements);
@@ -817,8 +794,8 @@ const handleNextRouterNamedImport = (namedImport: ImportSpecifier): void => {
 };
 
 const handleImportDeclaration = (
-	importDeclaration: ImportDeclaration,
 	fileLevelUsageManager: FileLevelUsageManager,
+	importDeclaration: ImportDeclaration,
 ) => {
 	const moduleSpecifier = importDeclaration.getModuleSpecifier();
 
@@ -840,7 +817,7 @@ const handleImportDeclaration = (
 						return;
 					}
 
-					handleUseRouterIdentifier(node, fileLevelUsageManager);
+					handleUseRouterIdentifier(fileLevelUsageManager, node);
 				});
 		}
 
@@ -870,7 +847,7 @@ export const handleSourceFile = (
 	}
 
 	importDeclarations.forEach((importDeclaration) =>
-		handleImportDeclaration(importDeclaration, fileLevelUsageManager),
+		handleImportDeclaration(fileLevelUsageManager, importDeclaration),
 	);
 
 	const namedImports = [
