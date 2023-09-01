@@ -2,6 +2,8 @@
 
 ## Description
 
+This codemod replaces all calls to `Ember.merge` with `Ember.assign`.
+
 ## Example
 
 ### Before:
@@ -52,4 +54,4 @@ jscodeshift
 
 ### Links for more info
 
--   https://github.com/ember-codemods/ember-3x-codemods/blob/master/transforms/deprecate-merge
+-   https://deprecations.emberjs.com/v3.x/#toc_ember-polyfills-deprecate-merge

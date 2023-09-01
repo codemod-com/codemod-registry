@@ -2,6 +2,8 @@
 
 ## Description
 
+This codemod removes any usage of `new` with `A`, and calls `A` as a standard function.
+
 ## Example
 
 ### Before:
@@ -46,4 +48,4 @@ jscodeshift
 
 ### Links for more info
 
--   https://github.com/ember-codemods/ember-3x-codemods/blob/master/transforms/array-wrapper
+-   https://deprecations.emberjs.com/v3.x/#toc_array-new-array-wrapper

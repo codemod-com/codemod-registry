@@ -2,6 +2,8 @@
 
 ## Description
 
+`new EmberObject()` is deprecated in Ember.js v3.9 in favor of constructing instances of `EmberObject` and its subclasses. This codemod replaces all calls to `new EmberObject()` with `EmberObject.create()` and adds a `constructor` function to classes that extend from `EmberObject` so that the classes no longer extend from `EmberObject`.
+
 ## Example
 
 ### Before:
@@ -52,4 +54,4 @@ jscodeshift
 
 ### Links for more info
 
--   https://github.com/ember-codemods/ember-3x-codemods/blob/master/transforms/object-new-constructor
+-   https://deprecations.emberjs.com/v3.x/#toc_object-new-constructor
