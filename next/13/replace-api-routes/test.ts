@@ -26,7 +26,7 @@ const transform = async (json: DirectoryJSON) => {
 		fileSystemManager,
 	);
 
-	
+
 	const api = buildApi<{
 		tsmorph: typeof tsmorph;
 		unifiedFileSystem: UnifiedFileSystem;
@@ -39,14 +39,28 @@ const transform = async (json: DirectoryJSON) => {
 };
 
 describe.only('next 13 replace-API-routes', function () {
-	it('should find and extract code blocks related to HTTP method', async function (this: Context) {
+	it('should split single handler to method handlers: should support all HTTP methods ', async function (this: Context) {
 		const A_CONTENT = `
-		import type { NextApiRequest, NextApiResponse } from 'next'
- 
-		export default function handler(req: NextApiRequest, res: NextApiResponse) {
+		export default function handler() {
+			if(req.method === 'GET') {
+				// GET block
+			}
+			
 			if (req.method === 'POST') {
-				res.status(200).json({ message: 'Hello from Next.js!' })
+				// POST block
 			} 
+			
+			if(req.method === 'PUT') {
+				// PUT block
+			}
+			
+			if(req.method === 'DELETE') {
+				// DELETE block
+			}
+			
+			if(req.method === 'PATCH') {
+				// PATCH block
+			}
 		}
 	`;
 
@@ -54,18 +68,58 @@ describe.only('next 13 replace-API-routes', function () {
 			'/opt/project/pages/api/hello.ts': A_CONTENT,
 		});
 
-		const expectedResult = `import { NextResponse } from 'next/server'
- 
+		const expectedResult = `
+		export async function PATCH() {
+			// PATCH block
+		}
+		export async function DELETE() {
+				// DELETE block
+		}
+		export async function PUT() {
+				// PUT block
+		}
 		export async function POST() {
-			return NextResponse.json({ message: 'Hello from Next.js!' })
-		}`;
+				// POST block
+		}
+		export async function GET() {
+				// GET block
+		}
+		`;
 
 		deepStrictEqual(upsertFileCommand?.kind, 'upsertFile');
 		deepStrictEqual(upsertFileCommand.path, '/opt/project/app/api/hello/route.ts');
-		
-		console.log(upsertFileCommand, '?')
+
+		deepStrictEqual(
+			upsertFileCommand.data.replace(/\W/gm, ''),
+			expectedResult.replace(/\W/gm, ''),
+		);
+	});
 	
+	it('should rewrite response callExpressions: support chained call expressions', async function (this: Context) {
+		const A_CONTENT = `
+		export default function handler(req, res) {
+			if(req.method === 'GET') {
+				res.status(1).json({ })
+			}
+		}
+	`;
+
+		const [upsertFileCommand] = await transform({
+			'/opt/project/pages/api/hello.ts': A_CONTENT,
+		});
+
+		const expectedResult = `
+		import { NextResponse } from 'next/server';
 		
+		export async function GET(req, res) {
+				return NextResponse.json({ }, { "status": "1" })
+		}
+		`;
+
+		deepStrictEqual(upsertFileCommand?.kind, 'upsertFile');
+		deepStrictEqual(upsertFileCommand.path, '/opt/project/app/api/hello/route.ts');
+
+		console.log(upsertFileCommand.data, '?')
 		deepStrictEqual(
 			upsertFileCommand.data.replace(/\W/gm, ''),
 			expectedResult.replace(/\W/gm, ''),

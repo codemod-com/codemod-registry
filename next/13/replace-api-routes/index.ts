@@ -1,4 +1,4 @@
-import tsmorph, { ArrowFunction, FunctionDeclaration, FunctionExpression, Node, SyntaxKind, SourceFile } from 'ts-morph';
+import tsmorph, { ArrowFunction, FunctionDeclaration, FunctionExpression, Node, SyntaxKind, SourceFile, CallExpression, Statement } from 'ts-morph';
 
 import type {
 	Repomod,
@@ -98,6 +98,84 @@ const HTTP_METHODS = [
 
 export type HTTPMethod = typeof HTTP_METHODS[number];
 
+const RESPONSE_INIT_FIELDS = ['headers', 'status', 'statusText'] as const;
+
+type ResponseInitParam = typeof RESPONSE_INIT_FIELDS[number];
+type ResponseInit = Partial<{ [k in ResponseInitParam]: unknown }>;
+
+const unquotify = (input: string): string => {
+	if ((input.startsWith('"') && input.endsWith('"')) || (input.startsWith(`'`) && input.endsWith(`'`))) {
+		return input.slice(1, -1);
+	}
+
+	return input;
+}
+
+// res.status() => status
+const getCallExpressionName = (callExpression: CallExpression) => {
+	const expression = callExpression.getExpression();
+
+	if (!Node.isPropertyAccessExpression(expression)) {
+		return null;
+	}
+
+	return expression.getName();
+}
+
+const rewriteResponseCallExpressions = (handler: TheFunction) => {
+	const responseInit: ResponseInit = {};
+
+	const callExpressions = handler.getDescendantsOfKind(SyntaxKind.CallExpression).filter(callExpression => {
+		return getCallExpressionName(callExpression) === 'json'
+	});
+
+
+	callExpressions.forEach((callExpression) => {
+		const childCallExpressions = callExpression.getDescendantsOfKind(SyntaxKind.CallExpression);
+
+		childCallExpressions.forEach(childCallExpression => {
+			const name = getCallExpressionName(childCallExpression);
+
+			if (RESPONSE_INIT_FIELDS.includes(name as ResponseInitParam)) {
+				responseInit[name as ResponseInitParam] = unquotify(childCallExpression.getArguments()[0]?.getText() ?? '');
+			}
+		})
+
+		const callExpressionArg = callExpression.getArguments()[0]?.getText() ?? '';
+
+		const idx = callExpression.getChildIndex();
+		handler.removeStatement(idx);
+		handler.insertStatements(idx, `return NextResponse.json(${callExpressionArg}, ${JSON.stringify(responseInit)})`)
+	
+	})
+
+}
+
+const rewriteReqResImports = (sourceFile: SourceFile) => {
+	const importDeclaration = sourceFile.getImportDeclarations().find(d => unquotify(d.getModuleSpecifier().getText()) === 'next');
+
+	if (importDeclaration === undefined) {
+		return;
+	}
+
+	importDeclaration.setIsTypeOnly(false);
+
+	importDeclaration?.getDescendantsOfKind(SyntaxKind.Identifier).forEach(i => {
+		if (i.getText() === 'NextApiRequest') {
+			i.rename('NextRequest');
+
+			const importSpecifier = i.getFirstAncestorByKind(SyntaxKind.ImportSpecifier);
+			importSpecifier?.setIsTypeOnly(true);
+		}
+
+		if (i.getText() === 'NextApiResponse') {
+			i.rename('NextResponse')
+		}
+	})
+
+	importDeclaration?.getModuleSpecifier().replaceWithText(`'next/server'`);
+}
+
 const rewriteAPIRoute = (sourceFile: SourceFile) => {
 	const HTTPMethodHandlers = new Map<HTTPMethod, string>();
 
@@ -106,6 +184,7 @@ const rewriteAPIRoute = (sourceFile: SourceFile) => {
 	if (handler === null) {
 		return;
 	}
+
 
 	const handlerBody = handler.getBody() ?? null;
 
@@ -134,20 +213,26 @@ const rewriteAPIRoute = (sourceFile: SourceFile) => {
 
 	const positionAfterImports = getPositionAfterImports(sourceFile);
 
-	// @TODO
-	const usesRequest = false;
-	const usesResponse = true;
-
-	if (usesRequest || usesResponse) {
-		sourceFile.insertStatements(0, `import { ${usesRequest ? 'NextRequest ,' : ''} ${usesResponse ? 'NextResponse' : ''} } from 'next/server'`)
-	}
-
-
+	const statements: Statement[] = [];
 	Array.from(HTTPMethodHandlers).forEach(([method, handler]) => {
-		sourceFile.insertStatements(positionAfterImports, `export async function ${method}() 
+		const [statement] = sourceFile.insertStatements(positionAfterImports, `export async function ${method}() 
 			 ${handler}
 			`);
+			
+		if (statement !== undefined) {
+			statements.push(statement);
+		}
 	})
+
+
+	handler.replaceWithText('');
+
+	rewriteReqResImports(sourceFile);
+
+	statements.forEach(statement => {
+		rewriteResponseCallExpressions(statement as TheFunction);
+	})
+	
 }
 
 export const repomod: Repomod<Dependencies> = {
