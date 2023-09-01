@@ -106,6 +106,8 @@ class FileLevelUsageManager {
 
 class BlockLevelUsageManager {
 	private __getParamUsed: boolean = false;
+	private __getPathAsUsed: boolean = false;
+
 	private __paramsUsed: boolean = false;
 	private __searchParamsUsed: boolean = false;
 
@@ -132,6 +134,10 @@ class BlockLevelUsageManager {
 		return this.__getParamUsed;
 	}
 
+	public isGetPathAsUsed(): boolean {
+		return this.__getPathAsUsed;
+	}
+
 	public getPathnames(): ReadonlySet<string> {
 		return this.__pathnames;
 	}
@@ -148,6 +154,13 @@ class BlockLevelUsageManager {
 		this.__labels.push(label);
 
 		this.reportGetParamUsage();
+	}
+
+	public reportGetPathAs(): void {
+		this.__pathnames.add('pathname');
+
+		this.__searchParamsUsed = true;
+		this.__getPathAsUsed = true;
 	}
 
 	public reportGetParamUsage(): void {
@@ -389,12 +402,12 @@ const handleRouterPropertyAccessExpression = (
 		if (Node.isPropertyAccessExpression(parentNode)) {
 			const rightNode = parentNode.getName();
 
-			parentNode.replaceWithText(`pathname?.${rightNode}`);
+			parentNode.replaceWithText(`getPathAs().${rightNode}`);
 		} else {
-			node.replaceWithText('pathname');
+			node.replaceWithText('getPathAs()');
 		}
 
-		blockLevelUsageManager.addPathname('pathname');
+		blockLevelUsageManager.reportGetPathAs();
 	} else if (nodeName === 'href') {
 		node.replaceWithText('pathname');
 
@@ -601,14 +614,14 @@ const handleVariableDeclaration = (
 							const rightNode = parentNode.getName();
 
 							parentNode.replaceWithText(
-								`pathname?.${rightNode}`,
+								`getPathAs().${rightNode}`,
 							);
 						} else {
-							node.replaceWithText('pathname');
+							node.replaceWithText('getPathAs(');
 						}
 					});
 
-					blockLevelUsageManager.addPathname('pathname');
+					blockLevelUsageManager.reportGetPathAs();
 				} else if (text === 'push' || text === 'replace') {
 					nameNode.findReferencesAsNodes().forEach((node) => {
 						const parent = node.getParent();
@@ -751,8 +764,6 @@ const handleUseRouterCallExpression = (
 			parent.replaceWithText('false');
 		} else if (text === 'asPath') {
 			if (Node.isVariableDeclaration(grandparent)) {
-				const vdName = grandparent.getName();
-
 				grandparent.findReferencesAsNodes().forEach((reference) => {
 					if (Node.isIdentifier(reference)) {
 						const parentNode = reference.getParent();
@@ -761,7 +772,7 @@ const handleUseRouterCallExpression = (
 							const parentNodeName = parentNode.getName();
 
 							parentNode.replaceWithText(
-								`${vdName}?.${parentNodeName}`,
+								`getPathAs().${parentNodeName}`,
 							);
 						}
 					}
@@ -769,7 +780,7 @@ const handleUseRouterCallExpression = (
 
 				grandparent.remove();
 
-				blockLevelUsageManager.addPathname(vdName);
+				blockLevelUsageManager.reportGetPathAs();
 			}
 		}
 	}
@@ -811,6 +822,12 @@ const handleUseRouterIdentifier = (
 		fileLevelUsageManager.reportSearchParamsUsed();
 	}
 
+	for (const pathname of blockLevelUsageManager.getPathnames()) {
+		statements.push(`const ${pathname} = usePathname();`);
+
+		fileLevelUsageManager.reportPathnameUsed();
+	}
+
 	if (blockLevelUsageManager.isGetParamsUsed()) {
 		statements.push(
 			'const getParam = useCallback((p: string) => params[p] ?? searchParams.get(p), [params, searchParams]);',
@@ -819,10 +836,12 @@ const handleUseRouterIdentifier = (
 		fileLevelUsageManager.useCallbackUsed = true;
 	}
 
-	for (const pathname of blockLevelUsageManager.getPathnames()) {
-		statements.push(`const ${pathname} = usePathname();`);
+	if (blockLevelUsageManager.isGetPathAsUsed()) {
+		statements.push(
+			'const getPathAs = useCallback(() => `${pathname}?${searchParams.toString() ?? ""}`, [pathname, searchParams]);',
+		);
 
-		fileLevelUsageManager.reportPathnameUsed();
+		fileLevelUsageManager.useCallbackUsed = true;
 	}
 
 	for (const label of blockLevelUsageManager.getLabels()) {
