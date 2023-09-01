@@ -31,6 +31,82 @@ export const buildContainer = <T>(initialValue: T) => {
 
 type Container<T> = ReturnType<typeof buildContainer<T>>;
 
+class FileLevelUsageManager {
+	private __pathnameUsed: Container<boolean> = buildContainer<boolean>(false);
+	private __routerUsed: Container<boolean> = buildContainer<boolean>(false);
+	private __searchParamsUsed: Container<boolean> =
+		buildContainer<boolean>(false);
+	private __useRouterCount = buildContainer<number>(0);
+
+	private __useRouterPresent: boolean;
+	private __nextRouterPresent: boolean;
+	private __useSearchParamsPresent: boolean;
+	private __usePathnamePresent: boolean;
+
+	public constructor(importDeclarations: ReadonlyArray<ImportDeclaration>) {
+		this.__useRouterPresent = hasImport(
+			importDeclarations,
+			'next/router',
+			'useRouter',
+		);
+
+		this.__nextRouterPresent = hasImport(
+			importDeclarations,
+			'next/router',
+			'NextRouter',
+		);
+
+		this.__useSearchParamsPresent = hasImport(
+			importDeclarations,
+			'next/navigation',
+			'useSearchParams',
+		);
+
+		this.__usePathnamePresent = hasImport(
+			importDeclarations,
+			'next/navigation',
+			'usePathname',
+		);
+	}
+
+	public increaseUseRouterCount(count: number): void {
+		this.__useRouterCount.set((previousCount) => previousCount + count);
+	}
+
+	public reportPathnameUsed() {
+		this.__pathnameUsed.set(() => true);
+	}
+
+	public reportRouterUsed() {
+		this.__routerUsed.set(() => true);
+	}
+
+	public reportSearchParamsUsed() {
+		this.__searchParamsUsed.set(() => true);
+	}
+
+	public hasAnyNextRouterImport() {
+		return this.__useRouterPresent || this.__nextRouterPresent;
+	}
+
+	public shouldImportUseRouter(): boolean {
+		// TODO I don't understand this
+		return this.__useRouterCount.get() === 0 || this.__routerUsed.get();
+	}
+
+	public shouldImportUseSearchParams(): boolean {
+		return this.__searchParamsUsed.get() && !this.__useSearchParamsPresent;
+	}
+
+	public shouldImportUsePathname(): boolean {
+		return this.__pathnameUsed.get() && !this.__usePathnamePresent;
+	}
+
+	public shouldImportAppRouterInstance(): boolean {
+		return this.__nextRouterPresent;
+	}
+}
+
 const hasImport = (
 	importDeclarations: readonly ImportDeclaration[],
 	moduleSpecifierText: string,
@@ -671,9 +747,7 @@ const handleUseRouterCallExpression = (
 
 const handleUseRouterIdentifier = (
 	node: Identifier,
-	usesRouterImport: Container<boolean>,
-	usesSearchParams: Container<boolean>,
-	usesPathname: Container<boolean>,
+	fileLevelUsageManager: FileLevelUsageManager,
 ) => {
 	const block = node.getFirstAncestorByKind(ts.SyntaxKind.Block);
 
@@ -701,13 +775,13 @@ const handleUseRouterIdentifier = (
 	const statements: string[] = [];
 
 	if (usesRouter.get()) {
-		usesRouterImport.set(() => true);
+		fileLevelUsageManager.reportRouterUsed();
 	}
 
 	if (requiresSearchParams.get()) {
 		statements.push('const searchParams = useSearchParams();');
 
-		usesSearchParams.set(() => true);
+		fileLevelUsageManager.reportSearchParamsUsed();
 	}
 
 	{
@@ -715,7 +789,8 @@ const handleUseRouterIdentifier = (
 
 		for (const pathname of pathnames) {
 			statements.push(`const ${pathname} = usePathname();`);
-			usesPathname.set(() => true);
+
+			fileLevelUsageManager.reportPathnameUsed();
 		}
 	}
 
@@ -743,10 +818,7 @@ const handleNextRouterNamedImport = (namedImport: ImportSpecifier): void => {
 
 const handleImportDeclaration = (
 	importDeclaration: ImportDeclaration,
-	useRouterReferenceCount: Container<number>,
-	usesRoute: Container<boolean>,
-	usesSearchParams: Container<boolean>,
-	usesPathname: Container<boolean>,
+	fileLevelUsageManager: FileLevelUsageManager,
 ) => {
 	const moduleSpecifier = importDeclaration.getModuleSpecifier();
 
@@ -768,12 +840,7 @@ const handleImportDeclaration = (
 						return;
 					}
 
-					handleUseRouterIdentifier(
-						node,
-						usesRoute,
-						usesSearchParams,
-						usesPathname,
-					);
+					handleUseRouterIdentifier(node, fileLevelUsageManager);
 				});
 		}
 
@@ -785,9 +852,7 @@ const handleImportDeclaration = (
 			namedImport.remove();
 		}
 
-		useRouterReferenceCount.set(
-			(previousCount) => previousCount + referenceCount,
-		);
+		fileLevelUsageManager.increaseUseRouterCount(referenceCount);
 	});
 
 	importDeclaration.remove();
@@ -796,73 +861,40 @@ const handleImportDeclaration = (
 export const handleSourceFile = (
 	sourceFile: SourceFile,
 ): string | undefined => {
-	const usesSearchParams = buildContainer<boolean>(false);
-	const usesRouter = buildContainer<boolean>(false);
-	const usesPathname = buildContainer<boolean>(false);
 	const importDeclarations = sourceFile.getImportDeclarations();
 
-	const hasUseRouterImport = hasImport(
-		importDeclarations,
-		'next/router',
-		'useRouter',
-	);
+	const fileLevelUsageManager = new FileLevelUsageManager(importDeclarations);
 
-	const hasNextRouterTypeImport = hasImport(
-		importDeclarations,
-		'next/router',
-		'NextRouter',
-	);
-
-	if (!hasUseRouterImport && !hasNextRouterTypeImport) {
+	if (!fileLevelUsageManager.hasAnyNextRouterImport()) {
 		return undefined;
 	}
 
-	const hasUseSearchParamsImport = hasImport(
-		importDeclarations,
-		'next/navigation',
-		'useSearchParams',
-	);
-
-	const hasUsePathnameImport = hasImport(
-		importDeclarations,
-		'next/navigation',
-		'usePathname',
-	);
-
-	const useRouterReferenceCount = buildContainer<number>(0);
-
 	importDeclarations.forEach((importDeclaration) =>
-		handleImportDeclaration(
-			importDeclaration,
-			useRouterReferenceCount,
-			usesRouter,
-			usesSearchParams,
-			usesPathname,
-		),
+		handleImportDeclaration(importDeclaration, fileLevelUsageManager),
 	);
 
-	if (useRouterReferenceCount.get() === 0 || usesRouter.get()) {
+	if (fileLevelUsageManager.shouldImportUseRouter()) {
 		sourceFile.insertStatements(
 			0,
 			'import { useRouter } from "next/navigation";',
 		);
 	}
 
-	if (usesSearchParams.get() && !hasUseSearchParamsImport) {
+	if (fileLevelUsageManager.shouldImportUseSearchParams()) {
 		sourceFile.insertStatements(
 			0,
 			'import { useSearchParams } from "next/navigation";',
 		);
 	}
 
-	if (usesPathname.get() && !hasUsePathnameImport) {
+	if (fileLevelUsageManager.shouldImportUsePathname()) {
 		sourceFile.insertStatements(
 			0,
 			'import { usePathname } from "next/navigation";',
 		);
 	}
 
-	if (hasNextRouterTypeImport) {
+	if (fileLevelUsageManager.shouldImportAppRouterInstance()) {
 		sourceFile.insertStatements(
 			0,
 			'import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context";',
