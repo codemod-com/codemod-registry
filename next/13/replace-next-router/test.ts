@@ -864,7 +864,7 @@ describe('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it('should replace router.asPath with pathname', async function (this: Context) {
+	it('should replace router.asPath with usePathname + useSearchParams', async function (this: Context) {
 		const beforeText = `
 			import { useRouter } from 'next/router';
 
@@ -876,12 +876,15 @@ describe('next 13 replace-next-router', function () {
 		`;
 
 		const afterText = `
-			import { usePathname } from "next/navigation";
+			import { usePathname, useSearchParams } from "next/navigation";
+			import { useCallback } from "react";
 
 			export function Component() {
+				const searchParams = useSearchParams();
 				const pathname = usePathname();
+      			const getPathAs = useCallback(() => \`\${pathname}?\${searchParams.toString() ?? ""}\`, [pathname, searchParams]);
 
-				return <b>{pathname}</b>;
+				return <b>{getPathAs()}</b>;
 			}
 		`;
 
@@ -1008,13 +1011,14 @@ describe('next 13 replace-next-router', function () {
 
 		const afterText = `
 			import { usePathname, useSearchParams } from "next/navigation";
-			import { useEffect } from 'react';
+			import { useEffect, useCallback } from 'react';
 
 			function Component() {
 				const searchParams = useSearchParams();
 				const pathname = usePathname();
+				const getPathAs = useCallback(() => \`\${pathname}?\${searchParams.toString() ?? ""}\`, [pathname, searchParams]);
 
-				const [path,] = useState(searchParams !== null ? pathname : pathname);
+				const [path,] = useState(searchParams !== null ? getPathAs() : pathname);
 
 				return null;
 			}
@@ -1195,10 +1199,14 @@ describe('next 13 replace-next-router', function () {
 		`;
 
 		const afterText = `
-			import { usePathname, useRouter } from "next/navigation";
+			import { usePathname, useRouter, useSearchParams } from "next/navigation";
+			import { useCallback } from "react";
 
 			export default function Component() {
-				const pathname = usePathname();
+				const searchParams = useSearchParams();
+           		const pathname = usePathname();
+    			const getPathAs = useCallback(() => \`\${pathname}?\${searchParams.toString() ?? ""}\`, [pathname, searchParams]);
+
 				const router = useRouter();
 
 				useEffect(
@@ -1208,7 +1216,7 @@ describe('next 13 replace-next-router', function () {
 					[router]
 				);
 
-				const a = pathname?.startsWith("a");
+				const a = getPathAs().startsWith("a");
 
 				return null;
 			}
@@ -1233,12 +1241,15 @@ describe('next 13 replace-next-router', function () {
 		`;
 
 		const afterText = `
-			import { usePathname } from "next/navigation";
+			import { usePathname, useSearchParams } from "next/navigation";
+			import { useCallback } from "react";
 
 			export default function Component() {
+				const searchParams = useSearchParams();
 				const pathname = usePathname();
-
-				const a = pathname?.startsWith("a");
+				const getPathAs = useCallback(() => \`\${pathname}?\${searchParams.toString() ?? ""}\`, [pathname, searchParams]);
+				
+				const a = getPathAs().startsWith("a");
 
 				return null;
 			}
@@ -1263,12 +1274,14 @@ describe('next 13 replace-next-router', function () {
 		`;
 
 		const afterText = `
-			import { usePathname } from "next/navigation";
+			import { usePathname, useSearchParams } from "next/navigation";
+			import { useCallback } from "react";
 
 			export default function Component() {
-				const path = usePathname();
-
-				const a = path?.startsWith("a");
+				const searchParams = useSearchParams();
+				const pathname = usePathname();
+				const getPathAs = useCallback(() => \`\${pathname}?\${searchParams.toString() ?? ""}\`, [pathname, searchParams]);
+				const a = getPathAs().startsWith("a");
 
 				return null;
 			}
@@ -1303,8 +1316,9 @@ describe('next 13 replace-next-router', function () {
 
 				const param = getParam("param");
 
-				return null;}
-				`;
+				return null;
+			}
+		`;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
