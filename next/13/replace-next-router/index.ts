@@ -873,24 +873,20 @@ export const handleSourceFile = (
 		handleImportDeclaration(importDeclaration, fileLevelUsageManager),
 	);
 
-	if (fileLevelUsageManager.shouldImportUseRouter()) {
-		sourceFile.insertStatements(
-			0,
-			'import { useRouter } from "next/navigation";',
-		);
-	}
+	const namedImports = [
+		fileLevelUsageManager.shouldImportUseRouter() ? 'useRouter' : null,
+		fileLevelUsageManager.shouldImportUseSearchParams()
+			? 'useSearchParams'
+			: null,
+		fileLevelUsageManager.shouldImportUsePathname() ? 'usePathname' : null,
+	]
+		.filter((x): x is string => x !== null)
+		.sort();
 
-	if (fileLevelUsageManager.shouldImportUseSearchParams()) {
+	if (namedImports.length > 0) {
 		sourceFile.insertStatements(
 			0,
-			'import { useSearchParams } from "next/navigation";',
-		);
-	}
-
-	if (fileLevelUsageManager.shouldImportUsePathname()) {
-		sourceFile.insertStatements(
-			0,
-			'import { usePathname } from "next/navigation";',
+			`import { ${namedImports.join(', ')} } from "next/navigation";`,
 		);
 	}
 

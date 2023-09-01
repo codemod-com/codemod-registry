@@ -965,8 +965,7 @@ describe('next 13 replace-next-router', function () {
 		`;
 
 		const afterText = `
-			import { usePathname } from "next/navigation";
-			import { useSearchParams } from "next/navigation";
+			import { usePathname, useSearchParams } from "next/navigation";
 			import { useEffect } from 'react';
 
 			function Component() {
@@ -1063,8 +1062,7 @@ describe('next 13 replace-next-router', function () {
 		`;
 
 		const afterText = `
-			import { usePathname } from "next/navigation";
-			import { useRouter } from "next/navigation"
+			import { usePathname, useRouter } from "next/navigation";
 
 			const Component = () => {
 	   			const pathname = usePathname();
@@ -1155,8 +1153,7 @@ describe('next 13 replace-next-router', function () {
 		`;
 
 		const afterText = `
-			import { usePathname } from "next/navigation";
-			import { useRouter } from "next/navigation";
+			import { usePathname, useRouter } from "next/navigation";
 
 			export default function Component() {
 				const pathname = usePathname();
@@ -1679,8 +1676,7 @@ describe('next 13 replace-next-router', function () {
 		`;
 
 		const afterText = `
-		import { useSearchParams } from "next/navigation";
-		import { useRouter } from "next/navigation";
+		import { useRouter, useSearchParams } from "next/navigation";
 		import { useState, useEffect } from 'react';
 
 		export default function useX(): void {
