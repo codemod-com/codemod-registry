@@ -57,11 +57,7 @@ const findAPIRouteHandler = (sourceFile: SourceFile): Handler | null => {
 			?.getSymbol()
 			?.getDeclarations() ?? [];
 
-	let handler:
-		| ArrowFunction
-		| FunctionExpression
-		| FunctionDeclaration
-		| undefined;
+	let handler: Handler | null = null;
 
 	declarations.forEach((d) => {
 		if (Node.isVariableDeclaration(d)) {
@@ -100,17 +96,6 @@ const RESPONSE_INIT_FIELDS = ['headers', 'status', 'statusText'] as const;
 type ResponseInitParam = (typeof RESPONSE_INIT_FIELDS)[number];
 type ResponseInit = Partial<{ [k in ResponseInitParam]: unknown }>;
 
-const unquotify = (input: string): string => {
-	if (
-		(input.startsWith('"') && input.endsWith('"')) ||
-		(input.startsWith(`'`) && input.endsWith(`'`))
-	) {
-		return input.slice(1, -1);
-	}
-
-	return input;
-};
-
 // res.status() => status
 const getCallExpressionName = (callExpression: CallExpression) => {
 	const expression = callExpression.getExpression();
@@ -141,9 +126,8 @@ const rewriteResponseCallExpressions = (handler: Handler) => {
 			const name = getCallExpressionName(childCallExpression);
 
 			if (RESPONSE_INIT_FIELDS.includes(name as ResponseInitParam)) {
-				responseInit[name as ResponseInitParam] = unquotify(
-					childCallExpression.getArguments()[0]?.getText() ?? '',
-				);
+				responseInit[name as ResponseInitParam] =
+					childCallExpression.getArguments()[0]?.getText() ?? '';
 			}
 		});
 
@@ -164,7 +148,7 @@ const rewriteResponseCallExpressions = (handler: Handler) => {
 const rewriteReqResImports = (sourceFile: SourceFile) => {
 	const importDeclaration = sourceFile
 		.getImportDeclarations()
-		.find((d) => unquotify(d.getModuleSpecifier().getText()) === 'next');
+		.find((d) => d.getModuleSpecifier().getLiteralText() === 'next');
 	importDeclaration?.remove();
 
 	sourceFile.insertStatements(
