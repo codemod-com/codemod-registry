@@ -37,7 +37,7 @@ const transform = async (json: DirectoryJSON) => {
 	return executeRepomod(api, repomod, '/', {});
 };
 
-describe('next 13 replace-API-routes', function () {
+describe.only('next 13 replace-API-routes', function () {
 	it('should transform API router handler: functionDeclaration', async function (this: Context) {
 		const A_CONTENT = `
 		export default function handler() {
@@ -259,6 +259,62 @@ describe('next 13 replace-API-routes', function () {
 	it('should rewrite response callExpressions: support appendHeader');
 
 	it(
-		'should rewrite response callExpressions: support res.statusCode assignment',
+		'should rewrite response callExpressions: support nested scopes', async function (this: Context) {
+			const A_CONTENT = `
+			export default function handler(req, res) {
+				if(req.method === 'GET') {
+					res.statusCode = 401;
+					if(1) {
+						if(1) {
+							res.statusCode = 202;
+							res.json({});
+						} else {
+							res.json({})
+						}
+					} else {
+						res.statusCode = 304;
+						
+						if(1) {
+							res.json({})
+						}
+					}
+				}
+			}
+		`;
+	
+			const [upsertFileCommand] = await transform({
+				'/opt/project/pages/api/hello.ts': A_CONTENT,
+			});
+	
+			const expectedResult = `
+			import { type NextRequest, NextResponse } from 'next/server';
+			export async function GET(req: NextRequest) {
+					if (1) {
+							if (1) {
+									return NextResponse.json({}, { "status": "202" });
+							}
+							else {
+									return NextResponse.json({}, { "status": "401" });
+							}
+					}
+					else {
+							if (1) {
+									return NextResponse.json({}, { "status": "304" });
+							}
+					}
+			}
+			`;
+	
+			deepStrictEqual(upsertFileCommand?.kind, 'upsertFile');
+			deepStrictEqual(
+				upsertFileCommand.path,
+				'/opt/project/app/api/hello/route.ts',
+			);
+			
+			deepStrictEqual(
+				upsertFileCommand.data.replace(/\W/gm, ''),
+				expectedResult.replace(/\W/gm, ''),
+			);
+		}
 	);
 });
