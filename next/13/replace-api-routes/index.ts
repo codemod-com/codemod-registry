@@ -1,4 +1,12 @@
-import tsmorph, { ArrowFunction, FunctionDeclaration, FunctionExpression, Node, SyntaxKind, SourceFile, CallExpression } from 'ts-morph';
+import tsmorph, {
+	ArrowFunction,
+	FunctionDeclaration,
+	FunctionExpression,
+	Node,
+	SyntaxKind,
+	SourceFile,
+	CallExpression,
+} from 'ts-morph';
 
 import type {
 	Repomod,
@@ -8,7 +16,6 @@ import type {
 import { posix } from 'node:path';
 import { ParsedPath } from 'path/posix';
 
-
 // eslint-disable-next-line @typescript-eslint/ban-types
 type Dependencies = Readonly<{
 	tsmorph: typeof tsmorph;
@@ -17,18 +24,19 @@ type Dependencies = Readonly<{
 
 type Handler = ArrowFunction | FunctionExpression | FunctionDeclaration;
 
-
 const getNewDirectoryName = ({ dir, name }: ParsedPath) => {
 	const directoryNameSegments = dir.split(posix.sep);
 
-	const newDirectoryNameSegments = directoryNameSegments.map(segment => segment === 'pages' ? 'app' : segment);
+	const newDirectoryNameSegments = directoryNameSegments.map((segment) =>
+		segment === 'pages' ? 'app' : segment,
+	);
 
 	if (name !== 'index') {
 		newDirectoryNameSegments.push(name);
 	}
 
 	return newDirectoryNameSegments.join(posix.sep);
-}
+};
 
 const findAPIRouteHandler = (sourceFile: SourceFile): Handler | null => {
 	const defaultExportedFunctionDeclaration = sourceFile
@@ -83,28 +91,25 @@ const getPositionAfterImports = (sourceFile: SourceFile): number => {
 	return (lastImportDeclaration?.getChildIndex() ?? 0) + 1;
 };
 
-const HTTP_METHODS = [
-	'GET',
-	'POST',
-	'PUT',
-	'DELETE',
-	'PATCH',
-] as const;
+const HTTP_METHODS = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'] as const;
 
-export type HTTPMethod = typeof HTTP_METHODS[number];
+export type HTTPMethod = (typeof HTTP_METHODS)[number];
 
 const RESPONSE_INIT_FIELDS = ['headers', 'status', 'statusText'] as const;
 
-type ResponseInitParam = typeof RESPONSE_INIT_FIELDS[number];
+type ResponseInitParam = (typeof RESPONSE_INIT_FIELDS)[number];
 type ResponseInit = Partial<{ [k in ResponseInitParam]: unknown }>;
 
 const unquotify = (input: string): string => {
-	if ((input.startsWith('"') && input.endsWith('"')) || (input.startsWith(`'`) && input.endsWith(`'`))) {
+	if (
+		(input.startsWith('"') && input.endsWith('"')) ||
+		(input.startsWith(`'`) && input.endsWith(`'`))
+	) {
 		return input.slice(1, -1);
 	}
 
 	return input;
-}
+};
 
 // res.status() => status
 const getCallExpressionName = (callExpression: CallExpression) => {
@@ -115,35 +120,45 @@ const getCallExpressionName = (callExpression: CallExpression) => {
 	}
 
 	return expression.getName();
-}
+};
 
 const rewriteResponseCallExpressions = (handler: Handler) => {
 	const responseInit: ResponseInit = {};
 
-	const callExpressions = handler.getDescendantsOfKind(SyntaxKind.CallExpression).filter(callExpression => {
-		return getCallExpressionName(callExpression) === 'json'
-	});
-
+	const callExpressions = handler
+		.getDescendantsOfKind(SyntaxKind.CallExpression)
+		.filter((callExpression) => {
+			return getCallExpressionName(callExpression) === 'json';
+		});
 
 	callExpressions.forEach((callExpression) => {
-		const childCallExpressions = callExpression.getDescendantsOfKind(SyntaxKind.CallExpression);
+		const childCallExpressions = callExpression.getDescendantsOfKind(
+			SyntaxKind.CallExpression,
+		);
 
-		childCallExpressions.forEach(childCallExpression => {
+		childCallExpressions.forEach((childCallExpression) => {
 			const name = getCallExpressionName(childCallExpression);
 
 			if (RESPONSE_INIT_FIELDS.includes(name as ResponseInitParam)) {
-				responseInit[name as ResponseInitParam] = unquotify(childCallExpression.getArguments()[0]?.getText() ?? '');
+				responseInit[name as ResponseInitParam] = unquotify(
+					childCallExpression.getArguments()[0]?.getText() ?? '',
+				);
 			}
-		})
+		});
 
-		const callExpressionArg = callExpression.getArguments()[0]?.getText() ?? '';
+		const callExpressionArg =
+			callExpression.getArguments()[0]?.getText() ?? '';
 
 		const idx = callExpression.getChildIndex();
 		handler.removeStatement(idx);
-		handler.insertStatements(idx, `return NextResponse.json(${callExpressionArg}, ${JSON.stringify(responseInit)})`)
-	})
-
-}
+		handler.insertStatements(
+			idx,
+			`return NextResponse.json(${callExpressionArg}, ${JSON.stringify(
+				responseInit,
+			)})`,
+		);
+	});
+};
 
 // const rewriteReqResImports = (sourceFile: SourceFile) => {
 // 	const importDeclaration = sourceFile.getImportDeclarations().find(d => unquotify(d.getModuleSpecifier().getText()) === 'next');
@@ -171,19 +186,23 @@ const rewriteResponseCallExpressions = (handler: Handler) => {
 // }
 
 const rewriteReqResImports = (sourceFile: SourceFile) => {
-	const importDeclaration = sourceFile.getImportDeclarations().find(d => unquotify(d.getModuleSpecifier().getText()) === 'next');
+	const importDeclaration = sourceFile
+		.getImportDeclarations()
+		.find((d) => unquotify(d.getModuleSpecifier().getText()) === 'next');
 	importDeclaration?.remove();
-	
-	sourceFile.insertStatements(0, `import { type NextRequest, NextResponse } from 'next/server';`)
-}
 
-const rewriteParams  = (handler: Handler) => {
+	sourceFile.insertStatements(
+		0,
+		`import { type NextRequest, NextResponse } from 'next/server';`,
+	);
+};
+
+const rewriteParams = (handler: Handler) => {
 	const params = handler.getParameters();
-	
+
 	params[0]?.setType('NextRequest');
 	params[1]?.remove();
-	
-}
+};
 
 const rewriteAPIRoute = (sourceFile: SourceFile) => {
 	const HTTPMethodHandlers = new Map<HTTPMethod, string>();
@@ -209,41 +228,57 @@ const rewriteAPIRoute = (sourceFile: SourceFile) => {
 			) {
 				const rightNodeText = condition.getRight().getText();
 
-				const rightNodeTextWithoutQuotes = rightNodeText.substring(1, rightNodeText.length - 1) as HTTPMethod;
+				const rightNodeTextWithoutQuotes = rightNodeText.substring(
+					1,
+					rightNodeText.length - 1,
+				) as HTTPMethod;
 
 				if (HTTP_METHODS.includes(rightNodeTextWithoutQuotes)) {
-					HTTPMethodHandlers.set(rightNodeTextWithoutQuotes, node.getThenStatement().getText())
+					HTTPMethodHandlers.set(
+						rightNodeTextWithoutQuotes,
+						node.getThenStatement().getText(),
+					);
 				}
 			}
 		}
 	});
 
-
 	const positionAfterImports = getPositionAfterImports(sourceFile);
 
 	Array.from(HTTPMethodHandlers).forEach(([method, methodHandler]) => {
-		const [statement] = sourceFile.insertStatements(positionAfterImports, `export async function ${method}(${handler.getParameters()[0]?.getText() ?? ''}) 
+		const [statement] = sourceFile.insertStatements(
+			positionAfterImports,
+			`export async function ${method}(${
+				handler.getParameters()[0]?.getText() ?? ''
+			}) 
 			 ${methodHandler}
-			`);
+			`,
+		);
 
 		rewriteResponseCallExpressions(statement as Handler);
 		rewriteParams(statement as Handler);
-	})
+	});
 
-	const pos = Node.isFunctionDeclaration(handler) ? handler.getChildIndex() : handler.getFirstAncestorByKind(SyntaxKind.VariableStatement)?.getChildIndex();
-	
-	if(pos !== undefined) {
+	const pos = Node.isFunctionDeclaration(handler)
+		? handler.getChildIndex()
+		: handler
+				.getFirstAncestorByKind(SyntaxKind.VariableStatement)
+				?.getChildIndex();
+
+	if (pos !== undefined) {
 		sourceFile.removeStatement(pos);
 	}
-	
-	const defaultExport = sourceFile.getDescendantsOfKind(SyntaxKind.ExportAssignment)[0];
-	
-	if(defaultExport) {
+
+	const defaultExport = sourceFile.getDescendantsOfKind(
+		SyntaxKind.ExportAssignment,
+	)[0];
+
+	if (defaultExport) {
 		sourceFile.removeStatement(defaultExport.getChildIndex());
 	}
-	
+
 	rewriteReqResImports(sourceFile);
-}
+};
 
 export const repomod: Repomod<Dependencies> = {
 	includePatterns: ['**/pages/api/**/*.{js,ts,cjs,ejs}'],
@@ -253,22 +288,23 @@ export const repomod: Repomod<Dependencies> = {
 
 		const oldData = await api.readFile(path);
 
-		return [{
-			kind: 'upsertFile',
-			path: posix.format({
-				root: parsedPath.root,
-				dir: getNewDirectoryName(parsedPath),
-				ext: '.ts',
-				name: 'route',
-			}),
-			options: {
-				oldPath: path,
-				oldData,
-			}
-		}];
+		return [
+			{
+				kind: 'upsertFile',
+				path: posix.format({
+					root: parsedPath.root,
+					dir: getNewDirectoryName(parsedPath),
+					ext: '.ts',
+					name: 'route',
+				}),
+				options: {
+					oldPath: path,
+					oldData,
+				},
+			},
+		];
 	},
 	handleData: async (api, path, data, options) => {
-
 		const project = new tsmorph.Project({
 			useInMemoryFileSystem: true,
 			skipFileDependencyResolution: true,
