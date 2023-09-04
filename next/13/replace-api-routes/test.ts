@@ -37,7 +37,7 @@ const transform = async (json: DirectoryJSON) => {
 	return executeRepomod(api, repomod, '/', {});
 };
 
-describe.only('next 13 replace-API-routes', function () {
+describe('next 13 replace-API-routes', function () {
 	it('should transform API router handler: functionDeclaration', async function (this: Context) {
 		const A_CONTENT = `
 		export default function handler() {
@@ -258,9 +258,8 @@ describe.only('next 13 replace-API-routes', function () {
 	 */
 	it('should rewrite response callExpressions: support appendHeader');
 
-	it(
-		'should rewrite response callExpressions: support nested scopes', async function (this: Context) {
-			const A_CONTENT = `
+	it('should rewrite response callExpressions: support nested scopes', async function (this: Context) {
+		const A_CONTENT = `
 			export default function handler(req, res) {
 				if(req.method === 'GET') {
 					res.statusCode = 401;
@@ -281,12 +280,12 @@ describe.only('next 13 replace-API-routes', function () {
 				}
 			}
 		`;
-	
-			const [upsertFileCommand] = await transform({
-				'/opt/project/pages/api/hello.ts': A_CONTENT,
-			});
-	
-			const expectedResult = `
+
+		const [upsertFileCommand] = await transform({
+			'/opt/project/pages/api/hello.ts': A_CONTENT,
+		});
+
+		const expectedResult = `
 			import { type NextRequest, NextResponse } from 'next/server';
 			export async function GET(req: NextRequest) {
 					if (1) {
@@ -304,23 +303,21 @@ describe.only('next 13 replace-API-routes', function () {
 					}
 			}
 			`;
-	
-			deepStrictEqual(upsertFileCommand?.kind, 'upsertFile');
-			deepStrictEqual(
-				upsertFileCommand.path,
-				'/opt/project/app/api/hello/route.ts',
-			);
-			
-			deepStrictEqual(
-				upsertFileCommand.data.replace(/\W/gm, ''),
-				expectedResult.replace(/\W/gm, ''),
-			);
-		}
-	);
-	
-	it(
-		'should rewrite response callExpressions: support json, send, end methods', async function (this: Context) {
-			const A_CONTENT = `
+
+		deepStrictEqual(upsertFileCommand?.kind, 'upsertFile');
+		deepStrictEqual(
+			upsertFileCommand.path,
+			'/opt/project/app/api/hello/route.ts',
+		);
+
+		deepStrictEqual(
+			upsertFileCommand.data.replace(/\W/gm, ''),
+			expectedResult.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should rewrite response callExpressions: support json, send, end methods', async function (this: Context) {
+		const A_CONTENT = `
 			export default function handler(req, res) {
 				if(req.method === 'GET') {
 					if(1) {
@@ -337,12 +334,12 @@ describe.only('next 13 replace-API-routes', function () {
 				}
 			}
 		`;
-	
-			const [upsertFileCommand] = await transform({
-				'/opt/project/pages/api/hello.ts': A_CONTENT,
-			});
-	
-			const expectedResult = `
+
+		const [upsertFileCommand] = await transform({
+			'/opt/project/pages/api/hello.ts': A_CONTENT,
+		});
+
+		const expectedResult = `
 			import { type NextRequest, NextResponse } from 'next/server';
 			export async function GET(req: NextRequest) {
 				if(1) {
@@ -358,18 +355,16 @@ describe.only('next 13 replace-API-routes', function () {
 				}
 			}
 			`;
-	
-			deepStrictEqual(upsertFileCommand?.kind, 'upsertFile');
-			deepStrictEqual(
-				upsertFileCommand.path,
-				'/opt/project/app/api/hello/route.ts',
-			);
-			
-			deepStrictEqual(
-				upsertFileCommand.data.replace(/\W/gm, ''),
-				expectedResult.replace(/\W/gm, ''),
-			);
-		}
-	);
-	
+
+		deepStrictEqual(upsertFileCommand?.kind, 'upsertFile');
+		deepStrictEqual(
+			upsertFileCommand.path,
+			'/opt/project/app/api/hello/route.ts',
+		);
+
+		deepStrictEqual(
+			upsertFileCommand.data.replace(/\W/gm, ''),
+			expectedResult.replace(/\W/gm, ''),
+		);
+	});
 });
