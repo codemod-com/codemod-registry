@@ -1,4 +1,5 @@
 import {
+	BindingElement,
 	CallExpression,
 	EmitHint,
 	Identifier,
@@ -104,6 +105,8 @@ class FileLevelUsageManager {
 	}
 }
 
+type Param = Readonly<{ propertyName: string; name: string }>;
+
 class BlockLevelUsageManager {
 	private __getParamUsed: boolean = false;
 	private __getPathAsUsed: boolean = false;
@@ -114,7 +117,7 @@ class BlockLevelUsageManager {
 	private __routerUsed: boolean = false;
 
 	private __pathnames: Set<string> = new Set();
-	private __labels: Array<string> = [];
+	private __params: Array<Param> = [];
 
 	public constructor() {}
 
@@ -142,16 +145,16 @@ class BlockLevelUsageManager {
 		return this.__pathnames;
 	}
 
-	public getLabels(): ReadonlyArray<string> {
-		return this.__labels;
+	public getParams(): ReadonlyArray<Param> {
+		return this.__params;
 	}
 
 	public addPathname(pathname: string): void {
 		this.__pathnames.add(pathname);
 	}
 
-	public addLabel(label: string): void {
-		this.__labels.push(label);
+	public addParam(param: Param): void {
+		this.__params.push(param);
 
 		this.reportGetParamUsage();
 	}
@@ -177,6 +180,21 @@ class BlockLevelUsageManager {
 		this.__routerUsed = true;
 	}
 }
+
+const buildParam = (bindingElement: BindingElement): Param => {
+	const name = bindingElement.getName();
+
+	const propertyNameNode = bindingElement.getPropertyNameNode();
+
+	const propertyName = Node.isIdentifier(propertyNameNode)
+		? propertyNameNode.getText()
+		: name;
+
+	return {
+		name,
+		propertyName,
+	};
+};
 
 const hasImport = (
 	importDeclarations: readonly ImportDeclaration[],
@@ -287,16 +305,29 @@ const handleRouterPropertyAccessExpression = (
 			const variableDeclarationName = parentNode.getNameNode();
 
 			if (Node.isObjectBindingPattern(variableDeclarationName)) {
-				const bindingPatternText = variableDeclarationName.getText();
+				const elements = variableDeclarationName.getElements();
 
-				const vdl = parentNode.getFirstAncestorByKind(
-					ts.SyntaxKind.VariableDeclarationList,
+				const dotDotDotTokenPresent = elements.some(
+					(element) => element.getDotDotDotToken() !== undefined,
 				);
 
-				vdl?.addDeclaration({
-					name: bindingPatternText,
-					initializer: `Object.fromEntries(searchParams?.entries() ?? [])`,
-				});
+				if (!dotDotDotTokenPresent) {
+					for (const bindingElement of elements) {
+						blockLevelUsageManager.addParam(
+							buildParam(bindingElement),
+						);
+					}
+				} else {
+					const bindingPatternText =
+						variableDeclarationName.getText();
+					const vdl = parentNode.getFirstAncestorByKind(
+						ts.SyntaxKind.VariableDeclarationList,
+					);
+					vdl?.addDeclaration({
+						name: bindingPatternText,
+						initializer: `Object.fromEntries(searchParams?.entries() ?? [])`,
+					});
+				}
 
 				parentNode.remove();
 
@@ -445,24 +476,11 @@ const handleQueryIdentifierNode = (
 		const nameNode = variableDeclaration.getNameNode();
 
 		if (Node.isObjectBindingPattern(nameNode)) {
-			const objectBindingPattern = nameNode;
-			const elements = objectBindingPattern.getElements();
-
-			const labels: string[] = [];
-
-			elements.forEach((element) => {
-				const nameNode = element.getNameNode();
-
-				if (Node.isIdentifier(nameNode)) {
-					labels.push(nameNode.getText());
-				}
-			});
+			for (const bindingElement of nameNode.getElements()) {
+				blockLevelUsageManager.addParam(buildParam(bindingElement));
+			}
 
 			variableDeclaration.remove();
-
-			labels.forEach((label) => {
-				blockLevelUsageManager.addLabel(label);
-			});
 		}
 	} else if (Node.isCallExpression(parent)) {
 		node.replaceWithText('searchParams');
@@ -634,21 +652,9 @@ const handleVariableDeclaration = (
 					blockLevelUsageManager.reportRouterUsage();
 				}
 			} else if (Node.isObjectBindingPattern(nameNode)) {
-				const elements = nameNode.getElements();
-
-				const labels: string[] = [];
-
-				elements.forEach((element) => {
-					const nameNode = element.getNameNode();
-
-					if (Node.isIdentifier(nameNode)) {
-						labels.push(nameNode.getText());
-					}
-				});
-
-				labels.forEach((label) => {
-					blockLevelUsageManager.addLabel(label);
-				});
+				for (const bindingElement of nameNode.getElements()) {
+					blockLevelUsageManager.addParam(buildParam(bindingElement));
+				}
 
 				++count;
 			}
@@ -847,8 +853,8 @@ const handleUseRouterIdentifier = (
 		fileLevelUsageManager.useCallbackUsed = true;
 	}
 
-	for (const label of blockLevelUsageManager.getLabels()) {
-		statements.push(`const ${label} = getParam("${label}")`);
+	for (const { propertyName, name } of blockLevelUsageManager.getParams()) {
+		statements.push(`const ${name} = getParam("${propertyName}")`);
 	}
 
 	block.insertStatements(0, statements);

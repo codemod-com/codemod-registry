@@ -33,14 +33,14 @@ export default function transform(
 	// Add 'passthrough' to the import specifiers if it doesn't exist
 	mswImportDeclarations.forEach((path) => {
 		const specifiers = path.node.specifiers;
-		const hasPassthrough = specifiers.some(
+		const hasPassthrough = specifiers?.some(
 			(specifier) =>
 				specifier.type === 'ImportSpecifier' &&
 				specifier.imported.name === 'passthrough',
 		);
 
 		if (!hasPassthrough) {
-			specifiers.push(j.importSpecifier(j.identifier('passthrough')));
+			specifiers?.push(j.importSpecifier(j.identifier('passthrough')));
 		}
 	});
 
