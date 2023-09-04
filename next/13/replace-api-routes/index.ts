@@ -127,9 +127,10 @@ const rewriteResponseCallExpressions = (handler: Handler) => {
 
 	const callExpressions = handler
 		.getDescendantsOfKind(SyntaxKind.CallExpression)
-		.filter((callExpression) => {
-			return getCallExpressionName(callExpression) === 'json';
-		});
+		.filter(
+			(callExpression) =>
+				getCallExpressionName(callExpression) === 'json',
+		);
 
 	callExpressions.forEach((callExpression) => {
 		const childCallExpressions = callExpression.getDescendantsOfKind(
@@ -159,31 +160,6 @@ const rewriteResponseCallExpressions = (handler: Handler) => {
 		);
 	});
 };
-
-// const rewriteReqResImports = (sourceFile: SourceFile) => {
-// 	const importDeclaration = sourceFile.getImportDeclarations().find(d => unquotify(d.getModuleSpecifier().getText()) === 'next');
-
-// 	if (importDeclaration === undefined) {
-// 		return;
-// 	}
-
-// 	importDeclaration.setIsTypeOnly(false);
-
-// 	importDeclaration?.getDescendantsOfKind(SyntaxKind.Identifier).forEach(i => {
-// 		if (i.getText() === 'NextApiRequest') {
-// 			i.rename('NextRequest');
-
-// 			const importSpecifier = i.getFirstAncestorByKind(SyntaxKind.ImportSpecifier);
-// 			importSpecifier?.setIsTypeOnly(true);
-// 		}
-
-// 		if (i.getText() === 'NextApiResponse') {
-// 			i.rename('NextResponse')
-// 		}
-// 	})
-
-// 	importDeclaration?.getModuleSpecifier().replaceWithText(`'next/server'`);
-// }
 
 const rewriteReqResImports = (sourceFile: SourceFile) => {
 	const importDeclaration = sourceFile
@@ -254,6 +230,10 @@ const rewriteAPIRoute = (sourceFile: SourceFile) => {
 			 ${methodHandler}
 			`,
 		);
+
+		if (statement === undefined) {
+			return;
+		}
 
 		rewriteResponseCallExpressions(statement as Handler);
 		rewriteParams(statement as Handler);
