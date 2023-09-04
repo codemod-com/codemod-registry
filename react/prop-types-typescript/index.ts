@@ -453,6 +453,10 @@ export default function transform(file: FileInfo, api: API, opts: Options) {
 		(path) => path.parent.get('left', 'object', 'name').value,
 	);
 
+	if (tsTypes.length === 0) {
+		return undefined;
+	}
+
 	const staticPropTypes = collectStaticPropTypes(source);
 	const staticTSTypes = getTSTypes(
 		staticPropTypes,
