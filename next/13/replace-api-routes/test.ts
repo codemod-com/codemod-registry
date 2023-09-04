@@ -167,6 +167,27 @@ describe('next 13 replace-API-routes', function () {
 		);
 	});
 
+	/**
+	 * const a = 1;
+	 * const b = 1;
+	 * if (req.method === 'GET' && a === b) {
+	 * // GET block
+	 * }
+	 *
+	 * =>
+	 *
+	 * export function GET() {
+	 * const a = 1;
+	 * const b = 1;
+	 * if(a === b) {
+	 * // GET block
+	 * }
+	 * }
+	 */
+	it(
+		'should split single handler to method handlers: should support nested binary expressions and external refs',
+	);
+
 	it('should rewrite response callExpressions: support chained call expressions', async function (this: Context) {
 		const A_CONTENT = `
 		export default function handler(req, res) {
@@ -236,4 +257,8 @@ describe('next 13 replace-API-routes', function () {
 		}
 	 */
 	it('should rewrite response callExpressions: support appendHeader');
+
+	it(
+		'should rewrite response callExpressions: support res.statusCode assignment',
+	);
 });
