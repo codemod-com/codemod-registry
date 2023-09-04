@@ -122,13 +122,13 @@ const getResponseInit = (block: Block): ResponseInit => {
 
 		if (Node.isCallExpression(expression)) {
 			const nestedCallExpressions = expression.getDescendantsOfKind(SyntaxKind.CallExpression);
-			
+
 			nestedCallExpressions.forEach(nestedCallExpression => {
 				const callExpressionExpr = nestedCallExpression.getExpression();
-	
+
 				if (Node.isPropertyAccessExpression(callExpressionExpr) && callExpressionExpr.getName() === 'status') {
 					responseInit[callExpressionExpr.getName() as ResponseInitParam] =
-					nestedCallExpression.getArguments()[0]?.getText() ?? '';
+						nestedCallExpression.getArguments()[0]?.getText() ?? '';
 				}
 			})
 		}
@@ -155,44 +155,63 @@ const getResponseInit = (block: Block): ResponseInit => {
 	return responseInit;
 }
 
-const rewriteResponseCallExpressions = (handler: Handler) => {
+const getNewResponseText = (type: string, bodyInit: string, responseInit: ResponseInit) => {
+	if (type === 'json') {
+		return `return NextResponse.json(${bodyInit}, ${JSON.stringify(
+			responseInit,
+		)})`
+	}
 
-	const callExpressions = handler
+	if (type === 'send') {
+		return `return new NextResponse(${bodyInit}, ${JSON.stringify(
+			responseInit,
+		)})`
+	}
+
+	if (type === 'end') {
+		return `return new NextResponse(undefined, ${JSON.stringify(
+			responseInit,
+		)})`
+	}
+
+	return '';
+}
+
+const rewriteResponseCallExpressions = (handler: Handler) => {
+	const callExpressionResponseInitMap = new Map<CallExpression, ResponseInit>();
+
+	handler
 		.getDescendantsOfKind(SyntaxKind.CallExpression)
 		.filter(
 			(callExpression) =>
 				OLD_RESPONSE_METHODS.includes(getCallExpressionName(callExpression) ?? '')
-		);
+		)
+		.forEach((callExpression) => {
+			const block = callExpression.getFirstAncestorByKind(SyntaxKind.Block);
 
-	const responseInitMap = new Map<CallExpression, ResponseInit>();
+			if (block === undefined) {
+				return;
+			}
 
-	callExpressions.forEach((callExpression) => {
-		const block = callExpression.getFirstAncestorByKind(SyntaxKind.Block);
+			const responseInit = getResponseInit(block);
+			callExpressionResponseInitMap.set(callExpression, responseInit);
+		});
 
-		if (block === undefined) {
-			return;
-		}
-
-		const responseInit = getResponseInit(block);
-		responseInitMap.set(callExpression, responseInit);
-	});
-
-	Array.from(responseInitMap).forEach(([callExpression, responseInit]) => {
-		const callExpressionArg =
+	Array.from(callExpressionResponseInitMap).forEach(([callExpression, responseInit]) => {
+		const bodyInit =
 			callExpression.getArguments()[0]?.getText() ?? '';
 
-		const expressionStatement = callExpression.getParent();
-		expressionStatement?.replaceWithText(`return NextResponse.json(${callExpressionArg}, ${JSON.stringify(
-			responseInit,
-		)})`)
+		const newResponseText = getNewResponseText(getCallExpressionName(callExpression) ?? '', bodyInit, responseInit)
 
+		const expressionStatement = callExpression.getParent();
+		expressionStatement?.replaceWithText(newResponseText)
 	})
-	
-	
+
+
 	const [, res] = handler.getParameters();
-	
+
 	const resReferences = res?.findReferencesAsNodes() ?? [];
-	
+
 	resReferences.forEach(resReference => {
 		const statement = resReference.getFirstAncestorByKind(SyntaxKind.ExpressionStatement);
 		statement?.remove();

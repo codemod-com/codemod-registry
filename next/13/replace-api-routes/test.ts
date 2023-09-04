@@ -317,4 +317,59 @@ describe.only('next 13 replace-API-routes', function () {
 			);
 		}
 	);
+	
+	it(
+		'should rewrite response callExpressions: support json, send, end methods', async function (this: Context) {
+			const A_CONTENT = `
+			export default function handler(req, res) {
+				if(req.method === 'GET') {
+					if(1) {
+						res.json({})
+					}
+					
+					if(2) {
+						res.send(1)
+					}
+					
+					if(3) {
+						res.end()
+					}
+				}
+			}
+		`;
+	
+			const [upsertFileCommand] = await transform({
+				'/opt/project/pages/api/hello.ts': A_CONTENT,
+			});
+	
+			const expectedResult = `
+			import { type NextRequest, NextResponse } from 'next/server';
+			export async function GET(req: NextRequest) {
+				if(1) {
+					return NextResponse.json({});
+				}
+				
+				if(2) {
+					return new NextResponse(1);
+				}
+				
+				if(3) {
+					return new NextResponse(undefined);
+				}
+			}
+			`;
+	
+			deepStrictEqual(upsertFileCommand?.kind, 'upsertFile');
+			deepStrictEqual(
+				upsertFileCommand.path,
+				'/opt/project/app/api/hello/route.ts',
+			);
+			
+			deepStrictEqual(
+				upsertFileCommand.data.replace(/\W/gm, ''),
+				expectedResult.replace(/\W/gm, ''),
+			);
+		}
+	);
+	
 });
