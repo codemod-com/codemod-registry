@@ -355,19 +355,13 @@ describe('ratchet', function () {
 		const INPUT =
 			'import React from "react"\n\nexport function MyComponent(props) {\n  return <span />\n}\n';
 
-		const OUTPUT =
-			'import React from "react"\n\nexport function MyComponent(props) {\n  return <span />\n}\n';
-
 		const fileInfo = {
 			path: 'index.js',
 			source: INPUT,
 		};
 
 		const actualOutput = transform(fileInfo, buildApi('tsx'), {});
-		assert.deepEqual(
-			actualOutput?.replace(/\W/gm, ''),
-			OUTPUT.replace(/\W/gm, ''),
-		);
+		assert.deepEqual(actualOutput, undefined);
 	});
 
 	it('odd-required', function () {

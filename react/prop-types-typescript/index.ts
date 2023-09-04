@@ -448,12 +448,18 @@ export default function transform(file: FileInfo, api: API, opts: Options) {
 	};
 
 	const propTypes = collectPropTypes(source);
+
 	const tsTypes = getTSTypes(
 		propTypes,
 		(path) => path.parent.get('left', 'object', 'name').value,
 	);
 
 	const staticPropTypes = collectStaticPropTypes(source);
+
+	if (propTypes.length === 0 && staticPropTypes.length === 0) {
+		return undefined;
+	}
+
 	const staticTSTypes = getTSTypes(
 		staticPropTypes,
 		(path) => path.parent.parent.parent.value.id.name,
