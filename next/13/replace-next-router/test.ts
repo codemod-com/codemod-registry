@@ -439,6 +439,7 @@ describe('next 13 replace-next-router', function () {
 	          import { usePathname} from "next/navigation";
 
 	          function Component() {
+				/** TODO "pathname" no longer contains square-bracket expressions. Rewrite the code relying on them if required. **/
 	              const pathname = usePathname();
 	          }
 	      `;
@@ -450,20 +451,21 @@ describe('next 13 replace-next-router', function () {
 
 	it('should replace router.pathname with usePathname()', async function (this: Context) {
 		const beforeText = `
-	          import { useRouter } from 'next/router';
+			import { useRouter } from 'next/router';
 
-	          function Component() {
-	              const router = useRouter();
-	              const pathname = router.pathname;
-	          }
+			function Component() {
+				const router = useRouter();
+				const pathname = router.pathname;
+			}
 	      `;
 
 		const afterText = `
 			import { usePathname } from "next/navigation";
 
-	          function Component() {
-	              const pathname = usePathname();
-	          }
+			function Component() {
+				/** TODO "pathname" no longer contains square-bracket expressions. Rewrite the code relying on them if required. **/
+				const pathname = usePathname();
+			}
 	      `;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
@@ -483,9 +485,10 @@ describe('next 13 replace-next-router', function () {
 		const afterText = `
 			import { usePathname } from "next/navigation";
 
-	          function Component() {
-	              const pathname = usePathname();
-	          }
+	        function Component() {
+				/** TODO "pathname" no longer contains square-bracket expressions. Rewrite the code relying on them if required. **/
+	            const pathname = usePathname();
+	        }
 	    `;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
@@ -507,9 +510,10 @@ describe('next 13 replace-next-router', function () {
 		const afterText = `
 			import { usePathname } from "next/navigation";
 
-	          function Component() {
-	              const pathname = usePathname();
-	          }
+	        function Component() {
+				/** TODO "pathname" no longer contains square-bracket expressions. Rewrite the code relying on them if required. **/
+	            const pathname = usePathname();
+	        }
 	      `;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
@@ -527,11 +531,12 @@ describe('next 13 replace-next-router', function () {
 	          }
 	      `;
 		const afterText = `
-	          import { usePathname } from "next/navigation";
+			import { usePathname } from "next/navigation";
 
-	          function Component() {
-	              const p = usePathname();
-	          }
+			function Component() {
+				/** TODO "p" no longer contains square-bracket expressions. Rewrite the code relying on them if required. **/
+				const p = usePathname();
+			}
 	      `;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
@@ -769,7 +774,9 @@ describe('next 13 replace-next-router', function () {
 			import { usePathname } from "next/navigation";
 
 			export function Component() {
+				/** TODO "route" no longer contains square-bracket expressions. Rewrite the code relying on them if required. **/
 				const route = usePathname();
+				/** TODO "pathname" no longer contains square-bracket expressions. Rewrite the code relying on them if required. **/
 				const pathname = usePathname();
 
 				return route === 'test' && pathname === 'test';
@@ -853,6 +860,7 @@ describe('next 13 replace-next-router', function () {
 			import { usePathname } from "next/navigation";
 
 			export function Component() {
+				/** TODO "pathname" no longer contains square-bracket expressions. Rewrite the code relying on them if required. **/
 				const pathname = usePathname();
 
 				return <b>{pathname}</b>;
@@ -881,6 +889,7 @@ describe('next 13 replace-next-router', function () {
 
 			export function Component() {
 				const searchParams = useSearchParams();
+				/** TODO "pathname" no longer contains square-bracket expressions. Rewrite the code relying on them if required. **/
 				const pathname = usePathname();
       			const getPathAs = useCallback(() => \`\${pathname}?\${searchParams.toString() ?? ""}\`, [pathname, searchParams]);
 
@@ -1015,6 +1024,7 @@ describe('next 13 replace-next-router', function () {
 
 			function Component() {
 				const searchParams = useSearchParams();
+				/** TODO "pathname" no longer contains square-bracket expressions. Rewrite the code relying on them if required. **/
 				const pathname = usePathname();
 				const getPathAs = useCallback(() => \`\${pathname}?\${searchParams.toString() ?? ""}\`, [pathname, searchParams]);
 
@@ -1111,6 +1121,7 @@ describe('next 13 replace-next-router', function () {
 			import { usePathname, useRouter } from "next/navigation";
 
 			const Component = () => {
+				/** TODO "pathname" no longer contains square-bracket expressions. Rewrite the code relying on them if required. **/
 	   			const pathname = usePathname();
 	   			const router = useRouter();
 
@@ -1204,6 +1215,7 @@ describe('next 13 replace-next-router', function () {
 
 			export default function Component() {
 				const searchParams = useSearchParams();
+				/** TODO "pathname" no longer contains square-bracket expressions. Rewrite the code relying on them if required. **/
            		const pathname = usePathname();
     			const getPathAs = useCallback(() => \`\${pathname}?\${searchParams.toString() ?? ""}\`, [pathname, searchParams]);
 
@@ -1246,6 +1258,7 @@ describe('next 13 replace-next-router', function () {
 
 			export default function Component() {
 				const searchParams = useSearchParams();
+				/** TODO "pathname" no longer contains square-bracket expressions. Rewrite the code relying on them if required. **/
 				const pathname = usePathname();
 				const getPathAs = useCallback(() => \`\${pathname}?\${searchParams.toString() ?? ""}\`, [pathname, searchParams]);
 				
@@ -1279,6 +1292,7 @@ describe('next 13 replace-next-router', function () {
 
 			export default function Component() {
 				const searchParams = useSearchParams();
+				/** TODO "pathname" no longer contains square-bracket expressions. Rewrite the code relying on them if required. **/
 				const pathname = usePathname();
 				const getPathAs = useCallback(() => \`\${pathname}?\${searchParams.toString() ?? ""}\`, [pathname, searchParams]);
 				const a = getPathAs().startsWith("a");

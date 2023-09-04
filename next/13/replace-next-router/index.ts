@@ -823,6 +823,9 @@ const handleUseRouterIdentifier = (
 	}
 
 	for (const pathname of blockLevelUsageManager.getPathnames()) {
+		statements.push(
+			`/** TODO "${pathname}" no longer contains square-bracket expressions. Rewrite the code relying on them if required. **/`,
+		);
 		statements.push(`const ${pathname} = usePathname();`);
 
 		fileLevelUsageManager.reportPathnameUsed();
