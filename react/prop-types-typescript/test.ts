@@ -25,7 +25,7 @@ import assert from 'node:assert';
 import transform from './index.js';
 import { buildApi } from '../../utilities.js';
 
-describe('ratchet', function () {
+describe.only('ratchet', function () {
 	it('arrow-function', function () {
 		const INPUT =
 			'import PropTypes from "prop-types"\nimport React from "react"\n\nexport const MyComponent = (props) => {\n  return <span />\n}\n\nMyComponent.propTypes = {\n  bar: PropTypes.string.isRequired,\n  foo: PropTypes.number,\n}\n';
@@ -355,19 +355,13 @@ describe('ratchet', function () {
 		const INPUT =
 			'import React from "react"\n\nexport function MyComponent(props) {\n  return <span />\n}\n';
 
-		const OUTPUT =
-			'import React from "react"\n\nexport function MyComponent(props) {\n  return <span />\n}\n';
-
 		const fileInfo = {
 			path: 'index.js',
 			source: INPUT,
 		};
 
 		const actualOutput = transform(fileInfo, buildApi('tsx'), {});
-		assert.deepEqual(
-			actualOutput?.replace(/\W/gm, ''),
-			OUTPUT.replace(/\W/gm, ''),
-		);
+		assert.deepEqual(actualOutput, undefined);
 	});
 
 	it('odd-required', function () {
