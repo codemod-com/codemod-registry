@@ -115,12 +115,12 @@ function getTSType(path: NodePath) {
 			return isCustomValidator(type)
 				? j.tsUnknownKeyword()
 				: j.tsTypeReference(
-						j.identifier('Record'),
-						j.tsTypeParameterInstantiation([
-							j.tsStringKeyword(),
-							getTSType(resolveRequired(type)),
-						]),
-				  );
+					j.identifier('Record'),
+					j.tsTypeParameterInstantiation([
+						j.tsStringKeyword(),
+						getTSType(resolveRequired(type)),
+					]),
+				);
 		}
 
 		case 'oneOf': {
@@ -129,29 +129,29 @@ function getTSType(path: NodePath) {
 			return arg.get('type').value !== 'ArrayExpression'
 				? j.tsArrayType(j.tsUnknownKeyword())
 				: j.tsUnionType(
-						//@ts-expect-error any
-						arg.get('elements').value.map(({ type, value }) => {
-							switch (type) {
-								case 'StringLiteral':
-									return j.tsLiteralType(
-										j.stringLiteral(value),
-									);
+					//@ts-expect-error any
+					arg.get('elements').value.map(({ type, value }) => {
+						switch (type) {
+							case 'StringLiteral':
+								return j.tsLiteralType(
+									j.stringLiteral(value),
+								);
 
-								case 'NumericLiteral':
-									return j.tsLiteralType(
-										j.numericLiteral(value),
-									);
+							case 'NumericLiteral':
+								return j.tsLiteralType(
+									j.numericLiteral(value),
+								);
 
-								case 'BooleanLiteral':
-									return j.tsLiteralType(
-										j.booleanLiteral(value),
-									);
+							case 'BooleanLiteral':
+								return j.tsLiteralType(
+									j.booleanLiteral(value),
+								);
 
-								default:
-									return j.tsUnknownKeyword();
-							}
-						}),
-				  );
+							default:
+								return j.tsUnknownKeyword();
+						}
+					}),
+				);
 		}
 
 		case 'oneOfType':
@@ -448,14 +448,15 @@ export default function transform(file: FileInfo, api: API, opts: Options) {
 	};
 
 	const propTypes = collectPropTypes(source);
+
+	if (propTypes.length === 0) {
+		return undefined;
+	}
+	
 	const tsTypes = getTSTypes(
 		propTypes,
 		(path) => path.parent.get('left', 'object', 'name').value,
 	);
-
-	if (tsTypes.length === 0) {
-		return undefined;
-	}
 
 	const staticPropTypes = collectStaticPropTypes(source);
 	const staticTSTypes = getTSTypes(
