@@ -25,7 +25,7 @@ import assert from 'node:assert';
 import transform from './index.js';
 import { buildApi } from '../../utilities.js';
 
-describe.only('ratchet', function () {
+describe('ratchet', function () {
 	it('arrow-function', function () {
 		const INPUT =
 			'import PropTypes from "prop-types"\nimport React from "react"\n\nexport const MyComponent = (props) => {\n  return <span />\n}\n\nMyComponent.propTypes = {\n  bar: PropTypes.string.isRequired,\n  foo: PropTypes.number,\n}\n';
