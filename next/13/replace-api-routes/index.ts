@@ -57,7 +57,7 @@ const findAPIRouteHandler = (sourceFile: SourceFile): Handler | null => {
 			?.getSymbol()
 			?.getDeclarations() ?? [];
 
-	let component:
+	let handler:
 		| ArrowFunction
 		| FunctionExpression
 		| FunctionDeclaration
@@ -71,17 +71,17 @@ const findAPIRouteHandler = (sourceFile: SourceFile): Handler | null => {
 				Node.isArrowFunction(initializer) ||
 				Node.isFunctionExpression(initializer)
 			) {
-				component = initializer;
+				handler = initializer;
 				return;
 			}
 		}
 
 		if (Node.isFunctionDeclaration(d)) {
-			component = d;
+			handler = d;
 		}
 	});
 
-	return component ?? null;
+	return handler ?? null;
 };
 
 const getPositionAfterImports = (sourceFile: SourceFile): number => {
