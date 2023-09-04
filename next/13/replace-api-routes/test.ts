@@ -38,7 +38,7 @@ const transform = async (json: DirectoryJSON) => {
 	return executeRepomod(api, repomod, '/', {});
 };
 
-describe.only('next 13 replace-API-routes', function () {
+describe('next 13 replace-API-routes', function () {
 
 	it('should transform API router handler: functionDeclaration', async function (this: Context) {
 		const A_CONTENT = `
@@ -190,65 +190,41 @@ describe.only('next 13 replace-API-routes', function () {
 		);
 	});
 	
-	it('should rewrite response callExpressions: support setHeader', async function (this: Context) {
-		const A_CONTENT = `
-		export default function handler(req, res) {
+	/**
+	 * export default function handler(req, res) {
 			if(req.method === 'GET') {
 				res
 				.setHeader('a', ['b', 'c'])
 				.setHeader('a', ['b1', 'c1']).json({ })
 			}
 		}
-	`;
-
-		const [upsertFileCommand] = await transform({
-			'/opt/project/pages/api/hello.ts': A_CONTENT,
-		});
-
-		// const expectedResult = `
-		// import { type NextRequest, NextResponse } from 'next/server';
 		
-		// export async function GET(req: NextRequest) {
-		// 		return NextResponse.json({ }, { "headers": { "a": "b1, c1" })
-		// }
-		// `;
-
-		deepStrictEqual(upsertFileCommand?.kind, 'upsertFile');
-		deepStrictEqual(upsertFileCommand.path, '/opt/project/app/api/hello/route.ts');
+		=> 
+		import { type NextRequest, NextResponse } from 'next/server';
 		
-		// NOT IMPLEMENTED
-		
-	});
+		export async function GET(req: NextRequest) {
+				return NextResponse.json({ }, { "headers": { "a": "b1, c1" })
+		}
+	 */
 	
-	it('should rewrite response callExpressions: support appendHeader', async function (this: Context) {
-		const A_CONTENT = `
-		export default function handler(req, res) {
+	it('should rewrite response callExpressions: support setHeader');
+	
+	/**
+	 * 	export default function handler(req, res) {
 			if(req.method === 'GET') {
 				res
 				.appendHeader('a', ['b', 'c'])
 				.appendHeader('a', ['b1', 'c1']).json({ })
 			}
+		} 
+		=>
+		
+		import { type NextRequest, NextResponse } from 'next/server';
+		
+		export async function GET(req: NextRequest) {
+				return NextResponse.json({ }, { "headers": { "a": "b, c, b1, c1" })
 		}
-	`;
-
-		const [upsertFileCommand] = await transform({
-			'/opt/project/pages/api/hello.ts': A_CONTENT,
-		});
-
-		// const expectedResult = `
-		// import { type NextRequest, NextResponse } from 'next/server';
-		
-		// export async function GET(req: NextRequest) {
-		// 		return NextResponse.json({ }, { "headers": { "a": "b, c, b1, c1" })
-		// }
-		// `;
-
-		deepStrictEqual(upsertFileCommand?.kind, 'upsertFile');
-		deepStrictEqual(upsertFileCommand.path, '/opt/project/app/api/hello/route.ts');
-		
-		// NOT IMPLEMENTED
-		
-	});
-	
+	 */
+	it('should rewrite response callExpressions: support appendHeader');
 	
 });
