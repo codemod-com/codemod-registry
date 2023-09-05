@@ -864,7 +864,6 @@ type ComponentTreeNode = {
 };
 
 type FileAPI = Parameters<NonNullable<Repomod<Dependencies>['handleFile']>>[0];
-type DataAPI = Parameters<NonNullable<Repomod<Dependencies>['handleData']>>[0];
 
 let project: tsmorph.Project | null = null;
 
