@@ -59,7 +59,7 @@ const transform = async (json: DirectoryJSON) => {
 	return executeRepomod(api, repomod, '/', {});
 };
 
-describe('next 13 replace-next-head', function () {
+describe.only('next 13 replace-next-head', function () {
 	it('should find and merge metadata in Page child components', async function (this: Context) {
 		const A_CONTENT = `
 		import Meta from '../../components/a.tsx';
@@ -104,6 +104,59 @@ describe('next 13 replace-next-head', function () {
 		export const metadata: Metadata = {
 				title: \`title\`,
 				description: "description",
+		};
+		export default function Page() {
+				return <Meta />;
+		}`;
+
+		deepStrictEqual(command?.kind, 'upsertFile');
+		deepStrictEqual(command.path, '/opt/project/pages/a/index.tsx');
+
+		deepStrictEqual(
+			command.data.replace(/\W/gm, ''),
+			expectedResult.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should respect tsconfig.json paths', async function (this: Context) {
+		const A_CONTENT = `
+		import Meta from '#/components/a.tsx';
+		export default function Page() {
+			return <Meta />;
+		}
+`;
+
+		const A_COMPONENT_CONTENT = `
+		import Head from 'next/head';
+		export default function Meta() {
+			return (
+			<Head>
+				<title>title</title>
+			</Head>
+			)
+		}
+`;
+
+		const TSCONFIG_CONTENT = `
+		{
+			"compilerOptions": {
+				"paths": {
+					"#/components/*": ["./components/*"]
+				}
+			}
+		}
+`;
+
+		const [command] = await transform({
+			'/opt/project/pages/a/index.tsx': A_CONTENT,
+			'/opt/project/components/a.tsx': A_COMPONENT_CONTENT,
+			'/opt/project/tsconfig.json': TSCONFIG_CONTENT,
+		});
+
+		const expectedResult = `import { Metadata } from "next";
+		import Meta from '../../components/a.tsx';
+		export const metadata: Metadata = {
+				title: \`title\`,
 		};
 		export default function Page() {
 				return <Meta />;
