@@ -25,7 +25,6 @@ import { posix, relative, join } from 'node:path';
  * Copied from "../replace-next-head"
  */
 
-
 type Dependency = {
 	kind: SyntaxKind;
 	text: string;
@@ -138,7 +137,6 @@ export const camelize = (str: string) =>
 		return (g[1] ?? '').toUpperCase();
 	});
 
-
 export const buildContainer = <T>(initialValue: T) => {
 	let currentValue: T = initialValue;
 
@@ -224,7 +222,7 @@ const getDependenciesForIdentifiers = (
 				firstDefinition.getKind() === syntaxKind
 					? firstDefinition
 					: firstDefinition.getFirstAncestorByKind(syntaxKind) ??
-					null;
+					  null;
 		}
 
 		if (ancestor === null) {
@@ -252,8 +250,11 @@ const handleJsxSelfClosingElement = (
 		return;
 	}
 
-	const metadataAttributes = jsxSelfClosingElement.getAttributes()
-		.filter((attribute): attribute is JsxAttribute => Node.isJsxAttribute(attribute))
+	const metadataAttributes = jsxSelfClosingElement
+		.getAttributes()
+		.filter((attribute): attribute is JsxAttribute =>
+			Node.isJsxAttribute(attribute),
+		)
 		.reduce<Record<string, string>>((metadataAttributes, attribute) => {
 			const name = attribute.getNameNode().getText();
 			const initializer = attribute.getInitializer();
@@ -272,18 +273,23 @@ const handleJsxSelfClosingElement = (
 					dependencies: getDependenciesForIdentifiers(identifiers),
 				}));
 
-				metadataAttributes[name] =
-					initializer.getText();
+				metadataAttributes[name] = initializer.getText();
 			}
 
 			return metadataAttributes;
 		}, {});
 
-
-	const metadataName = (tagName === 'link' ? metadataAttributes.rel : metadataAttributes.name ?? metadataAttributes.property)?.replace(/\"/g, '');
+	const metadataName = (
+		tagName === 'link'
+			? metadataAttributes.rel
+			: metadataAttributes.name ?? metadataAttributes.property
+	)?.replace(/\"/g, '');
 
 	if (metadataName && knownNames.includes(metadataName)) {
-		handleTag({ tagName, metadataName, metadataAttributes }, metadataContainer);
+		handleTag(
+			{ tagName, metadataName, metadataAttributes },
+			metadataContainer,
+		);
 	}
 };
 
@@ -329,14 +335,16 @@ const handleHeadChildJsxElement = (
 		}
 	});
 
-
-	handleTag({
-		tagName: 'title',
-		metadataName: 'title',
-		metadataAttributes: {
-			children: `\`${text}\``,
-		}
-	}, metadataContainer);
+	handleTag(
+		{
+			tagName: 'title',
+			metadataName: 'title',
+			metadataAttributes: {
+				children: `\`${text}\``,
+			},
+		},
+		metadataContainer,
+	);
 };
 
 const handleHeadJsxElement = (
@@ -406,11 +414,18 @@ export const handleImportDeclaration = (
 };
 
 export const handleTag = (
-	{ tagName, metadataName, metadataAttributes }: { tagName: string, metadataName: string, metadataAttributes: Record<string, string> },
+	{
+		tagName,
+		metadataName,
+		metadataAttributes,
+	}: {
+		tagName: string;
+		metadataName: string;
+		metadataAttributes: Record<string, string>;
+	},
 	metadataContainer: Container<Record<string, any>>,
 ) => {
 	const metadataObject = metadataContainer.get();
-
 
 	if (metadataName === 'title') {
 		metadataObject[metadataName] = metadataAttributes.children ?? '';
@@ -455,8 +470,9 @@ export const handleTag = (
 				return;
 			}
 
-			metadataObject.openGraph[camelize(metadataName.replace('article:', ''))] =
-				content;
+			metadataObject.openGraph[
+				camelize(metadataName.replace('article:', ''))
+			] = content;
 
 			return;
 		}
@@ -510,7 +526,10 @@ export const handleTag = (
 					metadataObject.openGraph.images = [];
 				}
 
-				if (metadataName === 'og:image:url' || metadataName === 'og:image') {
+				if (
+					metadataName === 'og:image:url' ||
+					metadataName === 'og:image'
+				) {
 					metadataObject.openGraph.images.push({
 						url: content,
 					});
@@ -742,7 +761,6 @@ export const handleTag = (
 		metadataObject[propertyName] = content;
 	}
 
-	console.log(metadataObject, "?")
 	metadataContainer.set(() => metadataObject);
 };
 
@@ -785,8 +803,9 @@ const buildMetadataObjectStr = (metadataObject: Record<string, any>) => {
 		const keyIsValidIdentifier = isValidIdentifier(key);
 		const keyDoubleQuotified = isDoubleQuotified(key);
 
-		str += `\n ${!keyIsValidIdentifier && !keyDoubleQuotified ? `"${key}"` : key
-			}: ${value},`;
+		str += `\n ${
+			!keyIsValidIdentifier && !keyDoubleQuotified ? `"${key}"` : key
+		}: ${value},`;
 	});
 
 	str += '}';
@@ -811,10 +830,9 @@ type Dependencies = Readonly<{
 	unifiedFileSystem: UnifiedFileSystem;
 }>;
 
-type ComponentTreeNode = {
+type MetadataTreeNode = {
 	path: string;
-	components: Record<string, ComponentTreeNode>;
-	props: Record<string, string>;
+	components: Record<string, MetadataTreeNode>;
 	metadata: Record<string, unknown>;
 	dependencies: Record<string, Dependency>;
 };
@@ -884,36 +902,6 @@ const initTsMorphProject = async (
 	}
 };
 
-const collectedImportedIdentifiers = (sourceFile: SourceFile) => {
-	const result = new Map<string, Identifier[]>();
-
-	const importDeclarations = sourceFile.getImportDeclarations();
-
-	importDeclarations.forEach((importDeclaration) => {
-		const moduleSpecifierValue =
-			importDeclaration.getModuleSpecifierValue();
-		const importSpecifiers = importDeclaration.getNamedImports();
-
-		if (!result.has(moduleSpecifierValue)) {
-			result.set(moduleSpecifierValue, []);
-		}
-
-		const identifiers = result.get(moduleSpecifierValue) ?? [];
-
-		importSpecifiers.forEach((importSpecifier) => {
-			identifiers.push(importSpecifier.getNameNode());
-		});
-
-		const defaultImport = importDeclaration.getDefaultImport() ?? null;
-
-		if (defaultImport !== null) {
-			identifiers.push(defaultImport);
-		}
-	});
-
-	return result;
-};
-
 const resolveModuleName = (path: string, containingPath: string) => {
 	if (project === null) {
 		return null;
@@ -932,13 +920,35 @@ const resolveModuleName = (path: string, containingPath: string) => {
 	);
 };
 
-const buildComponentTreeNode = async (containingPath: string) => {
-	const treeNode: ComponentTreeNode = {
+const getComponentPaths = (sourceFile: SourceFile) => {
+	const paths = sourceFile
+		.getDescendants()
+		.filter(
+			(d): d is JsxOpeningElement | JsxSelfClosingElement =>
+				Node.isJsxOpeningElement(d) || Node.isJsxSelfClosingElement(d),
+		)
+		.map((componentTag) => {
+			const nameNode = componentTag.getTagNameNode();
+			const declaration = nameNode.getSymbol()?.getDeclarations()[0];
+
+			return (
+				declaration
+					?.getFirstAncestorByKind(SyntaxKind.ImportDeclaration)
+					?.getModuleSpecifier()
+					.getLiteralText() ?? null
+			);
+		})
+		.filter((path): path is string => path !== null);
+
+	return [...new Set(paths)];
+};
+
+const buildMetadataTreeNode = (containingPath: string) => {
+	const treeNode: MetadataTreeNode = {
 		path: containingPath,
 		components: {},
 		metadata: {},
 		dependencies: {},
-		props: {},
 	};
 
 	const sourceFile = project?.getSourceFile(containingPath) ?? null;
@@ -978,94 +988,32 @@ const buildComponentTreeNode = async (containingPath: string) => {
 		return acc;
 	}, {});
 
-	const importIdentifiersByImportPath =
-		collectedImportedIdentifiers(sourceFile);
-
-	const paths = importIdentifiersByImportPath.keys();
-
-	for (const path of paths) {
+	getComponentPaths(sourceFile).forEach((path) => {
 		const resolvedFileName = resolveModuleName(path, containingPath);
 
 		if (resolvedFileName === null) {
-			continue;
+			return;
 		}
 
-		const identifiers = importIdentifiersByImportPath.get(path) ?? [];
-		identifiers.forEach((identifier) => {
-			const refs = identifier.findReferencesAsNodes();
-
-			let jsxElement:
-				| JsxSelfClosingElement
-				| JsxOpeningElement
-				| undefined;
-
-			refs.forEach((ref) => {
-				const parent = ref.getParent();
-
-				if (
-					Node.isJsxSelfClosingElement(parent) ||
-					Node.isJsxOpeningElement(parent)
-				) {
-					jsxElement = parent;
-				}
-			});
-
-			if (jsxElement !== undefined) {
-				treeNode.components[resolvedFileName] = {
-					path,
-					props: {},
-					metadata: {},
-					components: {},
-					dependencies: {},
-				};
-				const attributes = jsxElement.getAttributes();
-				attributes.forEach((attribute) => {
-					if (Node.isJsxAttribute(attribute)) {
-						const name = attribute.getNameNode().getText();
-						const initializer = attribute.getInitializer();
-
-						if (Node.isStringLiteral(initializer)) {
-							treeNode.components[resolvedFileName]!.props[name] =
-								initializer.getText();
-						} else if (Node.isJsxExpression(initializer)) {
-							treeNode.components[resolvedFileName]!.props[name] =
-								initializer.getExpression()?.getText() ?? '';
-						}
-					}
-				});
-			}
-		});
-	}
+		treeNode.components[resolvedFileName] =
+			buildMetadataTreeNode(resolvedFileName);
+	});
 
 	return treeNode;
 };
 
-const buildComponentTree = async (
-	tsmorph: Dependencies['tsmorph'],
-	containingPath: string,
-) => {
-	const node: ComponentTreeNode =
-		await buildComponentTreeNode(containingPath);
-
-	const componentPaths = Object.keys(node.components);
-
-	for (const path of componentPaths) {
-		node.components[path] = await buildComponentTree(tsmorph, path);
-	}
-
-	return node;
-};
-
-const mergeMetadata = (
-	treeNode: ComponentTreeNode,
-): Record<string, unknown> => {
+const mergeMetadata = (treeNode: MetadataTreeNode): Record<string, unknown> => {
 	const currentComponentMetadata = treeNode.metadata;
 
 	return Object.entries(treeNode.components)
 		.map((arr) => mergeMetadata(arr[1]))
-		.reduce((mergedMetadata, childMetadata) => {
-			return { ...mergedMetadata, ...childMetadata };
-		}, currentComponentMetadata);
+		.reduce(
+			(mergedMetadata, childMetadata) => ({
+				...mergedMetadata,
+				...childMetadata,
+			}),
+			currentComponentMetadata,
+		);
 };
 
 const findComponentByModuleSpecifier = (
@@ -1167,9 +1115,9 @@ const findComponentPropValue = (
 };
 
 const mergeDependencies = (
-	treeNode: ComponentTreeNode,
+	treeNode: MetadataTreeNode,
 	rootPath: string,
-): ComponentTreeNode => {
+): MetadataTreeNode => {
 	const currentComponentDependencies = treeNode.dependencies;
 
 	treeNode.dependencies = Object.entries(treeNode.components)
@@ -1414,10 +1362,11 @@ export const repomod: Repomod<Dependencies> = {
 			paths,
 		});
 
-		const componentTree = await buildComponentTree(tsmorph, path);
-		const mergedMetadata = mergeMetadata(componentTree);
+		const metadataTree = buildMetadataTreeNode(path);
+
+		const mergedMetadata = mergeMetadata(metadataTree);
 		const { dependencies: mergedDependencies } = mergeDependencies(
-			componentTree,
+			metadataTree,
 			path,
 		);
 
