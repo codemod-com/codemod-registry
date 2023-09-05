@@ -1827,4 +1827,30 @@ describe('next 13 replace-next-router', function () {
 
 		deepStrictEqual(actual, expected);
 	});
+
+	it('should change the useRouter import from next/router into next/navigation', () => {
+		const beforeText = `
+			import { useRouter } from 'next/router';
+
+			function Component(): JSX.Element {
+				const router = useRouter();
+			
+				return x(router);
+			}
+		`;
+
+		const afterText = `
+			import { useRouter } from "next/navigation";
+
+			function Component(): JSX.Element {
+				const router = useRouter();
+			
+				return x(router);
+			}
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(actual, expected);
+	});
 });

@@ -18,7 +18,6 @@ class FileLevelUsageManager {
 	private __routerUsed: boolean = false;
 	private __searchParamsUsed: boolean = false;
 	private __paramsUsed: boolean = false;
-	private __useRouterCount: number = 0;
 	public useCallbackUsed: boolean = false;
 
 	private __useRouterPresent: boolean;
@@ -59,10 +58,6 @@ class FileLevelUsageManager {
 		);
 	}
 
-	public increaseUseRouterCount(count: number): void {
-		this.__useRouterCount += count;
-	}
-
 	public reportPathnameUsed() {
 		this.__pathnameUsed = true;
 	}
@@ -84,8 +79,7 @@ class FileLevelUsageManager {
 	}
 
 	public shouldImportUseRouter(): boolean {
-		// TODO I don't understand this
-		return this.__useRouterCount === 0 || this.__routerUsed;
+		return this.__routerUsed;
 	}
 
 	public shouldImportUseSearchParams(): boolean {
@@ -897,17 +891,15 @@ const handleImportDeclaration = (
 
 					handleUseRouterIdentifier(fileLevelUsageManager, node);
 				});
+
+			const referenceCount = namedImport
+				.getNameNode()
+				.findReferencesAsNodes().length;
+
+			if (referenceCount > 1) {
+				fileLevelUsageManager.reportRouterUsed();
+			}
 		}
-
-		const referenceCount = namedImport
-			.getNameNode()
-			.findReferencesAsNodes().length;
-
-		if (referenceCount === 0) {
-			namedImport.remove();
-		}
-
-		fileLevelUsageManager.increaseUseRouterCount(referenceCount);
 	});
 
 	importDeclaration.remove();
