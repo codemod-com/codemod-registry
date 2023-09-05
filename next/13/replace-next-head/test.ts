@@ -59,7 +59,7 @@ const transform = async (json: DirectoryJSON) => {
 	return executeRepomod(api, repomod, '/', {});
 };
 
-describe.only('next 13 replace-next-head', function () {
+describe('next 13 replace-next-head', function () {
 	it('should find and merge metadata in Page child components', async function (this: Context) {
 		const A_CONTENT = `
 		import Meta from '../../components/a.tsx';
@@ -154,7 +154,7 @@ describe.only('next 13 replace-next-head', function () {
 		});
 
 		const expectedResult = `import { Metadata } from "next";
-		import Meta from '../../components/a.tsx';
+		import Meta from '#/components/a.tsx';
 		export const metadata: Metadata = {
 				title: \`title\`,
 		};
@@ -164,7 +164,6 @@ describe.only('next 13 replace-next-head', function () {
 
 		deepStrictEqual(command?.kind, 'upsertFile');
 		deepStrictEqual(command.path, '/opt/project/pages/a/index.tsx');
-
 		deepStrictEqual(
 			command.data.replace(/\W/gm, ''),
 			expectedResult.replace(/\W/gm, ''),
