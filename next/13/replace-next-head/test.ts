@@ -59,7 +59,7 @@ const transform = async (json: DirectoryJSON) => {
 	return executeRepomod(api, repomod, '/', {});
 };
 
-describe.only('next 13 replace-next-head', function () {
+describe('next 13 replace-next-head', function () {
 	it('should find and merge metadata in Page child components', async function (this: Context) {
 		const A_CONTENT = `
 		import Meta from '../../components/a.tsx';
