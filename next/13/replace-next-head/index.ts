@@ -11,6 +11,7 @@ import tsmorph, {
 	ImportDeclarationStructure,
 	JsxExpression,
 	StringLiteral,
+	JsxAttribute,
 } from 'ts-morph';
 
 import type {
@@ -24,12 +25,6 @@ import { posix, relative, join } from 'node:path';
  * Copied from "../replace-next-head"
  */
 
-type HTMLTagName = 'title' | 'meta' | 'link';
-type HTMLAttributes = Record<string, string>;
-type ParsedMetadataTag = {
-	HTMLTagName: HTMLTagName;
-	HTMLAttributes: HTMLAttributes;
-};
 
 type Dependency = {
 	kind: SyntaxKind;
@@ -143,29 +138,6 @@ export const camelize = (str: string) =>
 		return (g[1] ?? '').toUpperCase();
 	});
 
-const getTagPropertyName = (
-	HTMLTagName: HTMLTagName,
-	HTMLAttributes: HTMLAttributes,
-) => {
-	if (HTMLTagName === 'title') {
-		return HTMLTagName;
-	}
-
-	if (HTMLTagName === 'meta') {
-		return (
-			(HTMLAttributes.name ?? HTMLAttributes.property)?.replace(
-				/\"/g,
-				'',
-			) ?? null
-		);
-	}
-
-	if (HTMLTagName === 'link') {
-		return HTMLAttributes.rel?.replace(/\"/g, '') ?? null;
-	}
-
-	return null;
-};
 
 export const buildContainer = <T>(initialValue: T) => {
 	let currentValue: T = initialValue;
@@ -252,7 +224,7 @@ const getDependenciesForIdentifiers = (
 				firstDefinition.getKind() === syntaxKind
 					? firstDefinition
 					: firstDefinition.getFirstAncestorByKind(syntaxKind) ??
-					  null;
+					null;
 		}
 
 		if (ancestor === null) {
@@ -276,20 +248,21 @@ const handleJsxSelfClosingElement = (
 ) => {
 	const tagName = jsxSelfClosingElement.getTagNameNode().getText();
 
-	if (tagName !== 'link' && tagName !== 'meta') {
+	if (!['link', 'meta'].includes(tagName)) {
 		return;
 	}
 
-	const attributes = jsxSelfClosingElement.getAttributes();
-	const attributesObject: Record<string, string> = {};
-
-	attributes.forEach((attribute) => {
-		if (Node.isJsxAttribute(attribute)) {
+	const metadataAttributes = jsxSelfClosingElement.getAttributes()
+		.filter((attribute): attribute is JsxAttribute => Node.isJsxAttribute(attribute))
+		.reduce<Record<string, string>>((metadataAttributes, attribute) => {
 			const name = attribute.getNameNode().getText();
 			const initializer = attribute.getInitializer();
+
 			if (Node.isStringLiteral(initializer)) {
-				attributesObject[name] = initializer.getText();
-			} else if (Node.isJsxExpression(initializer)) {
+				metadataAttributes[name] = initializer.getFullText();
+			}
+
+			if (Node.isJsxExpression(initializer)) {
 				const identifiers = initializer.getDescendantsOfKind(
 					SyntaxKind.Identifier,
 				);
@@ -299,24 +272,18 @@ const handleJsxSelfClosingElement = (
 					dependencies: getDependenciesForIdentifiers(identifiers),
 				}));
 
-				attributesObject[name] =
-					initializer.getExpression()?.getText() ?? '';
+				metadataAttributes[name] =
+					initializer.getText();
 			}
-		}
-	});
 
-	const parsedTag = {
-		HTMLTagName: tagName as HTMLTagName,
-		HTMLAttributes: attributesObject,
-	};
+			return metadataAttributes;
+		}, {});
 
-	const name = getTagPropertyName(
-		parsedTag.HTMLTagName,
-		parsedTag.HTMLAttributes,
-	);
 
-	if (name && knownNames.includes(name)) {
-		handleTag(parsedTag, metadataContainer);
+	const metadataName = (tagName === 'link' ? metadataAttributes.rel : metadataAttributes.name ?? metadataAttributes.property)?.replace(/\"/g, '');
+
+	if (metadataName && knownNames.includes(metadataName)) {
+		handleTag({ tagName, metadataName, metadataAttributes }, metadataContainer);
 	}
 };
 
@@ -334,8 +301,7 @@ const handleHeadChildJsxElement = (
 	let text = '';
 	children.forEach((child) => {
 		if (Node.isJsxText(child)) {
-			const t = child.getFullText();
-			text += t;
+			text += child.getFullText();
 		} else if (Node.isJsxExpression(child)) {
 			const expression = child.getExpression();
 			const identifiers = child.getDescendantsOfKind(
@@ -363,21 +329,14 @@ const handleHeadChildJsxElement = (
 		}
 	});
 
-	const parsedTag = {
-		HTMLTagName: 'title' as const,
-		HTMLAttributes: {
+
+	handleTag({
+		tagName: 'title',
+		metadataName: 'title',
+		metadataAttributes: {
 			children: `\`${text}\``,
-		},
-	};
-
-	const name = getTagPropertyName(
-		parsedTag.HTMLTagName,
-		parsedTag.HTMLAttributes,
-	);
-
-	if (name && knownNames.includes(name)) {
-		handleTag(parsedTag, metadataContainer);
-	}
+		}
+	}, metadataContainer);
 };
 
 const handleHeadJsxElement = (
@@ -447,39 +406,36 @@ export const handleImportDeclaration = (
 };
 
 export const handleTag = (
-	{ HTMLTagName, HTMLAttributes }: ParsedMetadataTag,
+	{ tagName, metadataName, metadataAttributes }: { tagName: string, metadataName: string, metadataAttributes: Record<string, string> },
 	metadataContainer: Container<Record<string, any>>,
 ) => {
 	const metadataObject = metadataContainer.get();
-	const name = getTagPropertyName(HTMLTagName, HTMLAttributes);
-	if (name === null) {
-		return;
+
+
+	if (metadataName === 'title') {
+		metadataObject[metadataName] = metadataAttributes.children ?? '';
 	}
 
-	if (HTMLTagName === 'title') {
-		metadataObject[HTMLTagName] = HTMLAttributes.children ?? '';
-	}
+	if (tagName === 'meta') {
+		const content = metadataAttributes.content;
 
-	if (HTMLTagName === 'meta') {
-		const content = HTMLAttributes.content;
-
-		if (otherMetaTags.includes(name)) {
+		if (otherMetaTags.includes(metadataName)) {
 			if (!metadataObject.other) {
 				metadataObject.other = {};
 			}
 
-			metadataObject.other[name] = content;
+			metadataObject.other[metadataName] = content;
 			return;
 		}
 
-		if (name.startsWith('article')) {
-			const { content } = HTMLAttributes;
+		if (metadataName.startsWith('article')) {
+			const { content } = metadataAttributes;
 
 			if (!metadataObject.openGraph) {
 				metadataObject.openGraph = {};
 			}
 
-			if (name === 'article:author') {
+			if (metadataName === 'article:author') {
 				if (!metadataObject.openGraph.authors) {
 					metadataObject.openGraph.authors = [];
 				}
@@ -489,7 +445,7 @@ export const handleTag = (
 				return;
 			}
 
-			if (name === 'article:tag') {
+			if (metadataName === 'article:tag') {
 				if (!metadataObject.openGraph.tags) {
 					metadataObject.openGraph.tags = [];
 				}
@@ -499,13 +455,13 @@ export const handleTag = (
 				return;
 			}
 
-			metadataObject.openGraph[camelize(name.replace('article:', ''))] =
+			metadataObject.openGraph[camelize(metadataName.replace('article:', ''))] =
 				content;
 
 			return;
 		}
 
-		if (name === 'author') {
+		if (metadataName === 'author') {
 			if (!metadataObject.authors) {
 				metadataObject.authors = [];
 			}
@@ -514,8 +470,8 @@ export const handleTag = (
 			return;
 		}
 
-		if (name === 'theme-color') {
-			const { content, media } = HTMLAttributes;
+		if (metadataName === 'theme-color') {
+			const { content, media } = metadataAttributes;
 
 			if (!content && !media) {
 				return;
@@ -535,32 +491,32 @@ export const handleTag = (
 			return;
 		}
 
-		if (name === 'googlebot') {
+		if (metadataName === 'googlebot') {
 			return;
 		}
 
-		if (name.startsWith('og:')) {
-			const n = camelize(name.replace('og:', ''));
+		if (metadataName.startsWith('og:')) {
+			const n = camelize(metadataName.replace('og:', ''));
 
 			if (!metadataObject.openGraph) {
 				metadataObject.openGraph = {};
 			}
 
 			// image structured property
-			if (name.startsWith('og:image')) {
-				const { content } = HTMLAttributes;
+			if (metadataName.startsWith('og:image')) {
+				const { content } = metadataAttributes;
 
 				if (!metadataObject.openGraph.images) {
 					metadataObject.openGraph.images = [];
 				}
 
-				if (name === 'og:image:url' || name === 'og:image') {
+				if (metadataName === 'og:image:url' || metadataName === 'og:image') {
 					metadataObject.openGraph.images.push({
 						url: content,
 					});
 				} else {
 					const image = metadataObject.openGraph.images.at(-1);
-					const propName = name.replace('og:image:', '');
+					const propName = metadataName.replace('og:image:', '');
 
 					image[propName] = content;
 				}
@@ -568,20 +524,20 @@ export const handleTag = (
 				return;
 			}
 
-			if (name.startsWith('og:audio')) {
-				const { content } = HTMLAttributes;
+			if (metadataName.startsWith('og:audio')) {
+				const { content } = metadataAttributes;
 
 				if (!metadataObject.openGraph.audio) {
 					metadataObject.openGraph.audio = [];
 				}
 
-				if (name === 'og:audio') {
+				if (metadataName === 'og:audio') {
 					metadataObject.openGraph.audio.push({
 						url: content,
 					});
 				} else {
 					const audio = metadataObject.openGraph.audio.at(-1);
-					const propName = name.replace('og:audio:', '');
+					const propName = metadataName.replace('og:audio:', '');
 
 					audio[camelize(propName)] = content;
 				}
@@ -589,20 +545,20 @@ export const handleTag = (
 				return;
 			}
 
-			if (name.startsWith('og:video')) {
-				const { content } = HTMLAttributes;
+			if (metadataName.startsWith('og:video')) {
+				const { content } = metadataAttributes;
 
 				if (!metadataObject.openGraph.videos) {
 					metadataObject.openGraph.videos = [];
 				}
 
-				if (name === 'og:video') {
+				if (metadataName === 'og:video') {
 					metadataObject.openGraph.videos.push({
 						url: content,
 					});
 				} else {
 					const video = metadataObject.openGraph.videos.at(-1);
-					const propName = name.replace('og:video:', '');
+					const propName = metadataName.replace('og:video:', '');
 
 					video[camelize(propName)] = content;
 				}
@@ -610,8 +566,8 @@ export const handleTag = (
 				return;
 			}
 
-			if (name === 'og:locale:alternate') {
-				const { content } = HTMLAttributes;
+			if (metadataName === 'og:locale:alternate') {
+				const { content } = metadataAttributes;
 
 				if (!metadataObject.openGraph.alternateLocale) {
 					metadataObject.openGraph.alternateLocale = [];
@@ -625,19 +581,19 @@ export const handleTag = (
 			return;
 		}
 
-		if (name.startsWith('twitter:')) {
-			const n = camelize(name.replace('twitter:', ''));
+		if (metadataName.startsWith('twitter:')) {
+			const n = camelize(metadataName.replace('twitter:', ''));
 
 			if (!metadataObject.twitter) {
 				metadataObject.twitter = {};
 			}
 
-			if (name === 'twitter:site:id') {
+			if (metadataName === 'twitter:site:id') {
 				metadataObject.twitter.siteId = content;
 				return;
 			}
 
-			if (name === 'twitter:creator:id') {
+			if (metadataName === 'twitter:creator:id') {
 				metadataObject.twitter.creatorId = content;
 				return;
 			}
@@ -652,12 +608,12 @@ export const handleTag = (
 			y_key: 'yahoo',
 		};
 
-		if (Object.keys(verification).includes(name)) {
+		if (Object.keys(verification).includes(metadataName)) {
 			if (!metadataObject.verification) {
 				metadataObject.verification = {};
 			}
 
-			const propName = verification[name];
+			const propName = verification[metadataName];
 
 			if (!propName) {
 				return;
@@ -667,18 +623,18 @@ export const handleTag = (
 			return;
 		}
 
-		if (name === 'format-detection') {
+		if (metadataName === 'format-detection') {
 			return;
 		}
 
-		const propertyName = camelize(name);
+		const propertyName = camelize(metadataName);
 		metadataObject[propertyName] = content;
 	}
 
-	if (HTMLTagName === 'link') {
-		const content = HTMLAttributes.href;
+	if (tagName === 'link') {
+		const content = metadataAttributes.href;
 
-		if (name === 'author') {
+		if (metadataName === 'author') {
 			if (metadataObject.authors.length === 0) {
 				return;
 			}
@@ -689,26 +645,26 @@ export const handleTag = (
 			return;
 		}
 
-		if (['archives', 'assets', 'bookmarks'].includes(name)) {
-			if (!metadataObject[name]) {
-				metadataObject[name] = [];
+		if (['archives', 'assets', 'bookmarks'].includes(metadataName)) {
+			if (!metadataObject[metadataName]) {
+				metadataObject[metadataName] = [];
 			}
 
-			metadataObject[name].push(content);
+			metadataObject[metadataName].push(content);
 
 			return;
 		}
 
-		if (['canonical', 'alternate'].includes(name)) {
+		if (['canonical', 'alternate'].includes(metadataName)) {
 			if (!metadataObject.alternates) {
 				metadataObject.alternates = {};
 			}
 
-			if (name === 'canonical') {
-				metadataObject.alternates[name] = content;
+			if (metadataName === 'canonical') {
+				metadataObject.alternates[metadataName] = content;
 			}
 
-			const { hreflang, media, type, href } = HTMLAttributes;
+			const { hreflang, media, type, href } = metadataAttributes;
 
 			if (hreflang) {
 				if (!metadataObject.alternates.languages) {
@@ -749,9 +705,9 @@ export const handleTag = (
 			),
 		};
 
-		if (Object.keys(icons).includes(name)) {
-			const iconTypeName = icons[name];
-			const { sizes, type, href, rel } = HTMLAttributes;
+		if (Object.keys(icons).includes(metadataName)) {
+			const iconTypeName = icons[metadataName];
+			const { sizes, type, href, rel } = metadataAttributes;
 
 			if (!iconTypeName) {
 				return;
@@ -765,7 +721,7 @@ export const handleTag = (
 				metadataObject.icons[iconTypeName] = [];
 			}
 
-			const shouldIncludeRel = otherIcons.includes(name);
+			const shouldIncludeRel = otherIcons.includes(metadataName);
 
 			const iconMetadataObject = {
 				...(sizes && { sizes }),
@@ -778,14 +734,15 @@ export const handleTag = (
 			return;
 		}
 
-		if (name.startsWith('al:')) {
+		if (metadataName.startsWith('al:')) {
 			return;
 		}
 
-		const propertyName = camelize(name);
+		const propertyName = camelize(metadataName);
 		metadataObject[propertyName] = content;
 	}
 
+	console.log(metadataObject, "?")
 	metadataContainer.set(() => metadataObject);
 };
 
@@ -828,9 +785,8 @@ const buildMetadataObjectStr = (metadataObject: Record<string, any>) => {
 		const keyIsValidIdentifier = isValidIdentifier(key);
 		const keyDoubleQuotified = isDoubleQuotified(key);
 
-		str += `\n ${
-			!keyIsValidIdentifier && !keyDoubleQuotified ? `"${key}"` : key
-		}: ${value},`;
+		str += `\n ${!keyIsValidIdentifier && !keyDoubleQuotified ? `"${key}"` : key
+			}: ${value},`;
 	});
 
 	str += '}';
