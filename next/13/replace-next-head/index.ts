@@ -19,7 +19,7 @@ import type {
 } from '@intuita-inc/repomod-engine-api';
 import type { fromMarkdown } from 'mdast-util-from-markdown';
 import type { visit } from 'unist-util-visit';
-import { posix, relative } from 'node:path';
+import { posix, relative, join } from 'node:path';
 /**
  * Copied from "../replace-next-head"
  */
@@ -863,6 +863,8 @@ type ComponentTreeNode = {
 	dependencies: Record<string, Dependency>;
 };
 
+type FileAPI = Parameters<NonNullable<Repomod<Dependencies>['handleFile']>>[0];
+
 let project: tsmorph.Project | null = null;
 
 const defaultCompilerOptions = {
@@ -900,13 +902,18 @@ const initTsMorphProject = async (
 	tsmorph: Dependencies['tsmorph'],
 	unifiedFileSystem: Dependencies['unifiedFileSystem'],
 	rootPath: string,
-	compilerOptions: tsmorph.CompilerOptions = defaultCompilerOptions,
+	compilerOptions?: tsmorph.CompilerOptions,
 ) => {
+	const _compilerOptions = {
+		...defaultCompilerOptions,
+		...compilerOptions,
+		baseUrl: rootPath,
+	};
+
 	project = new tsmorph.Project({
 		useInMemoryFileSystem: true,
 		skipFileDependencyResolution: true,
-		// @TODO pass resolved config
-		compilerOptions,
+		compilerOptions: _compilerOptions,
 	});
 
 	const allFilePaths = await unifiedFileSystem.getFilePaths(
@@ -969,10 +976,7 @@ const resolveModuleName = (path: string, containingPath: string) => {
 	);
 };
 
-const buildComponentTreeNode = async (
-	tsmorph: Dependencies['tsmorph'],
-	containingPath: string,
-) => {
+const buildComponentTreeNode = async (containingPath: string) => {
 	const treeNode: ComponentTreeNode = {
 		path: containingPath,
 		components: {},
@@ -981,11 +985,7 @@ const buildComponentTreeNode = async (
 		props: {},
 	};
 
-	if (project === null) {
-		return treeNode;
-	}
-
-	const sourceFile = project.getSourceFile(containingPath) ?? null;
+	const sourceFile = project?.getSourceFile(containingPath) ?? null;
 
 	if (sourceFile === null) {
 		return treeNode;
@@ -995,43 +995,40 @@ const buildComponentTreeNode = async (
 
 	treeNode.metadata = metadata;
 
-	treeNode.dependencies = Object.entries(dependencies ?? {}).reduce(
-		(acc, [key, val]) => {
-			if (
-				val.kind === SyntaxKind.ImportDeclaration &&
-				val.structure !== null
-			) {
-				const resolvedName =
-					resolveModuleName(
-						val.structure.moduleSpecifier ?? '',
-						containingPath,
-					) ?? '';
-
-				acc[key] = {
-					...val,
-					structure: {
-						...val.structure,
-						moduleSpecifier: resolvedName,
-					},
-				};
-
-				return acc;
-			}
-
-			acc[key] = val;
+	treeNode.dependencies = Object.entries(dependencies ?? {}).reduce<
+		Record<string, Dependency>
+	>((acc, [key, val]) => {
+		if (
+			val.kind === SyntaxKind.ImportDeclaration &&
+			val.structure !== null
+		) {
+			acc[key] = {
+				...val,
+				structure: {
+					...val.structure,
+					moduleSpecifier:
+						resolveModuleName(
+							val.structure.moduleSpecifier ?? '',
+							containingPath,
+						) ?? '',
+				},
+			};
 
 			return acc;
-		},
-		{} as Record<string, Dependency>,
-	);
+		}
+
+		acc[key] = val;
+
+		return acc;
+	}, {});
 
 	const importIdentifiersByImportPath =
 		collectedImportedIdentifiers(sourceFile);
 
 	const paths = importIdentifiersByImportPath.keys();
+
 	for (const path of paths) {
-		const resolvedFileName =
-			resolveModuleName(path, containingPath) ?? null;
+		const resolvedFileName = resolveModuleName(path, containingPath);
 
 		if (resolvedFileName === null) {
 			continue;
@@ -1091,10 +1088,8 @@ const buildComponentTree = async (
 	tsmorph: Dependencies['tsmorph'],
 	containingPath: string,
 ) => {
-	const node: ComponentTreeNode = await buildComponentTreeNode(
-		tsmorph,
-		containingPath,
-	);
+	const node: ComponentTreeNode =
+		await buildComponentTreeNode(containingPath);
 
 	const componentPaths = Object.keys(node.components);
 
@@ -1433,6 +1428,18 @@ const insertDependencies = (
 	});
 };
 
+// @TODO monorepo support
+const getTsCompilerOptions = async (api: FileAPI, baseUrl: string) => {
+	const tsConfigPath = join(baseUrl, 'tsconfig.json');
+
+	try {
+		const tsConfigStr = await api.readFile(tsConfigPath);
+		return JSON.parse(tsConfigStr).compilerOptions;
+	} catch (e) {
+		return {};
+	}
+};
+
 export const repomod: Repomod<Dependencies> = {
 	includePatterns: ['**/pages/**/*.{jsx,tsx,js,ts,cjs,ejs}'],
 	excludePatterns: ['**/node_modules/**', '**/pages/api/**'],
@@ -1440,13 +1447,16 @@ export const repomod: Repomod<Dependencies> = {
 		const { unifiedFileSystem, tsmorph } = api.getDependencies();
 		const parsedPath = posix.parse(path);
 
-		const projectDir = parsedPath.dir.split('pages')[0] ?? null;
+		const baseUrl = parsedPath.dir.split('pages')[0] ?? null;
 
-		if (projectDir === null) {
+		if (baseUrl === null) {
 			return [];
 		}
 
-		await initTsMorphProject(tsmorph, unifiedFileSystem, projectDir);
+		const { paths } = await getTsCompilerOptions(api, baseUrl);
+		await initTsMorphProject(tsmorph, unifiedFileSystem, baseUrl, {
+			paths,
+		});
 
 		const componentTree = await buildComponentTree(tsmorph, path);
 		const mergedMetadata = mergeMetadata(componentTree);
