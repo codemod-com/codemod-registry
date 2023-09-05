@@ -1894,4 +1894,35 @@ describe('next 13 replace-next-router', function () {
 
 		deepStrictEqual(actual, expected);
 	});
+
+	it('should not add React hook imports to type-only imports', () => {
+		const beforeText = `
+			import type { ReactNode } from 'react';
+			import { useRouter } from "next/router";
+
+			function Component(): JSX.Element {
+				const { asPath } = useRouter();
+
+				return asPath;
+			}
+		`;
+
+		const afterText = `
+			import { usePathname, useSearchParams } from "next/navigation";
+			import type { ReactNode } from 'react';
+			import { useCallback } from "react";
+
+			function Component(): JSX.Element {
+				const searchParams = useSearchParams();
+				/** TODO "pathname" no longer contains square-bracket expressions. Rewrite the code relying on them if required. **/
+				const pathname = usePathname();
+				const getPathAs = useCallback(() => \`\${pathname}?\${searchParams.toString() ?? ""}\`, [pathname, searchParams]);
+				return getPathAs();
+			}
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(actual, expected);
+	});
 });

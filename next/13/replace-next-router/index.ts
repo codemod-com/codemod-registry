@@ -965,7 +965,8 @@ export const handleSourceFile = (
 				.getImportDeclarations()
 				.find(
 					(importDeclaration) =>
-						importDeclaration.getModuleSpecifierValue() === 'react',
+						importDeclaration.getModuleSpecifierValue() ===
+							'react' && !importDeclaration.isTypeOnly(),
 				) ?? null;
 
 		if (importDeclaration === null) {
