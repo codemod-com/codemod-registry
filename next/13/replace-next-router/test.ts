@@ -1853,4 +1853,45 @@ describe('next 13 replace-next-router', function () {
 
 		deepStrictEqual(actual, expected);
 	});
+
+	it('should use different names for params and searchParams if the defaults are already used', () => {
+		const beforeText = `
+			import { useRouter } from "next/router";
+
+			function Component(): JSX.Element {
+				const { query, asPath } = useRouter();
+				const searchParams = 1;
+				const params = 2;
+
+				console.log(asPath);
+
+				return query.a;
+			}
+		`;
+
+		const afterText = `
+			import { useParams, usePathname, useSearchParams } from "next/navigation";
+			import { useCallback } from "react";
+
+			function Component(): JSX.Element {
+				const __params__ = useParams();
+				const __searchParams__ = useSearchParams();
+				/** TODO "pathname" no longer contains square-bracket expressions. Rewrite the code relying on them if required. **/
+				const pathname = usePathname();
+
+				const getParam = useCallback((p: string) => __params__[p] ?? __searchParams__.get(p), [__params__, __searchParams__]);
+				const getPathAs = useCallback(() => \`\${pathname}?\${__searchParams__.toString() ?? ""}\`, [pathname, __searchParams__]);
+				const searchParams = 1;
+				const params = 2;
+
+				console.log(getPathAs());
+
+				return getParam('a');
+			}
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(actual, expected);
+	});
 });
