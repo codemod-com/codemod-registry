@@ -113,18 +113,31 @@ class BlockLevelUsageManager {
 	private __pathnames: Set<string> = new Set();
 	private __params: Array<Param> = [];
 
-	public constructor() {}
+	public constructor(
+		private readonly __paramsIdentifierNameUsed: boolean | null,
+		private readonly __searchParamsIdentifierNameUsed: boolean | null,
+	) {}
 
 	public isRouterUsed(): boolean {
 		return this.__routerUsed;
 	}
 
-	public areParamsUsed(): boolean {
-		return this.__paramsUsed;
+	public getParamsIdentifierName(): string | null {
+		if (!this.__paramsUsed) {
+			return null;
+		}
+
+		return this.__paramsIdentifierNameUsed ? '__params__' : 'params';
 	}
 
-	public areSearchParamsUsed(): boolean {
-		return this.__searchParamsUsed;
+	public getSearchParamsIdentifierName(): string | null {
+		if (!this.__searchParamsUsed) {
+			return null;
+		}
+
+		return this.__searchParamsIdentifierNameUsed
+			? '__searchParams__'
+			: 'searchParams';
 	}
 
 	public isGetParamsUsed(): boolean {
@@ -629,7 +642,7 @@ const handleVariableDeclaration = (
 								`getPathAs().${rightNode}`,
 							);
 						} else {
-							node.replaceWithText('getPathAs(');
+							node.replaceWithText('getPathAs()');
 						}
 					});
 
@@ -796,7 +809,18 @@ const handleUseRouterIdentifier = (
 		return;
 	}
 
-	const blockLevelUsageManager = new BlockLevelUsageManager();
+	const blockIdentifiers = block.getDescendantsOfKind(
+		ts.SyntaxKind.Identifier,
+	);
+
+	const blockLevelUsageManager = new BlockLevelUsageManager(
+		blockIdentifiers.some(
+			(identifier) => identifier.compilerNode.text === 'params',
+		),
+		blockIdentifiers.some(
+			(identifier) => identifier.compilerNode.text === 'searchParams',
+		),
+	);
 
 	const parent = node.getParent();
 
@@ -810,14 +834,22 @@ const handleUseRouterIdentifier = (
 		fileLevelUsageManager.reportRouterUsed();
 	}
 
-	if (blockLevelUsageManager.areParamsUsed()) {
-		statements.push('const params = useParams();');
+	const paramsIdentifierName =
+		blockLevelUsageManager.getParamsIdentifierName();
+
+	if (paramsIdentifierName !== null) {
+		statements.push(`const ${paramsIdentifierName} = useParams();`);
 
 		fileLevelUsageManager.reportParamsUsed();
 	}
 
-	if (blockLevelUsageManager.areSearchParamsUsed()) {
-		statements.push('const searchParams = useSearchParams();');
+	const searchParamsIdentifierName =
+		blockLevelUsageManager.getSearchParamsIdentifierName();
+
+	if (searchParamsIdentifierName !== null) {
+		statements.push(
+			`const ${searchParamsIdentifierName} = useSearchParams();`,
+		);
 
 		fileLevelUsageManager.reportSearchParamsUsed();
 	}
@@ -831,17 +863,24 @@ const handleUseRouterIdentifier = (
 		fileLevelUsageManager.reportPathnameUsed();
 	}
 
-	if (blockLevelUsageManager.isGetParamsUsed()) {
+	if (
+		blockLevelUsageManager.isGetParamsUsed() &&
+		paramsIdentifierName != null &&
+		searchParamsIdentifierName !== null
+	) {
 		statements.push(
-			'const getParam = useCallback((p: string) => params[p] ?? searchParams.get(p), [params, searchParams]);',
+			`const getParam = useCallback((p: string) => ${paramsIdentifierName}[p] ?? ${searchParamsIdentifierName}.get(p), [${paramsIdentifierName}, ${searchParamsIdentifierName}]);`,
 		);
 
 		fileLevelUsageManager.useCallbackUsed = true;
 	}
 
-	if (blockLevelUsageManager.isGetPathAsUsed()) {
+	if (
+		blockLevelUsageManager.isGetPathAsUsed() &&
+		searchParamsIdentifierName !== null
+	) {
 		statements.push(
-			'const getPathAs = useCallback(() => `${pathname}?${searchParams.toString() ?? ""}`, [pathname, searchParams]);',
+			`const getPathAs = useCallback(() => \`\${pathname}?\${${searchParamsIdentifierName}.toString() ?? ""}\`, [pathname, ${searchParamsIdentifierName}]);`,
 		);
 
 		fileLevelUsageManager.useCallbackUsed = true;
