@@ -222,7 +222,7 @@ const getDependenciesForIdentifiers = (
 				firstDefinition.getKind() === syntaxKind
 					? firstDefinition
 					: firstDefinition.getFirstAncestorByKind(syntaxKind) ??
-					null;
+					  null;
 		}
 
 		if (ancestor === null) {
@@ -252,10 +252,14 @@ const getDependenciesForIdentifiers = (
 
 				const parent = i.getParent();
 
-				return !Node.isBindingElement(parent) &&
+				return (
+					!Node.isBindingElement(parent) &&
 					!Node.isPropertyAssignment(parent) &&
-					!(Node.isPropertyAccessExpression(parent) &&
-						i.getChildIndex() !== 0)
+					!(
+						Node.isPropertyAccessExpression(parent) &&
+						i.getChildIndex() !== 0
+					)
+				);
 			});
 
 		const dependenciesOfAncestor =
@@ -862,9 +866,10 @@ function formatObjectAsString(metadataObject: Record<string, any>) {
 			const keyDoubleQuotified = isDoubleQuotified(key);
 
 			pairs.push(
-				`${!keyIsValidIdentifier && !keyDoubleQuotified
-					? `"${key}"`
-					: key
+				`${
+					!keyIsValidIdentifier && !keyDoubleQuotified
+						? `"${key}"`
+						: key
 				}: ${value}`,
 			);
 		}
