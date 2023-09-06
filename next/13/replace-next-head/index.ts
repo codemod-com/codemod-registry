@@ -250,6 +250,22 @@ const handleJsxSelfClosingElement = (
 		return;
 	}
 
+	const parent = jsxSelfClosingElement.getParent();
+	const parentIsBinaryExpression = Node.isBinaryExpression(parent);
+	if (parentIsBinaryExpression) {
+		const leftExpression = parent.getLeft();
+
+		const identifiers = leftExpression.getDescendantsOfKind(
+			SyntaxKind.Identifier,
+		);
+		const dependencies = getDependenciesForIdentifiers(identifiers);
+
+		settingsContainer.set((prev) => ({
+			...prev,
+			dependencies: { ...prev.dependencies, ...dependencies },
+		}));
+	}
+
 	const metadataAttributes = jsxSelfClosingElement
 		.getAttributes()
 		.filter((attribute): attribute is JsxAttribute =>
@@ -268,9 +284,11 @@ const handleJsxSelfClosingElement = (
 					SyntaxKind.Identifier,
 				);
 
+				const dependencies = getDependenciesForIdentifiers(identifiers);
+
 				settingsContainer.set((prev) => ({
 					...prev,
-					dependencies: getDependenciesForIdentifiers(identifiers),
+					dependencies: { ...prev.dependencies, ...dependencies },
 				}));
 
 				metadataAttributes[name] = initializer.getText();
@@ -347,6 +365,36 @@ const handleHeadChildJsxElement = (
 	);
 };
 
+const handleHeadChild = (
+	child: Node,
+	metadataContainer: Container<Record<string, any>>,
+	settingsContainer: Container<Record<string, any>>,
+) => {
+	if (Node.isJsxElement(child)) {
+		handleHeadChildJsxElement(child, metadataContainer, settingsContainer);
+	}
+
+	if (Node.isJsxSelfClosingElement(child)) {
+		handleJsxSelfClosingElement(
+			child,
+			metadataContainer,
+			settingsContainer,
+		);
+	}
+
+	if (Node.isJsxExpression(child)) {
+		const expression = child.getExpression();
+
+		if (Node.isBinaryExpression(expression)) {
+			handleHeadChild(
+				expression.getRight(),
+				metadataContainer,
+				settingsContainer,
+			);
+		}
+	}
+};
+
 const handleHeadJsxElement = (
 	headJsxElement: JsxElement,
 	metadataContainer: Container<Record<string, any>>,
@@ -355,19 +403,7 @@ const handleHeadJsxElement = (
 	const jsxChildren = headJsxElement.getJsxChildren();
 
 	jsxChildren.forEach((child) => {
-		if (Node.isJsxElement(child)) {
-			handleHeadChildJsxElement(
-				child,
-				metadataContainer,
-				settingsContainer,
-			);
-		} else if (Node.isJsxSelfClosingElement(child)) {
-			handleJsxSelfClosingElement(
-				child,
-				metadataContainer,
-				settingsContainer,
-			);
-		}
+		handleHeadChild(child, metadataContainer, settingsContainer);
 	});
 };
 
@@ -780,41 +816,39 @@ const isValidIdentifier = (identifierName: string): boolean => {
 const isDoubleQuotified = (str: string) =>
 	str.startsWith('"') && str.endsWith('"');
 
-// @TODO refactor this
-const buildMetadataObjectStr = (metadataObject: Record<string, any>) => {
-	let str = '{';
-	Object.keys(metadataObject).forEach((key) => {
-		const val = metadataObject[key];
-		let value = '';
-		if (typeof val === 'string') {
-			value = val;
-		} else if (Array.isArray(val)) {
-			value = `[${val
-				.map((item) =>
-					typeof item === 'string'
-						? item
-						: buildMetadataObjectStr(item),
-				)
-				.join()}]`;
-		} else if (typeof val === 'object' && val !== null) {
-			value = buildMetadataObjectStr(val);
+function formatObjectAsString(metadataObject: Record<string, any>) {
+	const pairs: string[] = [];
+
+	for (const [key, value] of Object.entries(metadataObject)) {
+		if (Array.isArray(value)) {
+			const formattedArray = value.map((element) =>
+				typeof element === 'object' && element !== null
+					? formatObjectAsString(element)
+					: JSON.stringify(element),
+			);
+
+			pairs.push(`${key}: ${formattedArray.toString()}`);
+		} else if (typeof value === 'object' && value !== null) {
+			pairs.push(`${key}: ${formatObjectAsString(value)}`);
+		} else {
+			const keyIsValidIdentifier = isValidIdentifier(key);
+			const keyDoubleQuotified = isDoubleQuotified(key);
+
+			pairs.push(
+				`${
+					!keyIsValidIdentifier && !keyDoubleQuotified
+						? `"${key}"`
+						: key
+				}: ${value}`,
+			);
 		}
+	}
 
-		const keyIsValidIdentifier = isValidIdentifier(key);
-		const keyDoubleQuotified = isDoubleQuotified(key);
-
-		str += `\n ${
-			!keyIsValidIdentifier && !keyDoubleQuotified ? `"${key}"` : key
-		}: ${value},`;
-	});
-
-	str += '}';
-
-	return str;
-};
+	return `{ ${pairs.join(', ')} }`;
+}
 
 const buildMetadataStatement = (metadataObject: Record<string, unknown>) => {
-	return `export const metadata: Metadata = ${buildMetadataObjectStr(
+	return `export const metadata: Metadata = ${formatObjectAsString(
 		metadataObject,
 	)}`;
 };
@@ -1204,7 +1238,7 @@ const insertGenerateMetadataFunctionDeclaration = (
 					
 				  const ${propsParameterText} = getStaticPropsResult.props;
 					
-					return ${buildMetadataObjectStr(metadataObject)};
+					return ${formatObjectAsString(metadataObject)};
 					}	`,
 	);
 };
