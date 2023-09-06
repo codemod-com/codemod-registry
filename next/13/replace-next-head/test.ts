@@ -225,6 +225,59 @@ describe('next 13 replace-next-head', function () {
 		);
 	});
 
+	it('should move definitions of identifiers used in meta tag expr to the Page file: recursive dependencies', async function (this: Context) {
+		const A_CONTENT = `
+		import Meta from '../../components/a.tsx';
+		export default function Page() {
+			return <Meta />;
+		}
+`;
+
+		const A_COMPONENT_CONTENT = `
+		import Head from 'next/head';
+		
+		const c = { d: { k: "a" }};
+		const b = function() { return c };
+		const a = "a" + b;
+
+		export default function Meta() {
+			return (
+			<Head>
+				<title>{a}</title>
+			</Head>
+			)
+		}
+`;
+
+		const [command] = await transform({
+			'/opt/project/pages/a/index.tsx': A_CONTENT,
+			'/opt/project/components/a.tsx': A_COMPONENT_CONTENT,
+			'/opt/project/utils/index.ts': '',
+		});
+
+		const expectedResult = `import { Metadata } from "next";
+		import Meta from '../../components/a.tsx';
+		const c = { d: { k: "a" }};
+		const b = function() { return c };
+		const a = "a" + b;
+
+		
+		export const metadata: Metadata = {
+				title: \`\${a}\`,
+		};
+		export default function Page() {
+				return <Meta />;
+		}`;
+
+		deepStrictEqual(command?.kind, 'upsertFile');
+		deepStrictEqual(command.path, '/opt/project/pages/a/index.tsx');
+
+		deepStrictEqual(
+			command.data.replace(/\W/gm, ''),
+			expectedResult.replace(/\W/gm, ''),
+		);
+	});
+
 	it('should move identifier definitions that are ImportDeclarations, should update the moduleSpecifier when moved ', async function (this: Context) {
 		const A_CONTENT = `
 			import Meta from '../../components/a.tsx';
