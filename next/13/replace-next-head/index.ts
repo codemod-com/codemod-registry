@@ -1381,7 +1381,7 @@ const getTsCompilerOptions = async (api: FileAPI, baseUrl: string) => {
 };
 
 export const repomod: Repomod<Dependencies> = {
-	includePatterns: ['**/*.{jsx,tsx,js,ts,cjs,ejs}'],
+	includePatterns: ['**/pages/**/*.{jsx,tsx,js,ts,cjs,ejs}'],
 	excludePatterns: ['**/node_modules/**', '**/pages/api/**'],
 	handleFile: async (api, path, options) => {
 		const { unifiedFileSystem, tsmorph } = api.getDependencies();
