@@ -234,6 +234,37 @@ const getDependenciesForIdentifiers = (
 			structure: getStructure(ancestor),
 			kind: ancestor.getKind(),
 		};
+
+		// recursivelly check for dependencies until reached parameter or import
+		if (
+			Node.isImportDeclaration(ancestor) ||
+			Node.isParameterDeclaration(ancestor)
+		) {
+			return;
+		}
+
+		const ancestorIdentifiers = ancestor
+			.getDescendantsOfKind(SyntaxKind.Identifier)
+			.filter((i) => {
+				if (i.getText() === identifier.getText()) {
+					return false;
+				}
+
+				const parent = i.getParent();
+
+				return (
+					!Node.isBindingElement(parent) &&
+					!Node.isPropertyAssignment(parent) &&
+					!(
+						Node.isPropertyAccessExpression(parent) &&
+						i.getChildIndex() !== 0
+					)
+				);
+			});
+
+		const dependenciesOfAncestor =
+			getDependenciesForIdentifiers(ancestorIdentifiers);
+		Object.assign(dependencies, dependenciesOfAncestor);
 	});
 
 	return dependencies;
