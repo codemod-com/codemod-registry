@@ -11,6 +11,7 @@ import tsmorph, {
 	ImportDeclarationStructure,
 	JsxExpression,
 	StringLiteral,
+	JsxAttribute,
 } from 'ts-morph';
 
 import type {
@@ -23,13 +24,6 @@ import { posix, relative, join } from 'node:path';
 /**
  * Copied from "../replace-next-head"
  */
-
-type HTMLTagName = 'title' | 'meta' | 'link';
-type HTMLAttributes = Record<string, string>;
-type ParsedMetadataTag = {
-	HTMLTagName: HTMLTagName;
-	HTMLAttributes: HTMLAttributes;
-};
 
 type Dependency = {
 	kind: SyntaxKind;
@@ -143,30 +137,6 @@ export const camelize = (str: string) =>
 		return (g[1] ?? '').toUpperCase();
 	});
 
-const getTagPropertyName = (
-	HTMLTagName: HTMLTagName,
-	HTMLAttributes: HTMLAttributes,
-) => {
-	if (HTMLTagName === 'title') {
-		return HTMLTagName;
-	}
-
-	if (HTMLTagName === 'meta') {
-		return (
-			(HTMLAttributes.name ?? HTMLAttributes.property)?.replace(
-				/\"/g,
-				'',
-			) ?? null
-		);
-	}
-
-	if (HTMLTagName === 'link') {
-		return HTMLAttributes.rel?.replace(/\"/g, '') ?? null;
-	}
-
-	return null;
-};
-
 export const buildContainer = <T>(initialValue: T) => {
 	let currentValue: T = initialValue;
 
@@ -276,20 +246,24 @@ const handleJsxSelfClosingElement = (
 ) => {
 	const tagName = jsxSelfClosingElement.getTagNameNode().getText();
 
-	if (tagName !== 'link' && tagName !== 'meta') {
+	if (!['link', 'meta'].includes(tagName)) {
 		return;
 	}
 
-	const attributes = jsxSelfClosingElement.getAttributes();
-	const attributesObject: Record<string, string> = {};
-
-	attributes.forEach((attribute) => {
-		if (Node.isJsxAttribute(attribute)) {
+	const metadataAttributes = jsxSelfClosingElement
+		.getAttributes()
+		.filter((attribute): attribute is JsxAttribute =>
+			Node.isJsxAttribute(attribute),
+		)
+		.reduce<Record<string, string>>((metadataAttributes, attribute) => {
 			const name = attribute.getNameNode().getText();
 			const initializer = attribute.getInitializer();
+
 			if (Node.isStringLiteral(initializer)) {
-				attributesObject[name] = initializer.getText();
-			} else if (Node.isJsxExpression(initializer)) {
+				metadataAttributes[name] = initializer.getFullText();
+			}
+
+			if (Node.isJsxExpression(initializer)) {
 				const identifiers = initializer.getDescendantsOfKind(
 					SyntaxKind.Identifier,
 				);
@@ -299,24 +273,23 @@ const handleJsxSelfClosingElement = (
 					dependencies: getDependenciesForIdentifiers(identifiers),
 				}));
 
-				attributesObject[name] =
-					initializer.getExpression()?.getText() ?? '';
+				metadataAttributes[name] = initializer.getText();
 			}
-		}
-	});
 
-	const parsedTag = {
-		HTMLTagName: tagName as HTMLTagName,
-		HTMLAttributes: attributesObject,
-	};
+			return metadataAttributes;
+		}, {});
 
-	const name = getTagPropertyName(
-		parsedTag.HTMLTagName,
-		parsedTag.HTMLAttributes,
-	);
+	const metadataName = (
+		tagName === 'link'
+			? metadataAttributes.rel
+			: metadataAttributes.name ?? metadataAttributes.property
+	)?.replace(/\"/g, '');
 
-	if (name && knownNames.includes(name)) {
-		handleTag(parsedTag, metadataContainer);
+	if (metadataName && knownNames.includes(metadataName)) {
+		handleTag(
+			{ tagName, metadataName, metadataAttributes },
+			metadataContainer,
+		);
 	}
 };
 
@@ -334,8 +307,7 @@ const handleHeadChildJsxElement = (
 	let text = '';
 	children.forEach((child) => {
 		if (Node.isJsxText(child)) {
-			const t = child.getFullText();
-			text += t;
+			text += child.getFullText();
 		} else if (Node.isJsxExpression(child)) {
 			const expression = child.getExpression();
 			const identifiers = child.getDescendantsOfKind(
@@ -363,21 +335,16 @@ const handleHeadChildJsxElement = (
 		}
 	});
 
-	const parsedTag = {
-		HTMLTagName: 'title' as const,
-		HTMLAttributes: {
-			children: `\`${text}\``,
+	handleTag(
+		{
+			tagName: 'title',
+			metadataName: 'title',
+			metadataAttributes: {
+				children: `\`${text}\``,
+			},
 		},
-	};
-
-	const name = getTagPropertyName(
-		parsedTag.HTMLTagName,
-		parsedTag.HTMLAttributes,
+		metadataContainer,
 	);
-
-	if (name && knownNames.includes(name)) {
-		handleTag(parsedTag, metadataContainer);
-	}
 };
 
 const handleHeadJsxElement = (
@@ -447,39 +414,43 @@ export const handleImportDeclaration = (
 };
 
 export const handleTag = (
-	{ HTMLTagName, HTMLAttributes }: ParsedMetadataTag,
+	{
+		tagName,
+		metadataName,
+		metadataAttributes,
+	}: {
+		tagName: string;
+		metadataName: string;
+		metadataAttributes: Record<string, string>;
+	},
 	metadataContainer: Container<Record<string, any>>,
 ) => {
 	const metadataObject = metadataContainer.get();
-	const name = getTagPropertyName(HTMLTagName, HTMLAttributes);
-	if (name === null) {
-		return;
+
+	if (metadataName === 'title') {
+		metadataObject[metadataName] = metadataAttributes.children ?? '';
 	}
 
-	if (HTMLTagName === 'title') {
-		metadataObject[HTMLTagName] = HTMLAttributes.children ?? '';
-	}
+	if (tagName === 'meta') {
+		const content = metadataAttributes.content;
 
-	if (HTMLTagName === 'meta') {
-		const content = HTMLAttributes.content;
-
-		if (otherMetaTags.includes(name)) {
+		if (otherMetaTags.includes(metadataName)) {
 			if (!metadataObject.other) {
 				metadataObject.other = {};
 			}
 
-			metadataObject.other[name] = content;
+			metadataObject.other[metadataName] = content;
 			return;
 		}
 
-		if (name.startsWith('article')) {
-			const { content } = HTMLAttributes;
+		if (metadataName.startsWith('article')) {
+			const { content } = metadataAttributes;
 
 			if (!metadataObject.openGraph) {
 				metadataObject.openGraph = {};
 			}
 
-			if (name === 'article:author') {
+			if (metadataName === 'article:author') {
 				if (!metadataObject.openGraph.authors) {
 					metadataObject.openGraph.authors = [];
 				}
@@ -489,7 +460,7 @@ export const handleTag = (
 				return;
 			}
 
-			if (name === 'article:tag') {
+			if (metadataName === 'article:tag') {
 				if (!metadataObject.openGraph.tags) {
 					metadataObject.openGraph.tags = [];
 				}
@@ -499,13 +470,14 @@ export const handleTag = (
 				return;
 			}
 
-			metadataObject.openGraph[camelize(name.replace('article:', ''))] =
-				content;
+			metadataObject.openGraph[
+				camelize(metadataName.replace('article:', ''))
+			] = content;
 
 			return;
 		}
 
-		if (name === 'author') {
+		if (metadataName === 'author') {
 			if (!metadataObject.authors) {
 				metadataObject.authors = [];
 			}
@@ -514,8 +486,8 @@ export const handleTag = (
 			return;
 		}
 
-		if (name === 'theme-color') {
-			const { content, media } = HTMLAttributes;
+		if (metadataName === 'theme-color') {
+			const { content, media } = metadataAttributes;
 
 			if (!content && !media) {
 				return;
@@ -535,32 +507,35 @@ export const handleTag = (
 			return;
 		}
 
-		if (name === 'googlebot') {
+		if (metadataName === 'googlebot') {
 			return;
 		}
 
-		if (name.startsWith('og:')) {
-			const n = camelize(name.replace('og:', ''));
+		if (metadataName.startsWith('og:')) {
+			const n = camelize(metadataName.replace('og:', ''));
 
 			if (!metadataObject.openGraph) {
 				metadataObject.openGraph = {};
 			}
 
 			// image structured property
-			if (name.startsWith('og:image')) {
-				const { content } = HTMLAttributes;
+			if (metadataName.startsWith('og:image')) {
+				const { content } = metadataAttributes;
 
 				if (!metadataObject.openGraph.images) {
 					metadataObject.openGraph.images = [];
 				}
 
-				if (name === 'og:image:url' || name === 'og:image') {
+				if (
+					metadataName === 'og:image:url' ||
+					metadataName === 'og:image'
+				) {
 					metadataObject.openGraph.images.push({
 						url: content,
 					});
 				} else {
 					const image = metadataObject.openGraph.images.at(-1);
-					const propName = name.replace('og:image:', '');
+					const propName = metadataName.replace('og:image:', '');
 
 					image[propName] = content;
 				}
@@ -568,20 +543,20 @@ export const handleTag = (
 				return;
 			}
 
-			if (name.startsWith('og:audio')) {
-				const { content } = HTMLAttributes;
+			if (metadataName.startsWith('og:audio')) {
+				const { content } = metadataAttributes;
 
 				if (!metadataObject.openGraph.audio) {
 					metadataObject.openGraph.audio = [];
 				}
 
-				if (name === 'og:audio') {
+				if (metadataName === 'og:audio') {
 					metadataObject.openGraph.audio.push({
 						url: content,
 					});
 				} else {
 					const audio = metadataObject.openGraph.audio.at(-1);
-					const propName = name.replace('og:audio:', '');
+					const propName = metadataName.replace('og:audio:', '');
 
 					audio[camelize(propName)] = content;
 				}
@@ -589,20 +564,20 @@ export const handleTag = (
 				return;
 			}
 
-			if (name.startsWith('og:video')) {
-				const { content } = HTMLAttributes;
+			if (metadataName.startsWith('og:video')) {
+				const { content } = metadataAttributes;
 
 				if (!metadataObject.openGraph.videos) {
 					metadataObject.openGraph.videos = [];
 				}
 
-				if (name === 'og:video') {
+				if (metadataName === 'og:video') {
 					metadataObject.openGraph.videos.push({
 						url: content,
 					});
 				} else {
 					const video = metadataObject.openGraph.videos.at(-1);
-					const propName = name.replace('og:video:', '');
+					const propName = metadataName.replace('og:video:', '');
 
 					video[camelize(propName)] = content;
 				}
@@ -610,8 +585,8 @@ export const handleTag = (
 				return;
 			}
 
-			if (name === 'og:locale:alternate') {
-				const { content } = HTMLAttributes;
+			if (metadataName === 'og:locale:alternate') {
+				const { content } = metadataAttributes;
 
 				if (!metadataObject.openGraph.alternateLocale) {
 					metadataObject.openGraph.alternateLocale = [];
@@ -625,19 +600,19 @@ export const handleTag = (
 			return;
 		}
 
-		if (name.startsWith('twitter:')) {
-			const n = camelize(name.replace('twitter:', ''));
+		if (metadataName.startsWith('twitter:')) {
+			const n = camelize(metadataName.replace('twitter:', ''));
 
 			if (!metadataObject.twitter) {
 				metadataObject.twitter = {};
 			}
 
-			if (name === 'twitter:site:id') {
+			if (metadataName === 'twitter:site:id') {
 				metadataObject.twitter.siteId = content;
 				return;
 			}
 
-			if (name === 'twitter:creator:id') {
+			if (metadataName === 'twitter:creator:id') {
 				metadataObject.twitter.creatorId = content;
 				return;
 			}
@@ -652,12 +627,12 @@ export const handleTag = (
 			y_key: 'yahoo',
 		};
 
-		if (Object.keys(verification).includes(name)) {
+		if (Object.keys(verification).includes(metadataName)) {
 			if (!metadataObject.verification) {
 				metadataObject.verification = {};
 			}
 
-			const propName = verification[name];
+			const propName = verification[metadataName];
 
 			if (!propName) {
 				return;
@@ -667,18 +642,18 @@ export const handleTag = (
 			return;
 		}
 
-		if (name === 'format-detection') {
+		if (metadataName === 'format-detection') {
 			return;
 		}
 
-		const propertyName = camelize(name);
+		const propertyName = camelize(metadataName);
 		metadataObject[propertyName] = content;
 	}
 
-	if (HTMLTagName === 'link') {
-		const content = HTMLAttributes.href;
+	if (tagName === 'link') {
+		const content = metadataAttributes.href;
 
-		if (name === 'author') {
+		if (metadataName === 'author') {
 			if (metadataObject.authors.length === 0) {
 				return;
 			}
@@ -689,26 +664,26 @@ export const handleTag = (
 			return;
 		}
 
-		if (['archives', 'assets', 'bookmarks'].includes(name)) {
-			if (!metadataObject[name]) {
-				metadataObject[name] = [];
+		if (['archives', 'assets', 'bookmarks'].includes(metadataName)) {
+			if (!metadataObject[metadataName]) {
+				metadataObject[metadataName] = [];
 			}
 
-			metadataObject[name].push(content);
+			metadataObject[metadataName].push(content);
 
 			return;
 		}
 
-		if (['canonical', 'alternate'].includes(name)) {
+		if (['canonical', 'alternate'].includes(metadataName)) {
 			if (!metadataObject.alternates) {
 				metadataObject.alternates = {};
 			}
 
-			if (name === 'canonical') {
-				metadataObject.alternates[name] = content;
+			if (metadataName === 'canonical') {
+				metadataObject.alternates[metadataName] = content;
 			}
 
-			const { hreflang, media, type, href } = HTMLAttributes;
+			const { hreflang, media, type, href } = metadataAttributes;
 
 			if (hreflang) {
 				if (!metadataObject.alternates.languages) {
@@ -749,9 +724,9 @@ export const handleTag = (
 			),
 		};
 
-		if (Object.keys(icons).includes(name)) {
-			const iconTypeName = icons[name];
-			const { sizes, type, href, rel } = HTMLAttributes;
+		if (Object.keys(icons).includes(metadataName)) {
+			const iconTypeName = icons[metadataName];
+			const { sizes, type, href, rel } = metadataAttributes;
 
 			if (!iconTypeName) {
 				return;
@@ -765,7 +740,7 @@ export const handleTag = (
 				metadataObject.icons[iconTypeName] = [];
 			}
 
-			const shouldIncludeRel = otherIcons.includes(name);
+			const shouldIncludeRel = otherIcons.includes(metadataName);
 
 			const iconMetadataObject = {
 				...(sizes && { sizes }),
@@ -778,11 +753,11 @@ export const handleTag = (
 			return;
 		}
 
-		if (name.startsWith('al:')) {
+		if (metadataName.startsWith('al:')) {
 			return;
 		}
 
-		const propertyName = camelize(name);
+		const propertyName = camelize(metadataName);
 		metadataObject[propertyName] = content;
 	}
 
@@ -855,10 +830,9 @@ type Dependencies = Readonly<{
 	unifiedFileSystem: UnifiedFileSystem;
 }>;
 
-type ComponentTreeNode = {
+type MetadataTreeNode = {
 	path: string;
-	components: Record<string, ComponentTreeNode>;
-	props: Record<string, string>;
+	components: Record<string, MetadataTreeNode>;
 	metadata: Record<string, unknown>;
 	dependencies: Record<string, Dependency>;
 };
@@ -928,36 +902,6 @@ const initTsMorphProject = async (
 	}
 };
 
-const collectedImportedIdentifiers = (sourceFile: SourceFile) => {
-	const result = new Map<string, Identifier[]>();
-
-	const importDeclarations = sourceFile.getImportDeclarations();
-
-	importDeclarations.forEach((importDeclaration) => {
-		const moduleSpecifierValue =
-			importDeclaration.getModuleSpecifierValue();
-		const importSpecifiers = importDeclaration.getNamedImports();
-
-		if (!result.has(moduleSpecifierValue)) {
-			result.set(moduleSpecifierValue, []);
-		}
-
-		const identifiers = result.get(moduleSpecifierValue) ?? [];
-
-		importSpecifiers.forEach((importSpecifier) => {
-			identifiers.push(importSpecifier.getNameNode());
-		});
-
-		const defaultImport = importDeclaration.getDefaultImport() ?? null;
-
-		if (defaultImport !== null) {
-			identifiers.push(defaultImport);
-		}
-	});
-
-	return result;
-};
-
 const resolveModuleName = (path: string, containingPath: string) => {
 	if (project === null) {
 		return null;
@@ -976,13 +920,35 @@ const resolveModuleName = (path: string, containingPath: string) => {
 	);
 };
 
-const buildComponentTreeNode = async (containingPath: string) => {
-	const treeNode: ComponentTreeNode = {
+const getComponentPaths = (sourceFile: SourceFile) => {
+	const paths = sourceFile
+		.getDescendants()
+		.filter(
+			(d): d is JsxOpeningElement | JsxSelfClosingElement =>
+				Node.isJsxOpeningElement(d) || Node.isJsxSelfClosingElement(d),
+		)
+		.map((componentTag) => {
+			const nameNode = componentTag.getTagNameNode();
+			const declaration = nameNode.getSymbol()?.getDeclarations()[0];
+
+			return (
+				declaration
+					?.getFirstAncestorByKind(SyntaxKind.ImportDeclaration)
+					?.getModuleSpecifier()
+					.getLiteralText() ?? null
+			);
+		})
+		.filter((path): path is string => path !== null);
+
+	return Array.from(new Set(paths));
+};
+
+const buildMetadataTreeNode = (containingPath: string) => {
+	const treeNode: MetadataTreeNode = {
 		path: containingPath,
 		components: {},
 		metadata: {},
 		dependencies: {},
-		props: {},
 	};
 
 	const sourceFile = project?.getSourceFile(containingPath) ?? null;
@@ -1022,94 +988,32 @@ const buildComponentTreeNode = async (containingPath: string) => {
 		return acc;
 	}, {});
 
-	const importIdentifiersByImportPath =
-		collectedImportedIdentifiers(sourceFile);
-
-	const paths = importIdentifiersByImportPath.keys();
-
-	for (const path of paths) {
+	getComponentPaths(sourceFile).forEach((path) => {
 		const resolvedFileName = resolveModuleName(path, containingPath);
 
 		if (resolvedFileName === null) {
-			continue;
+			return;
 		}
 
-		const identifiers = importIdentifiersByImportPath.get(path) ?? [];
-		identifiers.forEach((identifier) => {
-			const refs = identifier.findReferencesAsNodes();
-
-			let jsxElement:
-				| JsxSelfClosingElement
-				| JsxOpeningElement
-				| undefined;
-
-			refs.forEach((ref) => {
-				const parent = ref.getParent();
-
-				if (
-					Node.isJsxSelfClosingElement(parent) ||
-					Node.isJsxOpeningElement(parent)
-				) {
-					jsxElement = parent;
-				}
-			});
-
-			if (jsxElement !== undefined) {
-				treeNode.components[resolvedFileName] = {
-					path,
-					props: {},
-					metadata: {},
-					components: {},
-					dependencies: {},
-				};
-				const attributes = jsxElement.getAttributes();
-				attributes.forEach((attribute) => {
-					if (Node.isJsxAttribute(attribute)) {
-						const name = attribute.getNameNode().getText();
-						const initializer = attribute.getInitializer();
-
-						if (Node.isStringLiteral(initializer)) {
-							treeNode.components[resolvedFileName]!.props[name] =
-								initializer.getText();
-						} else if (Node.isJsxExpression(initializer)) {
-							treeNode.components[resolvedFileName]!.props[name] =
-								initializer.getExpression()?.getText() ?? '';
-						}
-					}
-				});
-			}
-		});
-	}
+		treeNode.components[resolvedFileName] =
+			buildMetadataTreeNode(resolvedFileName);
+	});
 
 	return treeNode;
 };
 
-const buildComponentTree = async (
-	tsmorph: Dependencies['tsmorph'],
-	containingPath: string,
-) => {
-	const node: ComponentTreeNode =
-		await buildComponentTreeNode(containingPath);
-
-	const componentPaths = Object.keys(node.components);
-
-	for (const path of componentPaths) {
-		node.components[path] = await buildComponentTree(tsmorph, path);
-	}
-
-	return node;
-};
-
-const mergeMetadata = (
-	treeNode: ComponentTreeNode,
-): Record<string, unknown> => {
+const mergeMetadata = (treeNode: MetadataTreeNode): Record<string, unknown> => {
 	const currentComponentMetadata = treeNode.metadata;
 
 	return Object.entries(treeNode.components)
 		.map((arr) => mergeMetadata(arr[1]))
-		.reduce((mergedMetadata, childMetadata) => {
-			return { ...mergedMetadata, ...childMetadata };
-		}, currentComponentMetadata);
+		.reduce(
+			(mergedMetadata, childMetadata) => ({
+				...mergedMetadata,
+				...childMetadata,
+			}),
+			currentComponentMetadata,
+		);
 };
 
 const findComponentByModuleSpecifier = (
@@ -1211,9 +1115,9 @@ const findComponentPropValue = (
 };
 
 const mergeDependencies = (
-	treeNode: ComponentTreeNode,
+	treeNode: MetadataTreeNode,
 	rootPath: string,
-): ComponentTreeNode => {
+): MetadataTreeNode => {
 	const currentComponentDependencies = treeNode.dependencies;
 
 	treeNode.dependencies = Object.entries(treeNode.components)
@@ -1458,10 +1362,11 @@ export const repomod: Repomod<Dependencies> = {
 			paths,
 		});
 
-		const componentTree = await buildComponentTree(tsmorph, path);
-		const mergedMetadata = mergeMetadata(componentTree);
+		const metadataTree = buildMetadataTreeNode(path);
+
+		const mergedMetadata = mergeMetadata(metadataTree);
 		const { dependencies: mergedDependencies } = mergeDependencies(
-			componentTree,
+			metadataTree,
 			path,
 		);
 
