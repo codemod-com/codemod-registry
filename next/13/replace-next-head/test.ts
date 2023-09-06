@@ -681,6 +681,110 @@ describe('next 13 replace-next-head', function () {
 		);
 	});
 
+	it('should replace meta tags content: support link, meta and title tags', async function (this: Context) {
+		const INDEX_DATA = `
+		import Head from 'next/head';
+		
+	  export default function Page() {
+	    return (
+	        <Head>
+	          <title>a</title>
+						<meta name="description" content="a" />
+						<link
+							rel="icon"
+							href="a"
+						/>
+	        </Head>
+	    );
+	  }
+		`;
+
+		const [command] = await transform({
+			'/opt/project/pages/index.tsx': INDEX_DATA,
+		});
+
+		deepStrictEqual(command?.kind, 'upsertFile');
+		deepStrictEqual(command.path, '/opt/project/pages/index.tsx');
+
+		const NEW_DATA = `
+		import { Metadata } from "next";
+		import Head from 'next/head';
+	  export const metadata: Metadata = {
+			title: \`a\`,
+			description: "a", 
+			icons: {
+				icon: [
+					{ url: "a" }
+				],
+			}, 
+		};
+		
+	  export default function Page() {
+	    return (
+	        <Head>
+	        	<title>a</title>
+						<meta name="description" content="a" />
+						<link
+							rel="icon"
+							href="a"
+						/>
+	        </Head>
+	    );
+	  }
+		`;
+
+		deepStrictEqual(
+			command.data.replace(/\W/gm, ''),
+			NEW_DATA.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should replace meta tags content: support conditionally rendered meta tags', async function (this: Context) {
+		const INDEX_DATA = `
+		import Head from 'next/head';
+		
+		const condition = true;
+		
+	  export default function Page() {
+	    return (
+	        <Head>
+	          { condition && 	<meta name="description" content="a" /> }
+	        </Head>
+	    );
+	  }
+		`;
+
+		const [command] = await transform({
+			'/opt/project/pages/index.tsx': INDEX_DATA,
+		});
+
+		deepStrictEqual(command?.kind, 'upsertFile');
+		deepStrictEqual(command.path, '/opt/project/pages/index.tsx');
+
+		const NEW_DATA = `
+		import { Metadata } from "next";
+		import Head from 'next/head';
+		
+		export const metadata: Metadata = {
+			 description: "a"
+		};
+		
+		const condition = true;
+	  export default function Page() {
+	    return (
+	        <Head>
+					{ condition && 	<meta name="description" content="a" /> }
+	        </Head>
+	    );
+	  }
+		`;
+
+		deepStrictEqual(
+			command.data.replace(/\W/gm, ''),
+			NEW_DATA.replace(/\W/gm, ''),
+		);
+	});
+
 	it('should replace meta tag content: tag content can be a JSXText', async function (this: Context) {
 		const INDEX_DATA = `
 		import Head from 'next/head';
