@@ -940,7 +940,7 @@ const getComponentPaths = (sourceFile: SourceFile) => {
 		})
 		.filter((path): path is string => path !== null);
 
-	return [...new Set(paths)];
+	return Array.from(new Set(paths));
 };
 
 const buildMetadataTreeNode = (containingPath: string) => {
