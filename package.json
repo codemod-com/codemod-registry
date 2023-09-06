@@ -30,6 +30,7 @@
 		"esbuild": "^0.18.12",
 		"eslint": "^8.45.0",
 		"eslint-config-prettier": "^8.8.0",
+		"eslint-plugin-no-only-tests": "^3.1.0",
 		"eslint-plugin-prettier": "^5.0.0",
 		"eslint-plugin-react": "^7.33.0",
 		"glob": "^10.3.3",
