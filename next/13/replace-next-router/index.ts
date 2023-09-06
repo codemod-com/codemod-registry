@@ -238,19 +238,15 @@ const handlePushCallExpression = (node: CallExpression) => {
 		return;
 	}
 
-	const block = node.getFirstAncestorByKind(ts.SyntaxKind.Block);
 	const pathnameNode = arg.getProperty('pathname');
 
 	if (
-		!block ||
-		!Node.isExpressionStatement(grandParentNode) ||
 		!Node.isPropertyAssignment(pathnameNode) // `pathname` is required
 	) {
 		return;
 	}
 
 	const pathNameValue = pathnameNode.getInitializer()?.getText() ?? '';
-	const prevSiblingNodeCount = node.getPreviousSiblings().length;
 	const queryNode = arg.getProperty('query');
 
 	let newText = ``;
@@ -279,10 +275,21 @@ const handlePushCallExpression = (node: CallExpression) => {
 		newArgText = pathNameValue;
 	}
 
-	block.insertStatements(prevSiblingNodeCount + 1, newText);
 	arg.replaceWithText(newArgText);
-	// remove original `router.replace(...)` or `router.push(...)`
-	// grandParentNode.remove();
+
+	if (Node.isArrowFunction(grandParentNode)) {
+		const body = grandParentNode.getBody();
+
+		if (Node.isCallExpression(body)) {
+			body.replaceWithText(`{\n ${newText}\nreturn ${body.getText()}\n}`);
+		}
+	}
+
+	if (Node.isExpressionStatement(grandParentNode)) {
+		const block = node.getFirstAncestorByKind(ts.SyntaxKind.Block);
+		const prevSiblingNodeCount = node.getPreviousSiblings().length;
+		block?.insertStatements(prevSiblingNodeCount, newText);
+	}
 };
 
 // e.g. router.query
@@ -456,6 +463,7 @@ const handleRouterPropertyAccessExpression = (
 		blockLevelUsageManager.reportRouterUsage();
 
 		const parentNode = node.getParent();
+
 		if (Node.isCallExpression(parentNode)) {
 			handlePushCallExpression(parentNode);
 		}

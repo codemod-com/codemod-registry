@@ -1389,9 +1389,9 @@ describe('next 13 replace-next-router', function () {
 	  		import { useRouter } from "next/navigation";
 
 			function Component() {
-				const router = useRouter();
 				const urlSearchParams = new URLSearchParams()
 				urlSearchParams.set('callbackUrl', \`/apps/\${slug}/setup\`);
+				const router = useRouter();
 				router.replace(\`/auth/login?\${urlSearchParams.toString()}\`);
 			}
 		`;
@@ -1472,11 +1472,11 @@ describe('next 13 replace-next-router', function () {
 	  		import { useRouter } from "next/navigation";
 
 			function Component() {
-				const { push } = useRouter();
 				const urlSearchParams = new URLSearchParams();
 				urlSearchParams.set('callbackUrl', \`/apps/\${slug}/setup\`);
 				urlSearchParams.set('param', var1);
 				urlSearchParams.set('param1', fn());
+				const { push } = useRouter();
 				push(\`/auth/login?\${urlSearchParams.toString()}\`);
 			}
 		`;
@@ -1507,11 +1507,11 @@ describe('next 13 replace-next-router', function () {
 	  		import { useRouter } from "next/navigation";
 
 			function Component() {
-				const router = useRouter();
 				const urlSearchParams = new URLSearchParams();
 				urlSearchParams.set('callbackUrl', \`/apps/\${slug}/setup\`);
 				urlSearchParams.set('param', var1);
 				urlSearchParams.set('param1', fn());
+				const router = useRouter();
 				router.push(\`/auth/login?\${urlSearchParams.toString()}\`);
 			}
 		`;
@@ -1863,7 +1863,7 @@ describe('next 13 replace-next-router', function () {
 				const searchParams = 1;
 				const params = 2;
 
-				console.log(asPath);
+				log(asPath);
 
 				return query.a;
 			}
@@ -1884,7 +1884,7 @@ describe('next 13 replace-next-router', function () {
 				const searchParams = 1;
 				const params = 2;
 
-				console.log(getPathAs());
+				log(getPathAs());
 
 				return getParam('a');
 			}
@@ -1918,6 +1918,41 @@ describe('next 13 replace-next-router', function () {
 				const pathname = usePathname();
 				const getPathAs = useCallback(() => \`\${pathname}?\${searchParams.toString() ?? ""}\`, [pathname, searchParams]);
 				return getPathAs();
+			}
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(actual, expected);
+	});
+
+	it('should convert router.push within arrow functions', () => {
+		const beforeText = `
+			import { useRouter } from "next/router";
+			import { useEffect } from "react";
+
+			function Component(): JSX.Element {
+				const router = useRouter();
+
+				return <A
+					onClick={() => router.push({
+						pathname: '/users/',
+						query: { a: 1 }
+					})}
+				/>;
+			}
+		`;
+
+		const afterText = `
+			import { useRouter } from "next/navigation";
+			import { useEffect } from "react";
+			function Component(): JSX.Element {
+				const router = useRouter();
+				return <A onClick={() => {
+					const urlSearchParams = new URLSearchParams();
+					urlSearchParams.set('a', 1);
+					return router.push(\`/users/?\${urlSearchParams.toString()}\`);
+				}}/>;
 			}
 		`;
 
