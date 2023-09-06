@@ -844,7 +844,7 @@ function formatObjectAsString(metadataObject: Record<string, any>) {
 		}
 	}
 
-	return `{ ${pairs.join(', ')} }`;
+	return `{ ${pairs.join(', \n')} }`;
 }
 
 const buildMetadataStatement = (metadataObject: Record<string, unknown>) => {
@@ -1372,14 +1372,16 @@ const getTsCompilerOptions = async (api: FileAPI, baseUrl: string) => {
 
 	try {
 		const tsConfigStr = await api.readFile(tsConfigPath);
-		return JSON.parse(tsConfigStr).compilerOptions;
+		const configWithoutComments = tsConfigStr.replace(/^\s*?\/\/.*$/gm, '');
+		return JSON.parse(configWithoutComments).compilerOptions;
 	} catch (e) {
+		console.error(e);
 		return {};
 	}
 };
 
 export const repomod: Repomod<Dependencies> = {
-	includePatterns: ['**/pages/**/*.{jsx,tsx,js,ts,cjs,ejs}'],
+	includePatterns: ['**/*.{jsx,tsx,js,ts,cjs,ejs}'],
 	excludePatterns: ['**/node_modules/**', '**/pages/api/**'],
 	handleFile: async (api, path, options) => {
 		const { unifiedFileSystem, tsmorph } = api.getDependencies();
@@ -1397,7 +1399,6 @@ export const repomod: Repomod<Dependencies> = {
 		});
 
 		const metadataTree = buildMetadataTreeNode(path);
-
 		const mergedMetadata = mergeMetadata(metadataTree);
 		const { dependencies: mergedDependencies } = mergeDependencies(
 			metadataTree,
