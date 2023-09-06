@@ -170,6 +170,59 @@ describe('next 13 replace-next-head', function () {
 		);
 	});
 
+	it('should respect tsconfig.json paths: should support tsconfig with comments', async function (this: Context) {
+		const A_CONTENT = `
+		import Meta from '#/components/a.tsx';
+		export default function Page() {
+			return <Meta />;
+		}
+`;
+
+		const A_COMPONENT_CONTENT = `
+		import Head from 'next/head';
+		export default function Meta() {
+			return (
+			<Head>
+				<title>title</title>
+			</Head>
+			)
+		}
+`;
+
+		const TSCONFIG_CONTENT = `
+		{
+			"compilerOptions": {
+				// comment
+				"paths": {
+					"#/components/*": ["./components/*"]
+				}
+			}
+		}
+`;
+
+		const [command] = await transform({
+			'/opt/project/pages/a/index.tsx': A_CONTENT,
+			'/opt/project/components/a.tsx': A_COMPONENT_CONTENT,
+			'/opt/project/tsconfig.json': TSCONFIG_CONTENT,
+		});
+
+		const expectedResult = `import { Metadata } from "next";
+		import Meta from '#/components/a.tsx';
+		export const metadata: Metadata = {
+				title: \`title\`,
+		};
+		export default function Page() {
+				return <Meta />;
+		}`;
+
+		deepStrictEqual(command?.kind, 'upsertFile');
+		deepStrictEqual(command.path, '/opt/project/pages/a/index.tsx');
+		deepStrictEqual(
+			command.data.replace(/\W/gm, ''),
+			expectedResult.replace(/\W/gm, ''),
+		);
+	});
+
 	it('should move definitions of identifiers used in meta tag expr to the Page file', async function (this: Context) {
 		const A_CONTENT = `
 		import Meta from '../../components/a.tsx';
