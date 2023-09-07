@@ -1412,12 +1412,8 @@ const insertDependencies = (
 				?.getBody();
 
 			if (Node.isBlock(generateMetadataBody)) {
-				const returnStatement =
-					generateMetadataBody.getFirstChildByKind(
-						SyntaxKind.ReturnStatement,
-					);
-				const pos = returnStatement?.getChildIndex() ?? 0;
-				generateMetadataBody?.insertStatements(pos, text);
+				const POS_AFTER_PROPERTIES_ACCESS = 3;
+				generateMetadataBody?.insertStatements(POS_AFTER_PROPERTIES_ACCESS, text);
 			}
 
 			return;

@@ -632,6 +632,7 @@ describe('next 13 replace-next-head', function () {
 		deepStrictEqual(command?.kind, 'upsertFile');
 		deepStrictEqual(command.path, '/opt/project/pages/a/index.tsx');
 
+		console.log(command.data, '?')
 		deepStrictEqual(
 			command.data.replace(/\W/gm, ''),
 			expectedResult.replace(/\W/gm, ''),
@@ -682,8 +683,8 @@ describe('next 13 replace-next-head', function () {
 					return {};
 				}
 				const { title, description } = getStaticPropsResult.props;
-				const b = description ? description : a;
 				const a = "a";
+				const b = description ? description : a;
 				return { title: \`\${title}\`,
 						description: { b } };
 	}`;
