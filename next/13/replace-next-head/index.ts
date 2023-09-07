@@ -1412,7 +1412,7 @@ const insertDependencies = (
 				?.getBody();
 
 			if (Node.isBlock(generateMetadataBody)) {
-				// position after 
+				// position after
 				// const { x } = getStaticPropsResult.props;
 				// in generateMetadata function
 				const POS_AFTER_PROPERTIES_ACCESS = 3;
