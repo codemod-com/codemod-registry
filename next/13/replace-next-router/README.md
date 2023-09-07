@@ -36,7 +36,7 @@ function Component() {
 	const params = useParams();
 	const searchParams = useSearchParams();
 	const getParam = useCallback(
-		(p: string) => params[p] ?? searchParams.get(p),
+		(p: string) => params?.[p] ?? searchParams?.get(p),
 		[params, searchParams],
 	);
 
