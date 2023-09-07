@@ -20,7 +20,7 @@ import type {
 } from '@intuita-inc/repomod-engine-api';
 import type { fromMarkdown } from 'mdast-util-from-markdown';
 import type { visit } from 'unist-util-visit';
-import { posix, relative, join } from 'node:path';
+import { posix, relative, isAbsolute, join } from 'node:path';
 /**
  * Copied from "../replace-next-head"
  */
@@ -1033,15 +1033,17 @@ const buildMetadataTreeNode = (containingPath: string) => {
 			val.kind === SyntaxKind.ImportDeclaration &&
 			val.structure !== null
 		) {
+			const resolvedModuleName =
+				resolveModuleName(
+					val.structure.moduleSpecifier ?? '',
+					containingPath,
+				) ?? val.structure.moduleSpecifier;
+
 			acc[key] = {
 				...val,
 				structure: {
 					...val.structure,
-					moduleSpecifier:
-						resolveModuleName(
-							val.structure.moduleSpecifier ?? '',
-							containingPath,
-						) ?? '',
+					moduleSpecifier: resolvedModuleName,
 				},
 			};
 
@@ -1328,7 +1330,11 @@ const getPositionAfterImports = (sourceFile: SourceFile): number => {
 
 const mergeOrCreateImports = (
 	sourceFile: SourceFile,
-	{ moduleSpecifier, namedImports }: ImportDeclarationStructure,
+	{
+		moduleSpecifier,
+		namedImports,
+		defaultImport,
+	}: ImportDeclarationStructure,
 	path: string,
 ) => {
 	const importDeclarations = sourceFile.getImportDeclarations();
@@ -1348,11 +1354,16 @@ const mergeOrCreateImports = (
 			return oldPath === moduleSpecifier;
 		}) ?? null;
 
+	const pathIsAbsolute = isAbsolute(moduleSpecifier);
+
 	// create import
 	if (importedModule === null) {
 		sourceFile.addImportDeclaration({
+			defaultImport,
 			namedImports,
-			moduleSpecifier: relative(path, moduleSpecifier),
+			moduleSpecifier: pathIsAbsolute
+				? relative(path, moduleSpecifier)
+				: moduleSpecifier,
 		});
 		return;
 	}
