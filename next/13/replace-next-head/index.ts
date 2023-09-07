@@ -1413,7 +1413,10 @@ const insertDependencies = (
 
 			if (Node.isBlock(generateMetadataBody)) {
 				const POS_AFTER_PROPERTIES_ACCESS = 3;
-				generateMetadataBody?.insertStatements(POS_AFTER_PROPERTIES_ACCESS, text);
+				generateMetadataBody?.insertStatements(
+					POS_AFTER_PROPERTIES_ACCESS,
+					text,
+				);
 			}
 
 			return;
