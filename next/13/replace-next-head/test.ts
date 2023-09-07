@@ -1079,6 +1079,48 @@ describe('next 13 replace-next-head', function () {
 	    );
 	  }
 		`;
+		
+		deepStrictEqual(
+			command.data.replace(/\W/gm, ''),
+			NEW_DATA.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should replace meta tag content: self closing tag jsx expression', async function (this: Context) {
+		const INDEX_DATA = `
+		import { Metadata } from "next";
+	  import Head from 'next/head';
+	  export default function Page() {
+	    return (
+	      <Head>
+					<meta content={\`\${ORG_NAME} Documentation\`} property="og:site_name"/>
+	      </Head>
+	    );
+	  }
+		`;
+
+		const [command] = await transform({
+			'/opt/project/pages/index.tsx': INDEX_DATA,
+		});
+
+		deepStrictEqual(command?.kind, 'upsertFile');
+		deepStrictEqual(command.path, '/opt/project/pages/index.tsx');
+
+		const NEW_DATA = `
+		import { Metadata } from "next";
+		import Head from 'next/head';
+	  export const metadata: Metadata = {
+			{ openGraph: { siteName: \`\${ORG_NAME} Documentation\` } };
+		};
+		
+	  export default function Page() {
+	    return (
+	        <Head>
+						<meta content={\`\${ORG_NAME} Documentation\`} property="og:site_name"/>
+	        </Head>
+	    );
+	  }
+		`;
 
 		deepStrictEqual(
 			command.data.replace(/\W/gm, ''),
@@ -1263,23 +1305,23 @@ describe('next 13 replace-next-head', function () {
 		import Head from 'next/head';
 	  export const metadata: Metadata = {
 			icons: {
-				shortcut: [{ url: "/shortcut-icon.png", }],
-				apple: [{ sizes: "180x180", url: "/favicon/apple-touch-icon.png", }],
+				shortcut: [{ url: "/shortcut-icon.png" }],
+				apple: [{ sizes: "180x180", url: "/favicon/apple-touch-icon.png" }],
 				icon: [
-					{ sizes: "32x32", type: "image/png", url: "/favicon/favicon-32x32.png", },
+					{ sizes: "32x32", type: "image/png", url: "/favicon/favicon-32x32.png" },
 					{
 						sizes: "16x16",
 						type: "image/png",
-						url: "/favicon/favicon-16x16.png",
+						url: "/favicon/favicon-16x16.png"
 					}
 				],
 				other: [
 					{
 						url: "/favicon/safari-pinned-tab.svg",
-						rel: "mask-icon",
+						rel: "mask-icon"
 					}
-				],
-			},
+				]
+			}
 		};
 
 		export default function Page() {
@@ -1315,9 +1357,10 @@ describe('next 13 replace-next-head', function () {
 	  }
 		`;
 
+		// @TODO replace \W with \s in all tests
 		deepStrictEqual(
-			command.data.replace(/\W/gm, ''),
-			NEW_DATA.replace(/\W/gm, ''),
+			command.data.replace(/\s/gm, ''),
+			NEW_DATA.replace(/\s/gm, ''),
 		);
 	});
 
