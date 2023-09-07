@@ -168,15 +168,14 @@ const DEPENDENCY_TREE_MAX_DEPTH = 5;
 
 const getDependenciesForIdentifiers = (
 	identifiers: ReadonlyArray<Identifier>,
-	depth: number = 0, 
+	depth: number = 0,
 ) => {
-	if(	depth > DEPENDENCY_TREE_MAX_DEPTH) {
-		return {}
+	if (depth > DEPENDENCY_TREE_MAX_DEPTH) {
+		return {};
 	}
-	
+
 	const dependencies: Record<string, Dependency> = {};
 
-	
 	identifiers.forEach((identifier) => {
 		const parent = identifier.getParent();
 
@@ -270,8 +269,10 @@ const getDependenciesForIdentifiers = (
 				);
 			});
 
-		const dependenciesOfAncestor =
-			getDependenciesForIdentifiers(ancestorIdentifiers, depth + 1);
+		const dependenciesOfAncestor = getDependenciesForIdentifiers(
+			ancestorIdentifiers,
+			depth + 1,
+		);
 		Object.assign(dependencies, dependenciesOfAncestor);
 	});
 
@@ -330,7 +331,8 @@ const handleJsxSelfClosingElement = (
 					dependencies: { ...prev.dependencies, ...dependencies },
 				}));
 
-				metadataAttributes[name] = initializer.getExpression()?.getText() ?? '';
+				metadataAttributes[name] =
+					initializer.getExpression()?.getText() ?? '';
 			}
 
 			return metadataAttributes;

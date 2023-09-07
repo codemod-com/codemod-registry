@@ -1079,7 +1079,7 @@ describe('next 13 replace-next-head', function () {
 	    );
 	  }
 		`;
-		
+
 		deepStrictEqual(
 			command.data.replace(/\W/gm, ''),
 			NEW_DATA.replace(/\W/gm, ''),
