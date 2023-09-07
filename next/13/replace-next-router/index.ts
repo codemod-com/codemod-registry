@@ -877,7 +877,7 @@ const handleUseRouterIdentifier = (
 		searchParamsIdentifierName !== null
 	) {
 		statements.push(
-			`const getParam = useCallback((p: string) => ${paramsIdentifierName}[p] ?? ${searchParamsIdentifierName}.get(p), [${paramsIdentifierName}, ${searchParamsIdentifierName}]);`,
+			`const getParam = useCallback((p: string) => ${paramsIdentifierName}?.[p] ?? ${searchParamsIdentifierName}?.get(p), [${paramsIdentifierName}, ${searchParamsIdentifierName}]);`,
 		);
 
 		fileLevelUsageManager.useCallbackUsed = true;

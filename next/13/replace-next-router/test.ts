@@ -51,7 +51,7 @@ describe('next 13 replace-next-router', function () {
 			function Component() {
 				const params = useParams();
 				const searchParams = useSearchParams();
-				const getParam = useCallback((p: string) => params[p] ?? searchParams.get(p), [params, searchParams]);
+				const getParam = useCallback((p: string) => params?.[p] ?? searchParams?.get(p), [params, searchParams]);
 				const x = getParam("a");
 			}
 	    `;
@@ -77,7 +77,7 @@ describe('next 13 replace-next-router', function () {
 			function Component() {
 				const params = useParams();
 	            const searchParams = useSearchParams();
-			  	const getParam = useCallback((p: string) => params[p] ?? searchParams.get(p), [params, searchParams]);
+			  	const getParam = useCallback((p: string) => params?.[p] ?? searchParams?.get(p), [params, searchParams]);
 				const a = getParam("a");
 			}
 	      `;
@@ -105,7 +105,7 @@ describe('next 13 replace-next-router', function () {
 			function Component() {
 				const params = useParams();
 	            const searchParams = useSearchParams();
-			  	const getParam = useCallback((p: string) => params[p] ?? searchParams.get(p), [params, searchParams]);
+			  	const getParam = useCallback((p: string) => params?.[p] ?? searchParams?.get(p), [params, searchParams]);
 	            const a = getParam('a');
 			}
 	      `;
@@ -133,7 +133,7 @@ describe('next 13 replace-next-router', function () {
 			function Component() {
 				const params = useParams();
 				const searchParams = useSearchParams();
-			  	const getParam = useCallback((p: string) => params[p] ?? searchParams.get(p), [params, searchParams]);
+			  	const getParam = useCallback((p: string) => params?.[p] ?? searchParams?.get(p), [params, searchParams]);
 				const a = getParam('a');
 			}
 			`;
@@ -187,7 +187,7 @@ describe('next 13 replace-next-router', function () {
 			function Component() {
 				const params = useParams();
 				const searchParams = useSearchParams();
-			  	const getParam = useCallback((p: string) => params[p] ?? searchParams.get(p), [params, searchParams]);
+			  	const getParam = useCallback((p: string) => params?.[p] ?? searchParams?.get(p), [params, searchParams]);
 
 				const a = getParam("a");
 			}
@@ -214,7 +214,7 @@ describe('next 13 replace-next-router', function () {
 			function Component() {
 				const params = useParams();
 				const searchParams = useSearchParams();
-			  	const getParam = useCallback((p: string) => params[p] ?? searchParams.get(p), [params, searchParams]);
+			  	const getParam = useCallback((p: string) => params?.[p] ?? searchParams?.get(p), [params, searchParams]);
 
 	            const a = getParam("a");
 			}
@@ -245,7 +245,7 @@ describe('next 13 replace-next-router', function () {
 			function Component() {
 				const params = useParams();
 				const searchParams = useSearchParams();
-			  	const getParam = useCallback((p: string) => params[p] ?? searchParams.get(p), [params, searchParams]);
+			  	const getParam = useCallback((p: string) => params?.[p] ?? searchParams?.get(p), [params, searchParams]);
 
 				const x = getParam("a");
 
@@ -283,7 +283,7 @@ describe('next 13 replace-next-router', function () {
 			function Component() {
 				const params = useParams();
 				const searchParams = useSearchParams();
-			  	const getParam = useCallback((p: string) => params[p] ?? searchParams.get(p), [params, searchParams]);
+			  	const getParam = useCallback((p: string) => params?.[p] ?? searchParams?.get(p), [params, searchParams]);
 
 				const nextA = useMemo(
 					() => (getParam("a") ? null : getParam("b")),
@@ -316,7 +316,7 @@ describe('next 13 replace-next-router', function () {
 			function Component() {
 				const params = useParams();
            		const searchParams = useSearchParams();
-				const getParam = useCallback((p: string) => params[p] ?? searchParams.get(p), [params, searchParams]);
+				const getParam = useCallback((p: string) => params?.[p] ?? searchParams?.get(p), [params, searchParams]);
 
 				const a = getParam("a");
 				const b = getParam("b");
@@ -419,7 +419,7 @@ describe('next 13 replace-next-router', function () {
 			function Component() {
 				const params = useParams();
 				const searchParams = useSearchParams();
-			  	const getParam = useCallback((p: string) => params[p] ?? searchParams.get(p), [params, searchParams]);
+			  	const getParam = useCallback((p: string) => params?.[p] ?? searchParams?.get(p), [params, searchParams]);
 
 				const a = getParam("a");
 				const b = getParam("b");
@@ -751,7 +751,7 @@ describe('next 13 replace-next-router', function () {
 			export function Component() {
 				const params = useParams();
 				const searchParams = useSearchParams();
-			  	const getParam = useCallback((p: string) => params[p] ?? searchParams.get(p), [params, searchParams]);
+			  	const getParam = useCallback((p: string) => params?.[p] ?? searchParams?.get(p), [params, searchParams]);
 
 				if (getParam('a') && getParam('b')) {
 
@@ -813,7 +813,7 @@ describe('next 13 replace-next-router', function () {
 			export function Component() {
 				const params = useParams();
 				const searchParams = useSearchParams();
-			  	const getParam = useCallback((p: string) => params[p] ?? searchParams.get(p), [params, searchParams]);
+			  	const getParam = useCallback((p: string) => params?.[p] ?? searchParams?.get(p), [params, searchParams]);
 				const a = getParam(A);
 			}
 		`;
@@ -839,7 +839,7 @@ describe('next 13 replace-next-router', function () {
 			export function Component() {
 				const params = useParams();
 				const searchParams = useSearchParams();
-			  	const getParam = useCallback((p: string) => params[p] ?? searchParams.get(p), [params, searchParams]);
+			  	const getParam = useCallback((p: string) => params?.[p] ?? searchParams?.get(p), [params, searchParams]);
 
 				const b = getParam("a");
 			}
@@ -958,7 +958,7 @@ describe('next 13 replace-next-router', function () {
 			export default function DynamicRoutes() {
 				const params = useParams();
 				const searchParams = useSearchParams();
-			  	const getParam = useCallback((p: string) => params[p] ?? searchParams.get(p), [params, searchParams]);
+			  	const getParam = useCallback((p: string) => params?.[p] ?? searchParams?.get(p), [params, searchParams]);
 
 				return (
 					<div>
@@ -1331,7 +1331,7 @@ describe('next 13 replace-next-router', function () {
 			export default function Component() {
 				const params = useParams();
 				const searchParams = useSearchParams();
-			  	const getParam = useCallback((p: string) => params[p] ?? searchParams.get(p), [params, searchParams]);
+			  	const getParam = useCallback((p: string) => params?.[p] ?? searchParams?.get(p), [params, searchParams]);
 
 				const param = getParam("param");
 
@@ -1539,7 +1539,7 @@ describe('next 13 replace-next-router', function () {
 			export default function Component() {
 				const params = useParams();
 				const searchParams = useSearchParams();
-			  	const getParam = useCallback((p: string) => params[p] ?? searchParams.get(p), [params, searchParams]);
+			  	const getParam = useCallback((p: string) => params?.[p] ?? searchParams?.get(p), [params, searchParams]);
 
 				const param1 = getParam("param1");
 				const param2 = getParam("param2");
@@ -1763,7 +1763,7 @@ describe('next 13 replace-next-router', function () {
 		export default function useX(): void {
 			const params = useParams();
 			const searchParams = useSearchParams();
-			const getParam = useCallback((p: string) => params[p] ?? searchParams.get(p), [params, searchParams]);
+			const getParam = useCallback((p: string) => params?.[p] ?? searchParams?.get(p), [params, searchParams]);
 			
 			const router = useRouter();
 			
@@ -1812,7 +1812,7 @@ describe('next 13 replace-next-router', function () {
 		function Component(): JSX.Element {
 			const params = useParams();
 			const searchParams = useSearchParams();
-			const getParam = useCallback((p: string) => params[p] ?? searchParams.get(p), [params, searchParams]);
+			const getParam = useCallback((p: string) => params?.[p] ?? searchParams?.get(p), [params, searchParams]);
 			const obj = useMemo(() => objects?.find((f) => f.a === getParam('a')), [getParam('a')]);
 			
 			const result = typeof getParam('a-b-c') === 'string'
@@ -1879,7 +1879,7 @@ describe('next 13 replace-next-router', function () {
 				/** TODO "pathname" no longer contains square-bracket expressions. Rewrite the code relying on them if required. **/
 				const pathname = usePathname();
 
-				const getParam = useCallback((p: string) => __params__[p] ?? __searchParams__.get(p), [__params__, __searchParams__]);
+				const getParam = useCallback((p: string) => __params__?.[p] ?? __searchParams__?.get(p), [__params__, __searchParams__]);
 				const getPathAs = useCallback(() => \`\${pathname}?\${__searchParams__.toString() ?? ""}\`, [pathname, __searchParams__]);
 				const searchParams = 1;
 				const params = 2;
