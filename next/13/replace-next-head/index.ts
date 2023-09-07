@@ -1390,6 +1390,7 @@ const insertDependencies = (
 	sourceFile: SourceFile,
 	dependencies: Record<string, Dependency>,
 	path: string,
+	usesDynamicMetadata: boolean,
 ) => {
 	let positionAfterImports = getPositionAfterImports(sourceFile);
 
@@ -1401,6 +1402,24 @@ const insertDependencies = (
 		if (kind === SyntaxKind.ImportDeclaration && structure !== null) {
 			mergeOrCreateImports(sourceFile, structure, path);
 			positionAfterImports++;
+			return;
+		}
+
+		if (usesDynamicMetadata) {
+			const generateMetadataBody = sourceFile
+				.getDescendantsOfKind(SyntaxKind.FunctionDeclaration)
+				.find((f) => f.getName() === 'generateMetadata')
+				?.getBody();
+
+			if (Node.isBlock(generateMetadataBody)) {
+				const returnStatement =
+					generateMetadataBody.getFirstChildByKind(
+						SyntaxKind.ReturnStatement,
+					);
+				const pos = returnStatement?.getChildIndex() ?? 0;
+				generateMetadataBody?.insertStatements(pos, text);
+			}
+
 			return;
 		}
 
@@ -1482,6 +1501,8 @@ export const repomod: Repomod<Dependencies> = {
 				options.dependencies ?? '{}',
 			) as Record<string, Dependency>;
 
+			// check if we have dependency on component arguments after merging metadata
+			// if we have,it means that page probably gets props from data hooks
 			const param =
 				Object.values(dependencies).find(
 					(d): d is Dependency & { kind: SyntaxKind.Parameter } =>
@@ -1489,7 +1510,7 @@ export const repomod: Repomod<Dependencies> = {
 				) ?? null;
 
 			insertMetadata(sourceFile, metadata, param);
-			insertDependencies(sourceFile, dependencies, path);
+			insertDependencies(sourceFile, dependencies, path, Boolean(param));
 
 			return {
 				kind: 'upsertData',
