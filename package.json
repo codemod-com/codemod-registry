@@ -7,7 +7,8 @@
 		"build": "ts-node --esm ./build.ts",
 		"test": "mocha",
 		"lint:eslint": "eslint . --fix --ext ts",
-		"lint:prettier": "prettier --write ."
+		"lint:prettier": "prettier --write .",
+		"prepare": "husky install"
 	},
 	"devDependencies": {
 		"@babel/core": ">=7.13.0 <8.0.0",
@@ -34,7 +35,9 @@
 		"eslint-plugin-prettier": "^5.0.0",
 		"eslint-plugin-react": "^7.33.0",
 		"glob": "^10.3.3",
+		"husky": "^8.0.3",
 		"jscodeshift": "^0.14.0",
+		"lint-staged": "^14.0.1",
 		"mdast-util-from-markdown": "^2.0.0",
 		"mdast-util-mdx": "^3.0.0",
 		"mdast-util-to-markdown": "^2.1.0",
