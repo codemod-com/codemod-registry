@@ -1087,61 +1087,33 @@ const findComponentByModuleSpecifier = (
 	sourceFile: SourceFile,
 	componentAbsolutePath: string,
 ) => {
-	const importDeclarations = sourceFile.getImportDeclarations();
-	const sourceFilePath = sourceFile.getFilePath().toString();
+	return (
+		sourceFile
+			.getDescendants()
+			.find((d): d is JsxOpeningElement | JsxSelfClosingElement => {
+				if (
+					!Node.isJsxOpeningElement(d) &&
+					!Node.isJsxSelfClosingElement(d)
+				) {
+					return false;
+				}
 
-	const componentImportDeclaration = importDeclarations.find(
-		(importDeclaration) => {
-			const moduleSpecifierText = importDeclaration
-				.getModuleSpecifier()
-				.getText();
+				const nameNode = d.getTagNameNode();
+				const declaration = nameNode.getSymbol()?.getDeclarations()[0];
 
-			const modulePath = moduleSpecifierText.substring(
-				1,
-				moduleSpecifierText.length - 1,
-			);
+				const moduleSpecifier = declaration
+					?.getFirstAncestorByKind(SyntaxKind.ImportDeclaration)
+					?.getModuleSpecifier()
+					.getLiteralText();
 
-			const importAbsolutePath = resolveModuleName(
-				modulePath,
-				sourceFilePath,
-			);
+				const absolutePath = resolveModuleName(
+					moduleSpecifier ?? '',
+					sourceFile.getFilePath().toString(),
+				);
 
-			return importAbsolutePath === componentAbsolutePath;
-		},
+				return absolutePath === componentAbsolutePath;
+			}) ?? null
 	);
-
-	const importedIdentifiers: Identifier[] = [];
-
-	const defaultImport = componentImportDeclaration?.getDefaultImport();
-
-	if (defaultImport) {
-		importedIdentifiers.push(defaultImport);
-	}
-
-	(componentImportDeclaration?.getNamedImports() ?? []).forEach(
-		(namedImport) => {
-			importedIdentifiers.push(namedImport.getNameNode());
-		},
-	);
-
-	let component: JsxSelfClosingElement | JsxOpeningElement | undefined;
-
-	importedIdentifiers.forEach((identifier) => {
-		const refs = identifier.findReferencesAsNodes();
-
-		refs.forEach((ref) => {
-			const parent = ref.getParent();
-
-			if (
-				Node.isJsxSelfClosingElement(parent) ||
-				Node.isJsxOpeningElement(parent)
-			) {
-				component = parent;
-			}
-		});
-	});
-
-	return component ?? null;
 };
 
 const findComponentPropValue = (
