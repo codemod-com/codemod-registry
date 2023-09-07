@@ -608,7 +608,7 @@ describe('next 13 replace-next-head', function () {
 		const expectedResult = `
 		import { Metadata } from "next";
 		import Meta from '../../components/a.tsx';
-		const appName = "appName";
+	
 		export default function Page({ title, description }) {
 				return <Meta title={title} description={description}/>;
 		}
@@ -620,12 +620,73 @@ describe('next 13 replace-next-head', function () {
 						return {};
 				}
 				const { title, description } = getStaticPropsResult.props;
+				const appName = "appName";
+				
 				return {
 						title: \`\${title}\`,
 						description: description,
 						applicationName: appName,
 				};
 }`;
+
+		deepStrictEqual(command?.kind, 'upsertFile');
+		deepStrictEqual(command.path, '/opt/project/pages/a/index.tsx');
+
+		deepStrictEqual(
+			command.data.replace(/\W/gm, ''),
+			expectedResult.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should create generateMetadata function if Page props referenced in child metadata: should copy dependencies inside generate metadata function', async function (this: Context) {
+		const A_CONTENT = `
+		import Meta from '../../components/a.tsx';
+		
+		export default function Page({ title, description }) {
+			return <Meta title={title} description={description} />;
+		}
+`;
+
+		const A_COMPONENT_CONTENT = `
+		import Head from 'next/head';
+		import NestedComponent from '../components/b';
+		const a = "a";
+		export default function Meta({ title, description }) {
+			const b =  description ? description : a;
+			return (
+			<Head>
+				<title>{title}</title>
+				<meta name="description" content={b} />
+			</Head>
+			)
+		}
+`;
+
+		const [command] = await transform({
+			'/opt/project/pages/a/index.tsx': A_CONTENT,
+			'/opt/project/components/a.tsx': A_COMPONENT_CONTENT,
+		});
+
+		const expectedResult = `
+		import { Metadata } from "next";
+		import Meta from '../../components/a.tsx';
+
+		export default function Page({ title, description }) {
+				return <Meta title={title} description={description}/>;
+		}
+		export async function generateMetadata({ params }: {
+				params: Record<string, string | string[]>;
+		}): Promise<Metadata> {
+				const getStaticPropsResult = await getStaticProps({ params });
+				if (!('props' in getStaticPropsResult)) {
+					return {};
+				}
+				const { title, description } = getStaticPropsResult.props;
+				const a = "a";
+				const b = description ? description : a;
+				return { title: \`\${title}\`,
+						description: { b } };
+	}`;
 
 		deepStrictEqual(command?.kind, 'upsertFile');
 		deepStrictEqual(command.path, '/opt/project/pages/a/index.tsx');
