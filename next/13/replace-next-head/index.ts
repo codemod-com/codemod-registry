@@ -164,9 +164,16 @@ const getStructure = (node: Node) => {
 	return null;
 };
 
+const DEPENDENCY_TREE_MAX_DEPTH = 5;
+
 const getDependenciesForIdentifiers = (
 	identifiers: ReadonlyArray<Identifier>,
+	depth: number = 0,
 ) => {
+	if (depth > DEPENDENCY_TREE_MAX_DEPTH) {
+		return {};
+	}
+
 	const dependencies: Record<string, Dependency> = {};
 
 	identifiers.forEach((identifier) => {
@@ -262,8 +269,10 @@ const getDependenciesForIdentifiers = (
 				);
 			});
 
-		const dependenciesOfAncestor =
-			getDependenciesForIdentifiers(ancestorIdentifiers);
+		const dependenciesOfAncestor = getDependenciesForIdentifiers(
+			ancestorIdentifiers,
+			depth + 1,
+		);
 		Object.assign(dependencies, dependenciesOfAncestor);
 	});
 
@@ -322,7 +331,8 @@ const handleJsxSelfClosingElement = (
 					dependencies: { ...prev.dependencies, ...dependencies },
 				}));
 
-				metadataAttributes[name] = initializer.getText();
+				metadataAttributes[name] =
+					initializer.getExpression()?.getText() ?? '';
 			}
 
 			return metadataAttributes;
@@ -493,7 +503,6 @@ export const handleTag = (
 	metadataContainer: Container<Record<string, any>>,
 ) => {
 	const metadataObject = metadataContainer.get();
-
 	if (metadataName === 'title') {
 		metadataObject[metadataName] = metadataAttributes.children ?? '';
 	}
@@ -858,7 +867,7 @@ function formatObjectAsString(metadataObject: Record<string, any>) {
 					: JSON.stringify(element),
 			);
 
-			pairs.push(`${key}: ${formattedArray.toString()}`);
+			pairs.push(`${key}: [${formattedArray.join(', \n')}]`);
 		} else if (typeof value === 'object' && value !== null) {
 			pairs.push(`${key}: ${formatObjectAsString(value)}`);
 		} else {
