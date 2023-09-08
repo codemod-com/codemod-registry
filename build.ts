@@ -27,17 +27,17 @@ const argumentsSchema = S.array(
 		S.struct({
 			name: S.string,
 			kind: S.literal('string'),
-			default: S.union(S.string, S.undefined),
+			default: S.optional(S.string),
 		}),
 		S.struct({
 			name: S.string,
 			kind: S.literal('number'),
-			default: S.union(S.number, S.undefined),
+			default: S.optional(S.number),
 		}),
 		S.struct({
 			name: S.string,
 			kind: S.literal('boolean'),
-			default: S.union(S.boolean, S.undefined),
+			default: S.optional(S.boolean),
 		}),
 	),
 );
