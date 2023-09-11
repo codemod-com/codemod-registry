@@ -77,4 +77,22 @@ describe('remove-unused-feature-flags', function () {
 			OUTPUT.replace(/\s/gm, ''),
 		);
 	});
+
+	it("should replace await isFlagEnabled('featureFlag') with true", function () {
+		const INPUT = `const a = await isFlagEnabled('featureFlag');`;
+
+		const OUTPUT = 'const a = true;';
+
+		const fileInfo: FileInfo = {
+			path: 'index.ts',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, buildApi('ts'), {});
+
+		assert.deepEqual(
+			actualOutput?.replace(/\s/gm, ''),
+			OUTPUT.replace(/\s/gm, ''),
+		);
+	});
 });
