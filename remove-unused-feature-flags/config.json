@@ -10,7 +10,8 @@
 		{
 			"name": "featureFlagName",
 			"kind": "string",
-			"default": "featureFlag"
+			"default": "featureFlag",
+			"required": true
 		}
 	]
 }
