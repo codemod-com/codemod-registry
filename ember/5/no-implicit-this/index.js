@@ -419,7 +419,7 @@ function rewriteEmbeddedTemplates(file, options, api) {
 		.toSource();
 }
 
-export default function transformer(file, api, moreOptions) {
+export default function transform(file, api, moreOptions) {
 	let extension = path.extname(file.path).toLowerCase();
 	let options = Object.assign({}, DEFAULT_OPTIONS, getOptions(), moreOptions);
 	if (extension === '.hbs') {

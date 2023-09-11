@@ -34,7 +34,7 @@ function isValidIdentifier(identifier) {
 	);
 }
 
-export default function transformer(file, api) {
+export default function transform(file, api) {
 	const j = api.jscodeshift;
 	const root = j(file.source);
 

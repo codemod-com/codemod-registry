@@ -27,7 +27,7 @@
  * License URL: https://github.com/ember-codemods/ember-no-implicit-this-codemod/blob/master/LICENSE
  */
 
-export default function transformer(file, api) {
+export default function transform(file, api) {
 	const j = api.jscodeshift;
 
 	const root = j(file.source);
