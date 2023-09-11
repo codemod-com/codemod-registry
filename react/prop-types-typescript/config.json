@@ -8,8 +8,10 @@
 	"arguments": [
 		{
 			"name": "preserve-prop-types",
+			"description": "Preserves prop types after converting to TS. There are two available modes: all and unconverted.",
 			"kind": "string",
-			"default": "none"
+			"default": "none",
+			"required": false
 		}
 	]
 }
