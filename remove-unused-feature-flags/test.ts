@@ -27,12 +27,16 @@ describe('remove-unused-feature-flags', function () {
             Promise.resolve('a'),
             isFlagEnabled('featureFlag'),
         ]);
+
+		const x = b && c;
 		`;
 
 		const OUTPUT = `
         const [a] = await Promise.all([
             Promise.resolve('a')
         ]);
+
+		const x = c;
         `;
 
 		const fileInfo: FileInfo = {
@@ -50,16 +54,24 @@ describe('remove-unused-feature-flags', function () {
 
 	it('should remove a feature flag check within Promise.all() (with options)', function () {
 		const INPUT = `
-        const [a, b] = await Promise.all([
+        const [b, a] = await Promise.all([
+			fnc('b'),
             Promise.resolve('a'),
-            fnc('b'),
         ]);
+
+		const d = () => {
+			return c() && b;
+		}
 		`;
 
 		const OUTPUT = `
         const [a] = await Promise.all([
             Promise.resolve('a')
         ]);
+
+		const d = () => {
+			return c();
+		}
         `;
 
 		const fileInfo: FileInfo = {

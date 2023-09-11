@@ -61,21 +61,23 @@ export default function transform(
 				],
 			},
 		},
-	}).forEach(({ node }) => {
+	}).forEach((variableDeclarator) => {
+		const { node } = variableDeclarator;
+
 		if (node.id.type !== 'ArrayPattern') {
-			return false;
+			return;
 		}
 
 		if (node.init?.type !== 'AwaitExpression') {
-			return false;
+			return;
 		}
 
 		if (node.init.argument?.type !== 'CallExpression') {
-			return false;
+			return;
 		}
 
 		if (node.init.argument.arguments[0]?.type !== 'ArrayExpression') {
-			return false;
+			return;
 		}
 
 		const indices: number[] = [];
@@ -89,10 +91,20 @@ export default function transform(
 		});
 
 		if (indices.length === 0) {
-			return false;
+			return;
 		}
 
 		dirtyFlag = true;
+
+		const identifierNames: string[] = [];
+
+		node.id.elements
+			.filter((_, index) => indices.some((i) => index === i))
+			.forEach((element) => {
+				if (element?.type === 'Identifier') {
+					identifierNames.push(element.name);
+				}
+			});
 
 		node.id.elements = node.id.elements.filter(
 			(_, index) => !indices.some((i) => index === i),
@@ -102,7 +114,50 @@ export default function transform(
 			(_, index) => !indices.some((i) => index === i),
 		);
 
-		return true;
+		const scope = variableDeclarator._computeScope();
+
+		if (scope === null || !scope.path) {
+			return;
+		}
+
+		identifierNames.forEach((name) => {
+			j(scope.path)
+				.find(j.Identifier, { name })
+				.replaceWith(() => {
+					dirtyFlag = true;
+
+					return {
+						type: 'BooleanLiteral',
+						value: true,
+					};
+				});
+		});
+	});
+
+	root.find(j.LogicalExpression, {
+		type: 'LogicalExpression',
+		left: {
+			type: 'BooleanLiteral',
+			value: true,
+		},
+		operator: '&&',
+	}).replaceWith(({ node }) => {
+		dirtyFlag = true;
+
+		return node.right;
+	});
+
+	root.find(j.LogicalExpression, {
+		type: 'LogicalExpression',
+		right: {
+			type: 'BooleanLiteral',
+			value: true,
+		},
+		operator: '&&',
+	}).replaceWith(({ node }) => {
+		dirtyFlag = true;
+
+		return node.left;
 	});
 
 	return dirtyFlag ? root.toSource() : undefined;
