@@ -116,7 +116,7 @@ export default function transform(
 
 		const scope = variableDeclarator._computeScope();
 
-		if (scope === null || !scope.path) {
+		if (!scope?.path) {
 			return;
 		}
 
