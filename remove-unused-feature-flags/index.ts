@@ -180,5 +180,16 @@ export default function transform(
 		return node.left;
 	});
 
+	root.find(j.AwaitExpression, {
+		type: 'AwaitExpression',
+		argument: {
+			type: 'BooleanLiteral',
+		},
+	}).replaceWith(({ node }) => {
+		dirtyFlag = true;
+
+		return node.argument;
+	});
+
 	return dirtyFlag ? root.toSource() : undefined;
 }
