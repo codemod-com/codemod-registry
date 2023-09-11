@@ -8,6 +8,8 @@ export default function transform(
 	const functionName = String(options['functionName'] ?? 'isFlagEnabled');
 	const featureFlagName = String(options['featureFlagName'] ?? 'featureFlag');
 
+	let dirtyFlag = false;
+
 	const j = api.jscodeshift;
 	const root = j(file.source);
 
@@ -23,9 +25,13 @@ export default function transform(
 				value: featureFlagName,
 			},
 		],
-	}).replaceWith({
-		type: 'BooleanLiteral',
-		value: true,
+	}).replaceWith(() => {
+		dirtyFlag = true;
+
+		return {
+			type: 'BooleanLiteral',
+			value: true,
+		};
 	});
 
 	root.find(j.VariableDeclarator, {
@@ -82,6 +88,12 @@ export default function transform(
 			}
 		});
 
+		if (indices.length === 0) {
+			return false;
+		}
+
+		dirtyFlag = true;
+
 		node.id.elements = node.id.elements.filter(
 			(_, index) => !indices.some((i) => index === i),
 		);
@@ -93,5 +105,5 @@ export default function transform(
 		return true;
 	});
 
-	return root.toSource();
+	return dirtyFlag ? root.toSource() : undefined;
 }

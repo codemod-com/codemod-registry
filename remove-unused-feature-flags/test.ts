@@ -4,6 +4,23 @@ import transform from './index.js';
 import { buildApi } from '../utilities.js';
 
 describe('remove-unused-feature-flags', function () {
+	it('should not change code without feature flags', function () {
+		const INPUT = `
+        const Component = () => {
+			return <div>A</div>;
+		}
+		`;
+
+		const fileInfo: FileInfo = {
+			path: 'index.ts',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, buildApi('tsx'), {});
+
+		assert.deepEqual(actualOutput, undefined);
+	});
+
 	it('should remove a feature flag check within Promise.all()', function () {
 		const INPUT = `
         const [a, b] = await Promise.all([
