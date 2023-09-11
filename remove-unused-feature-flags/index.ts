@@ -143,6 +143,15 @@ export default function transform(
 		identifierNames.forEach((name) => {
 			j(scope.path)
 				.find(j.Identifier, { name })
+				.filter((path) => {
+					const parent = path._computeParent();
+
+					if (!parent || !('value' in parent)) {
+						return true;
+					}
+
+					return parent.value?.type !== 'JSXAttribute';
+				})
 				.replaceWith(() => {
 					dirtyFlag = true;
 
