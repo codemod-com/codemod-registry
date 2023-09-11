@@ -150,7 +150,7 @@ function populateInvokeables(telemetry) {
 /**
  * plugin entrypoint
  */
-function transform(root, options = {}) {
+function _transform(root, options = {}) {
 	let b = recast.builders;
 
 	let scopedParams = [];
@@ -394,7 +394,7 @@ function rewriteTemplate(path, source, options) {
 	let root = recast.parse(source);
 
 	debug('Transforming %s ...', path);
-	transform(root, options);
+	_transform(root, options);
 
 	debug('Generating new content for %s ...', path);
 	return recast.print(root);
@@ -419,7 +419,7 @@ function rewriteEmbeddedTemplates(file, options, api) {
 		.toSource();
 }
 
-export default function transformer(file, api, moreOptions) {
+export default function transform(file, api, moreOptions) {
 	let extension = path.extname(file.path).toLowerCase();
 	let options = Object.assign({}, DEFAULT_OPTIONS, getOptions(), moreOptions);
 	if (extension === '.hbs') {
