@@ -32,9 +32,7 @@ describe('remove-unused-feature-flags', function () {
 		`;
 
 		const OUTPUT = `
-        const [a] = await Promise.all([
-            Promise.resolve('a')
-        ]);
+        const a = await Promise.resolve('a');
 
 		const x = c;
         `;
@@ -65,9 +63,7 @@ describe('remove-unused-feature-flags', function () {
 		`;
 
 		const OUTPUT = `
-        const [a] = await Promise.all([
-            Promise.resolve('a')
-        ]);
+        const a = await Promise.resolve('a');
 
 		const d = () => {
 			return c();

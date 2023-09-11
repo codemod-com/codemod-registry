@@ -114,6 +114,26 @@ export default function transform(
 			(_, index) => !indices.some((i) => index === i),
 		);
 
+		if (node.id.elements.length === 1) {
+			const [elementId] = node.id.elements;
+			const [initElement] = node.init.argument.arguments[0].elements;
+
+			if (
+				elementId &&
+				elementId.type !== 'SpreadElement' &&
+				initElement &&
+				initElement.type !== 'RestElement' &&
+				initElement.type !== 'SpreadElement'
+			) {
+				node.id = elementId;
+
+				node.init = {
+					type: 'AwaitExpression',
+					argument: initElement,
+				};
+			}
+		}
+
 		const scope = variableDeclarator._computeScope();
 
 		if (!scope?.path) {
