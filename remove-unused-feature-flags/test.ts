@@ -29,12 +29,16 @@ describe('remove-unused-feature-flags', function () {
         ]);
 
 		const x = b && c;
+
+		const y = <A b={b} />
 		`;
 
 		const OUTPUT = `
         const a = await Promise.resolve('a');
 
 		const x = c;
+
+		const y = <A b={true} />
         `;
 
 		const fileInfo: FileInfo = {
@@ -42,7 +46,7 @@ describe('remove-unused-feature-flags', function () {
 			source: INPUT,
 		};
 
-		const actualOutput = transform(fileInfo, buildApi('ts'), {});
+		const actualOutput = transform(fileInfo, buildApi('tsx'), {});
 
 		assert.deepEqual(
 			actualOutput?.replace(/\s/gm, ''),
