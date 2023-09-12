@@ -19,6 +19,7 @@ class FileLevelUsageManager {
 	private __searchParamsUsed: boolean = false;
 	private __paramsUsed: boolean = false;
 	public useCallbackUsed: boolean = false;
+	public useMemoUsed: boolean = false;
 
 	private __useRouterPresent: boolean;
 	private __nextRouterPresent: boolean;
@@ -107,6 +108,7 @@ class BlockLevelUsageManager {
 
 	private __paramsUsed: boolean = false;
 	private __searchParamsUsed: boolean = false;
+	private __paramMapUsed: boolean = false;
 
 	private __routerUsed: boolean = false;
 
@@ -156,6 +158,10 @@ class BlockLevelUsageManager {
 		return this.__params;
 	}
 
+	public getParamMap(): boolean {
+		return this.__paramMapUsed;
+	}
+
 	public addPathname(pathname: string): void {
 		this.__pathnames.add(pathname);
 	}
@@ -185,6 +191,12 @@ class BlockLevelUsageManager {
 
 	public reportRouterUsage(): void {
 		this.__routerUsed = true;
+	}
+
+	public reportParamMapUsage(): void {
+		this.__paramsUsed = true;
+		this.__searchParamsUsed = true;
+		this.__paramMapUsed = true;
 	}
 }
 
@@ -348,6 +360,25 @@ const handleRouterPropertyAccessExpression = (
 				blockLevelUsageManager.reportSearchParamsUsage();
 			}
 		} else if (Node.isCallExpression(parentNode)) {
+			const expression = parentNode.getExpression();
+
+			if (Node.isPropertyAccessExpression(expression)) {
+				const leftSideExpression = expression.getExpression();
+				const rightSideExpression = expression.getName();
+
+				if (Node.isIdentifier(leftSideExpression)) {
+					if (
+						leftSideExpression.getText() === 'Object' &&
+						rightSideExpression === 'entries'
+					) {
+						parentNode.replaceWithText('Array.from(paramMap)');
+						blockLevelUsageManager.reportParamMapUsage();
+
+						return;
+					}
+				}
+			}
+
 			node.replaceWithText(
 				'...Object.fromEntries(searchParams ?? new URLSearchParams())',
 			);
@@ -898,6 +929,33 @@ const handleUseRouterIdentifier = (
 		statements.push(`const ${name} = getParam("${propertyName}")`);
 	}
 
+	if (
+		blockLevelUsageManager.getParamMap() &&
+		searchParamsIdentifierName !== null &&
+		paramsIdentifierName !== null
+	) {
+		statements.push(
+			`const paramMap = useMemo(() => {
+				const paramMap = new Map<string, string>(${searchParamsIdentifierName});
+
+				Object.entries(${paramsIdentifierName}).forEach(([key, value]) => {
+					if (typeof value === 'string') {
+						paramMap.set(key, value);
+						return;
+					}
+
+					if (value[0] !== undefined) {
+						paramMap.set(key, value[0]);
+					}
+				});
+
+				return paramMap;
+			}, [${paramsIdentifierName}, ${searchParamsIdentifierName}]);`,
+		);
+
+		fileLevelUsageManager.useMemoUsed = true;
+	}
+
 	block.insertStatements(0, statements);
 };
 
@@ -967,16 +1025,16 @@ export const handleSourceFile = (
 		handleImportDeclaration(fileLevelUsageManager, importDeclaration),
 	);
 
-	if (fileLevelUsageManager.useCallbackUsed) {
-		const importDeclaration =
-			sourceFile
-				.getImportDeclarations()
-				.find(
-					(importDeclaration) =>
-						importDeclaration.getModuleSpecifierValue() ===
-							'react' && !importDeclaration.isTypeOnly(),
-				) ?? null;
+	const importDeclaration =
+		sourceFile
+			.getImportDeclarations()
+			.find(
+				(importDeclaration) =>
+					importDeclaration.getModuleSpecifierValue() === 'react' &&
+					!importDeclaration.isTypeOnly(),
+			) ?? null;
 
+	if (fileLevelUsageManager.useCallbackUsed) {
 		if (importDeclaration === null) {
 			sourceFile.addImportDeclaration({
 				moduleSpecifier: 'react',
@@ -988,6 +1046,21 @@ export const handleSourceFile = (
 			});
 		} else {
 			importDeclaration.addNamedImport('useCallback');
+		}
+	}
+
+	if (fileLevelUsageManager.useMemoUsed) {
+		if (importDeclaration === null) {
+			sourceFile.addImportDeclaration({
+				moduleSpecifier: 'react',
+				namedImports: [
+					{
+						name: 'useMemo',
+					},
+				],
+			});
+		} else {
+			importDeclaration.addNamedImport('useMemo');
 		}
 	}
 

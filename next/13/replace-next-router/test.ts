@@ -1960,4 +1960,50 @@ describe('next 13 replace-next-router', function () {
 
 		deepStrictEqual(actual, expected);
 	});
+
+	it('should transform Object.entries(router.query) properly', () => {
+		const beforeText = `
+			import { useRouter } from "next/router";
+
+			function Component() {
+				const router = useRouter();
+
+				Object.entries(router.query).forEach(([key, value]) => {
+					console.log(key, value)
+				});
+			}
+		`;
+
+		const afterText = `
+			import { useParams, useSearchParams } from "next/navigation";
+			import { useMemo } from "react";
+
+			function Component() {
+				const params = useParams();
+				const searchParams = useSearchParams();
+
+				const paramMap = useMemo(() => {
+					const paramMap = new Map<string, string>(searchParams);
+					Object.entries(params).forEach(([key, value]) => {
+						if (typeof value === 'string') {
+							paramMap.set(key, value);
+							return;
+						}
+						if (value[0] !== undefined) {
+							paramMap.set(key, value[0]);
+						}
+					});
+					return paramMap;
+				}, [params, searchParams]);
+
+				Array.from(paramMap).forEach(([key, value]) => {
+					console.log(key, value);
+				});
+			}
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(actual, expected);
+	});
 });
