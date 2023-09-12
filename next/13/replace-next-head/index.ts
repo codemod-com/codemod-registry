@@ -29,6 +29,7 @@ type Dependency = {
 	kind: SyntaxKind;
 	text: string;
 	structure: ImportDeclarationStructure | null;
+	isBindingPattern?: boolean;
 };
 
 const openGraphWebsiteTags = [
@@ -173,7 +174,6 @@ const getDependenciesForIdentifiers = (
 	if (depth > DEPENDENCY_TREE_MAX_DEPTH) {
 		return {};
 	}
-
 	const dependencies: Record<string, Dependency> = {};
 
 	identifiers.forEach((identifier) => {
@@ -190,7 +190,15 @@ const getDependenciesForIdentifiers = (
 		const [firstDefinition] =
 			identifier.getSymbol()?.getDeclarations() ?? [];
 
-		if (firstDefinition === undefined) {
+		const localSourceFile = identifier.getFirstAncestorByKind(
+			SyntaxKind.SourceFile,
+		);
+		// check if declaration exists in current sourceFile
+		if (
+			firstDefinition === undefined ||
+			firstDefinition.getFirstAncestorByKind(SyntaxKind.SourceFile) !==
+				localSourceFile
+		) {
 			return;
 		}
 
@@ -240,6 +248,11 @@ const getDependenciesForIdentifiers = (
 			text: ancestor.getText(),
 			structure: getStructure(ancestor),
 			kind: ancestor.getKind(),
+			isBindingPattern:
+				ancestor.getKind() === SyntaxKind.Parameter &&
+				ancestor.getFirstDescendantByKind(
+					SyntaxKind.ObjectBindingPattern,
+				) !== undefined,
 		};
 
 		// recursivelly check for dependencies until reached parameter or import
@@ -1128,17 +1141,16 @@ const findComponentByModuleSpecifier = (
 const findComponentPropValue = (
 	path: string,
 	componentPath: string,
-	propName: string,
-): JsxExpression | StringLiteral | null => {
+): Record<string, JsxExpression | StringLiteral> => {
 	const sourceFile = project?.getSourceFile(path) ?? null;
 
 	if (sourceFile === null) {
-		return null;
+		return {};
 	}
 
 	const component = findComponentByModuleSpecifier(sourceFile, componentPath);
 
-	let propValue: JsxExpression | StringLiteral | undefined;
+	const propValue: Record<string, JsxExpression | StringLiteral> = {};
 
 	const jsxAttributes =
 		component?.getDescendantsOfKind(SyntaxKind.JsxAttribute) ?? [];
@@ -1146,20 +1158,16 @@ const findComponentPropValue = (
 	jsxAttributes.forEach((jsxAttribute) => {
 		const name = jsxAttribute.getNameNode().getText();
 
-		if (name !== propName) {
-			return;
-		}
-
 		const initializer = jsxAttribute.getInitializer();
 		if (
 			Node.isJsxExpression(initializer) ||
 			Node.isStringLiteral(initializer)
 		) {
-			propValue = initializer;
+			propValue[name] = initializer;
 		}
 	});
 
-	return propValue ?? null;
+	return propValue;
 };
 
 const mergeDependencies = (
@@ -1171,14 +1179,70 @@ const mergeDependencies = (
 	treeNode.dependencies = Object.entries(treeNode.components)
 		.map((arr) => mergeDependencies(arr[1], rootPath))
 		.reduce((mergedDependencies, childTreeNode) => {
+			const componentPropsValues = findComponentPropValue(
+				treeNode.path,
+				childTreeNode.path,
+			);
+
 			const mapped = Object.entries(childTreeNode.dependencies).reduce(
 				(acc, [identifierName, value]) => {
 					if (value.kind === SyntaxKind.Parameter) {
-						const propValue = findComponentPropValue(
-							treeNode.path,
-							childTreeNode.path,
-							identifierName,
-						);
+						const propValue =
+							componentPropsValues[identifierName] ?? null;
+
+						// handle props object
+						if (!value.isBindingPattern) {
+							const propsObjectText = Object.entries(
+								componentPropsValues,
+							).reduce<Record<string, string>>(
+								(acc, [key, value]) => {
+									acc[key] = Node.isJsxExpression(value)
+										? value.getExpression()?.getText() ?? ''
+										: value.getText();
+
+									return acc;
+								},
+								{},
+							);
+
+							acc[identifierName] = {
+								kind: SyntaxKind.VariableStatement,
+								text: `const ${identifierName} = ${formatObjectAsString(
+									propsObjectText,
+								)}`,
+								structure: null,
+							};
+
+							const identifiers: Identifier[] = [];
+
+							Object.values(componentPropsValues).forEach(
+								(propValue) => {
+									identifiers.push(
+										...propValue.getDescendantsOfKind(
+											SyntaxKind.Identifier,
+										),
+									);
+								},
+							);
+
+							const newDependencies =
+								getDependenciesForIdentifiers(identifiers);
+
+							Object.entries(newDependencies).forEach(
+								([identifier, dependency]) => {
+									if (
+										rootPath === treeNode.path &&
+										dependency.kind !== SyntaxKind.Parameter
+									) {
+										return;
+									}
+
+									acc[identifier] = dependency;
+								},
+							);
+
+							return acc;
+						}
 
 						if (propValue === null) {
 							return acc;
@@ -1444,6 +1508,7 @@ export const repomod: Repomod<Dependencies> = {
 
 		const metadataTree = buildMetadataTreeNode(path);
 		const mergedMetadata = mergeMetadata(metadataTree);
+
 		const { dependencies: mergedDependencies } = mergeDependencies(
 			metadataTree,
 			path,
