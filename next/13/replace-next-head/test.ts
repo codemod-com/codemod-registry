@@ -542,7 +542,6 @@ describe('next 13 replace-next-head', function () {
 			'/opt/project/components/b.tsx': B_COMPONENT_CONTENT,
 		});
 
-		// @TODO order
 		const expectedResult = `import { Metadata } from "next";
 		import Meta from '../../components/a.tsx';
 		const jsxExprProp = a + b();
@@ -635,6 +634,70 @@ describe('next 13 replace-next-head', function () {
 		deepStrictEqual(
 			command.data.replace(/\W/gm, ''),
 			expectedResult.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should create generateMetadata function if Page props referenced in child metadata: when props are not destructured', async function (this: Context) {
+		const A_CONTENT = `
+		import Meta from '../../components/a.tsx';
+		
+		export default function Page({ title, description }) {
+			return <Meta title={title} description={description} />;
+		}
+`;
+
+		const A_COMPONENT_CONTENT = `
+		import Head from 'next/head';
+		import NestedComponent from '../components/b';
+		export default function Meta(props) {
+			return (
+			<Head>
+				<title>{props.title}</title>
+				<meta name="description" content={props.description} />
+			</Head>
+			)
+		}
+`;
+
+		const [command] = await transform({
+			'/opt/project/pages/a/index.tsx': A_CONTENT,
+			'/opt/project/components/a.tsx': A_COMPONENT_CONTENT,
+		});
+
+		const expectedResult = `
+		import { Metadata } from "next";
+		import Meta from '../../components/a.tsx';
+	
+		export default function Page({ title, description }) {
+				return <Meta title={title} description={description}/>;
+		}
+		
+		export async function generateMetadata({ params }: {
+				params: Record<string, string | string[]>;
+		}): Promise<Metadata> {
+				const getStaticPropsResult = await getStaticProps({ params });
+				if (!('props' in getStaticPropsResult)) {
+						return {};
+				}
+				const { title, description } = getStaticPropsResult.props;
+				
+				const props = {
+					title: title, 
+					description: description
+				};
+				
+				return {
+						title: \`\${props.title}\`,
+						description: props.description
+				};
+	}`;
+
+		deepStrictEqual(command?.kind, 'upsertFile');
+		deepStrictEqual(command.path, '/opt/project/pages/a/index.tsx');
+
+		deepStrictEqual(
+			command.data.replace(/\s/gm, ''),
+			expectedResult.replace(/\s/gm, ''),
 		);
 	});
 
