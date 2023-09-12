@@ -175,10 +175,6 @@ const getDependenciesForIdentifiers = (
 		return {};
 	}
 
-	console.log(
-		identifiers.map((i) => i.getText()),
-		'?sdd',
-	);
 	const dependencies: Record<string, Dependency> = {};
 
 	identifiers.forEach((identifier) => {
@@ -1525,7 +1521,6 @@ export const repomod: Repomod<Dependencies> = {
 		});
 
 		const metadataTree = buildMetadataTreeNode(path);
-		console.log(JSON.stringify(metadataTree, null, 2), '??');
 		const mergedMetadata = mergeMetadata(metadataTree);
 
 		const { dependencies: mergedDependencies } = mergeDependencies(
