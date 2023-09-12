@@ -174,6 +174,11 @@ const getDependenciesForIdentifiers = (
 	if (depth > DEPENDENCY_TREE_MAX_DEPTH) {
 		return {};
 	}
+
+	console.log(
+		identifiers.map((i) => i.getText()),
+		'?sdd',
+	);
 	const dependencies: Record<string, Dependency> = {};
 
 	identifiers.forEach((identifier) => {
@@ -268,6 +273,19 @@ const getDependenciesForIdentifiers = (
 			.filter((i) => {
 				if (i.getText() === identifier.getText()) {
 					return false;
+				}
+
+				if (ancestor && Node.isFunctionDeclaration(ancestor)) {
+					const declaration = i.getSymbol()?.getDeclarations()[0];
+
+					// ensure we dont collect identifiers from function inner scope in nested functions
+					if (
+						declaration?.getFirstAncestorByKind(
+							SyntaxKind.FunctionDeclaration,
+						) === ancestor
+					) {
+						return false;
+					}
 				}
 
 				const parent = i.getParent();
@@ -1507,6 +1525,7 @@ export const repomod: Repomod<Dependencies> = {
 		});
 
 		const metadataTree = buildMetadataTreeNode(path);
+		console.log(JSON.stringify(metadataTree, null, 2), '??');
 		const mergedMetadata = mergeMetadata(metadataTree);
 
 		const { dependencies: mergedDependencies } = mergeDependencies(

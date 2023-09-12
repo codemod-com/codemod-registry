@@ -701,6 +701,72 @@ describe('next 13 replace-next-head', function () {
 		);
 	});
 
+	it('should create generateMetadata function if Page props referenced in child metadata: nested functions', async function (this: Context) {
+		const A_CONTENT = `
+		import Meta from '../../components/a.tsx';
+		
+		export default function Page({ title }) {
+			return <Meta title={title} />;
+		}
+`;
+
+		const A_COMPONENT_CONTENT = `
+		import Head from 'next/head';
+		const fromOuterScope = 1;
+		
+		export default function Meta(props) {
+			
+			function a(title){
+				const b = title + fromOuterScope;
+				return b;
+			}
+			
+			return (
+				<Head>
+					<title>{a(props.title)}</title>
+				</Head>
+			)
+		}
+`;
+
+		const [command] = await transform({
+			'/opt/project/pages/a/index.tsx': A_CONTENT,
+			'/opt/project/components/a.tsx': A_COMPONENT_CONTENT,
+		});
+
+		const expectedResult = `
+		import { Metadata } from "next";
+		import Meta from '../../components/a.tsx';
+	
+		export default function Page({ title }) {
+				return <Meta title={title}/>;
+		}
+		
+		export async function generateMetadata({ params }: {
+				params: Record<string, string | string[]>;
+		}): Promise<Metadata> {
+				const getStaticPropsResult = await getStaticProps({ params });
+				if (!('props' in getStaticPropsResult)) {
+						return {};
+				}
+				const { title } = getStaticPropsResult.props;
+				const props = { title: title };
+				const fromOuterScope = 1;
+				function a(title) {
+						const b = title + fromOuterScope;
+						return b;
+				}
+				return { title: \`\${a(props.title)}\` };
+	}`;
+
+		deepStrictEqual(command?.kind, 'upsertFile');
+		deepStrictEqual(command.path, '/opt/project/pages/a/index.tsx');
+		deepStrictEqual(
+			command.data.replace(/\s/gm, ''),
+			expectedResult.replace(/\s/gm, ''),
+		);
+	});
+
 	it('should create generateMetadata function if Page props referenced in child metadata: should copy dependencies inside generate metadata function', async function (this: Context) {
 		const A_CONTENT = `
 		import Meta from '../../components/a.tsx';
