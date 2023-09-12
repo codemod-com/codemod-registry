@@ -26,7 +26,7 @@ THE SOFTWARE.
 Changes to the original file: added the options parameter 
 */
 
-export default function transformer(file, api, options) {
+export default function transform(file, api, options) {
 	const j = api.jscodeshift;
 
 	const root = j(file.source);

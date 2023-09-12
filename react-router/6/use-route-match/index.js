@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-export default function transformer(file, api) {
+export default function transform(file, api) {
 	const j = api.jscodeshift;
 
 	const root = j(file.source);

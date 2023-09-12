@@ -1,11 +1,7 @@
 import { API, FileInfo, Options, Transform } from 'jscodeshift';
 import { join, parse } from 'node:path';
 
-export default function transformer(
-	file: FileInfo,
-	api: API,
-	options: Options,
-) {
+export default function transform(file: FileInfo, api: API, options: Options) {
 	const j = api.jscodeshift;
 
 	const root = j(file.source);
@@ -100,4 +96,4 @@ export default function transformer(
 	return root.toSource();
 }
 
-transformer satisfies Transform;
+transform satisfies Transform;
