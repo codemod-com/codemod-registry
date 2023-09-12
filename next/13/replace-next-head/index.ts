@@ -174,7 +174,6 @@ const getDependenciesForIdentifiers = (
 	if (depth > DEPENDENCY_TREE_MAX_DEPTH) {
 		return {};
 	}
-
 	const dependencies: Record<string, Dependency> = {};
 
 	identifiers.forEach((identifier) => {
@@ -191,7 +190,15 @@ const getDependenciesForIdentifiers = (
 		const [firstDefinition] =
 			identifier.getSymbol()?.getDeclarations() ?? [];
 
-		if (firstDefinition === undefined) {
+		const localSourceFile = identifier.getFirstAncestorByKind(
+			SyntaxKind.SourceFile,
+		);
+		// check if declaration exists in current sourceFile
+		if (
+			firstDefinition === undefined ||
+			firstDefinition.getFirstAncestorByKind(SyntaxKind.SourceFile) !==
+				localSourceFile
+		) {
 			return;
 		}
 
