@@ -480,11 +480,13 @@ describe('next 13 replace-next-head', function () {
 		const c = () => { };
 		function b() { return "b" }
 		const a = "a";
-		export const metadata: Metadata = {
-				title: \`\${title}\`,
-				description: a + b + c + d
-		}
+		
 		const title = "title";
+		
+		export const metadata: Metadata = {
+			title: \`\${title}\`,
+			description: a + b + c + d
+	}
 		export default function Page() {
 				return <Meta title={title} description={description}/>;
 		}`;
@@ -1083,16 +1085,18 @@ describe('next 13 replace-next-head', function () {
 		);
 	});
 
-	it('should replace meta tags content: support conditionally rendered meta tags', async function (this: Context) {
+	it('should replace meta tags content: support conditionally rendered meta tags (binaryExpression)', async function (this: Context) {
 		const INDEX_DATA = `
 		import Head from 'next/head';
 		
-		const condition = true;
+		const condition1 = true;
+		const condition2 = true;
 		
 	  export default function Page() {
 	    return (
 	        <Head>
-	          { condition && 	<meta name="description" content="a" /> }
+					{ condition1 && 	<title>a</title> }
+					{ condition2 && 	<meta name="description" content="a" /> }
 	        </Head>
 	    );
 	  }
@@ -1109,15 +1113,71 @@ describe('next 13 replace-next-head', function () {
 		import { Metadata } from "next";
 		import Head from 'next/head';
 		
+		const condition1 = true;
+		const condition2 = true;
+		
 		export const metadata: Metadata = {
-			 description: "a"
+			...(condition1 && { title: \`a\` }), 
+			...(condition2 && { description: "a" })
 		}
 		
-		const condition = true;
 	  export default function Page() {
 	    return (
 	        <Head>
-					{ condition && 	<meta name="description" content="a" /> }
+					{ condition1 && 	<title>a</title> }
+					{ condition2 && 	<meta name="description" content="a" /> }
+	        </Head>
+	    );
+	  }
+		`;
+
+		deepStrictEqual(
+			command.data.replace(/\s/gm, ''),
+			NEW_DATA.replace(/\s/gm, ''),
+		);
+	});
+
+	it('should replace meta tags content: support conditionally rendered meta tags (ternaryExpression)', async function (this: Context) {
+		const INDEX_DATA = `
+		import Head from 'next/head';
+		
+		const condition1 = true;
+		const condition2 = true;
+		
+	  export default function Page() {
+	    return (
+	        <Head>
+					{ condition1 ? 	<title>a</title> : null }
+					{ condition2 ? 	(<meta name="description" content="a" />) : null }
+	        </Head>
+	    );
+	  }
+		`;
+
+		const [command] = await transform({
+			'/opt/project/pages/index.tsx': INDEX_DATA,
+		});
+
+		deepStrictEqual(command?.kind, 'upsertFile');
+		deepStrictEqual(command.path, '/opt/project/pages/index.tsx');
+
+		const NEW_DATA = `
+		import { Metadata } from "next";
+		import Head from 'next/head';
+		
+		const condition1 = true;
+		const condition2 = true;
+		
+		export const metadata: Metadata = {
+			...(condition1 && { title: \`a\` }), 
+			...(condition2 && { description: "a" })
+		}
+		
+	  export default function Page() {
+	    return (
+	        <Head>
+						{ condition1 ? 	<title>a</title> : null }
+						{ condition2 ? 	(<meta name="description" content="a" />) : null }
 	        </Head>
 	    );
 	  }
