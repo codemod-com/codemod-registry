@@ -12,6 +12,9 @@ import tsmorph, {
 	JsxExpression,
 	StringLiteral,
 	JsxAttribute,
+	ArrowFunction,
+	FunctionExpression,
+	FunctionDeclaration,
 } from 'ts-morph';
 
 import type {
@@ -317,21 +320,30 @@ const handleJsxSelfClosingElement = (
 		return;
 	}
 
-	const parent = jsxSelfClosingElement.getParent();
-	const parentIsBinaryExpression = Node.isBinaryExpression(parent);
-	if (parentIsBinaryExpression) {
-		const leftExpression = parent.getLeft();
-
-		const identifiers = leftExpression.getDescendantsOfKind(
-			SyntaxKind.Identifier,
+	const ancestorBinaryExpression =
+		jsxSelfClosingElement.getFirstAncestorByKind(
+			SyntaxKind.BinaryExpression,
 		);
-		const dependencies = getDependenciesForIdentifiers(identifiers);
 
-		settingsContainer.set((prev) => ({
-			...prev,
-			dependencies: { ...prev.dependencies, ...dependencies },
-		}));
-	}
+	const ancestorConditionalExpression =
+		jsxSelfClosingElement.getFirstAncestorByKind(
+			SyntaxKind.ConditionalExpression,
+		);
+
+	const binaryExpr = ancestorBinaryExpression?.getLeft();
+	const conditionalExpr = ancestorConditionalExpression?.getCondition();
+
+	const conditionExpr = binaryExpr ?? conditionalExpr;
+
+	const identifiers =
+		conditionExpr?.getDescendantsOfKind(SyntaxKind.Identifier) ?? [];
+
+	const dependencies = getDependenciesForIdentifiers(identifiers);
+
+	settingsContainer.set((prev) => ({
+		...prev,
+		dependencies: { ...prev.dependencies, ...dependencies },
+	}));
 
 	const metadataAttributes = jsxSelfClosingElement
 		.getAttributes()
@@ -373,7 +385,13 @@ const handleJsxSelfClosingElement = (
 
 	if (metadataName && knownNames.includes(metadataName)) {
 		handleTag(
-			{ tagName, metadataName, metadataAttributes },
+			{
+				tagName,
+				metadataName,
+				metadataAttributes,
+				conditionText:
+					binaryExpr?.getText() ?? conditionalExpr?.getText(),
+			},
 			metadataContainer,
 		);
 	}
@@ -391,6 +409,29 @@ const handleHeadChildJsxElement = (
 	const children = jsxElement.getJsxChildren();
 
 	let text = '';
+
+	const ancestorBinaryExpression = jsxElement.getFirstAncestorByKind(
+		SyntaxKind.BinaryExpression,
+	);
+
+	const ancestorConditionalExpression = jsxElement.getFirstAncestorByKind(
+		SyntaxKind.ConditionalExpression,
+	);
+
+	const binaryExpr = ancestorBinaryExpression?.getLeft();
+	const conditionalExpr = ancestorConditionalExpression?.getCondition();
+
+	const conditionExpr = binaryExpr ?? conditionalExpr;
+
+	const identifiers =
+		conditionExpr?.getDescendantsOfKind(SyntaxKind.Identifier) ?? [];
+	const dependencies = getDependenciesForIdentifiers(identifiers);
+
+	settingsContainer.set((prev) => ({
+		...prev,
+		dependencies: { ...prev.dependencies, ...dependencies },
+	}));
+
 	children.forEach((child) => {
 		if (Node.isJsxText(child)) {
 			text += child.getFullText();
@@ -428,6 +469,7 @@ const handleHeadChildJsxElement = (
 			metadataAttributes: {
 				children: `\`${text}\``,
 			},
+			conditionText: binaryExpr?.getText() ?? conditionalExpr?.getText(),
 		},
 		metadataContainer,
 	);
@@ -450,6 +492,14 @@ const handleHeadChild = (
 		);
 	}
 
+	if (Node.isParenthesizedExpression(child)) {
+		handleHeadChild(
+			child.getExpression(),
+			metadataContainer,
+			settingsContainer,
+		);
+	}
+
 	if (Node.isJsxExpression(child)) {
 		const expression = child.getExpression();
 
@@ -458,6 +508,19 @@ const handleHeadChild = (
 				expression.getRight(),
 				metadataContainer,
 				settingsContainer,
+			);
+		}
+
+		if (Node.isConditionalExpression(expression)) {
+			const whenTrue = expression.getWhenTrue();
+			const whenFalse = expression.getWhenFalse();
+
+			[whenTrue, whenFalse].forEach((expression) =>
+				handleHeadChild(
+					expression,
+					metadataContainer,
+					settingsContainer,
+				),
 			);
 		}
 	}
@@ -522,16 +585,19 @@ export const handleTag = (
 		tagName,
 		metadataName,
 		metadataAttributes,
+		conditionText,
 	}: {
 		tagName: string;
 		metadataName: string;
 		metadataAttributes: Record<string, string>;
+		conditionText?: string;
 	},
 	metadataContainer: Container<Record<string, any>>,
 ) => {
 	const metadataObject = metadataContainer.get();
 	if (metadataName === 'title') {
 		metadataObject[metadataName] = metadataAttributes.children ?? '';
+		metadataObject[`_CONDITION_TEXT_${metadataName}`] = conditionText;
 	}
 
 	if (tagName === 'meta') {
@@ -751,6 +817,7 @@ export const handleTag = (
 
 		const propertyName = camelize(metadataName);
 		metadataObject[propertyName] = content;
+		metadataObject[`_CONDITION_TEXT_${metadataName}`] = conditionText;
 	}
 
 	if (tagName === 'link') {
@@ -887,6 +954,12 @@ function formatObjectAsString(metadataObject: Record<string, any>) {
 	const pairs: string[] = [];
 
 	for (const [key, value] of Object.entries(metadataObject)) {
+		if (key.startsWith('_')) {
+			continue;
+		}
+
+		const conditionText = metadataObject[`_CONDITION_TEXT_${key}`];
+
 		if (Array.isArray(value)) {
 			const formattedArray = value.map((element) =>
 				typeof element === 'object' && element !== null
@@ -894,20 +967,28 @@ function formatObjectAsString(metadataObject: Record<string, any>) {
 					: String(element),
 			);
 
-			pairs.push(`${key}: [${formattedArray.join(', \n')}]`);
+			const pair = `${key}: [${formattedArray.join(', \n')}]`;
+			const pairText = conditionText
+				? `...(${conditionText} && {${pair} })`
+				: pair;
+			pairs.push(pairText);
 		} else if (typeof value === 'object' && value !== null) {
-			pairs.push(`${key}: ${formatObjectAsString(value)}`);
+			const pair = `${key}: ${formatObjectAsString(value)}`;
+			const pairText = conditionText
+				? `...(${conditionText} && {${pair} })`
+				: pair;
+			pairs.push(pairText);
 		} else {
 			const keyIsValidIdentifier = isValidIdentifier(key);
 			const keyDoubleQuotified = isDoubleQuotified(key);
 
-			pairs.push(
-				`${
-					!keyIsValidIdentifier && !keyDoubleQuotified
-						? `"${key}"`
-						: key
-				}: ${value}`,
-			);
+			const pair = `${
+				!keyIsValidIdentifier && !keyDoubleQuotified ? `"${key}"` : key
+			}: ${value}`;
+			const pairText = conditionText
+				? `...(${conditionText} && {${pair} })`
+				: pair;
+			pairs.push(pairText);
 		}
 	}
 
@@ -1344,7 +1425,7 @@ const insertMetadata = (
 		return undefined;
 	}
 
-	const positionAfterImports = getPositionAfterImports(sourceFile);
+	const positionBeforeComponent = getPositionBeforeComponent(sourceFile);
 
 	if (param !== null) {
 		insertGenerateMetadataFunctionDeclaration(
@@ -1354,7 +1435,7 @@ const insertMetadata = (
 		);
 	} else {
 		sourceFile.insertStatements(
-			positionAfterImports,
+			positionBeforeComponent,
 			buildMetadataStatement(metadataObject),
 		);
 	}
@@ -1378,6 +1459,64 @@ const insertMetadata = (
 	if (!importAlreadyExists) {
 		sourceFile.insertStatements(0, `import { Metadata } from "next";`);
 	}
+};
+
+type PageComponent = ArrowFunction | FunctionExpression | FunctionDeclaration;
+
+const getPageComponent = (sourceFile: SourceFile): PageComponent | null => {
+	const defaultExportedFunctionDeclaration = sourceFile
+		.getFunctions()
+		.find((f) => f.isDefaultExport());
+
+	if (defaultExportedFunctionDeclaration !== undefined) {
+		return defaultExportedFunctionDeclaration;
+	}
+
+	const exportAssignment = sourceFile
+		.getStatements()
+		.find((s) => Node.isExportAssignment(s));
+
+	const declarations =
+		exportAssignment
+			?.getFirstDescendantByKind(SyntaxKind.Identifier)
+			?.getSymbol()
+			?.getDeclarations() ?? [];
+
+	let pageComponent: PageComponent | null = null;
+
+	declarations.forEach((d) => {
+		if (Node.isVariableDeclaration(d)) {
+			const initializer = d?.getInitializer();
+
+			if (
+				Node.isArrowFunction(initializer) ||
+				Node.isFunctionExpression(initializer)
+			) {
+				pageComponent = initializer;
+				return;
+			}
+		}
+
+		if (Node.isFunctionDeclaration(d)) {
+			pageComponent = d;
+		}
+	});
+
+	return pageComponent ?? null;
+};
+
+const getPositionBeforeComponent = (sourceFile: SourceFile): number => {
+	const component = getPageComponent(sourceFile);
+
+	if (component === null) {
+		return 0;
+	}
+
+	return Node.isFunctionDeclaration(component)
+		? component.getChildIndex()
+		: component
+				.getFirstAncestorByKind(SyntaxKind.VariableStatement)
+				?.getChildIndex() ?? 0;
 };
 
 const getPositionAfterImports = (sourceFile: SourceFile): number => {
