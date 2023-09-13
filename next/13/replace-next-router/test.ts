@@ -2005,4 +2005,36 @@ describe('next 13 replace-next-router', function () {
 
 		deepStrictEqual(actual, expected);
 	});
+
+	it('should handle correctly the "router.query as C" destructuring', () => {
+		const beforeText = `
+			import { useRouter } from "next/router";
+
+			function Component() {
+				const router = useRouter();
+
+				const { a = query.a, b = query.b } =
+  				router.query as C;
+			}
+		`;
+
+		const afterText = `
+				import { useParams, useSearchParams } from "next/navigation";
+				import { useCallback } from "react";
+		
+				function Component() {
+					const params = useParams();
+					const searchParams = useSearchParams();
+					const getParam = useCallback((p: string) => params?.[p] ?? searchParams?.get(p), [params, searchParams]);
+					
+					const a = getParam("a")
+					const b = getParam("b")
+				}
+		
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(actual, expected);
+	});
 });
