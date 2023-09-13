@@ -236,7 +236,7 @@ const buildComponentsFileData = (
 
 		removeUnusedImports(sourceFile);
 
-		return sourceFile.print();
+		return sourceFile.getFullText();
 	};
 
 	if (path.endsWith('.mdx')) {
@@ -416,7 +416,7 @@ const buildPageFileData = (
 
 		removeUnusedImports(sourceFile);
 
-		return sourceFile.print();
+		return sourceFile.getFullText();
 	};
 
 	if (path.endsWith('.mdx')) {
@@ -1030,7 +1030,7 @@ const handleData: Repomod<Dependencies>['handleData'] = async (
 		return {
 			kind: 'upsertData',
 			path,
-			data: sourceFile.print(),
+			data: sourceFile.getFullText(),
 		};
 	}
 
@@ -1059,7 +1059,7 @@ const handleData: Repomod<Dependencies>['handleData'] = async (
 		return {
 			kind: 'upsertData',
 			path,
-			data: underscoreAppFile.print(),
+			data: underscoreAppFile.getFullText(),
 		};
 	}
 

@@ -674,17 +674,17 @@ describe('next 13 replace-next-head', function () {
 		
 		export async function generateMetadata({ params }: {
 				params: Record<string, string | string[]>;
-		}): Promise<Metadata> {
+		},): Promise<Metadata> {
 				const getStaticPropsResult = await getStaticProps({ params });
 				if (!('props' in getStaticPropsResult)) {
-						return {};
+						return {}
 				}
 				const { title, description } = getStaticPropsResult.props;
 				
 				const props = {
 					title: title, 
 					description: description
-				};
+				}
 				
 				return {
 						title: \`\${props.title}\`,
@@ -694,7 +694,6 @@ describe('next 13 replace-next-head', function () {
 
 		deepStrictEqual(command?.kind, 'upsertFile');
 		deepStrictEqual(command.path, '/opt/project/pages/a/index.tsx');
-
 		deepStrictEqual(
 			command.data.replace(/\s/gm, ''),
 			expectedResult.replace(/\s/gm, ''),
@@ -744,13 +743,13 @@ describe('next 13 replace-next-head', function () {
 		
 		export async function generateMetadata({ params }: {
 				params: Record<string, string | string[]>;
-		}): Promise<Metadata> {
+		},): Promise<Metadata> {
 				const getStaticPropsResult = await getStaticProps({ params });
 				if (!('props' in getStaticPropsResult)) {
-						return {};
+						return {}
 				}
 				const { title } = getStaticPropsResult.props;
-				const props = { title: title };
+				const props = { title: title }
 				const fromOuterScope = 1;
 				function a(title) {
 						const b = title + fromOuterScope;
@@ -1451,7 +1450,7 @@ describe('next 13 replace-next-head', function () {
 					}
 				]
 			}
-		};
+		}
 
 		export default function Page() {
 	    return (

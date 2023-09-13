@@ -1577,7 +1577,7 @@ export const repomod: Repomod<Dependencies> = {
 			return {
 				kind: 'upsertData',
 				path,
-				data: sourceFile.print(),
+				data: sourceFile.getFullText(),
 			};
 		} catch (e) {
 			console.error(e);

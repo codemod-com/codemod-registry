@@ -203,7 +203,10 @@ describe('next 13 app-directory-boilerplate', function () {
 					command.path ===
 						'/opt/project/app/[a]/[b]/components.tsx' &&
 					command.data.replace(/\W/gm, '') ===
-						"'use client';".replace(/\W/gm, '')
+						`
+						'use client';
+						// This file has been sourced from: /opt/project/pages/[a]/[b].tsx
+						`.replace(/\W/gm, '')
 				);
 			}),
 		);
