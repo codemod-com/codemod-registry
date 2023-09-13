@@ -97,7 +97,7 @@ describe('next 13 remove-next-export', function () {
 				data: '\nnode_modules/.bin/next build\n',
 			},
 			{
-				data: 'module.exports = {\n    distDir: \'out\',\n    output: "export"\n};\n',
+				data: '\nmodule.exports = {\n\tdistDir: \'out\',\n    output: "export"\n}',
 				kind: 'upsertFile',
 				path: '/opt/project/pages/next.config.js',
 			},

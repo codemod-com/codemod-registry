@@ -24,7 +24,7 @@ export const transform = (
 
 	const expected = project
 		.createSourceFile(`expected${extension}`, afterText)
-		.print();
+		.getFullText();
 
 	return {
 		actual,
@@ -57,8 +57,8 @@ describe('next 13 upsert-client-directive', function () {
             }
 		`;
 
-		const afterText = `
-            'use client';
+		const afterText = `'use client';
+
             import { useState } from 'react';
 
             export default function Page() {
@@ -66,7 +66,7 @@ describe('next 13 upsert-client-directive', function () {
 
                 return x;
             }
-        `;
+		`;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 		deepStrictEqual(actual, expected);
@@ -103,14 +103,14 @@ describe('next 13 upsert-client-directive', function () {
             }
 		`;
 
-		const afterText = `
-            'use client';
+		const afterText = `'use client';
+
             export default async function Page() {
                 return <div onClick={null}>
                     TEST
                 </div>;
             }
-        `;
+		`;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 		deepStrictEqual(actual, expected);

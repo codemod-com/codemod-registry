@@ -65,5 +65,5 @@ export const handleSourceFile = (
 		sourceFile.insertStatements(0, `'use client';`);
 	}
 
-	return sourceFile.print();
+	return sourceFile.getFullText();
 };
