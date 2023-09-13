@@ -1,7 +1,6 @@
 import {
 	BindingElement,
 	CallExpression,
-	EmitHint,
 	Identifier,
 	ImportDeclaration,
 	ImportSpecifier,
@@ -1089,5 +1088,5 @@ export const handleSourceFile = (
 		);
 	}
 
-	return sourceFile.print({ emitHint: EmitHint.SourceFile });
+	return sourceFile.getFullText();
 };

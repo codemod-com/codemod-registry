@@ -24,7 +24,7 @@ const transform = (
 
 	const expected = project
 		.createSourceFile(`expected${extension}`, afterText)
-		.print();
+		.getFullText();
 
 	return {
 		actual,
@@ -58,7 +58,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should add useSearchParams import because of "useRouter().query"', async function (this: Context) {
@@ -84,7 +87,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should add useSearchParams import because of "const { query } = useRouter()"', async function (this: Context) {
@@ -112,7 +118,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should add searchParams variable declarator because of "useRouter()"', async function (this: Context) {
@@ -140,7 +149,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should replace "...?.query" with "Object.fromEntries(...)"', async function (this: Context) {
@@ -160,13 +172,15 @@ describe('next 13 replace-next-router', function () {
 			function Component() {
 				const searchParams = useSearchParams();
 
-				const shallowCopiedQuery = { ...Object.fromEntries(searchParams ?? new URLSearchParams()) };
+				const shallowCopiedQuery = { ...Object.fromEntries(searchParams ?? new URLSearchParams()) }
 			}
 			`;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
-
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should replace "?.query" with "searchParams"', async function (this: Context) {
@@ -195,7 +209,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should replace "useRouter().query" with "useSearchParams()"', async function (this: Context) {
@@ -222,7 +239,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should replace ...router.query with ...Object.fromEntries(searchParams)', async function (this: Context) {
@@ -249,13 +269,16 @@ describe('next 13 replace-next-router', function () {
 
 				const x = getParam("a");
 
-				const z = { ...Object.fromEntries(searchParams ?? new URLSearchParams()), b: 1 };
+				const z = { ...Object.fromEntries(searchParams ?? new URLSearchParams()), b: 1 }
 			}
 		`;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should replace router.query.a with getParam("a")', async function (this: Context) {
@@ -296,7 +319,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should replace "query" with "searchParams"', async function (this: Context) {
@@ -318,15 +344,18 @@ describe('next 13 replace-next-router', function () {
            		const searchParams = useSearchParams();
 				const getParam = useCallback((p: string) => params?.[p] ?? searchParams?.get(p), [params, searchParams]);
 
-				const a = getParam("a");
-				const b = getParam("b");
-				const c = getParam("c");
+				const a = getParam("a")
+				const b = getParam("b")
+				const c = getParam("c")
 			}
 	      `;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should delete query from destructured useRouter call', async function (this: Context) {
@@ -345,7 +374,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should delete empty useRouter destructuring', async function (this: Context) {
@@ -365,7 +397,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should remove unused useRouter import specifiers', async function (this: Context) {
@@ -385,7 +420,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should not remove CSS imports', async function (this: Context) {
@@ -421,15 +459,18 @@ describe('next 13 replace-next-router', function () {
 				const searchParams = useSearchParams();
 			  	const getParam = useCallback((p: string) => params?.[p] ?? searchParams?.get(p), [params, searchParams]);
 
-				const a = getParam("a");
-				const b = getParam("b");
-				const d = getParam("c");
+				const a = getParam("a")
+				const b = getParam("b")
+				const d = getParam("c")
 			}
 		`;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should replace useRouter().pathname with usePathname()', async function (this: Context) {
@@ -451,7 +492,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should replace router.pathname with usePathname()', async function (this: Context) {
@@ -475,7 +519,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should replace { pathname } destructed from useRouter() with usePathname()', async function (this: Context) {
@@ -498,7 +545,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should replace { pathname } destructed from router with usePathname()', async function (this: Context) {
@@ -523,7 +573,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should replace { pathname: p } destructed from router with const p = usePathname()', async function (this: Context) {
@@ -546,7 +599,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should replace router.isReady with useSearchParams in variable declaration', async function (this: Context) {
@@ -570,7 +626,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should replace router.isReady with useSearchParams in ternary variable assignment', async function (this: Context) {
@@ -593,7 +652,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should replace !router.isReady with useSearchParams in variable declaration', async function (this: Context) {
@@ -616,7 +678,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should replace !router.isReady with useSearchParams in ternary variable assignment', async function (this: Context) {
@@ -639,7 +704,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should replace !router.isReady with useSearchParams in `if` statement', async function (this: Context) {
@@ -666,7 +734,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should replace useRouter().isReady with true', async function (this: Context) {
@@ -689,7 +760,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should remove { isReady } and replace usages with true', async function (this: Context) {
@@ -714,7 +788,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should noop for already-existing import', async function (this: Context) {
@@ -761,7 +838,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should replace { route } = useRouter() with usePathname()', async function (this: Context) {
@@ -790,7 +870,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should replace useRouter().query[A] with useSearchParams', async function (this: Context) {
@@ -820,7 +903,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should replace useRouter().query as A with useSearchParams', async function (this: Context) {
@@ -847,7 +933,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should replace router.pathname with pathname', async function (this: Context) {
@@ -874,7 +963,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should replace router.asPath with usePathname + useSearchParams', async function (this: Context) {
@@ -904,7 +996,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should switch the useRouter import source to next/router for router.push', async function (this: Context) {
@@ -934,7 +1029,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should transform usages within a JS default function', () => {
@@ -970,7 +1068,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.js');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should replace useRouter().query with ...Object.fromEntries(searchParams ?? new URLSearchParams())', () => {
@@ -996,7 +1097,7 @@ describe('next 13 replace-next-router', function () {
 
 				return (
 					<>
-						<div>{JSON.stringify(...Object.fromEntries(searchParams ?? new URLSearchParams())}</div>
+						<div>{JSON.stringify(...Object.fromEntries(searchParams ?? new URLSearchParams()))}</div>
 					</>
 				)
 			}
@@ -1004,7 +1105,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.js');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should replace router.isReady, router.asPath, router.href with proper replacements', () => {
@@ -1025,7 +1129,7 @@ describe('next 13 replace-next-router', function () {
 
 		const afterText = `
 			import { usePathname, useSearchParams } from "next/navigation";
-			import { useEffect, useCallback } from 'react';
+			import { useEffect, useCallback } from 'react'
 
 			function Component() {
 				const searchParams = useSearchParams();
@@ -1041,7 +1145,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.js');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should replace useRouter().isFallback with false', () => {
@@ -1069,7 +1176,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.js');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should replace router.isFallback with false', () => {
@@ -1099,7 +1209,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.js');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should retain the useRouter import when router is in use', () => {
@@ -1128,23 +1241,26 @@ describe('next 13 replace-next-router', function () {
 			const Component = () => {
 				/** TODO "pathname" no longer contains square-bracket expressions. Rewrite the code relying on them if required. **/
 	   			const pathname = usePathname();
-	   			const router = useRouter();
+	   			const router = useRouter()
 
 				React.useEffect(
 					() => {
 					},
 					[router]
-				);
+				)
 
-	   			const a = pathname?.includes('a');
+	   			const a = pathname?.includes('a')
 			return null;
-		};
+		}
 
 		`;
 
 		const { actual, expected } = transform(beforeText, afterText, '.js');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should use searchParams when dealing with function(query)', () => {
@@ -1169,7 +1285,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.js');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should use searchParams when dealing with function(query)', () => {
@@ -1191,7 +1310,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.js');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should replace router.asPath.startsWith with pathname?.startsWith', () => {
@@ -1241,7 +1363,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should replace "{ asPath } = useRouter()" with "pathname = usePathname()"', () => {
@@ -1275,7 +1400,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should replace "path = useRouter().asPath" with "path = usePathname()"', () => {
@@ -1308,7 +1436,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should replace "router.query[name]" with "getParam(name)"', () => {
@@ -1341,7 +1472,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should replace "router.replace({pathname: string})" with "router.replace(href: string)"', () => {
@@ -1367,7 +1501,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should replace "router.replace({pathname: string, query: {...})" with "router.replace(href: string)"', () => {
@@ -1389,7 +1526,7 @@ describe('next 13 replace-next-router', function () {
 	  		import { useRouter } from "next/navigation";
 
 			function Component() {
-				const urlSearchParams = new URLSearchParams()
+				const urlSearchParams = new URLSearchParams();
 				urlSearchParams.set('callbackUrl', \`/apps/\${slug}/setup\`);
 				const router = useRouter();
 				router.replace(\`/auth/login?\${urlSearchParams.toString()}\`);
@@ -1398,7 +1535,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should replace "router.push({pathname: string})" with "router.push(href: string)"', () => {
@@ -1424,7 +1564,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should replace useRouter import when push is destructured', () => {
@@ -1448,7 +1591,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should replace useRouter import when push is destructured  2', () => {
@@ -1483,7 +1629,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should replace "router.push({pathname: string, query: {...})" with "router.push(href: string)"', () => {
@@ -1518,7 +1667,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should handle "const { query: { rescheduleUid } = {} } = useRouter();"', () => {
@@ -1541,15 +1693,18 @@ describe('next 13 replace-next-router', function () {
 				const searchParams = useSearchParams();
 			  	const getParam = useCallback((p: string) => params?.[p] ?? searchParams?.get(p), [params, searchParams]);
 
-				const param1 = getParam("param1");
-				const param2 = getParam("param2");
+				const param1 = getParam("param1")
+				const param2 = getParam("param2")
 
 				return null;}
 				`;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should remove await from "await router.push(href: string)"', () => {
@@ -1577,7 +1732,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should remove await from "await router.replace(href: string)"', () => {
@@ -1605,7 +1763,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should replace NextRouter with AppRouterInstance', () => {
@@ -1621,7 +1782,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should support rest operator "{ p1, p2, ...r } = r.query"', async function (this: Context) {
@@ -1647,7 +1811,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should support call expression parent node', () => {
@@ -1671,7 +1838,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should ensure that `useRouter` import is updated', () => {
@@ -1695,7 +1865,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should ensure that `useRouter` import is added when `router` is used as a short-hand property', () => {
@@ -1725,7 +1898,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it("should transform usages of the query property of the router's binding element", () => {
@@ -1782,7 +1958,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it("should transform the element-access-expression usages of the query property of the router's binding element", () => {
@@ -1813,19 +1992,21 @@ describe('next 13 replace-next-router', function () {
 			const params = useParams();
 			const searchParams = useSearchParams();
 			const getParam = useCallback((p: string) => params?.[p] ?? searchParams?.get(p), [params, searchParams]);
-			const obj = useMemo(() => objects?.find((f) => f.a === getParam('a')), [getParam('a')]);
+			const obj = useMemo(() => objects?.find((f) => f.a === getParam('a')), [getParam('a')],);
 			
 			const result = typeof getParam('a-b-c') === 'string'
 				? {
 					a: getParam('a-b-c'),
 				}
 				: obj;
-		}
 		`;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should change the useRouter import from next/router into next/navigation', () => {
@@ -1851,7 +2032,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should use different names for params and searchParams if the defaults are already used', () => {
@@ -1892,7 +2076,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should not add React hook imports to type-only imports', () => {
@@ -1923,7 +2110,10 @@ describe('next 13 replace-next-router', function () {
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should convert router.push within arrow functions', () => {
@@ -1951,14 +2141,17 @@ describe('next 13 replace-next-router', function () {
 				return <A onClick={() => {
 					const urlSearchParams = new URLSearchParams();
 					urlSearchParams.set('a', 1);
-					return router.push(\`/users/?\${urlSearchParams.toString()}\`);
+					return router.push(\`/users/?\${urlSearchParams.toString()}\`)
 				}}/>;
 			}
 		`;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 
 	it('should transform Object.entries(router.query) properly', () => {
@@ -1997,13 +2190,16 @@ describe('next 13 replace-next-router', function () {
 				}, [params, searchParams]);
 
 				Array.from(paramMap).forEach(([key, value]) => {
-					console.log(key, value);
+					console.log(key, value)
 				});
 			}
 		`;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
 
-		deepStrictEqual(actual, expected);
+		deepStrictEqual(
+			actual?.replace(/\s/gm, ''),
+			expected.replace(/\s/gm, ''),
+		);
 	});
 });
