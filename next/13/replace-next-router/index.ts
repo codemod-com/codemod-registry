@@ -311,7 +311,11 @@ const handleRouterPropertyAccessExpression = (
 	const nodeName = node.getName();
 
 	if (nodeName === 'query') {
-		const parentNode = node.getParent();
+		let parentNode = node.getParent();
+
+		if (Node.isAsExpression(parentNode)) {
+			parentNode = parentNode.getParent();
+		}
 
 		if (Node.isPropertyAccessExpression(parentNode)) {
 			// e.g. router.query.a
