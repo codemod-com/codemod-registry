@@ -103,8 +103,8 @@ describe('next 13 replace-next-head', function () {
 		import Meta from '../../components/a.tsx';
 		export const metadata: Metadata = {
 				title: \`title\`,
-				description: "description",
-		};
+				description: "description"
+		}
 		export default function Page() {
 				return <Meta />;
 		}`;
@@ -113,8 +113,8 @@ describe('next 13 replace-next-head', function () {
 		deepStrictEqual(command.path, '/opt/project/pages/a/index.tsx');
 
 		deepStrictEqual(
-			command.data.replace(/\W/gm, ''),
-			expectedResult.replace(/\W/gm, ''),
+			command.data.replace(/\s/gm, ''),
+			expectedResult.replace(/\s/gm, ''),
 		);
 	});
 
@@ -156,8 +156,8 @@ describe('next 13 replace-next-head', function () {
 		const expectedResult = `import { Metadata } from "next";
 		import Meta from '#/components/a.tsx';
 		export const metadata: Metadata = {
-				title: \`title\`,
-		};
+				title: \`title\`
+		}
 		export default function Page() {
 				return <Meta />;
 		}`;
@@ -165,8 +165,8 @@ describe('next 13 replace-next-head', function () {
 		deepStrictEqual(command?.kind, 'upsertFile');
 		deepStrictEqual(command.path, '/opt/project/pages/a/index.tsx');
 		deepStrictEqual(
-			command.data.replace(/\W/gm, ''),
-			expectedResult.replace(/\W/gm, ''),
+			command.data.replace(/\s/gm, ''),
+			expectedResult.replace(/\s/gm, ''),
 		);
 	});
 
@@ -209,8 +209,8 @@ describe('next 13 replace-next-head', function () {
 		const expectedResult = `import { Metadata } from "next";
 		import Meta from '#/components/a.tsx';
 		export const metadata: Metadata = {
-				title: \`title\`,
-		};
+				title: \`title\`
+		}
 		export default function Page() {
 				return <Meta />;
 		}`;
@@ -218,8 +218,8 @@ describe('next 13 replace-next-head', function () {
 		deepStrictEqual(command?.kind, 'upsertFile');
 		deepStrictEqual(command.path, '/opt/project/pages/a/index.tsx');
 		deepStrictEqual(
-			command.data.replace(/\W/gm, ''),
-			expectedResult.replace(/\W/gm, ''),
+			command.data.replace(/\s/gm, ''),
+			expectedResult.replace(/\s/gm, ''),
 		);
 	});
 
@@ -259,12 +259,12 @@ describe('next 13 replace-next-head', function () {
 		import Meta from '../../components/a.tsx';
 		const env = process.env.APP_NAME;
 		const { obj: { d } } = { obj: { d: "d" } };
-		function c() { return "c" };
+		function c() { return "c" }
 		const b = () => "b";
 		const a = "a";
 		export const metadata: Metadata = {
-				title: \`\${a + b() + c() + d + e + env}\`,
-		};
+				title: \`\${a + b() + c() + d + e + env}\`
+		}
 		export default function Page() {
 				return <Meta />;
 		}`;
@@ -273,8 +273,8 @@ describe('next 13 replace-next-head', function () {
 		deepStrictEqual(command.path, '/opt/project/pages/a/index.tsx');
 
 		deepStrictEqual(
-			command.data.replace(/\W/gm, ''),
-			expectedResult.replace(/\W/gm, ''),
+			command.data.replace(/\s/gm, ''),
+			expectedResult.replace(/\s/gm, ''),
 		);
 	});
 
@@ -316,8 +316,8 @@ describe('next 13 replace-next-head', function () {
 
 		
 		export const metadata: Metadata = {
-				title: \`\${a}\`,
-		};
+				title: \`\${a}\`
+		}
 		export default function Page() {
 				return <Meta />;
 		}`;
@@ -326,8 +326,8 @@ describe('next 13 replace-next-head', function () {
 		deepStrictEqual(command.path, '/opt/project/pages/a/index.tsx');
 
 		deepStrictEqual(
-			command.data.replace(/\W/gm, ''),
-			expectedResult.replace(/\W/gm, ''),
+			command.data.replace(/\s/gm, ''),
+			expectedResult.replace(/\s/gm, ''),
 		);
 	});
 
@@ -363,8 +363,8 @@ describe('next 13 replace-next-head', function () {
 			import Meta from '../../components/a.tsx';
 			import { a } from "../../../utils/index.ts";
 			export const metadata: Metadata = {
-					title: \`\${a}\`,
-			};
+					title: \`\${a}\`
+			}
 			export default function Page() {
 					return <Meta />;
 			}
@@ -374,8 +374,8 @@ describe('next 13 replace-next-head', function () {
 		deepStrictEqual(command.path, '/opt/project/pages/a/index.tsx');
 
 		deepStrictEqual(
-			command.data.replace(/\W/gm, ''),
-			expectedResult.replace(/\W/gm, ''),
+			command.data.replace(/\s/gm, ''),
+			expectedResult.replace(/\s/gm, ''),
 		);
 	});
 
@@ -412,8 +412,8 @@ describe('next 13 replace-next-head', function () {
 			import Meta from '../../components/a.tsx';
 			import lib from "lib";
 			export const metadata: Metadata = {
-					title: \`\${lib()}\`,
-			};
+					title: \`\${lib()}\`
+			}
 			export default function Page() {
 					return <Meta />;
 			}
@@ -423,8 +423,8 @@ describe('next 13 replace-next-head', function () {
 		deepStrictEqual(command.path, '/opt/project/pages/a/index.tsx');
 
 		deepStrictEqual(
-			command.data.replace(/\W/gm, ''),
-			expectedResult.replace(/\W/gm, ''),
+			command.data.replace(/\s/gm, ''),
+			expectedResult.replace(/\s/gm, ''),
 		);
 	});
 
@@ -478,12 +478,12 @@ describe('next 13 replace-next-head', function () {
 		import Meta from '../../components/a.tsx';
 		const { d } = { d: "d" };
 		const c = () => { };
-		function b() { return "b"; }
+		function b() { return "b" }
 		const a = "a";
 		export const metadata: Metadata = {
 				title: \`\${title}\`,
-				description: a + b + c + d,
-		};
+				description: a + b + c + d
+		}
 		const title = "title";
 		export default function Page() {
 				return <Meta title={title} description={description}/>;
@@ -493,8 +493,8 @@ describe('next 13 replace-next-head', function () {
 		deepStrictEqual(command.path, '/opt/project/pages/a/index.tsx');
 
 		deepStrictEqual(
-			command.data.replace(/\W/gm, ''),
-			expectedResult.replace(/\W/gm, ''),
+			command.data.replace(/\s/gm, ''),
+			expectedResult.replace(/\s/gm, ''),
 		);
 	});
 
@@ -544,13 +544,13 @@ describe('next 13 replace-next-head', function () {
 
 		const expectedResult = `import { Metadata } from "next";
 		import Meta from '../../components/a.tsx';
-		const jsxExprProp = a + b();
-		function b() { return "b"; }
+		const jsxExprProp = a + b()
+		function b() { return "b" }
 		const a = "a";
 		export const metadata: Metadata = {
 				title: \`\${title}\`,
-				description: jsxExprProp,
-		};
+				description: jsxExprProp
+		}
 		export default function Page() {
 				return <Meta />;
 		}`;
@@ -558,8 +558,8 @@ describe('next 13 replace-next-head', function () {
 		deepStrictEqual(command?.kind, 'upsertFile');
 		deepStrictEqual(command.path, '/opt/project/pages/a/index.tsx');
 		deepStrictEqual(
-			command.data.replace(/\W/gm, ''),
-			expectedResult.replace(/\W/gm, ''),
+			command.data.replace(/\s/gm, ''),
+			expectedResult.replace(/\s/gm, ''),
 		);
 	});
 
@@ -613,18 +613,18 @@ describe('next 13 replace-next-head', function () {
 		}
 		export async function generateMetadata({ params }: {
 				params: Record<string, string | string[]>;
-		}): Promise<Metadata> {
+		},): Promise<Metadata> {
 				const getStaticPropsResult = await getStaticProps({ params });
 				if (!('props' in getStaticPropsResult)) {
-						return {};
+						return {}
 				}
 				const { title, description } = getStaticPropsResult.props;
-				const appName = "appName";
+				const appName = "appName"
 				
 				return {
 						title: \`\${title}\`,
 						description: description,
-						applicationName: appName,
+						applicationName: appName
 				};
 }`;
 
@@ -632,8 +632,8 @@ describe('next 13 replace-next-head', function () {
 		deepStrictEqual(command.path, '/opt/project/pages/a/index.tsx');
 
 		deepStrictEqual(
-			command.data.replace(/\W/gm, ''),
-			expectedResult.replace(/\W/gm, ''),
+			command.data.replace(/\s/gm, ''),
+			expectedResult.replace(/\s/gm, ''),
 		);
 	});
 
@@ -804,24 +804,24 @@ describe('next 13 replace-next-head', function () {
 		}
 		export async function generateMetadata({ params }: {
 				params: Record<string, string | string[]>;
-		}): Promise<Metadata> {
+		},): Promise<Metadata> {
 				const getStaticPropsResult = await getStaticProps({ params });
 				if (!('props' in getStaticPropsResult)) {
-					return {};
+					return {}
 				}
 				const { title, description } = getStaticPropsResult.props;
 				const a = "a";
 				const b = description ? description : a;
 				return { title: \`\${title}\`,
-						description: { b } };
+						description:  b  };
 	}`;
 
 		deepStrictEqual(command?.kind, 'upsertFile');
 		deepStrictEqual(command.path, '/opt/project/pages/a/index.tsx');
 
 		deepStrictEqual(
-			command.data.replace(/\W/gm, ''),
-			expectedResult.replace(/\W/gm, ''),
+			command.data.replace(/\s/gm, ''),
+			expectedResult.replace(/\s/gm, ''),
 		);
 	});
 
@@ -858,8 +858,8 @@ describe('next 13 replace-next-head', function () {
 			import { A } from '../lib/a';
 
 			export const metadata: Metadata = {
-				title: \`Title: \${A}\`,
-			};
+				title: \`Title: \${A}\`
+			}
 
 			export default function Index() {
 				return <div>
@@ -867,12 +867,12 @@ describe('next 13 replace-next-head', function () {
 						<title>{\`Title: \${A}\`}</title>
 					</Head>
 				</div>;
-			};
+			}
 		`;
 
 		deepStrictEqual(
-			command.data.replace(/\W/gm, ''),
-			NEW_DATA.replace(/\W/gm, ''),
+			command.data.replace(/\s/gm, ''),
+			NEW_DATA.replace(/\s/gm, ''),
 		);
 	});
 
@@ -909,8 +909,8 @@ describe('next 13 replace-next-head', function () {
 			import A from '../lib/a';
 
 			export const metadata: Metadata = {
-				title: \`Title: \${A}\`,
-			};
+				title: \`Title: \${A}\`
+			}
 
 			export default function Index() {
 				return <div>
@@ -918,12 +918,12 @@ describe('next 13 replace-next-head', function () {
 						<title>{\`Title: \${A}\`}</title>
 					</Head>
 				</div>;
-			};
+			}
 		`;
 
 		deepStrictEqual(
-			command.data.replace(/\W/gm, ''),
-			NEW_DATA.replace(/\W/gm, ''),
+			command.data.replace(/\s/gm, ''),
+			NEW_DATA.replace(/\s/gm, ''),
 		);
 	});
 
@@ -961,21 +961,21 @@ describe('next 13 replace-next-head', function () {
 		
 		export async function generateMetadata({ params }: {
 			params: Record<string, string | string[]>;
-	}): Promise<Metadata> {
+	},): Promise<Metadata> {
 			const getStaticPropsResult = await getStaticProps({ params });
 			if (!('props' in getStaticPropsResult)) {
-					return {};
+					return {}
 			}
 			const { a } = getStaticPropsResult.props;
 			return {
-					title: \`\${a.b}\`,
+					title: \`\${a.b}\`
 			};
 	}
 		`;
 
 		deepStrictEqual(
-			command.data.replace(/\W/gm, ''),
-			NEW_DATA.replace(/\W/gm, ''),
+			command.data.replace(/\s/gm, ''),
+			NEW_DATA.replace(/\s/gm, ''),
 		);
 	});
 
@@ -1005,8 +1005,8 @@ describe('next 13 replace-next-head', function () {
 		import { Metadata } from "next";
 		import Head from 'next/head';
 	  export const metadata: Metadata = {
-			title: \`a\`,
-		};
+			title: \`a\`
+		}
 	  export default function Page() {
 	    return (
 	      <>
@@ -1020,8 +1020,8 @@ describe('next 13 replace-next-head', function () {
 		`;
 
 		deepStrictEqual(
-			command.data.replace(/\W/gm, ''),
-			NEW_DATA.replace(/\W/gm, ''),
+			command.data.replace(/\s/gm, ''),
+			NEW_DATA.replace(/\s/gm, ''),
 		);
 	});
 
@@ -1059,9 +1059,9 @@ describe('next 13 replace-next-head', function () {
 			icons: {
 				icon: [
 					{ url: "a" }
-				],
-			}, 
-		};
+				]
+			}
+		}
 		
 	  export default function Page() {
 	    return (
@@ -1078,8 +1078,8 @@ describe('next 13 replace-next-head', function () {
 		`;
 
 		deepStrictEqual(
-			command.data.replace(/\W/gm, ''),
-			NEW_DATA.replace(/\W/gm, ''),
+			command.data.replace(/\s/gm, ''),
+			NEW_DATA.replace(/\s/gm, ''),
 		);
 	});
 
@@ -1111,7 +1111,7 @@ describe('next 13 replace-next-head', function () {
 		
 		export const metadata: Metadata = {
 			 description: "a"
-		};
+		}
 		
 		const condition = true;
 	  export default function Page() {
@@ -1124,8 +1124,8 @@ describe('next 13 replace-next-head', function () {
 		`;
 
 		deepStrictEqual(
-			command.data.replace(/\W/gm, ''),
-			NEW_DATA.replace(/\W/gm, ''),
+			command.data.replace(/\s/gm, ''),
+			NEW_DATA.replace(/\s/gm, ''),
 		);
 	});
 
@@ -1154,8 +1154,8 @@ describe('next 13 replace-next-head', function () {
 		import { Metadata } from "next";
 		import Head from 'next/head';
 	  export const metadata: Metadata = {
-			title: \`a\`,
-		};
+			title: \`a\`
+		}
 	  export default function Page() {
 	    return (
 	      <>
@@ -1168,8 +1168,8 @@ describe('next 13 replace-next-head', function () {
 		`;
 
 		deepStrictEqual(
-			command.data.replace(/\W/gm, ''),
-			NEW_DATA.replace(/\W/gm, ''),
+			command.data.replace(/\s/gm, ''),
+			NEW_DATA.replace(/\s/gm, ''),
 		);
 	});
 
@@ -1198,7 +1198,7 @@ describe('next 13 replace-next-head', function () {
 		import Head from 'next/head';
 	  export const metadata: Metadata = {
 			title: \`a \${b() + c.d} \${e}\ \${f ? g : h}\`
-		};
+		}
 	  export default function Page() {
 	    return (
 	        <Head>
@@ -1209,8 +1209,8 @@ describe('next 13 replace-next-head', function () {
 		`;
 
 		deepStrictEqual(
-			command.data.replace(/\W/gm, ''),
-			NEW_DATA.replace(/\W/gm, ''),
+			command.data.replace(/\s/gm, ''),
+			NEW_DATA.replace(/\s/gm, ''),
 		);
 	});
 
@@ -1238,8 +1238,8 @@ describe('next 13 replace-next-head', function () {
 		import { Metadata } from "next";
 		import Head from 'next/head';
 	  export const metadata: Metadata = {
-			{ openGraph: { siteName: \`\${ORG_NAME} Documentation\` } };
-		};
+			 openGraph: { siteName: \`\${ORG_NAME} Documentation\` } 
+		}
 		
 	  export default function Page() {
 	    return (
@@ -1251,8 +1251,8 @@ describe('next 13 replace-next-head', function () {
 		`;
 
 		deepStrictEqual(
-			command.data.replace(/\W/gm, ''),
-			NEW_DATA.replace(/\W/gm, ''),
+			command.data.replace(/\s/gm, ''),
+			NEW_DATA.replace(/\s/gm, ''),
 		);
 	});
 
@@ -1279,8 +1279,8 @@ describe('next 13 replace-next-head', function () {
 		import { Metadata } from "next";
 		import Head from 'next/head';
 	  export const metadata: Metadata = {
-			viewport: "a",
-		};
+			viewport: "a"
+		}
 		export default function Page() {
 	    return (
 	        <Head>
@@ -1291,8 +1291,8 @@ describe('next 13 replace-next-head', function () {
 		`;
 
 		deepStrictEqual(
-			command.data.replace(/\W/gm, ''),
-			NEW_DATA.replace(/\W/gm, ''),
+			command.data.replace(/\s/gm, ''),
+			NEW_DATA.replace(/\s/gm, ''),
 		);
 	});
 
@@ -1341,16 +1341,16 @@ describe('next 13 replace-next-head', function () {
 				canonical: "https://nextjs.org",
 				languages: {
 					"en-US": "https://nextjs.org/en-US",
-					"de-DE": "https://nextjs.org/de-DE",
+					"de-DE": "https://nextjs.org/de-DE"
 				},
 				media: {
-					"only screen and (max-width: 600px)": "https://nextjs.org/mobile",
+					"only screen and (max-width: 600px)": "https://nextjs.org/mobile"
 				},
 				types: {
-					"application/rss+xml": "https://nextjs.org/rss",
-				},
-			},
-		};
+					"application/rss+xml": "https://nextjs.org/rss"
+				}
+			}
+		}
 
 		export default function Page() {
 	    return (
@@ -1376,8 +1376,8 @@ describe('next 13 replace-next-head', function () {
 		`;
 
 		deepStrictEqual(
-			command.data.replace(/\W/gm, ''),
-			NEW_DATA.replace(/\W/gm, ''),
+			command.data.replace(/\s/gm, ''),
+			NEW_DATA.replace(/\s/gm, ''),
 		);
 	});
 
@@ -1522,9 +1522,9 @@ describe('next 13 replace-next-head', function () {
 			verification: {
 				google: "google",
 				yandex: "yandex",
-				yahoo: "yahoo",
-			},
-		};
+				yahoo: "yahoo"
+			}
+		}
 
 		export default function Page() {
 	    return (
@@ -1540,8 +1540,8 @@ describe('next 13 replace-next-head', function () {
 		`;
 
 		deepStrictEqual(
-			command.data.replace(/\W/gm, ''),
-			NEW_DATA.replace(/\W/gm, ''),
+			command.data.replace(/\s/gm, ''),
+			NEW_DATA.replace(/\s/gm, ''),
 		);
 	});
 
@@ -1605,27 +1605,27 @@ describe('next 13 replace-next-head', function () {
 				images: [{
 					url: "https://nextjs.org/og.png",
 					width: "800",
-					height: "600",
+					height: "600"
 				}, {
 						url: "https://nextjs.org/og-alt.png",
 						width: "1800",
 						height: "1600",
-						alt: "My custom alt",
+						alt: "My custom alt"
 				}],
 				audio: [{
 					url: "https://example.com/sound.mp3",
 					secureUrl: "https://secure.example.com/sound.mp3",
-					type: "audio/mpeg",
+					type: "audio/mpeg"
 				}],
 				videos: [{
 					url: "https://example.com/movie.swf",
 					secureUrl: "https://secure.example.com/movie.swf",
 					type: "application/x-shockwave-flash",
 					width: "400",
-					height: "300",
-				}],
-			},
-		};
+					height: "300"
+				}]
+			}
+		}
 
 		export default function Page() {
 	    return (
@@ -1662,8 +1662,8 @@ describe('next 13 replace-next-head', function () {
 		`;
 
 		deepStrictEqual(
-			command.data.replace(/\W/gm, ''),
-			NEW_DATA.replace(/\W/gm, ''),
+			command.data.replace(/\s/gm, ''),
+			NEW_DATA.replace(/\s/gm, ''),
 		);
 	});
 
@@ -1707,9 +1707,9 @@ describe('next 13 replace-next-head', function () {
 				expirationTime: "2023-07-20T12:24:36.871Z",
 				authors: ["Seb", "Josh"],
 				section: "Technology",
-				tags: ["tag1", "tag2"],
-			},
-		};
+				tags: ["tag1", "tag2"]
+			}
+		}
 
 		export default function Page() {
 	    return (
@@ -1731,8 +1731,8 @@ describe('next 13 replace-next-head', function () {
 		`;
 
 		deepStrictEqual(
-			command.data.replace(/\W/gm, ''),
-			NEW_DATA.replace(/\W/gm, ''),
+			command.data.replace(/\s/gm, ''),
+			NEW_DATA.replace(/\s/gm, ''),
 		);
 	});
 
@@ -1770,13 +1770,12 @@ describe('next 13 replace-next-head', function () {
 				description: "The React Framework for the Web",
 				siteId: "1467726470533754880",
 				creator: "@nextjs",
-				creatorId: "1467726470533754880",
-			},
-		};
+				creatorId: "1467726470533754880"
+			}
+		}
 
 		export default function Page() {
 	    return (
-	      <>
 	        <Head>
 						<meta name="twitter:card" content="summary_large_image" />
 						<meta name="twitter:title" content="Next.js" />
@@ -1785,14 +1784,13 @@ describe('next 13 replace-next-head', function () {
 						<meta name="twitter:creator" content="@nextjs" />
 						<meta name="twitter:creator:id" content="1467726470533754880" />
 					</Head>
-	      </>
 	    );
 	  }
 		`;
 
 		deepStrictEqual(
-			command.data.replace(/\W/gm, ''),
-			NEW_DATA.replace(/\W/gm, ''),
+			command.data.replace(/\s/gm, ''),
+			NEW_DATA.replace(/\s/gm, ''),
 		);
 	});
 
@@ -1822,9 +1820,9 @@ describe('next 13 replace-next-head', function () {
 	  export const metadata: Metadata = {
 			other: {
 				"msapplication-TileColor": "#000000",
-				"msapplication-config": "/favicon/browserconfig.xml",
-			},
-		};
+				"msapplication-config": "/favicon/browserconfig.xml"
+			}
+		}
 
 		export default function Page() {
 	    return (
@@ -1837,8 +1835,8 @@ describe('next 13 replace-next-head', function () {
 		`;
 
 		deepStrictEqual(
-			command.data.replace(/\W/gm, ''),
-			NEW_DATA.replace(/\W/gm, ''),
+			command.data.replace(/\s/gm, ''),
+			NEW_DATA.replace(/\s/gm, ''),
 		);
 	});
 
@@ -1890,18 +1888,18 @@ describe('next 13 replace-next-head', function () {
 		import { Metadata } from "next";
 		import Head from 'next/head';
 	  export const metadata: Metadata = {
-			title: "a",
+			title: \`a\`,
 			description: "a",
 			applicationName: "a",
-			authors:  [{ name: "a", url: "a", }, { name: "a", }],
+			authors:  [{ name: "a", url: "a" }, { name: "a" }],
 			manifest: "a",
 			generator: "a",
 			keywords: "a",
 			referrer: "a",
 			themeColor: [
-				{ media: "(prefers-color-scheme: light)", color: var11, },
-				{ media: "(prefers-color-scheme: dark)", color: var12, },
-				{ color: "a", }
+				{ media: "(prefers-color-scheme: light)", color: var11 },
+				{ media: "(prefers-color-scheme: dark)", color: var12 },
+				{ color: "a" }
 			],
 			colorScheme: "a",
 			viewport: "a",
@@ -1913,8 +1911,8 @@ describe('next 13 replace-next-head', function () {
 			assets: ["a"],
 			bookmarks: ["a"],
 			category: "a",
-			classification: "a",
-		};
+			classification: "a"
+		}
 		export default function Page() {
 	    return (
 	        <Head>
@@ -1949,8 +1947,8 @@ describe('next 13 replace-next-head', function () {
 		`;
 
 		deepStrictEqual(
-			command.data.replace(/\W/gm, ''),
-			NEW_DATA.replace(/\W/gm, ''),
+			command.data.replace(/\s/gm, ''),
+			NEW_DATA.replace(/\s/gm, ''),
 		);
 	});
 });

@@ -891,7 +891,7 @@ function formatObjectAsString(metadataObject: Record<string, any>) {
 			const formattedArray = value.map((element) =>
 				typeof element === 'object' && element !== null
 					? formatObjectAsString(element)
-					: JSON.stringify(element),
+					: String(element),
 			);
 
 			pairs.push(`${key}: [${formattedArray.join(', \n')}]`);
