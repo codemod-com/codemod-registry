@@ -739,13 +739,6 @@ const handleFile: Repomod<Dependencies>['handleFile'] = async (
 			name: 'not-found',
 		});
 
-		const rootPagePath = posix.format({
-			root: parsedPath.root,
-			dir: newDir,
-			ext: EXTENSION,
-			name: 'page',
-		});
-
 		const jsxErrorPath = posix.format({
 			...parsedPath,
 			name: '_error',
@@ -971,103 +964,109 @@ const handleData: Repomod<Dependencies>['handleData'] = async (
 	__,
 	options,
 ) => {
-	const filePurpose = (options.filePurpose ?? null) as FilePurpose | null;
+	try {
+		const filePurpose = (options.filePurpose ?? null) as FilePurpose | null;
 
-	if (filePurpose === null) {
-		return {
-			kind: 'noop',
-		};
-	}
+		if (filePurpose === null) {
+			return {
+				kind: 'noop',
+			};
+		}
 
-	const content = map.get(filePurpose) ?? null;
+		const content = map.get(filePurpose) ?? null;
 
-	if (content === null) {
-		return {
-			kind: 'noop',
-		};
-	}
+		if (content === null) {
+			return {
+				kind: 'noop',
+			};
+		}
 
-	if (
-		(filePurpose === FilePurpose.ROOT_COMPONENTS ||
-			filePurpose === FilePurpose.ROUTE_COMPONENTS) &&
-		options.oldPath
-	) {
-		return buildComponentsFileData(api, path, options, filePurpose);
-	}
+		if (
+			(filePurpose === FilePurpose.ROOT_COMPONENTS ||
+				filePurpose === FilePurpose.ROUTE_COMPONENTS) &&
+			options.oldPath
+		) {
+			return buildComponentsFileData(api, path, options, filePurpose);
+		}
 
-	if (
-		(filePurpose === FilePurpose.ROUTE_PAGE ||
-			filePurpose === FilePurpose.ROOT_PAGE) &&
-		options.oldPath
-	) {
-		return buildPageFileData(api, path, options, filePurpose);
-	}
+		if (
+			(filePurpose === FilePurpose.ROUTE_PAGE ||
+				filePurpose === FilePurpose.ROOT_PAGE) &&
+			options.oldPath
+		) {
+			return buildPageFileData(api, path, options, filePurpose);
+		}
 
-	if (
-		filePurpose === FilePurpose.ROOT_LAYOUT &&
-		options.underscoreDocumentData
-	) {
-		const { tsmorph } = api.getDependencies();
+		if (
+			filePurpose === FilePurpose.ROOT_LAYOUT &&
+			options.underscoreDocumentData
+		) {
+			const { tsmorph } = api.getDependencies();
 
-		const project = new tsmorph.Project({
-			useInMemoryFileSystem: true,
-			skipFileDependencyResolution: true,
-			compilerOptions: {
-				allowJs: true,
-			},
-		});
+			const project = new tsmorph.Project({
+				useInMemoryFileSystem: true,
+				skipFileDependencyResolution: true,
+				compilerOptions: {
+					allowJs: true,
+				},
+			});
 
-		const sourceFile = project.createSourceFile(
-			path,
-			options.underscoreDocumentData,
-		);
+			const sourceFile = project.createSourceFile(
+				path,
+				options.underscoreDocumentData,
+			);
 
-		replaceNextDocumentJsxTags(sourceFile);
-		removeNextDocumentImport(sourceFile);
-		updateLayoutComponent(sourceFile);
-		injectLayoutClientComponent(sourceFile);
+			replaceNextDocumentJsxTags(sourceFile);
+			removeNextDocumentImport(sourceFile);
+			updateLayoutComponent(sourceFile);
+			injectLayoutClientComponent(sourceFile);
+
+			return {
+				kind: 'upsertData',
+				path,
+				data: sourceFile.getFullText(),
+			};
+		}
+
+		if (
+			filePurpose === FilePurpose.ROOT_LAYOUT_COMPONENT &&
+			options.underscoreAppData &&
+			options.underscoreAppPath
+		) {
+			const { tsmorph } = api.getDependencies();
+
+			const project = new tsmorph.Project({
+				useInMemoryFileSystem: true,
+				skipFileDependencyResolution: true,
+				compilerOptions: {
+					allowJs: true,
+				},
+			});
+
+			const underscoreAppFile = project.createSourceFile(
+				options.underscoreAppPath,
+				options.underscoreAppData,
+			);
+
+			buildLayoutClientComponentFromUnderscoreApp(underscoreAppFile);
+
+			return {
+				kind: 'upsertData',
+				path,
+				data: underscoreAppFile.getFullText(),
+			};
+		}
 
 		return {
 			kind: 'upsertData',
 			path,
-			data: sourceFile.getFullText(),
+			data: content,
 		};
-	}
-
-	if (
-		filePurpose === FilePurpose.ROOT_LAYOUT_COMPONENT &&
-		options.underscoreAppData &&
-		options.underscoreAppPath
-	) {
-		const { tsmorph } = api.getDependencies();
-
-		const project = new tsmorph.Project({
-			useInMemoryFileSystem: true,
-			skipFileDependencyResolution: true,
-			compilerOptions: {
-				allowJs: true,
-			},
-		});
-
-		const underscoreAppFile = project.createSourceFile(
-			options.underscoreAppPath,
-			options.underscoreAppData,
-		);
-
-		buildLayoutClientComponentFromUnderscoreApp(underscoreAppFile);
-
+	} catch (error) {
 		return {
-			kind: 'upsertData',
-			path,
-			data: underscoreAppFile.getFullText(),
+			kind: 'noop',
 		};
 	}
-
-	return {
-		kind: 'upsertData',
-		path,
-		data: content,
-	};
 };
 
 export const repomod: Repomod<Dependencies> = {
