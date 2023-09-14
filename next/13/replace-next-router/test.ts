@@ -2074,4 +2074,62 @@ describe('next 13 replace-next-router', function () {
 
 		deepStrictEqual(actual, expected);
 	});
+
+	it('should replace asPath from destructuring a router', async function (this: Context) {
+		const beforeText = `
+			import { useRouter } from 'next/router';
+			function Component() {
+				const router = useRouter();
+				const { asPath } = router;
+				return asPath;
+			}
+		`;
+
+		const afterText = `
+			import { usePathname, useSearchParams } from "next/navigation";
+			import { useMemo } from "react";
+			
+			function Component() {
+				const searchParams = useSearchParams();
+				/** TODO "pathname" no longer contains square-bracket expressions. Rewrite the code relying on them if required. **/
+				const pathname = usePathname();
+				const asPath = useMemo(() => \`\${pathname}?\${searchParams.toString() ?? ""}\`, [pathname, searchParams]);
+				return asPath;
+			}
+	    `;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(actual, expected);
+	});
+
+	it('should replace asPath from destructuring a router with different name and property nodes', async function (this: Context) {
+		const beforeText = `
+			import { useRouter } from 'next/router';
+			function Component() {
+				const pathname = 1;
+				const router = useRouter();
+				const { asPath: a } = router;
+				return a;
+			}
+		`;
+
+		const afterText = `
+			import { usePathname, useSearchParams } from "next/navigation";
+			import { useMemo } from "react";
+			
+			function Component() {
+				const searchParams = useSearchParams();
+				/** TODO "__pathname__" no longer contains square-bracket expressions. Rewrite the code relying on them if required. **/
+				const __pathname__ = usePathname();
+				const a = useMemo(() => \`\${__pathname__}?\${searchParams.toString() ?? ""}\`, [__pathname__, searchParams]);
+				const pathname = 1;
+				return a;
+			}
+	    `;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(actual, expected);
+	});
 });

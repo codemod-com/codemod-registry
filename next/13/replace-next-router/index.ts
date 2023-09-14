@@ -564,11 +564,13 @@ const handleVariableDeclarationWithRouter = (
 			const propertyNameNode = element.getPropertyNameNode() ?? nameNode;
 
 			if (Node.isIdentifier(propertyNameNode)) {
-				if (propertyNameNode.getText() === 'pathname') {
+				const propertyName = propertyNameNode.getText();
+
+				if (propertyName === 'pathname') {
 					blockLevelUsageManager.addPathname(nameNode.getText());
 
 					++count;
-				} else if (propertyNameNode.getText() === 'query') {
+				} else if (propertyName === 'query') {
 					propertyNameNode
 						.findReferencesAsNodes()
 						.forEach((referenceNode) => {
@@ -589,6 +591,12 @@ const handleVariableDeclarationWithRouter = (
 								blockLevelUsageManager.reportSearchParamsUsage();
 							}
 						});
+
+					++count;
+				} else if (propertyName === 'asPath') {
+					blockLevelUsageManager.reportAsPathUsage(
+						nameNode.getText(),
+					);
 
 					++count;
 				}
