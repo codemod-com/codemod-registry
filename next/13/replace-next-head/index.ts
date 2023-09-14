@@ -1023,7 +1023,7 @@ type MetadataTreeNode = {
 
 type FileAPI = Parameters<NonNullable<Repomod<Dependencies>['handleFile']>>[0];
 
-let project: tsmorph.Project | null = null;
+export const projectContainer = buildContainer<tsmorph.Project | null>(null);
 
 const defaultCompilerOptions = {
 	allowJs: true,
@@ -1115,7 +1115,7 @@ const initTsMorphProject = async (
 		baseUrl: rootPath,
 	};
 
-	project = new tsmorph.Project({
+	const project = new tsmorph.Project({
 		useInMemoryFileSystem: true,
 		skipFileDependencyResolution: true,
 		compilerOptions: _compilerOptions,
@@ -1144,9 +1144,13 @@ const initTsMorphProject = async (
 
 		project.createSourceFile(path, content);
 	}
+
+	projectContainer.set(() => project);
 };
 
 const resolveModuleName = (path: string, containingPath: string) => {
+	const project = projectContainer.get();
+
 	if (project === null) {
 		return null;
 	}
@@ -1194,6 +1198,8 @@ const buildMetadataTreeNode = (containingPath: string) => {
 		metadata: {},
 		dependencies: {},
 	};
+
+	const project = projectContainer.get();
 
 	const sourceFile =
 		project?.getSourceFile(containingPath.replace('.mdx', '.tsx')) ?? null;
@@ -1286,6 +1292,8 @@ const findComponentPropValue = (
 	path: string,
 	componentPath: string,
 ): Record<string, JsxExpression | StringLiteral> => {
+	const project = projectContainer.get();
+
 	const sourceFile =
 		project?.getSourceFile(path.replace('.mdx', '.tsx')) ?? null;
 
@@ -1715,16 +1723,16 @@ export const repomod: Repomod<Dependencies> = {
 
 		const { paths } = await getTsCompilerOptions(api, baseUrl);
 
-		// if (project === null) {
-		await initTsMorphProject(
-			api.getDependencies(),
-			unifiedFileSystem,
-			baseUrl,
-			{
-				paths,
-			},
-		);
-		// }
+		if (projectContainer.get() === null) {
+			await initTsMorphProject(
+				api.getDependencies(),
+				unifiedFileSystem,
+				baseUrl,
+				{
+					paths,
+				},
+			);
+		}
 
 		const metadataTree = buildMetadataTreeNode(path);
 

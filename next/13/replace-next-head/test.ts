@@ -6,7 +6,7 @@ import {
 	buildApi,
 	executeRepomod,
 } from '@intuita-inc/repomod-engine-api';
-import { repomod } from './index.js';
+import { repomod, projectContainer } from './index.js';
 import tsmorph from 'ts-morph';
 import { fromMarkdown } from 'mdast-util-from-markdown';
 import { toMarkdown } from 'mdast-util-to-markdown';
@@ -63,6 +63,10 @@ const transform = async (json: DirectoryJSON) => {
 };
 
 describe('next 13 replace-next-head', function () {
+	afterEach(() => {
+		projectContainer.set(() => null);
+	});
+
 	it('should support mdx files', async function (this: Context) {
 		const A_CONTENT = `
 import Meta from '../../components/a.tsx'
