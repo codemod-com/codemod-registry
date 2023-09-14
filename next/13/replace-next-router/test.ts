@@ -2132,4 +2132,32 @@ describe('next 13 replace-next-router', function () {
 
 		deepStrictEqual(actual, expected);
 	});
+
+	it('should extract the property name instead of a name when destructuring router.query', () => {
+		const beforeText = `
+			import { useRouter } from "next/router";
+			function Component() {
+				const router = useRouter();
+				const { 'a-b': ab } = router.query;
+				return ab;
+			}
+		`;
+
+		const afterText = `
+			import { useParams, useSearchParams } from "next/navigation";
+			import { useCallback } from "react";
+			
+			function Component() {
+				const params = useParams();
+				const searchParams = useSearchParams();
+				const getParam = useCallback((p: string) => params?.[p] ?? searchParams?.get(p), [params, searchParams]);
+				const ab = getParam("a-b")
+				return ab;
+			}
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(actual, expected);
+	});
 });
