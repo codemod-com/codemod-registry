@@ -2036,4 +2036,42 @@ describe('next 13 replace-next-router', function () {
 
 		deepStrictEqual(actual, expected);
 	});
+
+	it('should not duplicate existing useCallback and useMemo named imports', () => {
+		const beforeText = `
+			import { useCallback, useMemo } from "react";
+			import { useRouter } from "next/router";
+
+			function Component() {
+				const router = useRouter();
+
+				const { a } = router.query;
+				const b = router.asPath;
+
+				return a + b;
+			}
+		`;
+
+		const afterText = `
+			import { useParams, usePathname, useSearchParams } from "next/navigation";
+			import { useCallback, useMemo } from "react";
+
+			function Component() {
+				const params = useParams();
+				const searchParams = useSearchParams();
+				/** TODO "pathname" no longer contains square-bracket expressions. Rewrite the code relying on them if required. **/
+				const pathname = usePathname();
+				const getParam = useCallback((p: string) => params?.[p] ?? searchParams?.get(p), [params, searchParams]);
+				const asPath = useMemo(() => \`\${pathname}?\${searchParams.toString() ?? ""}\`, [pathname, searchParams]);
+				const a = getParam("a")
+				const b = asPath;
+
+				return a + b;
+			}
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(actual, expected);
+	});
 });

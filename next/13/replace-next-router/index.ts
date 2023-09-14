@@ -1043,7 +1043,19 @@ const addNamedImport = (
 				},
 			],
 		});
-	} else {
+
+		return;
+	}
+
+	const existingImportSpecifier =
+		importDeclaration
+			.getNamedImports()
+			.find(
+				(importSpecifier) =>
+					importSpecifier.getNameNode().getText() === namedImport,
+			) ?? null;
+
+	if (existingImportSpecifier === null) {
 		importDeclaration.addNamedImport(namedImport);
 	}
 };
