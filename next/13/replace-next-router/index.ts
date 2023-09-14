@@ -922,7 +922,7 @@ const handleUseRouterIdentifier = (
 		if (searchParamsIdentifierName !== null && pathname !== undefined) {
 			for (const asPath of blockLevelUsageManager.getAsPath()) {
 				statements.push(
-					`const ${asPath} = useMemo(() => \`\${${pathname}}?\${${searchParamsIdentifierName}.toString() ?? ""}\`, [${pathname}, ${searchParamsIdentifierName}]);`,
+					`const ${asPath} = useMemo(() => \`\${${pathname}}\${${searchParamsIdentifierName} ? "?" + ${searchParamsIdentifierName}.toString() : ""}\`, [${pathname}, ${searchParamsIdentifierName}]);`,
 				);
 
 				fileLevelUsageManager.useMemoUsed = true;
