@@ -6,13 +6,14 @@ import {
 	buildApi,
 	executeRepomod,
 } from '@intuita-inc/repomod-engine-api';
-import { repomod } from './index.js';
+import { repomod, projectContainer } from './index.js';
 import tsmorph from 'ts-morph';
 import { fromMarkdown } from 'mdast-util-from-markdown';
 import { toMarkdown } from 'mdast-util-to-markdown';
 import { mdxjs } from 'micromark-extension-mdxjs';
 import { mdxFromMarkdown, mdxToMarkdown } from 'mdast-util-mdx';
 import { visit } from 'unist-util-visit';
+import { filter } from 'unist-util-filter';
 import { deepStrictEqual } from 'node:assert';
 
 const transform = async (json: DirectoryJSON) => {
@@ -47,12 +48,14 @@ const transform = async (json: DirectoryJSON) => {
 		parseMdx: typeof parseMdx;
 		stringifyMdx: typeof stringifyMdx;
 		visitMdxAst: typeof visit;
+		filterMdxAst: typeof filter;
 		unifiedFileSystem: UnifiedFileSystem;
 	}>(unifiedFileSystem, () => ({
 		tsmorph,
 		parseMdx,
 		stringifyMdx,
 		visitMdxAst: visit,
+		filterMdxAst: filter,
 		unifiedFileSystem,
 	}));
 
@@ -60,6 +63,79 @@ const transform = async (json: DirectoryJSON) => {
 };
 
 describe('next 13 replace-next-head', function () {
+	beforeEach(() => {
+		projectContainer.set(() => null);
+	});
+
+	it('should support mdx files', async function (this: Context) {
+		const A_CONTENT = `
+import Meta from '../../components/a.tsx'
+
+export const meta = {
+	title: "a"
+}
+
+My MDX page
+
+This is a list in markdown:
+
+- One
+- Two
+- Three
+
+Checkout my React component:
+
+<Meta title={meta.title}/>
+`;
+
+		const A_COMPONENT_CONTENT = `
+		import Head from 'next/head';
+	
+		export default function Meta({ title }) {
+			return (
+			<Head>
+				<title>{title}</title>
+			</Head>
+			)
+		}
+`;
+
+		const [command] = await transform({
+			'/opt/project/pages/a/index.mdx': A_CONTENT,
+			'/opt/project/components/a.tsx': A_COMPONENT_CONTENT,
+		});
+
+		const expectedResult = `import { Metadata } from "next";
+		export const metadata: Metadata = { title: \`\${title}\` }
+		
+		import Meta from '../../components/a.tsx'
+		const title = meta.title
+		
+		export const meta = {
+						title: "a"
+		}
+		
+		My MDX page
+		
+		This is a list in markdown:
+		
+		- One
+		- Two
+		- Three
+		
+		Checkout my React component:
+		
+		<Meta title={meta.title}/>`;
+
+		deepStrictEqual(command?.kind, 'upsertFile');
+		deepStrictEqual(command.path, '/opt/project/pages/a/index.mdx');
+
+		deepStrictEqual(
+			command.data.replace(/\s/gm, ''),
+			expectedResult.replace(/\s/gm, ''),
+		);
+	});
+
 	it('should find and merge metadata in Page child components', async function (this: Context) {
 		const A_CONTENT = `
 		import Meta from '../../components/a.tsx';
@@ -111,6 +187,8 @@ describe('next 13 replace-next-head', function () {
 
 		deepStrictEqual(command?.kind, 'upsertFile');
 		deepStrictEqual(command.path, '/opt/project/pages/a/index.tsx');
+
+		console.log(command?.data, '?dfsdf');
 
 		deepStrictEqual(
 			command.data.replace(/\s/gm, ''),
