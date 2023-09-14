@@ -1249,20 +1249,6 @@ const buildMetadataTreeNode = (containingPath: string) => {
 	return treeNode;
 };
 
-const mergeMetadata = (treeNode: MetadataTreeNode): Record<string, unknown> => {
-	const currentComponentMetadata = treeNode.metadata;
-
-	return Object.entries(treeNode.components)
-		.map((arr) => mergeMetadata(arr[1]))
-		.reduce(
-			(mergedMetadata, childMetadata) => ({
-				...mergedMetadata,
-				...childMetadata,
-			}),
-			currentComponentMetadata,
-		);
-};
-
 const findComponentByModuleSpecifier = (
 	sourceFile: SourceFile,
 	componentAbsolutePath: string,
@@ -1328,21 +1314,21 @@ const findComponentPropValue = (
 	return propValue;
 };
 
-const mergeDependencies = (
+const mergeMetadataTree = (
 	treeNode: MetadataTreeNode,
 	rootPath: string,
 ): MetadataTreeNode => {
-	const currentComponentDependencies = treeNode.dependencies;
-
-	treeNode.dependencies = Object.entries(treeNode.components)
-		.map((arr) => mergeDependencies(arr[1], rootPath))
-		.reduce((mergedDependencies, childTreeNode) => {
+	return Object.entries(treeNode.components)
+		.map(([, childNode]) => mergeMetadataTree(childNode, rootPath))
+		.reduce((mergedNode, childTreeNode) => {
 			const componentPropsValues = findComponentPropValue(
 				treeNode.path,
 				childTreeNode.path,
 			);
 
-			const mapped = Object.entries(childTreeNode.dependencies).reduce(
+			const nextDependencies = Object.entries(
+				childTreeNode.dependencies,
+			).reduce(
 				(acc, [identifierName, value]) => {
 					if (value.kind === SyntaxKind.Parameter) {
 						const propValue =
@@ -1450,10 +1436,17 @@ const mergeDependencies = (
 				{} as Record<string, Dependency>,
 			);
 
-			return { ...mergedDependencies, ...mapped };
-		}, currentComponentDependencies);
+			mergedNode.metadata = {
+				...mergedNode.metadata,
+				...childTreeNode.metadata,
+			};
+			mergedNode.dependencies = {
+				...mergedNode.dependencies,
+				...nextDependencies,
+			};
 
-	return treeNode;
+			return mergedNode;
+		}, treeNode);
 };
 
 const insertGenerateMetadataFunctionDeclaration = (
@@ -1722,24 +1715,21 @@ export const repomod: Repomod<Dependencies> = {
 
 		const { paths } = await getTsCompilerOptions(api, baseUrl);
 
-		if (project === null) {
-			await initTsMorphProject(
-				api.getDependencies(),
-				unifiedFileSystem,
-				baseUrl,
-				{
-					paths,
-				},
-			);
-		}
+		// if (project === null) {
+		await initTsMorphProject(
+			api.getDependencies(),
+			unifiedFileSystem,
+			baseUrl,
+			{
+				paths,
+			},
+		);
+		// }
 
 		const metadataTree = buildMetadataTreeNode(path);
-		const mergedMetadata = mergeMetadata(metadataTree);
 
-		const { dependencies: mergedDependencies } = mergeDependencies(
-			metadataTree,
-			path,
-		);
+		const { dependencies: mergedDependencies, metadata: mergedMetadata } =
+			mergeMetadataTree(metadataTree, path);
 
 		if (Object.keys(mergedMetadata).length === 0) {
 			return [];
