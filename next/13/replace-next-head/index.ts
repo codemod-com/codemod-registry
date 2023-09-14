@@ -1064,34 +1064,41 @@ const removeMdxNodes = (
 		return content;
 	}
 
-	const tree = parseMdx(content);
+	try {
+		const tree = parseMdx(content);
 
-	const newTree = filterMdxAst(tree, (node) => {
-		return ['root', 'mdxJsxFlowElement', 'mdxjsEsm'].includes(node.type);
-	});
+		const newTree = filterMdxAst(tree, (node) => {
+			return ['root', 'mdxJsxFlowElement', 'mdxjsEsm'].includes(
+				node.type,
+			);
+		});
 
-	if (newTree === undefined) {
+		if (newTree === undefined) {
+			return content;
+		}
+
+		const mdxJsxFlowElements: string[] = [];
+
+		visitMdxAst(newTree, (node) => {
+			if (node.type === 'mdxJsxFlowElement') {
+				// @ts-expect-error stringify any node
+				const value = stringifyMdx(node);
+				mdxJsxFlowElements.push(value);
+			}
+		});
+
+		let stringifiedMdx = stringifyMdx(newTree);
+
+		mdxJsxFlowElements.forEach((value) => {
+			const r = new RegExp(`(?<!{)${value}(?!})`, 'gm');
+			stringifiedMdx = stringifiedMdx.replace(r, `{${value}}`);
+		});
+
+		return stringifiedMdx;
+	} catch (e) {
+		console.error(e);
 		return content;
 	}
-
-	const mdxJsxFlowElements: string[] = [];
-
-	visitMdxAst(newTree, (node) => {
-		if (node.type === 'mdxJsxFlowElement') {
-			// @ts-expect-error stringify any node
-			const value = stringifyMdx(node);
-			mdxJsxFlowElements.push(value);
-		}
-	});
-
-	let stringifiedMdx = stringifyMdx(newTree);
-
-	mdxJsxFlowElements.forEach((value) => {
-		const r = new RegExp(`(?<!{)${value}(?!})`, 'gm');
-		stringifiedMdx = stringifiedMdx.replace(r, `{${value}}`);
-	});
-
-	return stringifiedMdx;
 };
 
 const initTsMorphProject = async (
@@ -1127,11 +1134,12 @@ const initTsMorphProject = async (
 				dependencies,
 				content,
 			);
+
 			project.createSourceFile(
 				path.replace('.mdx', '.tsx'),
 				contentWithoutMdxNodes,
 			);
-			return;
+			continue;
 		}
 
 		project.createSourceFile(path, content);
@@ -1713,17 +1721,19 @@ export const repomod: Repomod<Dependencies> = {
 		}
 
 		const { paths } = await getTsCompilerOptions(api, baseUrl);
-		await initTsMorphProject(
-			api.getDependencies(),
-			unifiedFileSystem,
-			baseUrl,
-			{
-				paths,
-			},
-		);
+
+		if (project === null) {
+			await initTsMorphProject(
+				api.getDependencies(),
+				unifiedFileSystem,
+				baseUrl,
+				{
+					paths,
+				},
+			);
+		}
 
 		const metadataTree = buildMetadataTreeNode(path);
-
 		const mergedMetadata = mergeMetadata(metadataTree);
 
 		const { dependencies: mergedDependencies } = mergeDependencies(
