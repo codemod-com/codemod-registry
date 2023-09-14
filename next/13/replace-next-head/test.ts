@@ -705,7 +705,6 @@ Checkout my React component:
 		deepStrictEqual(command?.kind, 'upsertFile');
 		deepStrictEqual(command.path, '/opt/project/pages/a/index.tsx');
 
-		console.log(command.data, '?');
 		deepStrictEqual(
 			command.data.replace(/\s/gm, ''),
 			expectedResult.replace(/\s/gm, ''),
