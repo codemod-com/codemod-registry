@@ -784,39 +784,29 @@ const handleUseRouterCallExpression = (
 					const bindingName = greatgrandparent.getNameNode();
 
 					if (Node.isObjectBindingPattern(bindingName)) {
-						const elements = bindingName.getElements();
-
-						const properties: {
-							name: string;
-							propertyName: string;
-						}[] = [];
-
-						for (const element of elements) {
-							const nameNode = element.getNameNode();
-							const propertyNameNode =
-								element.getPropertyNameNode() ?? nameNode;
-
-							if (
-								Node.isIdentifier(nameNode) &&
-								Node.isIdentifier(propertyNameNode)
-							) {
-								properties.push({
-									name: nameNode.getText(),
-									propertyName: propertyNameNode.getText(),
-								});
-							}
-						}
-
-						const text = properties
-							.map(({ name, propertyName }) => {
-								return `${name} = getParam("${propertyName}")`;
-							})
+						const text = bindingName
+							.getElements()
+							.map((element) => buildParam(element))
+							.map(
+								({ name, propertyName }) =>
+									`${name} = getParam("${propertyName}")`,
+							)
 							.join(',\n');
 
 						greatgrandparent.replaceWithText(text);
 
 						blockLevelUsageManager.reportGetParamUsage();
 					}
+				}
+			} else if (Node.isVariableDeclaration(grandparent)) {
+				const bindingName = grandparent.getNameNode();
+
+				if (Node.isObjectBindingPattern(bindingName)) {
+					for (const element of bindingName.getElements()) {
+						blockLevelUsageManager.addParam(buildParam(element));
+					}
+
+					grandparent.remove();
 				}
 			} else {
 				parent.replaceWithText('searchParams');

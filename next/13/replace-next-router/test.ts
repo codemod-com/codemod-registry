@@ -2160,4 +2160,34 @@ describe('next 13 replace-next-router', function () {
 
 		deepStrictEqual(actual, expected);
 	});
+
+	it('should replace destructuring of useRouter().query properly', () => {
+		const beforeText = `
+			import { useRouter } from "next/router";
+			
+			function Component() {
+				const { a, b, c: d } = useRouter().query;
+				return a;
+			}
+		`;
+
+		const afterText = `
+			import { useParams, useSearchParams } from "next/navigation";
+			import { useCallback } from "react";
+			
+			function Component() {
+				const params = useParams();
+				const searchParams = useSearchParams();
+				const getParam = useCallback((p: string) => params?.[p] ?? searchParams?.get(p), [params, searchParams]);
+				const a = getParam("a")
+				const b = getParam("b")
+				const d = getParam("c")
+				return a;
+			}
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(actual, expected);
+	});
 });
