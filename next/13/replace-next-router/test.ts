@@ -896,7 +896,7 @@ describe('next 13 replace-next-router', function () {
 				const searchParams = useSearchParams();
 				/** TODO "pathname" no longer contains square-bracket expressions. Rewrite the code relying on them if required. **/
 				const pathname = usePathname();
-      			const asPath = useMemo(() => \`\${pathname}?\${searchParams.toString() ?? ""}\`, [pathname, searchParams]);
+      			const asPath = useMemo(() => \`\${pathname}\${searchParams ? "?" + searchParams.toString() : ""}\`, [pathname, searchParams]);
 
 				return <b>{asPath}</b>;
 			}
@@ -1030,7 +1030,7 @@ describe('next 13 replace-next-router', function () {
 				const searchParams = useSearchParams();
 				/** TODO "pathname" no longer contains square-bracket expressions. Rewrite the code relying on them if required. **/
 				const pathname = usePathname();
-				const asPath = useMemo(() => \`\${pathname}?\${searchParams.toString() ?? ""}\`, [pathname, searchParams]);
+				const asPath = useMemo(() => \`\${pathname}\${searchParams ? "?" + searchParams.toString() : ""}\`, [pathname, searchParams]);
 
 				const [path,] = useState(searchParams !== null ? asPath : pathname);
 
@@ -1221,7 +1221,7 @@ describe('next 13 replace-next-router', function () {
 				const searchParams = useSearchParams();
 				/** TODO "pathname" no longer contains square-bracket expressions. Rewrite the code relying on them if required. **/
            		const pathname = usePathname();
-    			const asPath = useMemo(() => \`\${pathname}?\${searchParams.toString() ?? ""}\`, [pathname, searchParams]);
+    			const asPath = useMemo(() => \`\${pathname}\${searchParams ? "?" + searchParams.toString() : ""}\`, [pathname, searchParams]);
 
 				const router = useRouter();
 
@@ -1264,7 +1264,7 @@ describe('next 13 replace-next-router', function () {
 				const searchParams = useSearchParams();
 				/** TODO "pathname" no longer contains square-bracket expressions. Rewrite the code relying on them if required. **/
 				const pathname = usePathname();
-				const asPath = useMemo(() => \`\${pathname}?\${searchParams.toString() ?? ""}\`, [pathname, searchParams]);
+				const asPath = useMemo(() => \`\${pathname}\${searchParams ? "?" + searchParams.toString() : ""}\`, [pathname, searchParams]);
 				
 				const a = asPath.startsWith("a");
 
@@ -1298,7 +1298,7 @@ describe('next 13 replace-next-router', function () {
 				const searchParams = useSearchParams();
 				/** TODO "pathname" no longer contains square-bracket expressions. Rewrite the code relying on them if required. **/
 				const pathname = usePathname();
-				const asPath = useMemo(() => \`\${pathname}?\${searchParams.toString() ?? ""}\`, [pathname, searchParams]);
+				const asPath = useMemo(() => \`\${pathname}\${searchParams ? "?" + searchParams.toString() : ""}\`, [pathname, searchParams]);
 				const a = asPath.startsWith("a");
 
 				return null;
@@ -1878,7 +1878,7 @@ describe('next 13 replace-next-router', function () {
 				const pathname = usePathname();
 
 				const getParam = useCallback((p: string) => __params__?.[p] ?? __searchParams__?.get(p), [__params__, __searchParams__]);
-				const asPath = useMemo(() => \`\${pathname}?\${__searchParams__.toString() ?? ""}\`, [pathname, __searchParams__]);
+				const asPath = useMemo(() => \`\${pathname}\${__searchParams__ ? "?" + __searchParams__.toString() : ""}\`, [pathname, __searchParams__]);
 				const searchParams = 1;
 				const params = 2;
 
@@ -1914,7 +1914,7 @@ describe('next 13 replace-next-router', function () {
 				const searchParams = useSearchParams();
 				/** TODO "pathname" no longer contains square-bracket expressions. Rewrite the code relying on them if required. **/
 				const pathname = usePathname();
-				const asPath = useMemo(() => \`\${pathname}?\${searchParams.toString() ?? ""}\`, [pathname, searchParams]);
+				const asPath = useMemo(() => \`\${pathname}\${searchParams ? "?" + searchParams.toString() : ""}\`, [pathname, searchParams]);
 				return asPath;
 			}
 		`;
@@ -2062,7 +2062,7 @@ describe('next 13 replace-next-router', function () {
 				/** TODO "pathname" no longer contains square-bracket expressions. Rewrite the code relying on them if required. **/
 				const pathname = usePathname();
 				const getParam = useCallback((p: string) => params?.[p] ?? searchParams?.get(p), [params, searchParams]);
-				const asPath = useMemo(() => \`\${pathname}?\${searchParams.toString() ?? ""}\`, [pathname, searchParams]);
+				const asPath = useMemo(() => \`\${pathname}\${searchParams ? "?" + searchParams.toString() : ""}\`, [pathname, searchParams]);
 				const a = getParam("a")
 				const b = asPath;
 
@@ -2093,7 +2093,7 @@ describe('next 13 replace-next-router', function () {
 				const searchParams = useSearchParams();
 				/** TODO "pathname" no longer contains square-bracket expressions. Rewrite the code relying on them if required. **/
 				const pathname = usePathname();
-				const asPath = useMemo(() => \`\${pathname}?\${searchParams.toString() ?? ""}\`, [pathname, searchParams]);
+				const asPath = useMemo(() => \`\${pathname}\${searchParams ? "?" + searchParams.toString() : ""}\`, [pathname, searchParams]);
 				return asPath;
 			}
 	    `;
@@ -2122,7 +2122,7 @@ describe('next 13 replace-next-router', function () {
 				const searchParams = useSearchParams();
 				/** TODO "__pathname__" no longer contains square-bracket expressions. Rewrite the code relying on them if required. **/
 				const __pathname__ = usePathname();
-				const a = useMemo(() => \`\${__pathname__}?\${searchParams.toString() ?? ""}\`, [__pathname__, searchParams]);
+				const a = useMemo(() => \`\${__pathname__}\${searchParams ? "?" + searchParams.toString() : ""}\`, [__pathname__, searchParams]);
 				const pathname = 1;
 				return a;
 			}
