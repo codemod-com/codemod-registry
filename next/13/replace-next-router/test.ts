@@ -2190,4 +2190,22 @@ describe('next 13 replace-next-router', function () {
 
 		deepStrictEqual(actual, expected);
 	});
+
+	it('should replace next/router jest mock with next/navigation', () => {
+		const beforeText = `
+			jest.mock('next/router', () => ({
+				useRouter: jest.fn(() => router),
+			}));
+		`;
+
+		const afterText = `
+			jest.mock('next/navigation', () => ({
+				useRouter: jest.fn(() => router),
+			}));
+		`;
+
+		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+
+		deepStrictEqual(actual, expected);
+	});
 });

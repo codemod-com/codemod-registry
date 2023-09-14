@@ -1066,7 +1066,46 @@ export const handleSourceFile = (
 
 	const fileLevelUsageManager = new FileLevelUsageManager(importDeclarations);
 
-	if (!fileLevelUsageManager.hasAnyNextRouterImport()) {
+	let dirtyFlag = false;
+
+	// jest support
+	sourceFile
+		.getDescendantsOfKind(ts.SyntaxKind.CallExpression)
+		.forEach((callExpression) => {
+			const paExpression = callExpression.getExpression();
+
+			if (!Node.isPropertyAccessExpression(paExpression)) {
+				return;
+			}
+
+			const lhsExpression = paExpression.getExpression();
+
+			if (!Node.isIdentifier(lhsExpression)) {
+				return;
+			}
+
+			if (
+				lhsExpression.getText() !== 'jest' &&
+				paExpression.getNameNode().getText() !== 'mock'
+			) {
+				return;
+			}
+
+			const [zerothArgument] = callExpression.getArguments();
+
+			if (
+				!Node.isStringLiteral(zerothArgument) ||
+				zerothArgument.getText().slice(1, -1) !== 'next/router'
+			) {
+				return;
+			}
+
+			zerothArgument.setLiteralValue('next/navigation');
+
+			dirtyFlag = true;
+		});
+
+	if (!fileLevelUsageManager.hasAnyNextRouterImport() && !dirtyFlag) {
 		return undefined;
 	}
 
