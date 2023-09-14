@@ -125,6 +125,9 @@ devDependencies:
   typescript:
     specifier: 5.1.6
     version: 5.1.6
+  unist-util-filter:
+    specifier: ^5.0.1
+    version: 5.0.1
   unist-util-visit:
     specifier: ^5.0.0
     version: 5.0.0
@@ -5791,6 +5794,14 @@ packages:
       is-plain-obj: 4.1.0
       trough: 2.1.0
       vfile: 5.3.7
+    dev: true
+
+  /unist-util-filter@5.0.1:
+    resolution: {integrity: sha512-pHx7D4Zt6+TsfwylH9+lYhBhzyhEnCXs/lbq/Hstxno5z4gVdyc2WEW0asfjGKPyG4pEKrnBv5hdkO6+aRnQJw==}
+    dependencies:
+      '@types/unist': 3.0.0
+      unist-util-is: 6.0.0
+      unist-util-visit-parents: 6.0.1
     dev: true
 
   /unist-util-is@5.2.1:

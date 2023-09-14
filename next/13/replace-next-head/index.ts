@@ -23,6 +23,7 @@ import type {
 } from '@intuita-inc/repomod-engine-api';
 import type { fromMarkdown } from 'mdast-util-from-markdown';
 import type { visit } from 'unist-util-visit';
+import type { filter } from 'unist-util-filter';
 import { posix, relative, isAbsolute, join } from 'node:path';
 /**
  * Copied from "../replace-next-head"
@@ -1009,6 +1010,7 @@ type Dependencies = Readonly<{
 	parseMdx?: (data: string) => Root;
 	stringifyMdx?: (tree: Root) => string;
 	visitMdxAst?: typeof visit;
+	filterMdxAst?: typeof filter;
 	unifiedFileSystem: UnifiedFileSystem;
 }>;
 
@@ -1054,12 +1056,52 @@ export const buildComponentMetadata = (
 	};
 };
 
+const removeMdxNodes = (
+	{ visitMdxAst, filterMdxAst, stringifyMdx, parseMdx }: Dependencies,
+	content: string,
+): string => {
+	if (!filterMdxAst || !visitMdxAst || !stringifyMdx || !parseMdx) {
+		return content;
+	}
+
+	const tree = parseMdx(content);
+
+	const newTree = filterMdxAst(tree, (node) => {
+		return ['root', 'mdxJsxFlowElement', 'mdxjsEsm'].includes(node.type);
+	});
+
+	if (newTree === undefined) {
+		return content;
+	}
+
+	const mdxJsxFlowElements: string[] = [];
+
+	visitMdxAst(newTree, (node) => {
+		if (node.type === 'mdxJsxFlowElement') {
+			// @ts-expect-error stringify any node
+			const value = stringifyMdx(node);
+			mdxJsxFlowElements.push(value);
+		}
+	});
+
+	let stringifiedMdx = stringifyMdx(newTree);
+
+	mdxJsxFlowElements.forEach((value) => {
+		const r = new RegExp(`(?<!{)${value}(?!})`, 'gm');
+		stringifiedMdx = stringifiedMdx.replace(r, `{${value}}`);
+	});
+
+	return stringifiedMdx;
+};
+
 const initTsMorphProject = async (
-	tsmorph: Dependencies['tsmorph'],
+	dependencies: Dependencies,
 	unifiedFileSystem: Dependencies['unifiedFileSystem'],
 	rootPath: string,
 	compilerOptions?: tsmorph.CompilerOptions,
 ) => {
+	const { tsmorph } = dependencies;
+
 	const _compilerOptions = {
 		...defaultCompilerOptions,
 		...compilerOptions,
@@ -1074,12 +1116,24 @@ const initTsMorphProject = async (
 
 	const allFilePaths = await unifiedFileSystem.getFilePaths(
 		rootPath,
-		['**/*.{jsx,tsx,ts,js,cjs,ejs}'],
+		['**/*.{jsx,tsx,ts,js,cjs,ejs,mdx}'],
 		['**/node_modules/**'],
 	);
 
 	for (const path of allFilePaths) {
 		const content = await unifiedFileSystem.readFile(path);
+		if (path.endsWith('.mdx')) {
+			const contentWithoutMdxNodes = removeMdxNodes(
+				dependencies,
+				content,
+			);
+			project.createSourceFile(
+				path.replace('.mdx', '.tsx'),
+				contentWithoutMdxNodes,
+			);
+			return;
+		}
+
 		project.createSourceFile(path, content);
 	}
 };
@@ -1133,7 +1187,8 @@ const buildMetadataTreeNode = (containingPath: string) => {
 		dependencies: {},
 	};
 
-	const sourceFile = project?.getSourceFile(containingPath) ?? null;
+	const sourceFile =
+		project?.getSourceFile(containingPath.replace('.mdx', '.tsx')) ?? null;
 
 	if (sourceFile === null) {
 		return treeNode;
@@ -1237,14 +1292,14 @@ const findComponentPropValue = (
 	path: string,
 	componentPath: string,
 ): Record<string, JsxExpression | StringLiteral> => {
-	const sourceFile = project?.getSourceFile(path) ?? null;
+	const sourceFile =
+		project?.getSourceFile(path.replace('.mdx', '.tsx')) ?? null;
 
 	if (sourceFile === null) {
 		return {};
 	}
 
 	const component = findComponentByModuleSpecifier(sourceFile, componentPath);
-
 	const propValue: Record<string, JsxExpression | StringLiteral> = {};
 
 	const jsxAttributes =
@@ -1416,6 +1471,27 @@ const insertGenerateMetadataFunctionDeclaration = (
 	);
 };
 
+const addMetadataImport = (sourceFile: SourceFile) => {
+	const importAlreadyExists = sourceFile
+		.getImportDeclarations()
+		.find((declaration) => {
+			const specifier =
+				declaration
+					.getImportClause()
+					?.getNamedImports()
+					.find(
+						(imp) => imp.getNameNode().getText() === 'Metadata',
+					) ?? null;
+			return (
+				specifier !== null &&
+				declaration.getModuleSpecifier().getText() === '"next"'
+			);
+		});
+
+	if (!importAlreadyExists) {
+		sourceFile.insertStatements(0, `import { Metadata } from "next";`);
+	}
+};
 const insertMetadata = (
 	sourceFile: SourceFile,
 	metadataObject: Record<string, unknown>,
@@ -1440,25 +1516,7 @@ const insertMetadata = (
 		);
 	}
 
-	const importAlreadyExists = sourceFile
-		.getImportDeclarations()
-		.find((declaration) => {
-			const specifier =
-				declaration
-					.getImportClause()
-					?.getNamedImports()
-					.find(
-						(imp) => imp.getNameNode().getText() === 'Metadata',
-					) ?? null;
-			return (
-				specifier !== null &&
-				declaration.getModuleSpecifier().getText() === '"next"'
-			);
-		});
-
-	if (!importAlreadyExists) {
-		sourceFile.insertStatements(0, `import { Metadata } from "next";`);
-	}
+	addMetadataImport(sourceFile);
 };
 
 type PageComponent = ArrowFunction | FunctionExpression | FunctionDeclaration;
@@ -1642,10 +1700,10 @@ const getTsCompilerOptions = async (api: FileAPI, baseUrl: string) => {
 };
 
 export const repomod: Repomod<Dependencies> = {
-	includePatterns: ['**/pages/**/*.{jsx,tsx,js,ts,cjs,ejs}'],
+	includePatterns: ['**/pages/**/*.{jsx,tsx,js,ts,cjs,ejs,mdx}'],
 	excludePatterns: ['**/node_modules/**', '**/pages/api/**'],
 	handleFile: async (api, path, options) => {
-		const { unifiedFileSystem, tsmorph } = api.getDependencies();
+		const { unifiedFileSystem } = api.getDependencies();
 		const parsedPath = posix.parse(path);
 
 		const baseUrl = parsedPath.dir.split('pages')[0] ?? null;
@@ -1655,11 +1713,17 @@ export const repomod: Repomod<Dependencies> = {
 		}
 
 		const { paths } = await getTsCompilerOptions(api, baseUrl);
-		await initTsMorphProject(tsmorph, unifiedFileSystem, baseUrl, {
-			paths,
-		});
+		await initTsMorphProject(
+			api.getDependencies(),
+			unifiedFileSystem,
+			baseUrl,
+			{
+				paths,
+			},
+		);
 
 		const metadataTree = buildMetadataTreeNode(path);
+
 		const mergedMetadata = mergeMetadata(metadataTree);
 
 		const { dependencies: mergedDependencies } = mergeDependencies(
