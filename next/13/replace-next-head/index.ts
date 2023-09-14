@@ -1743,9 +1743,7 @@ export const repomod: Repomod<Dependencies> = {
 			);
 		}
 
-		console.time('buildMetadataTree');
 		const metadataTree = buildMetadataTreeNode(path, path);
-		console.timeEnd('buildMetadataTree');
 
 		if (Object.keys(metadataTree).length === 0) {
 			return [];
