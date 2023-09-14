@@ -103,7 +103,6 @@ type Param = Readonly<{ propertyName: string; name: string }>;
 
 class BlockLevelUsageManager {
 	private __getParamUsed: boolean = false;
-	private __getPathAsUsed: boolean = false;
 
 	private __paramsUsed: boolean = false;
 	private __searchParamsUsed: boolean = false;
@@ -112,11 +111,13 @@ class BlockLevelUsageManager {
 	private __routerUsed: boolean = false;
 
 	private __pathnames: Set<string> = new Set();
+	private __asPaths: Set<string> = new Set();
 	private __params: Array<Param> = [];
 
 	public constructor(
-		private readonly __paramsIdentifierNameUsed: boolean | null,
-		private readonly __searchParamsIdentifierNameUsed: boolean | null,
+		private readonly __paramsIdentifierNameUsed: boolean,
+		private readonly __pathnameIdentifierNameUsed: boolean,
+		private readonly __searchParamsIdentifierNameUsed: boolean,
 	) {}
 
 	public isRouterUsed(): boolean {
@@ -145,8 +146,8 @@ class BlockLevelUsageManager {
 		return this.__getParamUsed;
 	}
 
-	public isGetPathAsUsed(): boolean {
-		return this.__getPathAsUsed;
+	public getAsPath(): ReadonlySet<string> {
+		return this.__asPaths;
 	}
 
 	public getPathnames(): ReadonlySet<string> {
@@ -171,11 +172,13 @@ class BlockLevelUsageManager {
 		this.reportGetParamUsage();
 	}
 
-	public reportGetPathAs(): void {
-		this.__pathnames.add('pathname');
+	public reportAsPathUsage(asPath: string): void {
+		this.__pathnames.add(
+			this.__pathnameIdentifierNameUsed ? '__pathname__' : 'pathname',
+		);
 
 		this.__searchParamsUsed = true;
-		this.__getPathAsUsed = true;
+		this.__asPaths.add(asPath);
 	}
 
 	public reportGetParamUsage(): void {
@@ -481,12 +484,12 @@ const handleRouterPropertyAccessExpression = (
 		if (Node.isPropertyAccessExpression(parentNode)) {
 			const rightNode = parentNode.getName();
 
-			parentNode.replaceWithText(`getPathAs().${rightNode}`);
+			parentNode.replaceWithText(`${nodeName}.${rightNode}`);
 		} else {
-			node.replaceWithText('getPathAs()');
+			node.replaceWithText(nodeName);
 		}
 
-		blockLevelUsageManager.reportGetPathAs();
+		blockLevelUsageManager.reportAsPathUsage(nodeName);
 	} else if (nodeName === 'href') {
 		node.replaceWithText('pathname');
 
@@ -680,15 +683,13 @@ const handleVariableDeclaration = (
 						if (Node.isPropertyAccessExpression(parentNode)) {
 							const rightNode = parentNode.getName();
 
-							parentNode.replaceWithText(
-								`getPathAs().${rightNode}`,
-							);
+							parentNode.replaceWithText(`${text}.${rightNode}`);
 						} else {
-							node.replaceWithText('getPathAs()');
+							node.replaceWithText(text);
 						}
 					});
 
-					blockLevelUsageManager.reportGetPathAs();
+					blockLevelUsageManager.reportAsPathUsage(text);
 				} else if (text === 'push' || text === 'replace') {
 					nameNode.findReferencesAsNodes().forEach((node) => {
 						const parent = node.getParent();
@@ -827,7 +828,7 @@ const handleUseRouterCallExpression = (
 							const parentNodeName = parentNode.getName();
 
 							parentNode.replaceWithText(
-								`getPathAs().${parentNodeName}`,
+								`${text}.${parentNodeName}`,
 							);
 						}
 					}
@@ -835,7 +836,7 @@ const handleUseRouterCallExpression = (
 
 				grandparent.remove();
 
-				blockLevelUsageManager.reportGetPathAs();
+				blockLevelUsageManager.reportAsPathUsage(text);
 			}
 		}
 	}
@@ -857,10 +858,13 @@ const handleUseRouterIdentifier = (
 
 	const blockLevelUsageManager = new BlockLevelUsageManager(
 		blockIdentifiers.some(
-			(identifier) => identifier.compilerNode.text === 'params',
+			({ compilerNode }) => compilerNode.text === 'params',
 		),
 		blockIdentifiers.some(
-			(identifier) => identifier.compilerNode.text === 'searchParams',
+			({ compilerNode }) => compilerNode.text === 'pathname',
+		),
+		blockIdentifiers.some(
+			({ compilerNode }) => compilerNode.text === 'searchParams',
 		),
 	);
 
@@ -917,15 +921,18 @@ const handleUseRouterIdentifier = (
 		fileLevelUsageManager.useCallbackUsed = true;
 	}
 
-	if (
-		blockLevelUsageManager.isGetPathAsUsed() &&
-		searchParamsIdentifierName !== null
-	) {
-		statements.push(
-			`const getPathAs = useCallback(() => \`\${pathname}?\${${searchParamsIdentifierName}.toString() ?? ""}\`, [pathname, ${searchParamsIdentifierName}]);`,
-		);
+	{
+		const [pathname] = blockLevelUsageManager.getPathnames();
 
-		fileLevelUsageManager.useCallbackUsed = true;
+		if (searchParamsIdentifierName !== null && pathname !== undefined) {
+			for (const asPath of blockLevelUsageManager.getAsPath()) {
+				statements.push(
+					`const ${asPath} = useMemo(() => \`\${${pathname}}?\${${searchParamsIdentifierName}.toString() ?? ""}\`, [${pathname}, ${searchParamsIdentifierName}]);`,
+				);
+
+				fileLevelUsageManager.useMemoUsed = true;
+			}
+		}
 	}
 
 	for (const { propertyName, name } of blockLevelUsageManager.getParams()) {
@@ -1013,6 +1020,34 @@ const handleImportDeclaration = (
 	importDeclaration.remove();
 };
 
+const addNamedImport = (
+	sourceFile: SourceFile,
+	moduleSpecifier: string,
+	namedImport: string,
+) => {
+	const importDeclaration =
+		sourceFile
+			.getImportDeclarations()
+			.find(
+				(importDeclaration) =>
+					importDeclaration.getModuleSpecifierValue() ===
+						moduleSpecifier && !importDeclaration.isTypeOnly(),
+			) ?? null;
+
+	if (importDeclaration === null) {
+		sourceFile.addImportDeclaration({
+			moduleSpecifier: moduleSpecifier,
+			namedImports: [
+				{
+					name: namedImport,
+				},
+			],
+		});
+	} else {
+		importDeclaration.addNamedImport(namedImport);
+	}
+};
+
 export const handleSourceFile = (
 	sourceFile: SourceFile,
 ): string | undefined => {
@@ -1028,43 +1063,12 @@ export const handleSourceFile = (
 		handleImportDeclaration(fileLevelUsageManager, importDeclaration),
 	);
 
-	const importDeclaration =
-		sourceFile
-			.getImportDeclarations()
-			.find(
-				(importDeclaration) =>
-					importDeclaration.getModuleSpecifierValue() === 'react' &&
-					!importDeclaration.isTypeOnly(),
-			) ?? null;
-
 	if (fileLevelUsageManager.useCallbackUsed) {
-		if (importDeclaration === null) {
-			sourceFile.addImportDeclaration({
-				moduleSpecifier: 'react',
-				namedImports: [
-					{
-						name: 'useCallback',
-					},
-				],
-			});
-		} else {
-			importDeclaration.addNamedImport('useCallback');
-		}
+		addNamedImport(sourceFile, 'react', 'useCallback');
 	}
 
 	if (fileLevelUsageManager.useMemoUsed) {
-		if (importDeclaration === null) {
-			sourceFile.addImportDeclaration({
-				moduleSpecifier: 'react',
-				namedImports: [
-					{
-						name: 'useMemo',
-					},
-				],
-			});
-		} else {
-			importDeclaration.addNamedImport('useMemo');
-		}
+		addNamedImport(sourceFile, 'react', 'useMemo');
 	}
 
 	const namedImports = [

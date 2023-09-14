@@ -434,19 +434,19 @@ describe('next 13 replace-next-router', function () {
 
 	it('should replace useRouter().pathname with usePathname()', async function (this: Context) {
 		const beforeText = `
-	          import { useRouter } from 'next/router';
+			import { useRouter } from 'next/router';
 
-	          function Component() {
-	              const pathname = useRouter().pathname;
-	          }
+			function Component() {
+				const pathname = useRouter().pathname;
+			}
 	      `;
 		const afterText = `
-	          import { usePathname} from "next/navigation";
+			import { usePathname} from "next/navigation";
 
-	          function Component() {
+			function Component() {
 				/** TODO "pathname" no longer contains square-bracket expressions. Rewrite the code relying on them if required. **/
-	              const pathname = usePathname();
-	          }
+				const pathname = usePathname();
+			}
 	      `;
 
 		const { actual, expected } = transform(beforeText, afterText, '.tsx');
@@ -890,15 +890,15 @@ describe('next 13 replace-next-router', function () {
 
 		const afterText = `
 			import { usePathname, useSearchParams } from "next/navigation";
-			import { useCallback } from "react";
+			import { useMemo } from "react";
 
 			export function Component() {
 				const searchParams = useSearchParams();
 				/** TODO "pathname" no longer contains square-bracket expressions. Rewrite the code relying on them if required. **/
 				const pathname = usePathname();
-      			const getPathAs = useCallback(() => \`\${pathname}?\${searchParams.toString() ?? ""}\`, [pathname, searchParams]);
+      			const asPath = useMemo(() => \`\${pathname}?\${searchParams.toString() ?? ""}\`, [pathname, searchParams]);
 
-				return <b>{getPathAs()}</b>;
+				return <b>{asPath}</b>;
 			}
 		`;
 
@@ -1010,7 +1010,6 @@ describe('next 13 replace-next-router', function () {
 	it('should replace router.isReady, router.asPath, router.href with proper replacements', () => {
 		const beforeText = `
 			import { useRouter } from 'next/router'
-			import { useEffect } from 'react'
 
 			function Component() {
 				const router = useRouter();
@@ -1025,15 +1024,15 @@ describe('next 13 replace-next-router', function () {
 
 		const afterText = `
 			import { usePathname, useSearchParams } from "next/navigation";
-			import { useEffect, useCallback } from 'react'
+			import { useMemo } from "react";
 
 			function Component() {
 				const searchParams = useSearchParams();
 				/** TODO "pathname" no longer contains square-bracket expressions. Rewrite the code relying on them if required. **/
 				const pathname = usePathname();
-				const getPathAs = useCallback(() => \`\${pathname}?\${searchParams.toString() ?? ""}\`, [pathname, searchParams]);
+				const asPath = useMemo(() => \`\${pathname}?\${searchParams.toString() ?? ""}\`, [pathname, searchParams]);
 
-				const [path,] = useState(searchParams !== null ? getPathAs() : pathname);
+				const [path,] = useState(searchParams !== null ? asPath : pathname);
 
 				return null;
 			}
@@ -1216,13 +1215,13 @@ describe('next 13 replace-next-router', function () {
 
 		const afterText = `
 			import { usePathname, useRouter, useSearchParams } from "next/navigation";
-			import { useCallback } from "react";
+			import { useMemo } from "react";
 
 			export default function Component() {
 				const searchParams = useSearchParams();
 				/** TODO "pathname" no longer contains square-bracket expressions. Rewrite the code relying on them if required. **/
            		const pathname = usePathname();
-    			const getPathAs = useCallback(() => \`\${pathname}?\${searchParams.toString() ?? ""}\`, [pathname, searchParams]);
+    			const asPath = useMemo(() => \`\${pathname}?\${searchParams.toString() ?? ""}\`, [pathname, searchParams]);
 
 				const router = useRouter();
 
@@ -1233,7 +1232,7 @@ describe('next 13 replace-next-router', function () {
 					[router]
 				);
 
-				const a = getPathAs().startsWith("a");
+				const a = asPath.startsWith("a");
 
 				return null;
 			}
@@ -1259,15 +1258,15 @@ describe('next 13 replace-next-router', function () {
 
 		const afterText = `
 			import { usePathname, useSearchParams } from "next/navigation";
-			import { useCallback } from "react";
+			import { useMemo } from "react";
 
 			export default function Component() {
 				const searchParams = useSearchParams();
 				/** TODO "pathname" no longer contains square-bracket expressions. Rewrite the code relying on them if required. **/
 				const pathname = usePathname();
-				const getPathAs = useCallback(() => \`\${pathname}?\${searchParams.toString() ?? ""}\`, [pathname, searchParams]);
+				const asPath = useMemo(() => \`\${pathname}?\${searchParams.toString() ?? ""}\`, [pathname, searchParams]);
 				
-				const a = getPathAs().startsWith("a");
+				const a = asPath.startsWith("a");
 
 				return null;
 			}
@@ -1293,14 +1292,14 @@ describe('next 13 replace-next-router', function () {
 
 		const afterText = `
 			import { usePathname, useSearchParams } from "next/navigation";
-			import { useCallback } from "react";
+			import { useMemo } from "react";
 
 			export default function Component() {
 				const searchParams = useSearchParams();
 				/** TODO "pathname" no longer contains square-bracket expressions. Rewrite the code relying on them if required. **/
 				const pathname = usePathname();
-				const getPathAs = useCallback(() => \`\${pathname}?\${searchParams.toString() ?? ""}\`, [pathname, searchParams]);
-				const a = getPathAs().startsWith("a");
+				const asPath = useMemo(() => \`\${pathname}?\${searchParams.toString() ?? ""}\`, [pathname, searchParams]);
+				const a = asPath.startsWith("a");
 
 				return null;
 			}
@@ -1870,7 +1869,7 @@ describe('next 13 replace-next-router', function () {
 
 		const afterText = `
 			import { useParams, usePathname, useSearchParams } from "next/navigation";
-			import { useCallback } from "react";
+			import { useCallback, useMemo } from "react";
 
 			function Component(): JSX.Element {
 				const __params__ = useParams();
@@ -1879,11 +1878,11 @@ describe('next 13 replace-next-router', function () {
 				const pathname = usePathname();
 
 				const getParam = useCallback((p: string) => __params__?.[p] ?? __searchParams__?.get(p), [__params__, __searchParams__]);
-				const getPathAs = useCallback(() => \`\${pathname}?\${__searchParams__.toString() ?? ""}\`, [pathname, __searchParams__]);
+				const asPath = useMemo(() => \`\${pathname}?\${__searchParams__.toString() ?? ""}\`, [pathname, __searchParams__]);
 				const searchParams = 1;
 				const params = 2;
 
-				log(getPathAs());
+				log(asPath);
 
 				return getParam('a');
 			}
@@ -1909,14 +1908,14 @@ describe('next 13 replace-next-router', function () {
 		const afterText = `
 			import { usePathname, useSearchParams } from "next/navigation";
 			import type { ReactNode } from 'react';
-			import { useCallback } from "react";
+			import { useMemo } from "react";
 
 			function Component(): JSX.Element {
 				const searchParams = useSearchParams();
 				/** TODO "pathname" no longer contains square-bracket expressions. Rewrite the code relying on them if required. **/
 				const pathname = usePathname();
-				const getPathAs = useCallback(() => \`\${pathname}?\${searchParams.toString() ?? ""}\`, [pathname, searchParams]);
-				return getPathAs();
+				const asPath = useMemo(() => \`\${pathname}?\${searchParams.toString() ?? ""}\`, [pathname, searchParams]);
+				return asPath;
 			}
 		`;
 
