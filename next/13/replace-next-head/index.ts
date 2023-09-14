@@ -1090,8 +1090,7 @@ const removeMdxNodes = (
 		let stringifiedMdx = stringifyMdx(newTree);
 
 		mdxJsxFlowElements.forEach((value) => {
-			const r = new RegExp(`(?<!{)${value}(?!})`, 'gm');
-			stringifiedMdx = stringifiedMdx.replace(r, `{${value}}`);
+			stringifiedMdx = stringifiedMdx.replace(value, `{${value}}`);
 		});
 
 		return stringifiedMdx;
