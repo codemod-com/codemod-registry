@@ -63,7 +63,7 @@ const transform = async (json: DirectoryJSON) => {
 };
 
 describe('next 13 replace-next-head', function () {
-	afterEach(() => {
+	beforeEach(() => {
 		projectContainer.set(() => null);
 	});
 

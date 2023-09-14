@@ -1109,16 +1109,14 @@ const initTsMorphProject = async (
 ) => {
 	const { tsmorph } = dependencies;
 
-	const _compilerOptions = {
-		...defaultCompilerOptions,
-		...compilerOptions,
-		baseUrl: rootPath,
-	};
-
 	const project = new tsmorph.Project({
 		useInMemoryFileSystem: true,
 		skipFileDependencyResolution: true,
-		compilerOptions: _compilerOptions,
+		compilerOptions: {
+			...defaultCompilerOptions,
+			...compilerOptions,
+			baseUrl: rootPath,
+		},
 	});
 
 	const allFilePaths = await unifiedFileSystem.getFilePaths(
