@@ -205,11 +205,8 @@ class BlockLevelUsageManager {
 const buildParam = (bindingElement: BindingElement): Param => {
 	const name = bindingElement.getName();
 
-	const propertyNameNode = bindingElement.getPropertyNameNode();
-
-	const propertyName = Node.isIdentifier(propertyNameNode)
-		? propertyNameNode.getText()
-		: name;
+	const propertyName =
+		bindingElement.getPropertyNameNode()?.getText() ?? name;
 
 	return {
 		name,
@@ -944,7 +941,11 @@ const handleUseRouterIdentifier = (
 	}
 
 	for (const { propertyName, name } of blockLevelUsageManager.getParams()) {
-		statements.push(`const ${name} = getParam("${propertyName}")`);
+		const argument = /(^'.+'$)|(^".+"$)/.test(propertyName)
+			? `"${propertyName.slice(1, -1)}"`
+			: `"${propertyName}"`;
+
+		statements.push(`const ${name} = getParam(${argument})`);
 	}
 
 	if (
