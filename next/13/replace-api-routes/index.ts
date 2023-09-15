@@ -349,7 +349,7 @@ const rewriteAPIRoute = (sourceFile: SourceFile) => {
 	rewriteReqResImports(sourceFile);
 };
 
-export const repomod: Repomod<Dependencies> = {
+export const repomod: Repomod<Dependencies, Record<string, unknown>> = {
 	includePatterns: ['**/pages/api/**/*.{js,ts,cjs,ejs}'],
 	excludePatterns: ['**/node_modules/**'],
 	handleFile: async (api, path) => {
@@ -383,8 +383,8 @@ export const repomod: Repomod<Dependencies> = {
 		});
 
 		const sourceFile = project.createSourceFile(
-			options.oldPath ?? '',
-			options.oldData,
+			String(options.oldPath ?? ''),
+			String(options.oldData),
 		);
 
 		rewriteAPIRoute(sourceFile);

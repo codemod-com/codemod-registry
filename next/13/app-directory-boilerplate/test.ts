@@ -81,7 +81,7 @@ const transform = async (json: DirectoryJSON) => {
 		visitMdxAst: visit,
 	}));
 
-	return executeRepomod(api, repomod, '/', {});
+	return executeRepomod(api, repomod, '/', {}, {});
 };
 
 describe('next 13 app-directory-boilerplate', function () {

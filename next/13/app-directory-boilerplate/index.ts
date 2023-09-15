@@ -10,9 +10,12 @@ import tsmorph, {
 	SourceFile,
 	SyntaxKind,
 	FunctionExpression,
-	ImportDeclaration,
 } from 'ts-morph';
-import type { Repomod } from '@intuita-inc/repomod-engine-api';
+import type {
+	HandleData,
+	HandleFile,
+	Repomod,
+} from '@intuita-inc/repomod-engine-api';
 import type { fromMarkdown } from 'mdast-util-from-markdown';
 import type { visit } from 'unist-util-visit';
 
@@ -79,16 +82,13 @@ const map = new Map([
 
 const EXTENSION = '.tsx';
 
-type FileAPI = Parameters<NonNullable<Repomod<Dependencies>['handleFile']>>[0];
-type DataAPI = Parameters<NonNullable<Repomod<Dependencies>['handleData']>>[0];
+type State = Record<string, never>;
 
-type FileCommand = Awaited<
-	ReturnType<NonNullable<Repomod<Dependencies>['handleFile']>>
->[number];
+type FileAPI = Parameters<HandleFile<Dependencies, State>>[0];
+type DataAPI = Parameters<HandleData<Dependencies, State>>[0];
 
-type DataCommand = Awaited<
-	ReturnType<NonNullable<Repomod<Dependencies>['handleData']>>
->;
+type FileCommand = Awaited<ReturnType<HandleFile<Dependencies, State>>>[number];
+type DataCommand = Awaited<ReturnType<HandleData<Dependencies, State>>>;
 
 const removeUnusedImports = (sourceFile: SourceFile) => {
 	sourceFile.getImportDeclarations().forEach((importDeclaration) => {
@@ -132,7 +132,7 @@ const removeUnusedImports = (sourceFile: SourceFile) => {
 const buildComponentsFileData = (
 	api: DataAPI,
 	path: string,
-	options: Readonly<Record<string, string | undefined>>,
+	options: Readonly<Record<string, string | number | boolean | undefined>>,
 	filePurpose: FilePurpose.ROOT_COMPONENTS | FilePurpose.ROUTE_COMPONENTS,
 ): DataCommand => {
 	const { tsmorph, parseMdx, stringifyMdx, visitMdxAst } =
@@ -149,8 +149,11 @@ const buildComponentsFileData = (
 			},
 		});
 
+		const oldPath =
+			typeof options.oldPath === 'string' ? options.oldPath : null;
+
 		const sourceFile = project.createSourceFile(
-			options.oldPath?.replace(/\.mdx$/, '.tsx') ?? '',
+			oldPath?.replace(/\.mdx$/, '.tsx') ?? '',
 			input,
 		);
 
@@ -241,7 +244,9 @@ const buildComponentsFileData = (
 
 	if (path.endsWith('.mdx')) {
 		if (parseMdx && stringifyMdx && visitMdxAst) {
-			const tree = parseMdx(options.oldData ?? '');
+			const tree = parseMdx(
+				typeof options.oldData === 'string' ? options.oldData : '',
+			);
 
 			visitMdxAst(tree, (node) => {
 				if (node.type === 'mdxjsEsm') {
@@ -271,14 +276,14 @@ const buildComponentsFileData = (
 	return {
 		kind: 'upsertData',
 		path,
-		data: rewriteWithTsMorph(options.oldData ?? ''),
+		data: rewriteWithTsMorph(String(options.oldData ?? '')),
 	};
 };
 
 const buildPageFileData = (
 	api: DataAPI,
 	path: string,
-	options: Readonly<Record<string, string | undefined>>,
+	options: Readonly<Record<string, string | number | boolean | undefined>>,
 	filePurpose: FilePurpose.ROOT_PAGE | FilePurpose.ROUTE_PAGE,
 ): DataCommand => {
 	const { tsmorph, parseMdx, stringifyMdx, visitMdxAst } =
@@ -295,8 +300,11 @@ const buildPageFileData = (
 			},
 		});
 
+		const oldPath =
+			typeof options.oldPath === 'string' ? options.oldPath : null;
+
 		const sourceFile = project.createSourceFile(
-			options.oldPath?.replace(/\.mdx$/, '.tsx') ?? '',
+			oldPath?.replace(/\.mdx$/, '.tsx') ?? '',
 			input,
 		);
 
@@ -421,7 +429,7 @@ const buildPageFileData = (
 
 	if (path.endsWith('.mdx')) {
 		if (parseMdx && stringifyMdx && visitMdxAst) {
-			const tree = parseMdx(options.oldData ?? '');
+			const tree = parseMdx(String(options.oldData ?? ''));
 
 			visitMdxAst(tree, (node) => {
 				if (node.type === 'mdxjsEsm') {
@@ -451,7 +459,7 @@ const buildPageFileData = (
 	return {
 		kind: 'upsertData',
 		path,
-		data: rewriteWithTsMorph(options.oldData ?? ''),
+		data: rewriteWithTsMorph(String(options.oldData ?? '')),
 	};
 };
 
@@ -706,11 +714,10 @@ const injectLayoutClientComponent = (sourceFile: SourceFile) => {
 	);
 };
 
-const handleFile: Repomod<Dependencies>['handleFile'] = async (
-	api,
-	path,
-	options,
-) => {
+const handleFile: Repomod<
+	Dependencies,
+	Record<string, never>
+>['handleFile'] = async (api, path, options) => {
 	const parsedPath = posix.parse(path);
 	const directoryNames = parsedPath.dir.split(posix.sep);
 	const endsWithPages =
@@ -958,7 +965,7 @@ const handleFile: Repomod<Dependencies>['handleFile'] = async (
 	return [];
 };
 
-const handleData: Repomod<Dependencies>['handleData'] = async (
+const handleData: HandleData<Dependencies, State> = async (
 	api,
 	path,
 	__,
@@ -1013,7 +1020,7 @@ const handleData: Repomod<Dependencies>['handleData'] = async (
 
 			const sourceFile = project.createSourceFile(
 				path,
-				options.underscoreDocumentData,
+				String(options.underscoreDocumentData),
 			);
 
 			replaceNextDocumentJsxTags(sourceFile);
@@ -1044,8 +1051,8 @@ const handleData: Repomod<Dependencies>['handleData'] = async (
 			});
 
 			const underscoreAppFile = project.createSourceFile(
-				options.underscoreAppPath,
-				options.underscoreAppData,
+				String(options.underscoreAppPath),
+				String(options.underscoreAppData),
 			);
 
 			buildLayoutClientComponentFromUnderscoreApp(underscoreAppFile);
@@ -1069,7 +1076,7 @@ const handleData: Repomod<Dependencies>['handleData'] = async (
 	}
 };
 
-export const repomod: Repomod<Dependencies> = {
+export const repomod: Repomod<Dependencies, State> = {
 	includePatterns: ['**/pages/**/*.{js,jsx,ts,tsx,cjs,mjs,mdx}'],
 	excludePatterns: ['**/node_modules/**', '**/pages/api/**'],
 	handleFile,
