@@ -15,8 +15,8 @@ devDependencies:
     specifier: 0.26.1
     version: 0.26.1
   '@intuita-inc/repomod-engine-api':
-    specifier: ^1.2.0
-    version: 1.2.0
+    specifier: ^1.2.1
+    version: 1.2.1
   '@types/chai':
     specifier: ^4.3.4
     version: 4.3.4
@@ -1451,8 +1451,8 @@ packages:
     resolution: {integrity: sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==}
     dev: true
 
-  /@intuita-inc/repomod-engine-api@1.2.0:
-    resolution: {integrity: sha512-lKSil6v8T7MKHbDwQrn1rlJgknpjrrd4j9gOVBWHJf5oDJ/K8bHsrHo+lQFB2yaBrfmBJO6ZX+FwgtG/VAAfuA==}
+  /@intuita-inc/repomod-engine-api@1.2.1:
+    resolution: {integrity: sha512-Z0dksB/hgoyR1kPsQ+hrE5M6ww5/vmE6b5VvMmO3ceurs7Pu5xQfu1pi49INBPRuWh1OH1vEXBlsmyGQeQMHzw==}
     dependencies:
       glob: 10.3.4
     dev: true
