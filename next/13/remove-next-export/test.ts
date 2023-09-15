@@ -68,7 +68,7 @@ const transform = async () => {
 		tsmorph,
 	}));
 
-	return executeRepomod(api, repomod, '/', {});
+	return executeRepomod(api, repomod, '/', {}, {});
 };
 
 describe('next 13 remove-next-export', function () {

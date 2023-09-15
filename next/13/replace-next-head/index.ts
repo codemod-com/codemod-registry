@@ -1014,6 +1014,8 @@ type Dependencies = Readonly<{
 	unifiedFileSystem: UnifiedFileSystem;
 }>;
 
+type State = Record<string, unknown>;
+
 type MetadataTreeNode = {
 	path: string;
 	components: Record<string, MetadataTreeNode>;
@@ -1021,7 +1023,9 @@ type MetadataTreeNode = {
 	dependencies: Record<string, Dependency>;
 };
 
-type FileAPI = Parameters<NonNullable<Repomod<Dependencies>['handleFile']>>[0];
+type FileAPI = Parameters<
+	NonNullable<Repomod<Dependencies, State>['handleFile']>
+>[0];
 
 export const projectContainer = buildContainer<tsmorph.Project | null>(null);
 export const subTreeCacheContainer = buildContainer<
@@ -1717,7 +1721,7 @@ const getTsCompilerOptions = async (api: FileAPI, baseUrl: string) => {
 	}
 };
 
-export const repomod: Repomod<Dependencies> = {
+export const repomod: Repomod<Dependencies, Record<string, unknown>> = {
 	includePatterns: ['**/pages/**/*.{jsx,tsx,js,ts,cjs,ejs,mdx}'],
 	excludePatterns: ['**/node_modules/**', '**/pages/api/**'],
 	handleFile: async (api, path, options) => {
@@ -1775,7 +1779,7 @@ export const repomod: Repomod<Dependencies> = {
 
 		try {
 			const { metadata, dependencies } = JSON.parse(
-				options.metadata ?? '{}',
+				String(options.metadata ?? '{}'),
 			);
 
 			// check if we have dependency on component arguments after merging metadata
@@ -1783,6 +1787,7 @@ export const repomod: Repomod<Dependencies> = {
 			const param =
 				Object.values(dependencies).find(
 					(d): d is Dependency & { kind: SyntaxKind.Parameter } =>
+						// @ts-expect-error d is unknown
 						d.kind === SyntaxKind.Parameter,
 				) ?? null;
 

@@ -7,7 +7,7 @@ type Dependencies = Readonly<{
 	tsmorph: typeof tsmorph;
 }>;
 
-export const repomod: Repomod<Dependencies> = {
+export const repomod: Repomod<Dependencies, Record<string, unknown>> = {
 	includePatterns: ['**/package.json', '**/next.config.js', '**/*.{md,sh}'],
 	excludePatterns: ['**/node_modules/**'],
 	handleData: async (api, path, data) => {

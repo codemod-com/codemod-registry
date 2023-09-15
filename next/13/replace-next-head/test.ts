@@ -59,7 +59,7 @@ const transform = async (json: DirectoryJSON) => {
 		unifiedFileSystem,
 	}));
 
-	return executeRepomod(api, repomod, '/', {});
+	return executeRepomod(api, repomod, '/', {}, {});
 };
 
 describe('next 13 replace-next-head', function () {

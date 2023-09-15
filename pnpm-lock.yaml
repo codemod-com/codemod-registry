@@ -1,4 +1,4 @@
-lockfileVersion: '6.1'
+lockfileVersion: '6.0'
 
 settings:
   autoInstallPeers: true
@@ -15,8 +15,8 @@ devDependencies:
     specifier: 0.26.1
     version: 0.26.1
   '@intuita-inc/repomod-engine-api':
-    specifier: ^1.1.2
-    version: 1.1.2
+    specifier: ^1.2.0
+    version: 1.2.0
   '@types/chai':
     specifier: ^4.3.4
     version: 4.3.4
@@ -1451,10 +1451,10 @@ packages:
     resolution: {integrity: sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==}
     dev: true
 
-  /@intuita-inc/repomod-engine-api@1.1.2:
-    resolution: {integrity: sha512-/yHLE7KqaQ2PGhZm0BwUhxW7t+u7RG0yanmRxRZQ79L0xkklO7JfVK/3/2Kp3HITwmBUOOKEVixVWq3aZh5Lvw==}
+  /@intuita-inc/repomod-engine-api@1.2.0:
+    resolution: {integrity: sha512-lKSil6v8T7MKHbDwQrn1rlJgknpjrrd4j9gOVBWHJf5oDJ/K8bHsrHo+lQFB2yaBrfmBJO6ZX+FwgtG/VAAfuA==}
     dependencies:
-      glob: 10.2.7
+      glob: 10.3.4
     dev: true
 
   /@isaacs/cliui@8.0.2:
@@ -3165,8 +3165,8 @@ packages:
       is-glob: 4.0.3
     dev: true
 
-  /glob@10.2.7:
-    resolution: {integrity: sha512-jTKehsravOJo8IJxUGfZILnkvVJM/MOfHRs8QcXolVef2zNI9Tqyy5+SeuOAZd3upViEZQLyFpQhYiHLrMUNmA==}
+  /glob@10.3.3:
+    resolution: {integrity: sha512-92vPiMb/iqpmEgsOoIDvTjc50wf9CCCvMzsi6W0JLPeUKE8TWP1a73PgqSrqy7iAZxaSD1YdzU7QZR5LF51MJw==}
     engines: {node: '>=16 || 14 >=14.17'}
     hasBin: true
     dependencies:
@@ -3177,8 +3177,8 @@ packages:
       path-scurry: 1.10.1
     dev: true
 
-  /glob@10.3.3:
-    resolution: {integrity: sha512-92vPiMb/iqpmEgsOoIDvTjc50wf9CCCvMzsi6W0JLPeUKE8TWP1a73PgqSrqy7iAZxaSD1YdzU7QZR5LF51MJw==}
+  /glob@10.3.4:
+    resolution: {integrity: sha512-6LFElP3A+i/Q8XQKEvZjkEWEOTgAIALR9AO2rwT8bgPhDd1anmqDJDZ6lLddI4ehxxxR1S5RIqKe1uapMQfYaQ==}
     engines: {node: '>=16 || 14 >=14.17'}
     hasBin: true
     dependencies:
