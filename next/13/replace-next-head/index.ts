@@ -1024,6 +1024,9 @@ type MetadataTreeNode = {
 type FileAPI = Parameters<NonNullable<Repomod<Dependencies>['handleFile']>>[0];
 
 export const projectContainer = buildContainer<tsmorph.Project | null>(null);
+export const subTreeCacheContainer = buildContainer<
+	Map<string, MetadataTreeNode>
+>(new Map());
 
 const defaultCompilerOptions = {
 	allowJs: true,
@@ -1188,7 +1191,170 @@ const getComponentPaths = (sourceFile: SourceFile) => {
 	return Array.from(new Set(paths));
 };
 
-const buildMetadataTreeNode = (containingPath: string) => {
+const mapRelativeToAbsolutePaths = (
+	dependencies: Record<string, Dependency>,
+	containingPath: string,
+): Record<string, Dependency> =>
+	Object.entries(dependencies).reduce<Record<string, Dependency>>(
+		(acc, [key, val]) => {
+			if (
+				val.kind === SyntaxKind.ImportDeclaration &&
+				val.structure !== null
+			) {
+				const resolvedModuleName =
+					resolveModuleName(
+						val.structure.moduleSpecifier ?? '',
+						containingPath,
+					) ?? val.structure.moduleSpecifier;
+
+				acc[key] = {
+					...val,
+					structure: {
+						...val.structure,
+						moduleSpecifier: resolvedModuleName,
+					},
+				};
+
+				return acc;
+			}
+
+			acc[key] = val;
+
+			return acc;
+		},
+		{},
+	);
+
+const mergeNodes = (
+	parent: MetadataTreeNode,
+	child: MetadataTreeNode,
+	pagePath: string,
+) => {
+	const componentPropsValues = findComponentPropValue(
+		parent.path,
+		child.path,
+	);
+
+	const nextDependencies = Object.entries(child.dependencies).reduce(
+		(acc, [identifierName, value]) => {
+			if (value.kind === SyntaxKind.Parameter) {
+				const propValue = componentPropsValues[identifierName] ?? null;
+
+				// handle props object
+				if (!value.isBindingPattern) {
+					const propsObjectText = Object.entries(
+						componentPropsValues,
+					).reduce<Record<string, string>>((acc, [key, value]) => {
+						acc[key] = Node.isJsxExpression(value)
+							? value.getExpression()?.getText() ?? ''
+							: value.getText();
+
+						return acc;
+					}, {});
+
+					acc[identifierName] = {
+						kind: SyntaxKind.VariableStatement,
+						text: `const ${identifierName} = ${formatObjectAsString(
+							propsObjectText,
+						)}`,
+						structure: null,
+					};
+
+					const identifiers: Identifier[] = [];
+
+					Object.values(componentPropsValues).forEach((propValue) => {
+						identifiers.push(
+							...propValue.getDescendantsOfKind(
+								SyntaxKind.Identifier,
+							),
+						);
+					});
+
+					const newDependencies =
+						getDependenciesForIdentifiers(identifiers);
+
+					Object.entries(newDependencies).forEach(
+						([identifier, dependency]) => {
+							if (
+								pagePath === parent.path &&
+								dependency.kind !== SyntaxKind.Parameter
+							) {
+								return;
+							}
+
+							acc[identifier] = dependency;
+						},
+					);
+
+					return acc;
+				}
+
+				if (propValue === null) {
+					return acc;
+				}
+
+				const identifiers = propValue.getDescendantsOfKind(
+					SyntaxKind.Identifier,
+				);
+
+				const newDependencies =
+					getDependenciesForIdentifiers(identifiers);
+
+				//add dependencies of propValue
+				Object.entries(newDependencies).forEach(
+					([identifier, dependency]) => {
+						if (
+							pagePath === parent.path &&
+							dependency.kind !== SyntaxKind.Parameter
+						) {
+							return;
+						}
+
+						acc[identifier] = dependency;
+					},
+				);
+
+				// add propValue declaration
+
+				const propValueText = Node.isJsxExpression(propValue)
+					? propValue.getExpression()?.getText() ?? ''
+					: propValue.getText();
+
+				if (propValueText !== identifierName) {
+					acc[identifierName] = {
+						kind: SyntaxKind.VariableStatement,
+						text: `const ${identifierName} = ${propValueText}`,
+						structure: null,
+					};
+				}
+
+				return acc;
+			}
+
+			acc[identifierName] = value;
+			return acc;
+		},
+		{} as Record<string, Dependency>,
+	);
+
+	parent.metadata = {
+		...parent.metadata,
+		...child.metadata,
+	};
+	parent.dependencies = {
+		...parent.dependencies,
+		...nextDependencies,
+	};
+};
+
+const buildMetadataTreeNode = (containingPath: string, pagePath: string) => {
+	const subTreeCache = subTreeCacheContainer.get();
+	const cachedTreeNode = subTreeCache.get(containingPath);
+
+	if (cachedTreeNode !== undefined) {
+		return cachedTreeNode;
+	}
+
 	const treeNode: MetadataTreeNode = {
 		path: containingPath,
 		components: {},
@@ -1208,35 +1374,10 @@ const buildMetadataTreeNode = (containingPath: string) => {
 	const { metadata, dependencies } = buildComponentMetadata(sourceFile);
 
 	treeNode.metadata = metadata;
-
-	treeNode.dependencies = Object.entries(dependencies ?? {}).reduce<
-		Record<string, Dependency>
-	>((acc, [key, val]) => {
-		if (
-			val.kind === SyntaxKind.ImportDeclaration &&
-			val.structure !== null
-		) {
-			const resolvedModuleName =
-				resolveModuleName(
-					val.structure.moduleSpecifier ?? '',
-					containingPath,
-				) ?? val.structure.moduleSpecifier;
-
-			acc[key] = {
-				...val,
-				structure: {
-					...val.structure,
-					moduleSpecifier: resolvedModuleName,
-				},
-			};
-
-			return acc;
-		}
-
-		acc[key] = val;
-
-		return acc;
-	}, {});
+	treeNode.dependencies = mapRelativeToAbsolutePaths(
+		dependencies ?? {},
+		containingPath,
+	);
 
 	getComponentPaths(sourceFile).forEach((path) => {
 		const resolvedFileName = resolveModuleName(path, containingPath);
@@ -1245,8 +1386,14 @@ const buildMetadataTreeNode = (containingPath: string) => {
 			return;
 		}
 
-		treeNode.components[resolvedFileName] =
-			buildMetadataTreeNode(resolvedFileName);
+		const childTreeNode = buildMetadataTreeNode(resolvedFileName, pagePath);
+
+		treeNode.components[resolvedFileName] = childTreeNode;
+
+		mergeNodes(treeNode, childTreeNode, pagePath);
+
+		// cache
+		subTreeCacheContainer.set((map) => map.set(treeNode.path, treeNode));
 	});
 
 	return treeNode;
@@ -1317,141 +1464,6 @@ const findComponentPropValue = (
 	});
 
 	return propValue;
-};
-
-const mergeMetadataTree = (
-	treeNode: MetadataTreeNode,
-	rootPath: string,
-): MetadataTreeNode => {
-	return Object.entries(treeNode.components)
-		.map(([, childNode]) => mergeMetadataTree(childNode, rootPath))
-		.reduce((mergedNode, childTreeNode) => {
-			const componentPropsValues = findComponentPropValue(
-				treeNode.path,
-				childTreeNode.path,
-			);
-
-			const nextDependencies = Object.entries(
-				childTreeNode.dependencies,
-			).reduce(
-				(acc, [identifierName, value]) => {
-					if (value.kind === SyntaxKind.Parameter) {
-						const propValue =
-							componentPropsValues[identifierName] ?? null;
-
-						// handle props object
-						if (!value.isBindingPattern) {
-							const propsObjectText = Object.entries(
-								componentPropsValues,
-							).reduce<Record<string, string>>(
-								(acc, [key, value]) => {
-									acc[key] = Node.isJsxExpression(value)
-										? value.getExpression()?.getText() ?? ''
-										: value.getText();
-
-									return acc;
-								},
-								{},
-							);
-
-							acc[identifierName] = {
-								kind: SyntaxKind.VariableStatement,
-								text: `const ${identifierName} = ${formatObjectAsString(
-									propsObjectText,
-								)}`,
-								structure: null,
-							};
-
-							const identifiers: Identifier[] = [];
-
-							Object.values(componentPropsValues).forEach(
-								(propValue) => {
-									identifiers.push(
-										...propValue.getDescendantsOfKind(
-											SyntaxKind.Identifier,
-										),
-									);
-								},
-							);
-
-							const newDependencies =
-								getDependenciesForIdentifiers(identifiers);
-
-							Object.entries(newDependencies).forEach(
-								([identifier, dependency]) => {
-									if (
-										rootPath === treeNode.path &&
-										dependency.kind !== SyntaxKind.Parameter
-									) {
-										return;
-									}
-
-									acc[identifier] = dependency;
-								},
-							);
-
-							return acc;
-						}
-
-						if (propValue === null) {
-							return acc;
-						}
-
-						const identifiers = propValue.getDescendantsOfKind(
-							SyntaxKind.Identifier,
-						);
-
-						const newDependencies =
-							getDependenciesForIdentifiers(identifiers);
-
-						//add dependencies of propValue
-						Object.entries(newDependencies).forEach(
-							([identifier, dependency]) => {
-								if (
-									rootPath === treeNode.path &&
-									dependency.kind !== SyntaxKind.Parameter
-								) {
-									return;
-								}
-
-								acc[identifier] = dependency;
-							},
-						);
-
-						// add propValue declaration
-
-						const propValueText = Node.isJsxExpression(propValue)
-							? propValue.getExpression()?.getText() ?? ''
-							: propValue.getText();
-
-						if (propValueText !== identifierName) {
-							acc[identifierName] = {
-								kind: SyntaxKind.VariableStatement,
-								text: `const ${identifierName} = ${propValueText}`,
-								structure: null,
-							};
-						}
-
-						return acc;
-					}
-
-					acc[identifierName] = value;
-					return acc;
-				},
-				{} as Record<string, Dependency>,
-			);
-
-			mergedNode.metadata = {
-				...mergedNode.metadata,
-				...childTreeNode.metadata,
-			};
-			mergedNode.dependencies = {
-				...mergedNode.dependencies,
-				...nextDependencies,
-			};
-
-			return mergedNode;
-		}, treeNode);
 };
 
 const insertGenerateMetadataFunctionDeclaration = (
@@ -1731,12 +1743,9 @@ export const repomod: Repomod<Dependencies> = {
 			);
 		}
 
-		const metadataTree = buildMetadataTreeNode(path);
+		const metadataTree = buildMetadataTreeNode(path, path);
 
-		const { dependencies: mergedDependencies, metadata: mergedMetadata } =
-			mergeMetadataTree(metadataTree, path);
-
-		if (Object.keys(mergedMetadata).length === 0) {
+		if (Object.keys(metadataTree).length === 0) {
 			return [];
 		}
 
@@ -1746,8 +1755,7 @@ export const repomod: Repomod<Dependencies> = {
 				path,
 				options: {
 					...options,
-					metadata: JSON.stringify(mergedMetadata),
-					dependencies: JSON.stringify(mergedDependencies),
+					metadata: JSON.stringify(metadataTree),
 				},
 			},
 		];
@@ -1766,10 +1774,9 @@ export const repomod: Repomod<Dependencies> = {
 		const sourceFile = project.createSourceFile(path, data);
 
 		try {
-			const metadata = JSON.parse(options.metadata ?? '');
-			const dependencies = JSON.parse(
-				options.dependencies ?? '{}',
-			) as Record<string, Dependency>;
+			const { metadata, dependencies } = JSON.parse(
+				options.metadata ?? '{}',
+			);
 
 			// check if we have dependency on component arguments after merging metadata
 			// if we have,it means that page probably gets props from data hooks
