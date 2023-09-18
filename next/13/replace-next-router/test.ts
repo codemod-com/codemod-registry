@@ -2495,4 +2495,36 @@ describe('next 13 replace-next-router', function () {
 
 		deepStrictEqual(actual, expected);
 	});
+
+	it('should simplify getParam(x) if the file path contains dynamic segments', () => {
+		const beforeText = `
+			import { useRouter } from "next/router";
+				
+			function Component() {
+				const { a, b, c: d } = useRouter().query;
+				return a;
+			}
+		`;
+
+		const afterText = `
+			import { useParams } from "next/navigation";
+
+			function Component() {
+				const params = useParams();
+				const a = params["a"];
+				const b = params["b"];
+				const d = params["c"];
+			
+				return a;
+			}
+		`;
+
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'/pages/[[...a]]/[b]/[c].tsx',
+		);
+
+		deepStrictEqual(actual, expected);
+	});
 });

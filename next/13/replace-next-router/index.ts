@@ -26,7 +26,10 @@ class FileLevelUsageManager {
 	private __useParamsPresent: boolean;
 	private __usePathnamePresent: boolean;
 
-	public constructor(importDeclarations: ReadonlyArray<ImportDeclaration>) {
+	public constructor(
+		importDeclarations: ReadonlyArray<ImportDeclaration>,
+		public readonly dynamicSegments: ReadonlyArray<string>,
+	) {
 		this.__useRouterPresent = hasImport(
 			importDeclarations,
 			'next/router',
@@ -112,12 +115,14 @@ class BlockLevelUsageManager {
 
 	private __pathnames: Set<string> = new Set();
 	private __asPaths: Set<string> = new Set();
-	private __params: Array<Param> = [];
+	private __paramsForUseParams: Array<Param> = [];
+	private __paramsForGetParam: Array<Param> = [];
 
 	public constructor(
 		private readonly __paramsIdentifierNameUsed: boolean,
 		private readonly __pathnameIdentifierNameUsed: boolean,
 		private readonly __searchParamsIdentifierNameUsed: boolean,
+		private readonly __dynamicSegments: ReadonlyArray<string>,
 	) {}
 
 	public isRouterUsed(): boolean {
@@ -154,8 +159,12 @@ class BlockLevelUsageManager {
 		return this.__pathnames;
 	}
 
-	public getParams(): ReadonlyArray<Param> {
-		return this.__params;
+	public getParamsForGetParam(): ReadonlyArray<Param> {
+		return this.__paramsForGetParam;
+	}
+
+	public getParamsForUseParams(): ReadonlyArray<Param> {
+		return this.__paramsForUseParams;
 	}
 
 	public getParamMap(): boolean {
@@ -167,7 +176,15 @@ class BlockLevelUsageManager {
 	}
 
 	public addParam(param: Param): void {
-		this.__params.push(param);
+		if (this.__dynamicSegments.includes(param.propertyName)) {
+			this.__paramsForUseParams.push(param);
+
+			this.reportParamUsage();
+
+			return;
+		}
+
+		this.__paramsForGetParam.push(param);
 
 		this.reportGetParamUsage();
 	}
@@ -179,6 +196,10 @@ class BlockLevelUsageManager {
 
 		this.__searchParamsUsed = true;
 		this.__asPaths.add(asPath);
+	}
+
+	public reportParamUsage(): void {
+		this.__paramsUsed = true;
 	}
 
 	public reportGetParamUsage(): void {
@@ -861,6 +882,7 @@ const handleUseRouterIdentifier = (
 		blockIdentifiers.some(
 			({ compilerNode }) => compilerNode.text === 'searchParams',
 		),
+		fileLevelUsageManager.dynamicSegments,
 	);
 
 	const parent = node.getParent();
@@ -930,12 +952,30 @@ const handleUseRouterIdentifier = (
 		}
 	}
 
-	for (const { propertyName, name } of blockLevelUsageManager.getParams()) {
+	for (const {
+		propertyName,
+		name,
+	} of blockLevelUsageManager.getParamsForGetParam()) {
 		const argument = /(^'.+'$)|(^".+"$)/.test(propertyName)
 			? `"${propertyName.slice(1, -1)}"`
 			: `"${propertyName}"`;
 
 		statements.push(`const ${name} = getParam(${argument})`);
+	}
+
+	if (paramsIdentifierName !== null) {
+		for (const {
+			propertyName,
+			name,
+		} of blockLevelUsageManager.getParamsForUseParams()) {
+			const argument = /(^'.+'$)|(^".+"$)/.test(propertyName)
+				? `"${propertyName.slice(1, -1)}"`
+				: `"${propertyName}"`;
+
+			statements.push(
+				`const ${name} = ${paramsIdentifierName}[${argument}];`,
+			);
+		}
 	}
 
 	if (
@@ -1062,9 +1102,28 @@ const addNamedImport = (
 export const handleSourceFile = (
 	sourceFile: SourceFile,
 ): string | undefined => {
+	const standardizedFilePath = sourceFile.getFilePath();
+
+	const dynamicSegments: string[] = [];
+
+	for (const regExpMatchArray of standardizedFilePath.matchAll(
+		/\[\[?\.*([^\/\[\]]+)\]?\]/g,
+	)) {
+		const dynamicSegment = regExpMatchArray[1] ?? null;
+
+		if (dynamicSegment === null) {
+			continue;
+		}
+
+		dynamicSegments.push(dynamicSegment);
+	}
+
 	const importDeclarations = sourceFile.getImportDeclarations();
 
-	const fileLevelUsageManager = new FileLevelUsageManager(importDeclarations);
+	const fileLevelUsageManager = new FileLevelUsageManager(
+		importDeclarations,
+		dynamicSegments,
+	);
 
 	let dirtyFlag = false;
 
