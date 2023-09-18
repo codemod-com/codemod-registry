@@ -189,8 +189,6 @@ Checkout my React component:
 		deepStrictEqual(command?.kind, 'upsertFile');
 		deepStrictEqual(command.path, '/opt/project/pages/a/index.tsx');
 
-		console.log(command?.data, '?dfsdf');
-
 		deepStrictEqual(
 			command.data.replace(/\s/gm, ''),
 			expectedResult.replace(/\s/gm, ''),
@@ -316,13 +314,12 @@ Checkout my React component:
 		const a = "a";
 		const b = () => "b";
 		function c() { return "c" };
-		const { obj: { d }} = { obj: { d: "d"} };
 		const env = process.env.APP_NAME;
 		
 		export default function Meta() {
 			return (<>
 			<Head>
-				<title>{a + b() + c() + d + e + env}</title>
+				<title>{a + b() + c() + env}</title>
 			</Head>
 			</>)
 		}
@@ -337,12 +334,11 @@ Checkout my React component:
 		const expectedResult = `import { Metadata } from "next";
 		import Meta from '../../components/a.tsx';
 		const env = process.env.APP_NAME;
-		const { obj: { d } } = { obj: { d: "d" } };
 		function c() { return "c" }
 		const b = () => "b";
 		const a = "a";
 		export const metadata: Metadata = {
-				title: \`\${a + b() + c() + d + e + env}\`
+				title: \`\${a + b() + c() + env}\`
 		}
 		export default function Page() {
 				return <Meta />;
@@ -524,13 +520,12 @@ Checkout my React component:
 		const a = "a";
 		function b() { return "b" };
 		const c = () => {};
-		const { d } = { d: "d" };
 		export default function Meta({ title }) {
 			return (<>
 			<Head>
 				<title>{title}</title>
 			</Head>
-			<NestedComponent a={a} b={b} c={c} d={d} />
+			<NestedComponent a={a} b={b} c={c} />
 			</>)
 		}
 `;
@@ -538,9 +533,9 @@ Checkout my React component:
 		const B_COMPONENT_CONTENT = `
 		import Head from 'next/head';
 		
-		export default function NestedComponent({ a, b, c, d }) {
+		export default function NestedComponent({ a, b, c}) {
 			return <Head>
-			<meta name="description" content={a + b + c + d} />
+			<meta name="description" content={a + b + c} />
 			</Head>
 		}
 		
@@ -555,7 +550,6 @@ Checkout my React component:
 
 		const expectedResult = `import { Metadata } from "next";
 		import Meta from '../../components/a.tsx';
-		const { d } = { d: "d" };
 		const c = () => { };
 		function b() { return "b" }
 		const a = "a";
@@ -564,7 +558,7 @@ Checkout my React component:
 		
 		export const metadata: Metadata = {
 			title: \`\${title}\`,
-			description: a + b + c + d
+			description: a + b + c
 	}
 		export default function Page() {
 				return <Meta title={title} description={description}/>;

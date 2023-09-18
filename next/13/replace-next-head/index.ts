@@ -238,11 +238,25 @@ const getDependenciesForIdentifiers = (
 				continue;
 			}
 
-			ancestor =
-				firstDefinition.getKind() === syntaxKind
-					? firstDefinition
-					: firstDefinition.getFirstAncestorByKind(syntaxKind) ??
-					  null;
+			if (firstDefinition.getKind() === syntaxKind) {
+				ancestor = firstDefinition;
+			} else if (
+				syntaxKind === SyntaxKind.FunctionDeclaration &&
+				Node.isFunctionDeclaration(firstDefinition)
+			) {
+				ancestor = firstDefinition;
+			} else if (
+				syntaxKind === SyntaxKind.VariableStatement &&
+				Node.isVariableDeclaration(firstDefinition)
+			) {
+				ancestor = firstDefinition.getParent()?.getParent() ?? null;
+			} else if (
+				syntaxKind === SyntaxKind.Parameter ||
+				syntaxKind === SyntaxKind.ImportDeclaration
+			) {
+				ancestor =
+					firstDefinition.getFirstAncestorByKind(syntaxKind) ?? null;
+			}
 		}
 
 		if (ancestor === null) {
@@ -1748,7 +1762,6 @@ export const repomod: Repomod<Dependencies, Record<string, unknown>> = {
 		}
 
 		const metadataTree = buildMetadataTreeNode(path, path);
-
 		if (Object.keys(metadataTree).length === 0) {
 			return [];
 		}
