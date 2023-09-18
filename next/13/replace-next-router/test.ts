@@ -2,12 +2,9 @@ import { Context } from 'mocha';
 import { handleSourceFile } from './index.js';
 import { Project } from 'ts-morph';
 import { deepStrictEqual } from 'node:assert';
+import { extname } from 'node:path';
 
-const transform = (
-	beforeText: string,
-	afterText: string,
-	extension: '.js' | '.tsx',
-) => {
+const transform = (beforeText: string, afterText: string, path: string) => {
 	const project = new Project({
 		useInMemoryFileSystem: true,
 		skipFileDependencyResolution: true,
@@ -16,14 +13,12 @@ const transform = (
 		},
 	});
 
-	const actualSourceFile = project.createSourceFile(
-		`actual${extension}`,
-		beforeText,
-	);
+	const actualSourceFile = project.createSourceFile(path, beforeText);
+
 	const actual = handleSourceFile(actualSourceFile)?.replace(/\s/gm, '');
 
 	const expected = project
-		.createSourceFile(`expected${extension}`, afterText)
+		.createSourceFile(`expected${extname(path)}`, afterText)
 		.getFullText()
 		.replace(/\s/gm, '');
 
@@ -57,7 +52,11 @@ describe('next 13 replace-next-router', function () {
 			}
 	    `;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -83,7 +82,11 @@ describe('next 13 replace-next-router', function () {
 			}
 	      `;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -111,7 +114,11 @@ describe('next 13 replace-next-router', function () {
 			}
 	      `;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -139,7 +146,11 @@ describe('next 13 replace-next-router', function () {
 			}
 			`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -165,7 +176,11 @@ describe('next 13 replace-next-router', function () {
 			}
 			`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 		deepStrictEqual(actual, expected);
 	});
 
@@ -193,7 +208,11 @@ describe('next 13 replace-next-router', function () {
 			}
 	      `;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -220,7 +239,11 @@ describe('next 13 replace-next-router', function () {
 			}
 			`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -253,7 +276,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -294,7 +321,11 @@ describe('next 13 replace-next-router', function () {
 
 		// TODO useMemo second parameter -> searchParams if at all
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -324,7 +355,11 @@ describe('next 13 replace-next-router', function () {
 			}
 	      `;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -343,7 +378,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -363,7 +402,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -383,7 +426,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -397,7 +444,7 @@ describe('next 13 replace-next-router', function () {
 			import './index.css';
 		`;
 
-		const { actual } = transform(beforeText, afterText, '.tsx');
+		const { actual } = transform(beforeText, afterText, 'index.tsx');
 
 		deepStrictEqual(actual, undefined);
 	});
@@ -427,7 +474,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -449,7 +500,11 @@ describe('next 13 replace-next-router', function () {
 			}
 	      `;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -473,7 +528,11 @@ describe('next 13 replace-next-router', function () {
 			}
 	      `;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -496,7 +555,11 @@ describe('next 13 replace-next-router', function () {
 	        }
 	    `;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -521,7 +584,11 @@ describe('next 13 replace-next-router', function () {
 	        }
 	      `;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -544,7 +611,11 @@ describe('next 13 replace-next-router', function () {
 			}
 	      `;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -568,7 +639,11 @@ describe('next 13 replace-next-router', function () {
 			}
 	      `;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -591,7 +666,11 @@ describe('next 13 replace-next-router', function () {
 			}
 	      `;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -614,7 +693,11 @@ describe('next 13 replace-next-router', function () {
 			}
 	      `;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -637,7 +720,11 @@ describe('next 13 replace-next-router', function () {
 			}
 	      `;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -664,7 +751,11 @@ describe('next 13 replace-next-router', function () {
 			}
 	      `;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -687,7 +778,11 @@ describe('next 13 replace-next-router', function () {
 			}
 	      `;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -712,7 +807,11 @@ describe('next 13 replace-next-router', function () {
 			}
 	      `;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -726,7 +825,7 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual } = transform(beforeText, beforeText, '.tsx');
+		const { actual } = transform(beforeText, beforeText, 'index.tsx');
 
 		deepStrictEqual(actual, undefined);
 	});
@@ -759,7 +858,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -788,7 +891,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -818,7 +925,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -845,7 +956,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -872,7 +987,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -902,7 +1021,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -932,7 +1055,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -968,7 +1095,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.js');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.js',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -1002,7 +1133,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.js');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.js',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -1038,7 +1173,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.js');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.js',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -1066,7 +1205,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.js');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.js',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -1096,7 +1239,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.js');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.js',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -1141,7 +1288,11 @@ describe('next 13 replace-next-router', function () {
 
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.js');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.js',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -1166,7 +1317,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.js');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.js',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -1188,7 +1343,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.js');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.js',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -1238,7 +1397,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -1272,7 +1435,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -1305,7 +1472,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -1338,7 +1509,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -1364,7 +1539,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -1395,7 +1574,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -1421,7 +1604,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -1445,7 +1632,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -1480,7 +1671,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -1515,7 +1710,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -1546,7 +1745,11 @@ describe('next 13 replace-next-router', function () {
 				return null;}
 				`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -1574,7 +1777,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -1602,7 +1809,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -1618,7 +1829,11 @@ describe('next 13 replace-next-router', function () {
 			function(router: AppRouterInstance) {}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -1644,7 +1859,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -1668,7 +1887,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -1692,7 +1915,11 @@ describe('next 13 replace-next-router', function () {
 		}
 	`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -1722,7 +1949,11 @@ describe('next 13 replace-next-router', function () {
 		}
 	`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -1779,7 +2010,11 @@ describe('next 13 replace-next-router', function () {
 			}, [searchParams, router]);
 		}`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -1821,7 +2056,11 @@ describe('next 13 replace-next-router', function () {
 				: obj;
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -1847,7 +2086,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -1888,7 +2131,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -1919,7 +2166,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -1954,7 +2205,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -2000,7 +2255,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -2032,7 +2291,11 @@ describe('next 13 replace-next-router', function () {
 		
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -2070,7 +2333,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -2098,7 +2365,11 @@ describe('next 13 replace-next-router', function () {
 			}
 	    `;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -2128,7 +2399,11 @@ describe('next 13 replace-next-router', function () {
 			}
 	    `;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -2156,7 +2431,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -2186,7 +2465,11 @@ describe('next 13 replace-next-router', function () {
 			}
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
@@ -2204,7 +2487,11 @@ describe('next 13 replace-next-router', function () {
 			}));
 		`;
 
-		const { actual, expected } = transform(beforeText, afterText, '.tsx');
+		const { actual, expected } = transform(
+			beforeText,
+			afterText,
+			'index.tsx',
+		);
 
 		deepStrictEqual(actual, expected);
 	});
