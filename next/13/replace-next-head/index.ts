@@ -1733,7 +1733,7 @@ const getTsCompilerOptions = async (api: FileAPI, baseUrl: string) => {
 		const configWithoutComments = tsConfigStr.replace(/^\s*?\/\/.*$/gm, '');
 		return JSON.parse(configWithoutComments).compilerOptions;
 	} catch (e) {
-		// console.error(e);
+		console.error(e);
 		return {};
 	}
 };
