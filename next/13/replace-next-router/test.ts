@@ -2496,7 +2496,7 @@ describe('next 13 replace-next-router', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it('x', () => {
+	it('should simplify getParam(x) if the file path contains dynamic segments', () => {
 		const beforeText = `
 			import { useRouter } from "next/router";
 				
