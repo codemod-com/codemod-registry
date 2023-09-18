@@ -712,6 +712,99 @@ Checkout my React component:
 		);
 	});
 
+	it('should create generateMetadata function if Page props referenced in child metadata: props on Page', async function (this: Context) {
+		const A_CONTENT = `
+		import Head from 'next/head';
+		import { E } from '../../constants';
+		
+		export default function Page({ p1, p2 }) {
+			const { a: { b }} = c();
+			const t = d();
+			
+			return <>
+			<Head>
+				<title> {b
+					? t("a", {
+							a: p1.a,
+							b: p2.a,
+						})
+					: t("a", {
+							a: p1.a,
+							b: p2.a,
+						})}{" "}
+				| {E}</title>
+			</Head>
+			</>;
+		}
+`;
+
+		const [command] = await transform({
+			'/opt/project/pages/a/index.tsx': A_CONTENT,
+			'/opt/project/constants.tsx': '',
+		});
+
+		const expectedResult = `
+		import { Metadata } from "next";
+
+		import Head from 'next/head';
+		import { E } from '../../constants';
+
+		export default function Page({ p1, p2 }) {
+			const { a: { b }} = c();
+			const t = d();
+
+			return <>
+			<Head>
+					<title> {b
+						? t("a", {
+								a: p1.a,
+								b: p2.a,
+							})
+						: t("a", {
+								a: p1.a,
+								b: p2.a,
+						})}{" "}
+				  | {E}</title>
+			</Head>
+		</>;
+		}
+
+export async function generateMetadata(
+		{ params }: { params: Record<string, string | string[]>; },
+		): Promise<Metadata> {
+				const getStaticPropsResult  = await getStaticProps({ params });
+
+				if (!('props' in getStaticPropsResult)) {
+								return {}
+				}
+
+				const { p1, p2 } = getStaticPropsResult.props;
+				const t = d();
+				const { a: { b }} = c();
+
+				return { title: \` \${ b
+				?t("a", {
+					a: p1.a,
+					b: p2.a,
+				})
+				: t("a", {
+					a: p1.a,
+					b: p2.a,
+				})
+		}\${ " "}
+	| \${ E }\` };
+}`;
+
+		deepStrictEqual(command?.kind, 'upsertFile');
+		deepStrictEqual(command.path, '/opt/project/pages/a/index.tsx');
+
+		console.log(command.data, '?');
+		deepStrictEqual(
+			command.data.replace(/\s/gm, ''),
+			expectedResult.replace(/\s/gm, ''),
+		);
+	});
+
 	it('should create generateMetadata function if Page props referenced in child metadata: when props are not destructured', async function (this: Context) {
 		const A_CONTENT = `
 		import Meta from '../../components/a.tsx';
@@ -769,6 +862,8 @@ Checkout my React component:
 
 		deepStrictEqual(command?.kind, 'upsertFile');
 		deepStrictEqual(command.path, '/opt/project/pages/a/index.tsx');
+
+		console.log(command.data, '?');
 		deepStrictEqual(
 			command.data.replace(/\s/gm, ''),
 			expectedResult.replace(/\s/gm, ''),

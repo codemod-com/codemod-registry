@@ -171,6 +171,35 @@ const getStructure = (node: Node) => {
 
 const DEPENDENCY_TREE_MAX_DEPTH = 5;
 
+const getAncestorByDeclaration = (declarationNode: Node): Node | null => {
+	let ancestor: Node | null = null;
+
+	const parameter = Node.isParameterDeclaration(declarationNode)
+		? declarationNode
+		: declarationNode.getFirstAncestorByKind(SyntaxKind.Parameter);
+	const importDeclaration = declarationNode.getFirstAncestorByKind(
+		SyntaxKind.ImportDeclaration,
+	);
+
+	if (parameter !== undefined) {
+		ancestor = parameter;
+	} else if (importDeclaration !== undefined) {
+		ancestor = importDeclaration;
+	} else if (Node.isFunctionDeclaration(declarationNode)) {
+		ancestor = declarationNode;
+	} else if (Node.isVariableDeclaration(declarationNode)) {
+		// variable statement
+		ancestor = declarationNode.getParent()?.getParent() ?? null;
+	} else if (Node.isBindingElement(declarationNode)) {
+		ancestor =
+			declarationNode.getFirstAncestorByKind(
+				SyntaxKind.VariableStatement,
+			) ?? null;
+	}
+
+	return ancestor;
+};
+
 const getDependenciesForIdentifiers = (
 	identifiers: ReadonlyArray<Identifier>,
 	depth: number = 0,
@@ -192,7 +221,14 @@ const getDependenciesForIdentifiers = (
 			return;
 		}
 
-		const [firstDefinition] =
+		if (
+			Node.isPropertyAssignment(parent) &&
+			parent.getNameNode() === identifier
+		) {
+			return;
+		}
+
+		const [firstDeclaration] =
 			identifier.getSymbol()?.getDeclarations() ?? [];
 
 		const localSourceFile = identifier.getFirstAncestorByKind(
@@ -200,64 +236,14 @@ const getDependenciesForIdentifiers = (
 		);
 		// check if declaration exists in current sourceFile
 		if (
-			firstDefinition === undefined ||
-			firstDefinition.getFirstAncestorByKind(SyntaxKind.SourceFile) !==
+			firstDeclaration === undefined ||
+			firstDeclaration.getFirstAncestorByKind(SyntaxKind.SourceFile) !==
 				localSourceFile
 		) {
 			return;
 		}
 
-		const importDeclarationPresent = identifier
-			.getSourceFile()
-			.getImportDeclarations()
-			.some((importDeclaration) =>
-				importDeclaration
-					.getNamedImports()
-					.some(
-						(importSpecifier) =>
-							importSpecifier.getNameNode().getText() ===
-							identifier.getText(),
-					),
-			);
-
-		const syntaxKinds = [
-			SyntaxKind.Parameter,
-			SyntaxKind.VariableStatement,
-			SyntaxKind.ImportDeclaration,
-			SyntaxKind.FunctionDeclaration,
-		].filter(
-			(syntaxKind) =>
-				!importDeclarationPresent ||
-				syntaxKind === SyntaxKind.ImportDeclaration,
-		);
-
-		let ancestor: Node | null = null;
-
-		for (const syntaxKind of syntaxKinds) {
-			if (ancestor !== null) {
-				continue;
-			}
-
-			if (firstDefinition.getKind() === syntaxKind) {
-				ancestor = firstDefinition;
-			} else if (
-				syntaxKind === SyntaxKind.FunctionDeclaration &&
-				Node.isFunctionDeclaration(firstDefinition)
-			) {
-				ancestor = firstDefinition;
-			} else if (
-				syntaxKind === SyntaxKind.VariableStatement &&
-				Node.isVariableDeclaration(firstDefinition)
-			) {
-				ancestor = firstDefinition.getParent()?.getParent() ?? null;
-			} else if (
-				syntaxKind === SyntaxKind.Parameter ||
-				syntaxKind === SyntaxKind.ImportDeclaration
-			) {
-				ancestor =
-					firstDefinition.getFirstAncestorByKind(syntaxKind) ?? null;
-			}
-		}
+		const ancestor = getAncestorByDeclaration(firstDeclaration);
 
 		if (ancestor === null) {
 			return;
@@ -458,7 +444,10 @@ const handleHeadChildJsxElement = (
 
 			settingsContainer.set((prev) => ({
 				...prev,
-				dependencies: getDependenciesForIdentifiers(identifiers),
+				dependencies: {
+					...prev.dependencies,
+					...getDependenciesForIdentifiers(identifiers),
+				},
 			}));
 
 			if (Node.isTemplateExpression(expression)) {
