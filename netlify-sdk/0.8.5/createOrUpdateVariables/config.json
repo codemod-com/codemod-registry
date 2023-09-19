@@ -1,8 +1,5 @@
 {
 	"schemaVersion": "1.0.0",
 	"name": "netlify/0.8.5/createOrUpdateVariables",
-	"description": "This codemod changes createOrUpdateVariables to pass an object instead of the separate arguments",
-	"engine": "jscodeshift",
-	"dependencyVersionLowerThan": ["netlify", "0.8.5"],
-	"owner": "intuita"
+	"engine": "jscodeshift"
 }

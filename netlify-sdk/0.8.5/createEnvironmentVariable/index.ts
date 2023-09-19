@@ -1,4 +1,9 @@
 import type { FileInfo, API } from 'jscodeshift';
+
+const isNeitherNullNorUndefined = <T>(
+	t: NonNullable<T> | null | undefined,
+): t is NonNullable<T> => t !== null && t !== undefined;
+
 export default function transform(
 	file: FileInfo,
 	api: API,
@@ -36,7 +41,7 @@ export default function transform(
 						value: arg,
 					});
 				})
-				.filter((property) => property !== null),
+				.filter(isNeitherNullNorUndefined),
 		);
 
 		// Replace the arguments with the new object expression
