@@ -1,7 +1,7 @@
 import { FileInfo } from 'jscodeshift';
 import assert from 'node:assert';
 import transform from './index.js';
-import { buildApi } from '../utilities.js';
+import { buildApi } from '../../utilities.js';
 
 describe('remove-unused-feature-flags', function () {
 	it('should not change code without feature flags', function () {
