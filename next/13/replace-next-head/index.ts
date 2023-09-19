@@ -1622,17 +1622,17 @@ const mergeOrCreateImports = (
 
 	const importedModule =
 		importDeclarations.find((importDeclaration) => {
-			const oldSpecifierText = importDeclaration
+			const oldPathRelative = importDeclaration
 				.getModuleSpecifier()
-				.getText();
+				.getLiteralText();
 
-			// compare by absolute paths
-			const oldPath = resolveModuleName(
-				oldSpecifierText.substring(1, oldSpecifierText.length - 1),
-				path,
+			const oldPathAbsolute = resolveModuleName(oldPathRelative, path);
+
+			const moduleIsLibOrUnresolved = oldPathAbsolute === null;
+			return (
+				oldPathAbsolute === moduleSpecifier ||
+				(moduleIsLibOrUnresolved && oldPathRelative === moduleSpecifier)
 			);
-
-			return oldPath === moduleSpecifier;
 		}) ?? null;
 
 	const pathIsAbsolute = isAbsolute(moduleSpecifier);
