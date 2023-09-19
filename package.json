@@ -16,6 +16,7 @@
 		"@effect/schema": "0.26.1",
 		"@intuita-inc/repomod-engine-api": "^1.2.1",
 		"@types/chai": "^4.3.4",
+		"@types/eslint": "^8.44.2",
 		"@types/jscodeshift": "^0.11.6",
 		"@types/mocha": "^10.0.1",
 		"@types/node": "20.4.2",
@@ -54,5 +55,8 @@
 		"unist-util-filter": "^5.0.1",
 		"unist-util-visit": "^5.0.0"
 	},
-	"author": "Intuita"
+	"author": "Intuita",
+	"dependencies": {
+		"eslint-plugin-react-hooks": "^4.6.0"
+	}
 }
