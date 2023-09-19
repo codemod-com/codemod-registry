@@ -5,7 +5,7 @@ createOrUpdateVariables(accountId, siteId, variables)
 to
 
 createOrUpdateVariables({
-  accountId: accountId,
-  siteId: siteId,
-  key: variables
+accountId: accountId,
+siteId: siteId,
+key: variables
 })

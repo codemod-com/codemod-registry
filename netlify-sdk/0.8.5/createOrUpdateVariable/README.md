@@ -2,12 +2,11 @@ This codemod changes createOrUpdateVariable to pass an object instead of the sep
 
 createOrUpdateVariable(accountId, siteId, key, value)
 
-to 
+to
 
 createOrUpdateVariable({
-  accountId: accountId,
-  siteId: siteId,
-  key: key,
-  values: value
+accountId: accountId,
+siteId: siteId,
+key: key,
+values: value
 })
-

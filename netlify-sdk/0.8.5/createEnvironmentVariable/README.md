@@ -2,11 +2,11 @@ This codemod changes createEnvironmentVariable to pass an object instead of the 
 
 createEnvironmentVariable(accountId, siteId, key, values)
 
-to 
+to
 
 createEnvironmentVariable({
-  accountId: accountId,
-  siteId: siteId,
-  key: key,
-  values: values
+accountId: accountId,
+siteId: siteId,
+key: key,
+values: values
 })

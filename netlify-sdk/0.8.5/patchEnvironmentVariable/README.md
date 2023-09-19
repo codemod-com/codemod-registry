@@ -1,21 +1,21 @@
 This codemod changes patchEnvironmentVariable to pass an object instead of the separate arguments:
 
 patchEnvironmentVariable(
-    accountId,
-    siteId,
-    key,
-    context,
-    value,
-    contextParameter,
+accountId,
+siteId,
+key,
+context,
+value,
+contextParameter,
 )
 
-to 
+to
 
 patchEnvironmentVariable({
-    accountId: accountId,
-    siteId: siteId,
-    key: key,
-    context: context,
-    value: value,
-    contextParameter: contextParameter
+accountId: accountId,
+siteId: siteId,
+key: key,
+context: context,
+value: value,
+contextParameter: contextParameter
 })

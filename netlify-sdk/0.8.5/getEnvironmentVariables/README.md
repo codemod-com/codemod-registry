@@ -2,9 +2,9 @@ This codemod changes getEnvironmentVariables to pass an object instead of the se
 
 getEnvironmentVariables(accountId, siteId)
 
-to 
+to
 
 getEnvironmentVariables({
-  accountId: accountId,
-  siteId: siteId
+accountId: accountId,
+siteId: siteId
 })

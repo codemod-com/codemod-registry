@@ -2,10 +2,10 @@ This codemod changes deleteEnvironmentVariable to pass an object instead of the 
 
 deleteEnvironmentVariable(accountId, siteId, key)
 
-to 
+to
 
 deleteEnvironmentVariable({
-  accountId: accountId,
-  siteId: siteId,
-  key: key
+accountId: accountId,
+siteId: siteId,
+key: key
 })

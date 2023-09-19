@@ -2,11 +2,11 @@ This codemod changes updateEnvironmentVariable to pass an object instead of the 
 
 updateEnvironmentVariable(accountId, siteId, key, values)
 
-to 
+to
 
 updateEnvironmentVariable({
-  accountId: accountId,
-  siteId: siteId,
-  key: key,
-  values: values
+accountId: accountId,
+siteId: siteId,
+key: key,
+values: values
 })
