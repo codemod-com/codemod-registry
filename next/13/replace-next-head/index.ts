@@ -1784,6 +1784,12 @@ export const repomod: Repomod<Dependencies, Record<string, unknown>> = {
 				String(options.metadata ?? '{}'),
 			);
 
+			if (Object.entries(metadata ?? {}).length === 0) {
+				return {
+					kind: 'noop',
+				};
+			}
+
 			// check if we have dependency on component arguments after merging metadata
 			// if we have,it means that page probably gets props from data hooks
 			const param =
