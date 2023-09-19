@@ -3,14 +3,14 @@ import assert from 'node:assert';
 import transform from './index.js';
 import { buildApi } from '../../../utilities.js';
 
-describe('netlify 0.8.1 export zod', function () {
-	it('exports zod to netlify sdk', function () {
+describe('netlify 0.8.1 disableBuildEventHandlers', function () {
+	it('changes disableBuildhook to disableBuildEventHandlers', function () {
 		const INPUT = `
-            import { z } from 'zod';
+			await client.disableBuildhook(siteId);
         `;
 
 		const OUTPUT = `
-            import { z } from '@netlify/sdk'
+			await client.disableBuildEventHandlers(siteId);
 		`;
 
 		const fileInfo: FileInfo = {
