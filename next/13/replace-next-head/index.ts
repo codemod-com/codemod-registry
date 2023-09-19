@@ -996,7 +996,7 @@ function formatObjectAsString(metadataObject: Record<string, any>) {
 		}
 	}
 
-	return `{ ${pairs.join(', \n')} }`;
+	return `{ \n ${pairs.join(', \n')} \n }`;
 }
 
 const buildMetadataStatement = (metadataObject: Record<string, unknown>) => {
