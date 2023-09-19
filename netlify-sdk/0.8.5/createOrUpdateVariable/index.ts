@@ -18,7 +18,7 @@ export default function transform(
 		if (
 			path.node.type !== 'CallExpression' ||
 			path.node.callee.type !== 'Identifier' ||
-			path.node.callee.name !== 'createEnvironmentVariable'
+			path.node.callee.name !== 'createOrUpdateVariable'
 		) {
 			return;
 		}

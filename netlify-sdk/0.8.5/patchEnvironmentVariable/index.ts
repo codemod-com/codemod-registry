@@ -18,7 +18,7 @@ export default function transform(
 		if (
 			path.node.type !== 'CallExpression' ||
 			path.node.callee.type !== 'Identifier' ||
-			path.node.callee.name !== 'createEnvironmentVariable'
+			path.node.callee.name !== 'patchEnvironmentVariable'
 		) {
 			return;
 		}
@@ -28,12 +28,19 @@ export default function transform(
 			path.node.arguments
 				.map((arg, i) => {
 					// Create a property from the identifier
-					if (i > 3 || arg.type === 'SpreadElement') {
+					if (i > 5 || arg.type === 'SpreadElement') {
 						return null;
 					}
 
 					const name =
-						['accountId', 'siteId', 'key', 'values'][i] ?? 'error';
+						[
+							'accountId',
+							'siteId',
+							'key',
+							'context',
+							'value',
+							'contextParameter',
+						][i] ?? 'error';
 
 					return j.property.from({
 						kind: 'init',
