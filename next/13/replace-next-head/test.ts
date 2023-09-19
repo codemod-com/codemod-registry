@@ -471,7 +471,6 @@ Checkout my React component:
 
 		const [command] = await transform({
 			'/opt/project/pages/a/index.tsx': A_CONTENT,
-			'/opt/project/constants.ts': '',
 		});
 
 		const expectedResult = `
