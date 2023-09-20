@@ -1,4 +1,4 @@
-# Export Zod
+# Rename disableBuildEventHandlers
 
 ## Description
 
