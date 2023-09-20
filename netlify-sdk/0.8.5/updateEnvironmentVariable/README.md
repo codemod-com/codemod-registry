@@ -9,18 +9,18 @@ This codemod changes `updateEnvironmentVariable` to pass an object instead of th
 ### Before
 
 ```jsx
-updateEnvironmentVariable(accountId, siteId, key, values)
+updateEnvironmentVariable(accountId, siteId, key, values);
 ```
 
 ### After
 
 ```jsx
 updateEnvironmentVariable({
-accountId: accountId,
-siteId: siteId,
-key: key,
-values: values
-})
+	accountId: accountId,
+	siteId: siteId,
+	key: key,
+	values: values,
+});
 ```
 
 ## Applicability Criteria
@@ -51,4 +51,4 @@ jscodeshift
 
 ### Links for more info
 
-- [Netlify SDK v0.8.5 Release Notes](https://sdk.netlify.com/release-notes/#085)
+-   [Netlify SDK v0.8.5 Release Notes](https://sdk.netlify.com/release-notes/#085)

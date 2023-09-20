@@ -9,16 +9,16 @@ This codemod changes `getEnvironmentVariables` to pass an object instead of the 
 ### Before
 
 ```jsx
-getEnvironmentVariables(accountId, siteId)
+getEnvironmentVariables(accountId, siteId);
 ```
 
 ### After
 
 ```jsx
 getEnvironmentVariables({
-accountId: accountId,
-siteId: siteId
-})
+	accountId: accountId,
+	siteId: siteId,
+});
 ```
 
 ## Applicability Criteria
@@ -49,4 +49,4 @@ jscodeshift
 
 ### Links for more info
 
-- [Netlify SDK v0.8.5 Release Notes](https://sdk.netlify.com/release-notes/#085)
+-   [Netlify SDK v0.8.5 Release Notes](https://sdk.netlify.com/release-notes/#085)

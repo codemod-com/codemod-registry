@@ -9,17 +9,17 @@ This codemod changes `deleteEnvironmentVariables` to pass an object instead of t
 ### Before
 
 ```jsx
-deleteEnvironmentVariables(accountId, siteId, variables)
+deleteEnvironmentVariables(accountId, siteId, variables);
 ```
 
 ### After
 
 ```jsx
 deleteEnvironmentVariables({
-accountId: accountId,
-siteId: siteId,
-variables: variables
-})
+	accountId: accountId,
+	siteId: siteId,
+	variables: variables,
+});
 ```
 
 ## Applicability Criteria
@@ -50,4 +50,4 @@ jscodeshift
 
 ### Links for more info
 
-- [Netlify SDK v0.8.5 Release Notes](https://sdk.netlify.com/release-notes/#085)
+-   [Netlify SDK v0.8.5 Release Notes](https://sdk.netlify.com/release-notes/#085)

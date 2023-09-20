@@ -10,26 +10,26 @@ This codemod changes `patchEnvironmentVariable` to pass an object instead of the
 
 ```jsx
 patchEnvironmentVariable(
-accountId,
-siteId,
-key,
-context,
-value,
-contextParameter,
-)
+	accountId,
+	siteId,
+	key,
+	context,
+	value,
+	contextParameter,
+);
 ```
 
 ### After
 
 ```jsx
 patchEnvironmentVariable({
-accountId: accountId,
-siteId: siteId,
-key: key,
-context: context,
-value: value,
-contextParameter: contextParameter
-})
+	accountId: accountId,
+	siteId: siteId,
+	key: key,
+	context: context,
+	value: value,
+	contextParameter: contextParameter,
+});
 ```
 
 ## Applicability Criteria
@@ -60,4 +60,4 @@ jscodeshift
 
 ### Links for more info
 
-- [Netlify SDK v0.8.5 Release Notes](https://sdk.netlify.com/release-notes/#085)
+-   [Netlify SDK v0.8.5 Release Notes](https://sdk.netlify.com/release-notes/#085)

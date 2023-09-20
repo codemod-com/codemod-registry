@@ -9,17 +9,17 @@ This codemod changes `createOrUpdateVariables` to pass an object instead of the 
 ### Before
 
 ```jsx
-createOrUpdateVariables(accountId, siteId, variables)
+createOrUpdateVariables(accountId, siteId, variables);
 ```
 
 ### After
 
 ```jsx
 createOrUpdateVariables({
-accountId: accountId,
-siteId: siteId,
-key: variables
-})
+	accountId: accountId,
+	siteId: siteId,
+	key: variables,
+});
 ```
 
 ## Applicability Criteria
@@ -50,4 +50,4 @@ jscodeshift
 
 ### Links for more info
 
-- [Netlify SDK v0.8.5 Release Notes](https://sdk.netlify.com/release-notes/#085)
+-   [Netlify SDK v0.8.5 Release Notes](https://sdk.netlify.com/release-notes/#085)
