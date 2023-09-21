@@ -454,6 +454,57 @@ Checkout my React component:
 		);
 	});
 
+	it('should move identifier definitions that are ImportDeclarations: should not copy dependencies multiple times ', async function (this: Context) {
+		const A_CONTENT = `
+		import Head from 'next/head';
+		import A from 'lib';
+		
+			export default function Page() {
+				return (<>
+					<Head>
+						<meta property="og:image" content={A} />
+						<meta property="twitter:image" content={A} />
+					</Head>
+					</>)
+			}
+		`;
+
+		const [command] = await transform({
+			'/opt/project/pages/a/index.tsx': A_CONTENT,
+		});
+
+		const expectedResult = `
+			import { Metadata } from "next";
+			import Head from 'next/head';
+			import A from 'lib';
+			
+			export const metadata: Metadata = {
+				openGraph: { 
+					images: [{ 
+						url: A 
+					}] 
+				} 
+			}
+			
+			export default function Page() {
+				return (<>
+					<Head>
+						<meta property="og:image" content={A} />
+						<meta property="twitter:image" content={A} />
+					</Head>
+				</>)
+			}
+		`;
+
+		deepStrictEqual(command?.kind, 'upsertFile');
+		deepStrictEqual(command.path, '/opt/project/pages/a/index.tsx');
+
+		deepStrictEqual(
+			command.data.replace(/\s/gm, ''),
+			expectedResult.replace(/\s/gm, ''),
+		);
+	});
+
 	it('should move identifier definitions that are ImportDeclarations: should not update moduleSpecifier if moving a library ', async function (this: Context) {
 		const A_CONTENT = `
 			import Meta from '../../components/a.tsx';
