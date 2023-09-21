@@ -5,6 +5,7 @@ import tsmorph, {
 	CallExpression,
 	Node,
 	SyntaxKind,
+	JsxOpeningElement,
 } from 'ts-morph';
 
 import type {
@@ -82,22 +83,67 @@ const handleImportSpecifier = (
 	});
 };
 
+const handleJsxOpeningElement = (
+	jsxOpeningElement: JsxOpeningElement,
+	translations: Set<string>,
+) => {
+	jsxOpeningElement.getAttributes().forEach((attribute) => {
+		if (!Node.isJsxAttribute(attribute)) {
+			return;
+		}
+
+		const initializer = attribute.getInitializer();
+
+		if (!Node.isStringLiteral(initializer)) {
+			return;
+		}
+
+		translations.add(initializer.getLiteralText());
+	});
+};
+
+const handleTransNamedImport = (
+	importSpecifier: ImportSpecifier,
+	translations: Set<string>,
+) => {
+	const nameNode = importSpecifier.getNameNode();
+
+	nameNode.findReferencesAsNodes().forEach((reference) => {
+		const parent = reference.getParent();
+
+		if (!Node.isJsxOpeningElement(parent)) {
+			return;
+		}
+
+		handleJsxOpeningElement(parent, translations);
+	});
+};
+
 const handleImportDeclaration = (
 	importDeclaration: ImportDeclaration,
 	translations: Set<string>,
 ) => {
-	if (
-		importDeclaration.getModuleSpecifier().getLiteralText() !==
-		'@calcom/lib/hooks/useLocale'
-	) {
-		return;
+	const moduleSpecifierText = importDeclaration
+		.getModuleSpecifier()
+		.getLiteralText();
+
+	if (moduleSpecifierText === '@calcom/lib/hooks/useLocale') {
+		importDeclaration
+			.getNamedImports()
+			.forEach((importSpecifier) =>
+				handleImportSpecifier(importSpecifier, translations),
+			);
 	}
 
-	importDeclaration
-		.getNamedImports()
-		.forEach((importSpecifier) =>
-			handleImportSpecifier(importSpecifier, translations),
-		);
+	if (moduleSpecifierText === 'next-i18next') {
+		const transNamedImport = importDeclaration
+			.getNamedImports()
+			.find((namedImport) => namedImport.getName() === 'Trans');
+
+		if (transNamedImport) {
+			handleTransNamedImport(transNamedImport, translations);
+		}
+	}
 };
 
 const handleSourceFile = (
