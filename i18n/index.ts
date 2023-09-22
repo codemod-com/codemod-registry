@@ -19,16 +19,46 @@ type Dependencies = Readonly<{
 	unifiedFileSystem: UnifiedFileSystem;
 }>;
 
-const TRANSLATION_FUNCTION_NAMES = ['t', 'language', 'translate'];
+const TRANSLATION_FUNCTION_NAMES = [
+	't',
+	'language',
+	'translate',
+	'getTextBody',
+] as const;
+type TranslationFunctionNames = (typeof TRANSLATION_FUNCTION_NAMES)[number];
 
-const handleCallExpression = (callExpression: CallExpression, state: State) => {
-	const translationKey = callExpression.getArguments()[0];
+const isTranslationFunctionName = (
+	str: string,
+): str is TranslationFunctionNames =>
+	TRANSLATION_FUNCTION_NAMES.includes(str as TranslationFunctionNames);
 
-	if (!Node.isStringLiteral(translationKey)) {
-		return;
-	}
+const handleCallExpression = (
+	callExpression: CallExpression,
+	name: TranslationFunctionNames,
+	state: State,
+) => {
+	const [arg1, arg2] = callExpression.getArguments();
 
-	state.translations.add(translationKey.getLiteralText());
+	const translationKeyArgs = name === 'getTextBody' ? [arg1, arg2] : [arg1];
+
+	translationKeyArgs.forEach((translationKeyArg) => {
+		if (Node.isStringLiteral(translationKeyArg)) {
+			state.translations.add(translationKeyArg.getLiteralText());
+		}
+
+		if (Node.isJsxExpression(translationKeyArg)) {
+			const expression = translationKeyArg.getExpression();
+
+			if (Node.isTemplateExpression(expression)) {
+				const templateHead = expression.getHead();
+
+				state.keyBeginnings.add(templateHead.compilerNode.text);
+				return;
+			}
+
+			return;
+		}
+	});
 };
 
 const handleJsxOpeningElement = (
@@ -119,13 +149,14 @@ const handleSourceFile = (sourceFile: SourceFile, state: State) => {
 	// handle t and language callExpressions
 	sourceFile
 		.getDescendantsOfKind(SyntaxKind.CallExpression)
-		.filter((callExpression) => {
+		.forEach((callExpression) => {
 			const name = getCallExpressionName(callExpression);
 
-			return name !== null && TRANSLATION_FUNCTION_NAMES.includes(name);
-		})
-		.forEach((callExpression) => {
-			handleCallExpression(callExpression, state);
+			if (name === null || !isTranslationFunctionName(name)) {
+				return;
+			}
+
+			handleCallExpression(callExpression, name, state);
 		});
 
 	return sourceFile;

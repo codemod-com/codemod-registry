@@ -118,6 +118,51 @@ describe('i18n remove unused translations', function () {
 		);
 	});
 
+	it("should support this.getTextBody('translationKey1', 'translationText2')", async function (this: Context) {
+		const A_CONTENT = `
+		import { useLocale } from "@calcom/lib/hooks/useLocale";
+		
+		export default class A extends B {
+			protected c() {
+				return {
+					text: this.getTextBody("key1", "key2"),
+				};
+			}
+		}
+	`;
+
+		const LOCALE_CONTENT = `
+	{
+		"key1": "key1",
+		"key2": "key2", 
+		"key3": "key3,
+	}	
+	`;
+
+		const [upsertDataCommand] = await transform({
+			'/opt/project/components/A.tsx': A_CONTENT,
+			'/opt/project/public/static/locales/en/common.json': LOCALE_CONTENT,
+		});
+
+		const expectedResult = `
+		{
+			"key1": "key1",
+			"key2": "key2",
+		}	
+		`;
+		deepStrictEqual(upsertDataCommand?.kind, 'upsertFile');
+
+		deepStrictEqual(
+			upsertDataCommand.path,
+			'/opt/project/public/static/locales/en/common.json',
+		);
+
+		deepStrictEqual(
+			upsertDataCommand.data.replace(/\W/gm, ''),
+			expectedResult.replace(/\W/gm, ''),
+		);
+	});
+
 	it("should support a.translate('translationKey')", async function (this: Context) {
 		const A_CONTENT = `
 		import { useLocale } from "@calcom/lib/hooks/useLocale";
@@ -200,10 +245,14 @@ describe('i18n remove unused translations', function () {
 		const A_CONTENT = `
 			import { Trans } from "next-i18next";
 			
-			const variable = "1";
-
+			const variable1 = "1";
+			const variable2 = "2";
+			
 			export default function A() {
-				return <Trans i18nKey={\`key\${variable}\`}></Trans>
+				return <>
+				<Trans i18nKey={\`key\${variable1}\`} ></Trans>
+				<p>{t(\`key\${variable2}\`)}</p>
+				</>
 			}
 		`;
 
