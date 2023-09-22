@@ -87,6 +87,18 @@ const handleImportDeclaration = (
 	}
 };
 
+const getCallExpressionName = (callExpression: CallExpression) => {
+	const expr = callExpression.getExpression();
+
+	if (Node.isIdentifier(expr)) {
+		return expr.getText();
+	} else if (Node.isPropertyAccessExpression(expr)) {
+		return expr.getNameNode().getText();
+	}
+
+	return null;
+};
+
 const handleSourceFile = (
 	sourceFile: SourceFile,
 	translations: Set<string>,
@@ -101,12 +113,9 @@ const handleSourceFile = (
 	sourceFile
 		.getDescendantsOfKind(SyntaxKind.CallExpression)
 		.filter((callExpression) => {
-			const expr = callExpression.getExpression();
+			const name = getCallExpressionName(callExpression);
 
-			return (
-				Node.isIdentifier(expr) &&
-				['t', 'language'].includes(expr.getText())
-			);
+			return name !== null && ['t', 'language'].includes(name);
 		})
 		.forEach((callExpression) => {
 			handleCallExpression(callExpression, translations);
