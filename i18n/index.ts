@@ -19,6 +19,8 @@ type Dependencies = Readonly<{
 	unifiedFileSystem: UnifiedFileSystem;
 }>;
 
+const TRANSLATION_FUNCTION_NAMES = ['t', 'language', 'translate'];
+
 const handleCallExpression = (callExpression: CallExpression, state: State) => {
 	const translationKey = callExpression.getArguments()[0];
 
@@ -120,7 +122,7 @@ const handleSourceFile = (sourceFile: SourceFile, state: State) => {
 		.filter((callExpression) => {
 			const name = getCallExpressionName(callExpression);
 
-			return name !== null && ['t', 'language'].includes(name);
+			return name !== null && TRANSLATION_FUNCTION_NAMES.includes(name);
 		})
 		.forEach((callExpression) => {
 			handleCallExpression(callExpression, state);
