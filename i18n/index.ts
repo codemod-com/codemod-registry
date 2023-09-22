@@ -4,6 +4,8 @@ import tsmorph, {
 	ImportSpecifier,
 	CallExpression,
 	Node,
+	SyntaxKind,
+	JsxOpeningElement,
 } from 'ts-morph';
 
 import type {
@@ -81,22 +83,67 @@ const handleImportSpecifier = (
 	});
 };
 
+const handleJsxOpeningElement = (
+	jsxOpeningElement: JsxOpeningElement,
+	translations: Set<string>,
+) => {
+	jsxOpeningElement.getAttributes().forEach((attribute) => {
+		if (!Node.isJsxAttribute(attribute)) {
+			return;
+		}
+
+		const initializer = attribute.getInitializer();
+
+		if (!Node.isStringLiteral(initializer)) {
+			return;
+		}
+
+		translations.add(initializer.getLiteralText());
+	});
+};
+
+const handleTransNamedImport = (
+	importSpecifier: ImportSpecifier,
+	translations: Set<string>,
+) => {
+	const nameNode = importSpecifier.getNameNode();
+
+	nameNode.findReferencesAsNodes().forEach((reference) => {
+		const parent = reference.getParent();
+
+		if (!Node.isJsxOpeningElement(parent)) {
+			return;
+		}
+
+		handleJsxOpeningElement(parent, translations);
+	});
+};
+
 const handleImportDeclaration = (
 	importDeclaration: ImportDeclaration,
 	translations: Set<string>,
 ) => {
-	if (
-		importDeclaration.getModuleSpecifier().getLiteralText() !==
-		'@calcom/lib/hooks/useLocale'
-	) {
-		return;
+	const moduleSpecifierText = importDeclaration
+		.getModuleSpecifier()
+		.getLiteralText();
+
+	if (moduleSpecifierText === '@calcom/lib/hooks/useLocale') {
+		importDeclaration
+			.getNamedImports()
+			.forEach((importSpecifier) =>
+				handleImportSpecifier(importSpecifier, translations),
+			);
 	}
 
-	importDeclaration
-		.getNamedImports()
-		.forEach((importSpecifier) =>
-			handleImportSpecifier(importSpecifier, translations),
-		);
+	if (moduleSpecifierText === 'next-i18next') {
+		const transNamedImport = importDeclaration
+			.getNamedImports()
+			.find((namedImport) => namedImport.getName() === 'Trans');
+
+		if (transNamedImport) {
+			handleTransNamedImport(transNamedImport, translations);
+		}
+	}
 };
 
 const handleSourceFile = (
@@ -127,8 +174,35 @@ const buildSourceFile = (
 	return project.createSourceFile(String(path), String(data));
 };
 
+const handleLocaleFile = (
+	sourceFile: SourceFile,
+	translations: Set<string>,
+) => {
+	const objectLiteralExpression = sourceFile.getDescendantsOfKind(
+		SyntaxKind.ObjectLiteralExpression,
+	)[0];
+
+	objectLiteralExpression?.getProperties().forEach((propertyAssignment) => {
+		if (!Node.isPropertyAssignment(propertyAssignment)) {
+			return;
+		}
+
+		const nameNode = propertyAssignment.getNameNode();
+
+		if (!Node.isStringLiteral(nameNode)) {
+			return;
+		}
+
+		const name = nameNode.getLiteralText();
+
+		if (!translations.has(name)) {
+			propertyAssignment.remove();
+		}
+	});
+};
+
 export const repomod: Repomod<Dependencies, Record<string, unknown>> = {
-	includePatterns: ['**/*.{js,jsx,ts,tsx,cjs,mjs}'],
+	includePatterns: ['**/*.{js,jsx,ts,tsx,cjs,mjs,json}'],
 	excludePatterns: ['**/node_modules/**'],
 	initializeState: async (_, previousState) => {
 		return (
@@ -158,13 +232,29 @@ export const repomod: Repomod<Dependencies, Record<string, unknown>> = {
 
 		const translations = state.translations as Set<string>;
 
-		if (translations.size === 0) {
+		if (!state.translationsCollected) {
 			const { tsmorph } = api.getDependencies();
 
 			handleSourceFile(
 				buildSourceFile(tsmorph, data, path),
 				translations,
 			);
+		}
+
+		if (
+			state.translationsCollected &&
+			translations.size !== 0 &&
+			path.includes('public/static/locales')
+		) {
+			const sourceFile = buildSourceFile(tsmorph, `(${data})`, path);
+			handleLocaleFile(sourceFile, translations);
+			const fullText = sourceFile.getFullText();
+
+			return {
+				kind: 'upsertData',
+				path,
+				data: sourceFile.getFullText().slice(1, fullText.length - 1),
+			};
 		}
 
 		return {
