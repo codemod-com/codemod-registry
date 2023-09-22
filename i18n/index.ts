@@ -6,6 +6,7 @@ import tsmorph, {
 	Node,
 	SyntaxKind,
 	JsxOpeningElement,
+	TemplateExpression,
 } from 'ts-morph';
 
 import type {
@@ -32,6 +33,37 @@ const isTranslationFunctionName = (
 ): str is TranslationFunctionNames =>
 	TRANSLATION_FUNCTION_NAMES.includes(str as TranslationFunctionNames);
 
+const getValidTemplateHeadText = (
+	expression: TemplateExpression,
+): string | null => {
+	const { text } = expression.getHead().compilerNode;
+
+	return text.length !== 0 ? text : null;
+};
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const getValidTemplateTailText = (
+	expression: TemplateExpression,
+): string | null => {
+	const spans = expression.getTemplateSpans();
+
+	const lastSpan = spans[spans.length - 1] ?? null;
+
+	if (lastSpan === null) {
+		return null;
+	}
+
+	const literal = lastSpan.getLiteral();
+
+	if (!Node.isTemplateTail(literal)) {
+		return null;
+	}
+
+	const { text } = literal.compilerNode;
+
+	return text.length !== 0 ? text : null;
+};
+
 const handleCallExpression = (
 	callExpression: CallExpression,
 	name: TranslationFunctionNames,
@@ -47,12 +79,10 @@ const handleCallExpression = (
 		}
 
 		if (Node.isTemplateExpression(translationKeyArg)) {
-			const templateHead = translationKeyArg.getHead();
+			const text = getValidTemplateHeadText(translationKeyArg);
 
-			const text = templateHead.compilerNode.text;
-
-			if (text.length !== 0) {
-				state.keyBeginnings.add(templateHead.compilerNode.text);
+			if (text !== null) {
+				state.keyBeginnings.add(text);
 			}
 		}
 
@@ -93,11 +123,9 @@ const handleJsxOpeningElement = (
 			const expression = initializer.getExpression();
 
 			if (Node.isTemplateExpression(expression)) {
-				const templateHead = expression.getHead();
+				const text = getValidTemplateHeadText(expression);
 
-				const text = templateHead.compilerNode.text;
-
-				if (text.length !== 0) {
+				if (text !== null) {
 					state.keyBeginnings.add(text);
 				}
 				return;
