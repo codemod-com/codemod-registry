@@ -19,68 +19,17 @@ type Dependencies = Readonly<{
 	unifiedFileSystem: UnifiedFileSystem;
 }>;
 
-const handleTReference = (reference: Node, translations: Set<string>) => {
-	const parent = reference.getParent();
-
-	if (!(Node.isIdentifier(reference) && Node.isCallExpression(parent))) {
-		return;
-	}
-
-	const translationKey = parent.getArguments()[0];
+const handleCallExpression = (
+	callExpression: CallExpression,
+	translations: Set<string>,
+) => {
+	const translationKey = callExpression.getArguments()[0];
 
 	if (!Node.isStringLiteral(translationKey)) {
 		return;
 	}
 
 	translations.add(translationKey.getLiteralText());
-};
-
-const handleCallExpression = (
-	callExpression: CallExpression,
-	translations: Set<string>,
-) => {
-	const maybeVariableDeclaration = callExpression.getParent();
-
-	if (Node.isVariableDeclaration(maybeVariableDeclaration)) {
-		const nameNode = maybeVariableDeclaration.getNameNode();
-
-		if (Node.isObjectBindingPattern(nameNode)) {
-			nameNode.getElements().forEach((el) => {
-				const nameNode = el.getNameNode();
-
-				if (
-					!(Node.isIdentifier(nameNode) && nameNode.getText() === 't')
-				) {
-					return;
-				}
-
-				nameNode.findReferencesAsNodes().forEach((reference) => {
-					handleTReference(reference, translations);
-				});
-			});
-		}
-	}
-};
-
-const handleImportSpecifier = (
-	importSpecifier: ImportSpecifier,
-	translations: Set<string>,
-) => {
-	if (importSpecifier.getName() !== 'useLocale') {
-		return;
-	}
-
-	const nameNode = importSpecifier.getNameNode();
-
-	nameNode.findReferencesAsNodes().forEach((reference) => {
-		const parent = reference.getParent();
-
-		if (!Node.isCallExpression(parent)) {
-			return;
-		}
-
-		handleCallExpression(parent, translations);
-	});
 };
 
 const handleJsxOpeningElement = (
@@ -127,14 +76,6 @@ const handleImportDeclaration = (
 		.getModuleSpecifier()
 		.getLiteralText();
 
-	if (moduleSpecifierText === '@calcom/lib/hooks/useLocale') {
-		importDeclaration
-			.getNamedImports()
-			.forEach((importSpecifier) =>
-				handleImportSpecifier(importSpecifier, translations),
-			);
-	}
-
 	if (moduleSpecifierText === 'next-i18next') {
 		const transNamedImport = importDeclaration
 			.getNamedImports()
@@ -155,6 +96,22 @@ const handleSourceFile = (
 		.forEach((importDeclaration) =>
 			handleImportDeclaration(importDeclaration, translations),
 		);
+
+	// handle t and language callExpressions
+	sourceFile
+		.getDescendantsOfKind(SyntaxKind.CallExpression)
+		.filter((callExpression) => {
+			const expr = callExpression.getExpression();
+
+			return (
+				Node.isIdentifier(expr) &&
+				['t', 'language'].includes(expr.getText())
+			);
+		})
+		.forEach((callExpression) => {
+			handleCallExpression(callExpression, translations);
+		});
+
 	return sourceFile;
 };
 
