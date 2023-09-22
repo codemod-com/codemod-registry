@@ -19,22 +19,19 @@ type Dependencies = Readonly<{
 	unifiedFileSystem: UnifiedFileSystem;
 }>;
 
-const handleCallExpression = (
-	callExpression: CallExpression,
-	translations: Set<string>,
-) => {
+const handleCallExpression = (callExpression: CallExpression, state: State) => {
 	const translationKey = callExpression.getArguments()[0];
 
 	if (!Node.isStringLiteral(translationKey)) {
 		return;
 	}
 
-	translations.add(translationKey.getLiteralText());
+	state.translations.add(translationKey.getLiteralText());
 };
 
 const handleJsxOpeningElement = (
 	jsxOpeningElement: JsxOpeningElement,
-	translations: Set<string>,
+	state: State,
 ) => {
 	jsxOpeningElement.getAttributes().forEach((attribute) => {
 		if (!Node.isJsxAttribute(attribute)) {
@@ -43,17 +40,28 @@ const handleJsxOpeningElement = (
 
 		const initializer = attribute.getInitializer();
 
-		if (!Node.isStringLiteral(initializer)) {
+		if (Node.isStringLiteral(initializer)) {
+			state.translations.add(initializer.getLiteralText());
 			return;
 		}
 
-		translations.add(initializer.getLiteralText());
+		if (Node.isJsxExpression(initializer)) {
+			const expression = initializer.getExpression();
+
+			if (Node.isTemplateExpression(expression)) {
+				const templateHead = expression.getHead();
+
+				state.keyBeginnings.add(templateHead.compilerNode.text);
+				return;
+			}
+			return;
+		}
 	});
 };
 
 const handleTransNamedImport = (
 	importSpecifier: ImportSpecifier,
-	translations: Set<string>,
+	state: State,
 ) => {
 	const nameNode = importSpecifier.getNameNode();
 
@@ -64,13 +72,13 @@ const handleTransNamedImport = (
 			return;
 		}
 
-		handleJsxOpeningElement(parent, translations);
+		handleJsxOpeningElement(parent, state);
 	});
 };
 
 const handleImportDeclaration = (
 	importDeclaration: ImportDeclaration,
-	translations: Set<string>,
+	state: State,
 ) => {
 	const moduleSpecifierText = importDeclaration
 		.getModuleSpecifier()
@@ -82,7 +90,7 @@ const handleImportDeclaration = (
 			.find((namedImport) => namedImport.getName() === 'Trans');
 
 		if (transNamedImport) {
-			handleTransNamedImport(transNamedImport, translations);
+			handleTransNamedImport(transNamedImport, state);
 		}
 	}
 };
@@ -99,14 +107,11 @@ const getCallExpressionName = (callExpression: CallExpression) => {
 	return null;
 };
 
-const handleSourceFile = (
-	sourceFile: SourceFile,
-	translations: Set<string>,
-) => {
+const handleSourceFile = (sourceFile: SourceFile, state: State) => {
 	sourceFile
 		.getImportDeclarations()
 		.forEach((importDeclaration) =>
-			handleImportDeclaration(importDeclaration, translations),
+			handleImportDeclaration(importDeclaration, state),
 		);
 
 	// handle t and language callExpressions
@@ -118,7 +123,7 @@ const handleSourceFile = (
 			return name !== null && ['t', 'language'].includes(name);
 		})
 		.forEach((callExpression) => {
-			handleCallExpression(callExpression, translations);
+			handleCallExpression(callExpression, state);
 		});
 
 	return sourceFile;
@@ -140,10 +145,7 @@ const buildSourceFile = (
 	return project.createSourceFile(String(path), String(data));
 };
 
-const handleLocaleFile = (
-	sourceFile: SourceFile,
-	translations: Set<string>,
-) => {
+const handleLocaleFile = (sourceFile: SourceFile, state: State) => {
 	const objectLiteralExpression = sourceFile.getDescendantsOfKind(
 		SyntaxKind.ObjectLiteralExpression,
 	)[0];
@@ -161,19 +163,34 @@ const handleLocaleFile = (
 
 		const name = nameNode.getLiteralText();
 
-		if (!translations.has(name)) {
-			propertyAssignment.remove();
+		for (const keyBeginning of state.keyBeginnings) {
+			if (name.startsWith(keyBeginning)) {
+				return;
+			}
 		}
+
+		if (state.translations.has(name)) {
+			return;
+		}
+
+		propertyAssignment.remove();
 	});
 };
 
-export const repomod: Repomod<Dependencies, Record<string, unknown>> = {
+type State = {
+	translations: Set<string>;
+	keyBeginnings: Set<string>;
+	translationsCollected: boolean;
+};
+
+export const repomod: Repomod<Dependencies, State> = {
 	includePatterns: ['**/*.{js,jsx,ts,tsx,cjs,mjs,json}'],
 	excludePatterns: ['**/node_modules/**'],
 	initializeState: async (_, previousState) => {
 		return (
 			previousState ?? {
 				translations: new Set(),
+				keyBeginnings: new Set(),
 				translationsCollected: false,
 			}
 		);
@@ -196,24 +213,19 @@ export const repomod: Repomod<Dependencies, Record<string, unknown>> = {
 			};
 		}
 
-		const translations = state.translations as Set<string>;
-
 		if (!state.translationsCollected) {
 			const { tsmorph } = api.getDependencies();
 
-			handleSourceFile(
-				buildSourceFile(tsmorph, data, path),
-				translations,
-			);
+			handleSourceFile(buildSourceFile(tsmorph, data, path), state);
 		}
 
 		if (
 			state.translationsCollected &&
-			translations.size !== 0 &&
+			(state.translations.size !== 0 || state.keyBeginnings.size !== 0) &&
 			path.includes('public/static/locales')
 		) {
 			const sourceFile = buildSourceFile(tsmorph, `(${data})`, path);
-			handleLocaleFile(sourceFile, translations);
+			handleLocaleFile(sourceFile, state);
 			const fullText = sourceFile.getFullText();
 
 			return {
