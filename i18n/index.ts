@@ -49,7 +49,11 @@ const handleCallExpression = (
 		if (Node.isTemplateExpression(translationKeyArg)) {
 			const templateHead = translationKeyArg.getHead();
 
-			state.keyBeginnings.add(templateHead.compilerNode.text);
+			const text = templateHead.compilerNode.text;
+
+			if (text.length !== 0) {
+				state.keyBeginnings.add(templateHead.compilerNode.text);
+			}
 		}
 
 		if (
@@ -91,7 +95,11 @@ const handleJsxOpeningElement = (
 			if (Node.isTemplateExpression(expression)) {
 				const templateHead = expression.getHead();
 
-				state.keyBeginnings.add(templateHead.compilerNode.text);
+				const text = templateHead.compilerNode.text;
+
+				if (text.length !== 0) {
+					state.keyBeginnings.add(text);
+				}
 				return;
 			}
 
@@ -269,7 +277,7 @@ export const repomod: Repomod<Dependencies, State> = {
 			};
 		}
 
-		if (!state.translationsCollected) {
+		if (!state.translationsCollected && !path.endsWith('.json')) {
 			const { tsmorph } = api.getDependencies();
 
 			handleSourceFile(buildSourceFile(tsmorph, data, path), state);
