@@ -10,7 +10,7 @@ describe('netlify 0.8.1 addBuildEventContext', function () {
         `;
 
 		const OUTPUT = `
-			integration.addBuildEventContext("onPreBuild", () => {});
+			integration.addBuildEventHandler("onPreBuild", () => {});
 		`;
 
 		const fileInfo: FileInfo = {
