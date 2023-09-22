@@ -45,14 +45,19 @@ describe('i18n remove unused translations', function () {
 		export default function A() {
 			const { t } = useLocale();
 			
-			return <p>{t('key1')}</p>
+			return <>
+			<p>{t('key_1')}</p>
+			<p>{t( a ? 'key_2' : 'key_3')}</p>
+			</>
 		}
 	`;
 
 		const LOCALE_CONTENT = `
 	{
-		"key1": "key1",
-		"key2": "key2"
+		"key_1": "key1",
+		"key_2": "key2",
+		"key_3": "key3",
+		"key_4": "key4",
 	}	
 	`;
 
@@ -63,7 +68,9 @@ describe('i18n remove unused translations', function () {
 
 		const expectedResult = `
 		{
-			"key1": "key1"
+			"key_1": "key1",
+			"key_2": "key2",
+			"key_3": "key3",
 		}	
 		`;
 		deepStrictEqual(upsertDataCommand?.kind, 'upsertFile');
@@ -84,14 +91,14 @@ describe('i18n remove unused translations', function () {
 		import { useLocale } from "@calcom/lib/hooks/useLocale";
 		
 		export default function A(props) {
-			return <p>{props.language('key1')}</p>
+			return <p>{props.language('key_1')}</p>
 		}
 	`;
 
 		const LOCALE_CONTENT = `
 	{
-		"key1": "key1",
-		"key2": "key2"
+		"key_1": "key1",
+		"key_2": "key2"
 	}	
 	`;
 
@@ -102,7 +109,52 @@ describe('i18n remove unused translations', function () {
 
 		const expectedResult = `
 		{
-			"key1": "key1"
+			"key_1": "key1"
+		}	
+		`;
+		deepStrictEqual(upsertDataCommand?.kind, 'upsertFile');
+
+		deepStrictEqual(
+			upsertDataCommand.path,
+			'/opt/project/public/static/locales/en/common.json',
+		);
+
+		deepStrictEqual(
+			upsertDataCommand.data.replace(/\W/gm, ''),
+			expectedResult.replace(/\W/gm, ''),
+		);
+	});
+
+	it("should support this.getTextBody('translationKey1', 'translationText2')", async function (this: Context) {
+		const A_CONTENT = `
+		import { useLocale } from "@calcom/lib/hooks/useLocale";
+		
+		export default class A extends B {
+			protected c() {
+				return {
+					text: this.getTextBody("key_1", "key_2"),
+				};
+			}
+		}
+	`;
+
+		const LOCALE_CONTENT = `
+	{
+		"key_1": "key1",
+		"key_2": "key2", 
+		"key_3": "key3,
+	}	
+	`;
+
+		const [upsertDataCommand] = await transform({
+			'/opt/project/components/A.tsx': A_CONTENT,
+			'/opt/project/public/static/locales/en/common.json': LOCALE_CONTENT,
+		});
+
+		const expectedResult = `
+		{
+			"key_1": "key1",
+			"key_2": "key2",
 		}	
 		`;
 		deepStrictEqual(upsertDataCommand?.kind, 'upsertFile');
@@ -123,14 +175,14 @@ describe('i18n remove unused translations', function () {
 		import { useLocale } from "@calcom/lib/hooks/useLocale";
 		
 		export default function A(props) {
-			return <p>{props.a.b.c.translate('key1')}</p>
+			return <p>{props.a.b.c.translate('key_1')}</p>
 		}
 	`;
 
 		const LOCALE_CONTENT = `
 	{
-		"key1": "key1",
-		"key2": "key2"
+		"key_1": "key1",
+		"key_2": "key2"
 	}	
 	`;
 
@@ -141,7 +193,7 @@ describe('i18n remove unused translations', function () {
 
 		const expectedResult = `
 		{
-			"key1": "key1"
+			"key_1": "key1"
 		}	
 		`;
 		deepStrictEqual(upsertDataCommand?.kind, 'upsertFile');
@@ -162,14 +214,14 @@ describe('i18n remove unused translations', function () {
 		import { Trans } from "next-i18next";
 		
 		export default function A() {
-			return <Trans i18nKey="key1"></Trans>
+			return <Trans i18nKey="key_1"></Trans>
 		}
 	`;
 
 		const LOCALE_CONTENT = `
 	{
-		"key1": "key1",
-		"key2": "key2"
+		"key_1": "key1",
+		"key_2": "key2"
 	}	
 	`;
 
@@ -180,7 +232,7 @@ describe('i18n remove unused translations', function () {
 
 		const expectedResult = `
 		{
-			"key1": "key1"
+			"key_1": "key1"
 		}	
 		`;
 		deepStrictEqual(upsertDataCommand?.kind, 'upsertFile');
@@ -200,18 +252,22 @@ describe('i18n remove unused translations', function () {
 		const A_CONTENT = `
 			import { Trans } from "next-i18next";
 			
-			const variable = "1";
-
+			const variable1 = "1";
+			const variable2 = "2";
+			
 			export default function A() {
-				return <Trans i18nKey={\`key\${variable}\`}></Trans>
+				return <>
+				<Trans i18nKey={\`key_\${variable1}\`} ></Trans>
+				<p>{t(\`key_\${variable2}\`)}</p>
+				</>
 			}
 		`;
 
 		const LOCALE_CONTENT = `
 			{
 				"aaakey": "aaakey",
-				"key1": "key1",
-				"key2": "key2"
+				"key_1": "key1",
+				"key_2": "key2"
 			}
 		`;
 
@@ -222,8 +278,8 @@ describe('i18n remove unused translations', function () {
 
 		const expectedResult = `
 			{
-				"key1": "key1",
-				"key2": "key2"
+				"key_1": "key1",
+				"key_2": "key2"
 			}
 		`;
 		deepStrictEqual(upsertDataCommand?.kind, 'upsertFile');
