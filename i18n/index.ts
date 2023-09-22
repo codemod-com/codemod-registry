@@ -62,7 +62,6 @@ const handleCallExpression = (
 					/^[a-z1-9]+(_[a-z1-9]+)*$/.test(s.getLiteralText()),
 				);
 
-			console.log('here');
 			keyLikeStringLiterals.forEach((literal) => {
 				state.translations.add(literal.getLiteralText());
 			});
