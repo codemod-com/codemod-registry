@@ -21,8 +21,8 @@ export default function transform(
 					path.node.callee.property.type === 'Identifier' &&
 					path.node.callee.property.name === 'addBuildHook'
 				) {
-					// Replace 'addBuildHook' with 'addBuildEventHandler'
-					path.node.callee.property.name = 'addBuildEventHandler';
+					// Replace 'addBuildHook' with 'addBuildEventContext'
+					path.node.callee.property.name = 'addBuildEventContext';
 				}
 			}
 		}
