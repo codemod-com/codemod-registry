@@ -294,4 +294,82 @@ describe('i18n remove unused translations', function () {
 			expectedResult.replace(/\W/gm, ''),
 		);
 	});
+
+	it('should support <Trans i18nKey={`${variable}_tail`}>', async function (this: Context) {
+		const A_CONTENT = `
+			import { Trans } from "next-i18next";
+			
+			const variable = "1";
+			
+			export default function A() {
+				return <>
+					<Trans i18nKey={\`\${variable}_tail\`} ></Trans>
+				</>
+			}
+		`;
+
+		const LOCALE_CONTENT = `
+			{
+				"unused_key": "",
+				"key_tail": "",
+			}
+		`;
+
+		const [upsertDataCommand] = await transform({
+			'/opt/project/components/A.tsx': A_CONTENT,
+			'/opt/project/public/static/locales/en/common.json': LOCALE_CONTENT,
+		});
+
+		const expectedResult = `
+			{
+				"key_tail": "",
+			}
+		`;
+		deepStrictEqual(upsertDataCommand?.kind, 'upsertFile');
+
+		deepStrictEqual(
+			upsertDataCommand.path,
+			'/opt/project/public/static/locales/en/common.json',
+		);
+
+		deepStrictEqual(
+			upsertDataCommand.data.replace(/\W/gm, ''),
+			expectedResult.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should support t(`${variable}_tail`)', async function (this: Context) {
+		const A_CONTENT = `
+			t(\`\${variable2}_tail\`);
+		`;
+
+		const LOCALE_CONTENT = `
+			{
+				"unused_key": "",
+				"key_tail": "",
+			}
+		`;
+
+		const [upsertDataCommand] = await transform({
+			'/opt/project/components/A.tsx': A_CONTENT,
+			'/opt/project/public/static/locales/en/common.json': LOCALE_CONTENT,
+		});
+
+		const expectedResult = `
+			{
+				"key_tail": "",
+			}
+		`;
+		deepStrictEqual(upsertDataCommand?.kind, 'upsertFile');
+
+		deepStrictEqual(
+			upsertDataCommand.path,
+			'/opt/project/public/static/locales/en/common.json',
+		);
+
+		deepStrictEqual(
+			upsertDataCommand.data.replace(/\W/gm, ''),
+			expectedResult.replace(/\W/gm, ''),
+		);
+	});
 });
