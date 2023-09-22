@@ -46,17 +46,26 @@ const handleCallExpression = (
 			state.translations.add(translationKeyArg.getLiteralText());
 		}
 
-		if (Node.isJsxExpression(translationKeyArg)) {
-			const expression = translationKeyArg.getExpression();
+		if (Node.isTemplateExpression(translationKeyArg)) {
+			const templateHead = translationKeyArg.getHead();
 
-			if (Node.isTemplateExpression(expression)) {
-				const templateHead = expression.getHead();
+			state.keyBeginnings.add(templateHead.compilerNode.text);
+		}
 
-				state.keyBeginnings.add(templateHead.compilerNode.text);
-				return;
-			}
+		if (
+			Node.isConditionalExpression(translationKeyArg) ||
+			Node.isBinaryExpression(translationKeyArg)
+		) {
+			const keyLikeStringLiterals = translationKeyArg
+				.getDescendantsOfKind(SyntaxKind.StringLiteral)
+				.filter((s) =>
+					/^[a-z1-9]+(_[a-z1-9]+)*$/.test(s.getLiteralText()),
+				);
 
-			return;
+			console.log('here');
+			keyLikeStringLiterals.forEach((literal) => {
+				state.translations.add(literal.getLiteralText());
+			});
 		}
 	});
 };
@@ -85,6 +94,21 @@ const handleJsxOpeningElement = (
 
 				state.keyBeginnings.add(templateHead.compilerNode.text);
 				return;
+			}
+
+			if (
+				Node.isConditionalExpression(expression) ||
+				Node.isBinaryExpression(expression)
+			) {
+				const keyLikeStringLiterals = expression
+					.getDescendantsOfKind(SyntaxKind.StringLiteral)
+					.filter((s) =>
+						/^[a-z]+(_[a-z]+)*$/.test(s.getLiteralText()),
+					);
+
+				keyLikeStringLiterals.forEach((literal) => {
+					state.translations.add(literal.getLiteralText());
+				});
 			}
 			return;
 		}
