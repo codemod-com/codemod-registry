@@ -6,6 +6,7 @@ import tsmorph, {
 	Node,
 	SyntaxKind,
 	JsxOpeningElement,
+	TemplateExpression,
 } from 'ts-morph';
 
 import type {
@@ -32,6 +33,37 @@ const isTranslationFunctionName = (
 ): str is TranslationFunctionNames =>
 	TRANSLATION_FUNCTION_NAMES.includes(str as TranslationFunctionNames);
 
+const getValidTemplateHeadText = (
+	expression: TemplateExpression,
+): string | null => {
+	const { text } = expression.getHead().compilerNode;
+
+	return text.length !== 0 ? text : null;
+};
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const getValidTemplateTailText = (
+	expression: TemplateExpression,
+): string | null => {
+	const spans = expression.getTemplateSpans();
+
+	const lastSpan = spans[spans.length - 1] ?? null;
+
+	if (lastSpan === null) {
+		return null;
+	}
+
+	const literal = lastSpan.getLiteral();
+
+	if (!Node.isTemplateTail(literal)) {
+		return null;
+	}
+
+	const { text } = literal.compilerNode;
+
+	return text.length !== 0 ? text : null;
+};
+
 const handleCallExpression = (
 	callExpression: CallExpression,
 	name: TranslationFunctionNames,
@@ -47,12 +79,10 @@ const handleCallExpression = (
 		}
 
 		if (Node.isTemplateExpression(translationKeyArg)) {
-			const templateHead = translationKeyArg.getHead();
+			const text = getValidTemplateHeadText(translationKeyArg);
 
-			const text = templateHead.compilerNode.text;
-
-			if (text.length !== 0) {
-				state.keyBeginnings.add(templateHead.compilerNode.text);
+			if (text !== null) {
+				state.keyHeads.add(text);
 			}
 		}
 
@@ -93,12 +123,10 @@ const handleJsxOpeningElement = (
 			const expression = initializer.getExpression();
 
 			if (Node.isTemplateExpression(expression)) {
-				const templateHead = expression.getHead();
+				const text = getValidTemplateHeadText(expression);
 
-				const text = templateHead.compilerNode.text;
-
-				if (text.length !== 0) {
-					state.keyBeginnings.add(text);
+				if (text !== null) {
+					state.keyHeads.add(text);
 				}
 				return;
 			}
@@ -227,7 +255,7 @@ const handleLocaleFile = (sourceFile: SourceFile, state: State) => {
 
 		const name = nameNode.getLiteralText();
 
-		for (const keyBeginning of state.keyBeginnings) {
+		for (const keyBeginning of state.keyHeads) {
 			if (name.startsWith(keyBeginning)) {
 				return;
 			}
@@ -243,7 +271,8 @@ const handleLocaleFile = (sourceFile: SourceFile, state: State) => {
 
 type State = {
 	translations: Set<string>;
-	keyBeginnings: Set<string>;
+	keyHeads: Set<string>;
+	keyTails: Set<string>;
 	translationsCollected: boolean;
 };
 
@@ -254,7 +283,8 @@ export const repomod: Repomod<Dependencies, State> = {
 		return (
 			previousState ?? {
 				translations: new Set(),
-				keyBeginnings: new Set(),
+				keyHeads: new Set(),
+				keyTails: new Set(),
 				translationsCollected: false,
 			}
 		);
@@ -285,7 +315,9 @@ export const repomod: Repomod<Dependencies, State> = {
 
 		if (
 			state.translationsCollected &&
-			(state.translations.size !== 0 || state.keyBeginnings.size !== 0) &&
+			(state.translations.size !== 0 ||
+				state.keyHeads.size !== 0 ||
+				state.keyTails.size !== 0) &&
 			path.includes('public/static/locales')
 		) {
 			const sourceFile = buildSourceFile(tsmorph, `(${data})`, path);
