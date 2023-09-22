@@ -82,7 +82,7 @@ const handleCallExpression = (
 			const text = getValidTemplateHeadText(translationKeyArg);
 
 			if (text !== null) {
-				state.keyBeginnings.add(text);
+				state.keyHeads.add(text);
 			}
 		}
 
@@ -126,7 +126,7 @@ const handleJsxOpeningElement = (
 				const text = getValidTemplateHeadText(expression);
 
 				if (text !== null) {
-					state.keyBeginnings.add(text);
+					state.keyHeads.add(text);
 				}
 				return;
 			}
@@ -255,7 +255,7 @@ const handleLocaleFile = (sourceFile: SourceFile, state: State) => {
 
 		const name = nameNode.getLiteralText();
 
-		for (const keyBeginning of state.keyBeginnings) {
+		for (const keyBeginning of state.keyHeads) {
 			if (name.startsWith(keyBeginning)) {
 				return;
 			}
@@ -271,7 +271,8 @@ const handleLocaleFile = (sourceFile: SourceFile, state: State) => {
 
 type State = {
 	translations: Set<string>;
-	keyBeginnings: Set<string>;
+	keyHeads: Set<string>;
+	keyTails: Set<string>;
 	translationsCollected: boolean;
 };
 
@@ -282,7 +283,8 @@ export const repomod: Repomod<Dependencies, State> = {
 		return (
 			previousState ?? {
 				translations: new Set(),
-				keyBeginnings: new Set(),
+				keyHeads: new Set(),
+				keyTails: new Set(),
 				translationsCollected: false,
 			}
 		);
@@ -313,7 +315,9 @@ export const repomod: Repomod<Dependencies, State> = {
 
 		if (
 			state.translationsCollected &&
-			(state.translations.size !== 0 || state.keyBeginnings.size !== 0) &&
+			(state.translations.size !== 0 ||
+				state.keyHeads.size !== 0 ||
+				state.keyTails.size !== 0) &&
 			path.includes('public/static/locales')
 		) {
 			const sourceFile = buildSourceFile(tsmorph, `(${data})`, path);
