@@ -49,7 +49,11 @@ const handleCallExpression = (
 		if (Node.isTemplateExpression(translationKeyArg)) {
 			const templateHead = translationKeyArg.getHead();
 
-			state.keyBeginnings.add(templateHead.compilerNode.text);
+			const text = templateHead.compilerNode.text;
+
+			if (text.length !== 0) {
+				state.keyBeginnings.add(templateHead.compilerNode.text);
+			}
 		}
 
 		if (
@@ -91,7 +95,11 @@ const handleJsxOpeningElement = (
 			if (Node.isTemplateExpression(expression)) {
 				const templateHead = expression.getHead();
 
-				state.keyBeginnings.add(templateHead.compilerNode.text);
+				const text = templateHead.compilerNode.text;
+
+				if (text.length !== 0) {
+					state.keyBeginnings.add(text);
+				}
 				return;
 			}
 
@@ -220,7 +228,7 @@ const handleLocaleFile = (sourceFile: SourceFile, state: State) => {
 		const name = nameNode.getLiteralText();
 
 		for (const keyBeginning of state.keyBeginnings) {
-			if (keyBeginning.length !== 0 && name.startsWith(keyBeginning)) {
+			if (name.startsWith(keyBeginning)) {
 				return;
 			}
 		}
