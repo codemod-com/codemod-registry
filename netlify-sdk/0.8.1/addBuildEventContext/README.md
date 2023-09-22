@@ -9,7 +9,7 @@ This codemod renames `addBuildContext` to `addBuildEventContext` as required in 
 ### Before
 
 ```jsx
-import { NetlifyIntegration } from '@netlify/sdk';
+import { NetlifyIntegration } from "@netlify/sdk";
 
 const integration = new NetlifyIntegration();
 
@@ -20,7 +20,7 @@ integration.addBuildContext(() => {});
 ### After
 
 ```jsx
-import { NetlifyIntegration } from '@netlify/sdk';
+import { NetlifyIntegration } from "@netlify/sdk";
 
 const integration = new NetlifyIntegration();
 
@@ -56,4 +56,4 @@ jscodeshift
 
 ### Links for more info
 
--   [Netlify SDK v0.8.1 Release Notes](https://sdk.netlify.com/release-notes/#081)
+- [Netlify SDK v0.8.1 Release Notes](https://sdk.netlify.com/release-notes/#081)

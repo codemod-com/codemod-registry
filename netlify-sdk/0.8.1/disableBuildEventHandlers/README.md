@@ -46,4 +46,4 @@ jscodeshift
 
 ### Links for more info
 
--   [Netlify SDK v0.8.1 Release Notes](https://sdk.netlify.com/release-notes/#081)
+- [Netlify SDK v0.8.1 Release Notes](https://sdk.netlify.com/release-notes/#081)
