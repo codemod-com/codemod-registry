@@ -118,7 +118,7 @@ describe('i18n remove unused translations', function () {
 		);
 	});
 
-	it("should support <Trans i18nKey='translationKey'", async function (this: Context) {
+	it("should support <Trans i18nKey='translationKey'>", async function (this: Context) {
 		const A_CONTENT = `
 		import { Trans } from "next-i18next";
 		
@@ -143,6 +143,49 @@ describe('i18n remove unused translations', function () {
 		{
 			"key1": "key1"
 		}	
+		`;
+		deepStrictEqual(upsertDataCommand?.kind, 'upsertFile');
+
+		deepStrictEqual(
+			upsertDataCommand.path,
+			'/opt/project/public/static/locales/en/common.json',
+		);
+
+		deepStrictEqual(
+			upsertDataCommand.data.replace(/\W/gm, ''),
+			expectedResult.replace(/\W/gm, ''),
+		);
+	});
+
+	it('should support <Trans i18nKey={`key${variable}`}>', async function (this: Context) {
+		const A_CONTENT = `
+			import { Trans } from "next-i18next";
+			
+			const variable = "1";
+
+			export default function A() {
+				return <Trans i18nKey={\`key\${variable}\`}></Trans>
+			}
+		`;
+
+		const LOCALE_CONTENT = `
+			{
+				"aaakey": "aaakey",
+				"key1": "key1",
+				"key2": "key2"
+			}
+		`;
+
+		const [upsertDataCommand] = await transform({
+			'/opt/project/components/A.tsx': A_CONTENT,
+			'/opt/project/public/static/locales/en/common.json': LOCALE_CONTENT,
+		});
+
+		const expectedResult = `
+			{
+				"key1": "key1",
+				"key2": "key2"
+			}
 		`;
 		deepStrictEqual(upsertDataCommand?.kind, 'upsertFile');
 
