@@ -220,7 +220,7 @@ const handleLocaleFile = (sourceFile: SourceFile, state: State) => {
 		const name = nameNode.getLiteralText();
 
 		for (const keyBeginning of state.keyBeginnings) {
-			if (name.startsWith(keyBeginning)) {
+			if (keyBeginning.length !== 0 && name.startsWith(keyBeginning)) {
 				return;
 			}
 		}
@@ -269,7 +269,7 @@ export const repomod: Repomod<Dependencies, State> = {
 			};
 		}
 
-		if (!state.translationsCollected) {
+		if (!state.translationsCollected && !path.endsWith('.json')) {
 			const { tsmorph } = api.getDependencies();
 
 			handleSourceFile(buildSourceFile(tsmorph, data, path), state);
