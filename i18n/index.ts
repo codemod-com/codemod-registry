@@ -64,6 +64,28 @@ const getValidTemplateTailText = (
 	return text.length !== 0 ? text : null;
 };
 
+const addTemplateHeadTextToKeyHeads = (
+	state: State,
+	templateExpression: TemplateExpression,
+) => {
+	const text = getValidTemplateHeadText(templateExpression);
+
+	if (text !== null) {
+		state.keyHeads.add(text);
+	}
+};
+
+const addTemplateTailTextToKeyTails = (
+	state: State,
+	templateExpression: TemplateExpression,
+) => {
+	const text = getValidTemplateTailText(templateExpression);
+
+	if (text !== null) {
+		state.keyTails.add(text);
+	}
+};
+
 const handleCallExpression = (
 	callExpression: CallExpression,
 	name: TranslationFunctionNames,
@@ -79,11 +101,8 @@ const handleCallExpression = (
 		}
 
 		if (Node.isTemplateExpression(translationKeyArg)) {
-			const text = getValidTemplateHeadText(translationKeyArg);
-
-			if (text !== null) {
-				state.keyHeads.add(text);
-			}
+			addTemplateHeadTextToKeyHeads(state, translationKeyArg);
+			addTemplateTailTextToKeyTails(state, translationKeyArg);
 		}
 
 		if (
@@ -123,11 +142,8 @@ const handleJsxOpeningElement = (
 			const expression = initializer.getExpression();
 
 			if (Node.isTemplateExpression(expression)) {
-				const text = getValidTemplateHeadText(expression);
-
-				if (text !== null) {
-					state.keyHeads.add(text);
-				}
+				addTemplateHeadTextToKeyHeads(state, expression);
+				addTemplateTailTextToKeyTails(state, expression);
 				return;
 			}
 
@@ -255,8 +271,14 @@ const handleLocaleFile = (sourceFile: SourceFile, state: State) => {
 
 		const name = nameNode.getLiteralText();
 
-		for (const keyBeginning of state.keyHeads) {
-			if (name.startsWith(keyBeginning)) {
+		for (const keyHead of state.keyHeads) {
+			if (name.startsWith(keyHead)) {
+				return;
+			}
+		}
+
+		for (const keyTail of state.keyTails) {
+			if (name.endsWith(keyTail)) {
 				return;
 			}
 		}
