@@ -104,10 +104,10 @@ const handleJSXElement = (
 
 		if (propValueNode) {
 			const propValue = propValueNode.getLiteralValue();
-
-			if (!isNotSnakeCase(propValue)) {
-				state.translations.add(propValue);
+			if (isNotSnakeCase(propValue)) {
+				return;
 			}
+			state.translations.add(propValue);
 		}
 	});
 };
