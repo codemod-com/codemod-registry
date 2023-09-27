@@ -7,6 +7,7 @@ import tsmorph, {
 	SyntaxKind,
 	JsxOpeningElement,
 	TemplateExpression,
+	JsxSelfClosingElement,
 } from 'ts-morph';
 
 import type {
@@ -19,6 +20,10 @@ type Dependencies = Readonly<{
 	tsmorph: typeof tsmorph;
 	unifiedFileSystem: UnifiedFileSystem;
 }>;
+
+const isNotSnakeCase = (str: string) => {
+	return /^[a-z]+(_[a-z]+)*$/.test(str);
+};
 
 const TRANSLATION_FUNCTION_NAMES = [
 	't',
@@ -84,6 +89,27 @@ const addTemplateTailTextToKeyTails = (
 	if (text !== null) {
 		state.keyTails.add(text);
 	}
+};
+
+const handleJSXElement = (
+	element: JsxSelfClosingElement | JsxOpeningElement,
+	state: State,
+) => {
+	const attributes = element.getAttributes();
+
+	attributes.forEach((attribute) => {
+		const propValueNode = attribute.getFirstChildByKind(
+			SyntaxKind.StringLiteral,
+		);
+
+		if (propValueNode) {
+			const propValue = propValueNode.getLiteralValue();
+			if (isNotSnakeCase(propValue)) {
+				return;
+			}
+			state.translations.add(propValue);
+		}
+	});
 };
 
 const handleCallExpression = (
@@ -153,9 +179,7 @@ const handleJsxOpeningElement = (
 			) {
 				const keyLikeStringLiterals = expression
 					.getDescendantsOfKind(SyntaxKind.StringLiteral)
-					.filter((s) =>
-						/^[a-z]+(_[a-z]+)*$/.test(s.getLiteralText()),
-					);
+					.filter((s) => isNotSnakeCase(s.getLiteralText()));
 
 				keyLikeStringLiterals.forEach((literal) => {
 					state.translations.add(literal.getLiteralText());
@@ -220,6 +244,24 @@ const handleSourceFile = (sourceFile: SourceFile, state: State) => {
 		.forEach((importDeclaration) =>
 			handleImportDeclaration(importDeclaration, state),
 		);
+
+	sourceFile
+		.getDescendantsOfKind(SyntaxKind.JsxSelfClosingElement)
+		.forEach((element) => {
+			if (element.getTagNameNode().getFullText().length === 0) {
+				return;
+			}
+			handleJSXElement(element, state);
+		});
+
+	sourceFile
+		.getDescendantsOfKind(SyntaxKind.JsxOpeningElement)
+		.forEach((element) => {
+			if (element.getTagNameNode().getFullText().length === 0) {
+				return;
+			}
+			handleJSXElement(element, state);
+		});
 
 	// handle t and language callExpressions
 	sourceFile

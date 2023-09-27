@@ -372,4 +372,44 @@ describe('i18n remove unused translations', function () {
 			expectedResult.replace(/\W/gm, ''),
 		);
 	});
+
+	it('should consider snake_case component props i18n keys>', async function (this: Context) {
+		const A_CONTENT = `			
+			export default function Component() {
+				return <Component a='key_1' b='key_2' c='name' />
+			}
+		`;
+
+		const LOCALE_CONTENT = `
+			{
+				"unused_key": "",
+				"key_1": "",
+				"key_2": "",
+			}
+		`;
+
+		const [upsertDataCommand] = await transform({
+			'/opt/project/components/A.tsx': A_CONTENT,
+			'/opt/project/public/static/locales/en/common.json': LOCALE_CONTENT,
+		});
+
+		const expectedResult = `
+			{
+				"key_1": "",
+				"key_2": "",
+			}
+		`;
+
+		deepStrictEqual(upsertDataCommand?.kind, 'upsertFile');
+
+		deepStrictEqual(
+			upsertDataCommand.path,
+			'/opt/project/public/static/locales/en/common.json',
+		);
+
+		deepStrictEqual(
+			upsertDataCommand.data.replace(/\W/gm, ''),
+			expectedResult.replace(/\W/gm, ''),
+		);
+	});
 });
