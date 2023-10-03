@@ -3,8 +3,8 @@ import { Repomod } from '@intuita-inc/repomod-engine-api';
 
 type Dependencies = Record<string, never>;
 type State = {
-	oldWorkspace: string;
-	newWorkspace: string;
+	oldNamespace: string;
+	newNamespace: string;
 	keys: ReadonlyArray<string>;
 	map: Map<string, string>;
 };
@@ -13,15 +13,15 @@ export const repomod: Repomod<Dependencies, State> = {
 	includePatterns: ['**/locales/**/*.json'],
 	excludePatterns: ['**/node_modules/**'],
 	initializeState: async (options) => {
-		const oldWorkspace = options['oldWorkspace'];
-		const newWorkspace = options['newWorkspace'];
+		const oldNamespace = options['oldNamespace'];
+		const newNamespace = options['newNamespace'];
 		const keys = options['keys'];
 
 		return {
-			oldWorkspace:
-				typeof oldWorkspace === 'string' ? oldWorkspace : 'common',
-			newWorkspace:
-				typeof newWorkspace === 'string' ? newWorkspace : 'new',
+			oldNamespace:
+				typeof oldNamespace === 'string' ? oldNamespace : 'common',
+			newNamespace:
+				typeof newNamespace === 'string' ? newNamespace : 'new',
 			keys: typeof keys === 'string' ? keys.split(',') : [],
 			map: new Map(),
 		};
@@ -33,7 +33,7 @@ export const repomod: Repomod<Dependencies, State> = {
 
 		const basename = api.getBasename(path);
 
-		if (basename !== `${state.oldWorkspace}.json`) {
+		if (basename !== `${state.oldNamespace}.json`) {
 			return [];
 		}
 
@@ -41,7 +41,7 @@ export const repomod: Repomod<Dependencies, State> = {
 			const dirname = api.getDirname(path);
 			const newPath = api.joinPaths(
 				dirname,
-				`${state.newWorkspace}.json`,
+				`${state.newNamespace}.json`,
 			);
 
 			const json = await api.readFile(path);

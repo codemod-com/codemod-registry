@@ -3,13 +3,13 @@
 	"engine": "repomod-engine",
 	"arguments": [
 		{
-			"name": "oldWorkspace",
+			"name": "oldNamespace",
 			"kind": "string",
 			"required": true,
 			"default": "common"
 		},
 		{
-			"name": "newWorkspace",
+			"name": "newNamespace",
 			"kind": "string",
 			"default": "new",
 			"required": true

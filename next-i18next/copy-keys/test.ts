@@ -56,8 +56,8 @@ describe('next-i18n copy keys', function () {
 					DE_COMMON_JSON,
 			},
 			{
-				oldWorkspace: 'common',
-				newWorkspace: 'new',
+				oldNamespace: 'common',
+				newNamespace: 'new',
 				keys: 'copyKey',
 			},
 		);
@@ -130,8 +130,8 @@ describe('next-i18n copy keys', function () {
 					DE_EXISTING_JSON,
 			},
 			{
-				oldWorkspace: 'common',
-				newWorkspace: 'existing',
+				oldNamespace: 'common',
+				newNamespace: 'existing',
 				keys: 'copyKey',
 			},
 		);
