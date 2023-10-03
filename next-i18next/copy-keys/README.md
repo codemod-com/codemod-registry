@@ -4,6 +4,14 @@
 
 This codemod copies specific keys from one translation namespace to the other, for all supported languages.
 
+The codemod expects the following arguments:
+
+-   `oldNamespace` is the name of the namespace to take the keys from,
+-   `newNamespace` is the name of the namespace to copy the keys to,
+-   `keys` is a comma-separated list of keys.
+
+You need to pass these arguments using the Codemod Arguments' settings or using the Intuita CLI.
+
 ## Example:
 
 ### Before:
