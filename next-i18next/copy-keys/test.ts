@@ -90,4 +90,84 @@ describe('next-i18n copy keys', function () {
 			);
 		}
 	});
+
+	it('should copy a key into an existing namespace', async function (this: Context) {
+		const EN_COMMON_JSON = `
+			{
+				"copyKey": "copyKeyEnglish",
+				"noopKey": "noopKeyEnglish"
+			}
+		`;
+
+		const EN_EXISTING_JSON = `
+			{
+				"otherKey": "otherKeyEnglish"
+			}
+		`;
+
+		const DE_COMMON_JSON = `
+			{
+				"copyKey": "copyKeyGerman",
+				"noopKey": "noopKeyGerman"
+			}
+		`;
+
+		const DE_EXISTING_JSON = `
+			{
+				"otherKey": "otherKeyGerman"
+			}
+		`;
+
+		const [upsertEnDataCommand, upsertDeDataCommand] = await transform(
+			{
+				'/opt/project/public/static/locales/en/common.json':
+					EN_COMMON_JSON,
+				'/opt/project/public/static/locales/en/existing.json':
+					EN_EXISTING_JSON,
+				'/opt/project/public/static/locales/de/common.json':
+					DE_COMMON_JSON,
+				'/opt/project/public/static/locales/de/existing.json':
+					DE_EXISTING_JSON,
+			},
+			{
+				oldWorkspace: 'common',
+				newWorkspace: 'existing',
+				keys: 'copyKey',
+			},
+		);
+
+		{
+			deepStrictEqual(upsertEnDataCommand?.kind, 'upsertFile');
+
+			deepStrictEqual(
+				upsertEnDataCommand.path,
+				'/opt/project/public/static/locales/en/existing.json',
+			);
+
+			deepStrictEqual(
+				upsertEnDataCommand.data.replace(/\W/gm, ''),
+				`{"otherKey": "otherKeyEnglish","copyKey": "copyKeyEnglish"}`.replace(
+					/\W/gm,
+					'',
+				),
+			);
+		}
+
+		{
+			deepStrictEqual(upsertDeDataCommand?.kind, 'upsertFile');
+
+			deepStrictEqual(
+				upsertDeDataCommand.path,
+				'/opt/project/public/static/locales/de/existing.json',
+			);
+
+			deepStrictEqual(
+				upsertDeDataCommand.data.replace(/\W/gm, ''),
+				`{"otherKey": "otherKeyGerman","copyKey": "copyKeyGerman",}`.replace(
+					/\W/gm,
+					'',
+				),
+			);
+		}
+	});
 });

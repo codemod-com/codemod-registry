@@ -64,17 +64,26 @@ export const repomod: Repomod<Dependencies, State> = {
 					options,
 				},
 			];
-		} catch (error) {
-			console.error('log', error);
+		} catch {
 			return [];
 		}
 	},
-	handleData: async (_, path, __, ___, state) => {
+	handleData: async (_, path, oldData, ___, state) => {
 		if (state === null) {
 			return { kind: 'noop' };
 		}
 
-		const obj: Record<string, string> = {};
+		const record: Record<string, string> = {};
+
+		try {
+			const oldRecord = JSON.parse(oldData);
+
+			for (const [key, value] of Object.entries(oldRecord)) {
+				record[key] = String(value);
+			}
+		} catch {
+			// error
+		}
 
 		for (const key of state.keys) {
 			const value = state.map.get(`${path}:${key}`);
@@ -83,15 +92,15 @@ export const repomod: Repomod<Dependencies, State> = {
 				continue;
 			}
 
-			obj[key] = value;
+			record[key] = value;
 		}
 
-		const data = JSON.stringify(obj);
+		const newData = JSON.stringify(record);
 
 		return {
 			kind: 'upsertData',
 			path,
-			data,
+			data: newData,
 		};
 	},
 };
