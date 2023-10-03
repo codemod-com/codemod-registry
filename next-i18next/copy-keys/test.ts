@@ -7,10 +7,11 @@ import {
 	executeRepomod,
 } from '@intuita-inc/repomod-engine-api';
 import { repomod } from './index.js';
-import tsmorph from 'ts-morph';
 import { deepStrictEqual } from 'node:assert';
 
-const transform = async (json: DirectoryJSON) => {
+type Options = Readonly<Record<string, string | number | boolean | undefined>>;
+
+const transform = async (json: DirectoryJSON, options: Options) => {
 	const volume = Volume.fromJSON(json);
 
 	const fileSystemManager = new FileSystemManager(
@@ -26,18 +27,12 @@ const transform = async (json: DirectoryJSON) => {
 		fileSystemManager,
 	);
 
-	const api = buildApi<{
-		tsmorph: typeof tsmorph;
-		unifiedFileSystem: UnifiedFileSystem;
-	}>(unifiedFileSystem, () => ({
-		tsmorph,
-		unifiedFileSystem,
-	}));
+	const api = buildApi<Record<string, never>>(unifiedFileSystem, () => ({}));
 
-	return executeRepomod(api, repomod, '/', {}, {});
+	return executeRepomod(api, repomod, '/', options, {});
 };
 
-describe.only('next-i18n copy keys', function () {
+describe('next-i18n copy keys', function () {
 	it('should copy a key into a new namespace', async function (this: Context) {
 		const EN_COMMON_JSON = `
 			{
@@ -53,10 +48,19 @@ describe.only('next-i18n copy keys', function () {
 			}
 		`;
 
-		const [upsertEnDataCommand, upsertDeDataCommand] = await transform({
-			'/opt/project/public/static/locales/en/common.json': EN_COMMON_JSON,
-			'/opt/project/public/static/locales/de/common.json': DE_COMMON_JSON,
-		});
+		const [upsertEnDataCommand, upsertDeDataCommand] = await transform(
+			{
+				'/opt/project/public/static/locales/en/common.json':
+					EN_COMMON_JSON,
+				'/opt/project/public/static/locales/de/common.json':
+					DE_COMMON_JSON,
+			},
+			{
+				oldWorkspace: 'common',
+				newWorkspace: 'new',
+				keys: 'copyKey',
+			},
+		);
 
 		{
 			deepStrictEqual(upsertEnDataCommand?.kind, 'upsertFile');
