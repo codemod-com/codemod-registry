@@ -84,6 +84,8 @@ export const repomod: Repomod<Dependencies, State> = {
 			/* empty */
 		}
 
+		let i = 0;
+
 		for (const key of state.keys) {
 			const value = state.map.get(`${path}:${key}`);
 
@@ -92,6 +94,11 @@ export const repomod: Repomod<Dependencies, State> = {
 			}
 
 			record[key] = value;
+			++i;
+		}
+
+		if (i === 0) {
+			return { kind: 'noop' };
 		}
 
 		const newData = JSON.stringify(record);
