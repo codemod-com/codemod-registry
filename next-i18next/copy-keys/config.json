@@ -1,0 +1,24 @@
+{
+	"schemaVersion": "1.0.0",
+	"engine": "repomod-engine",
+	"arguments": [
+		{
+			"name": "oldWorkspace",
+			"kind": "string",
+			"required": true,
+			"default": "common"
+		},
+		{
+			"name": "newWorkspace",
+			"kind": "string",
+			"default": "new",
+			"required": true
+		},
+		{
+			"name": "keys",
+			"kind": "string",
+			"default": "",
+			"required": true
+		}
+	]
+}
