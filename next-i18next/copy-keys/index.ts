@@ -1,4 +1,3 @@
-// import { join, posix } from 'node:path';
 import { Repomod } from '@intuita-inc/repomod-engine-api';
 
 type Dependencies = Record<string, never>;
@@ -82,7 +81,7 @@ export const repomod: Repomod<Dependencies, State> = {
 				record[key] = String(value);
 			}
 		} catch {
-			// error
+			/* empty */
 		}
 
 		for (const key of state.keys) {
