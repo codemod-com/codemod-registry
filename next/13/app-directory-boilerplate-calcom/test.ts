@@ -7,7 +7,7 @@ import {
 	buildApi,
 	executeRepomod,
 } from '@intuita-inc/repomod-engine-api';
-import { repomod } from './index.js';
+import { LAYOUT_CONTENT, repomod } from './index.js';
 import tsmorph from 'ts-morph';
 import { fromMarkdown } from 'mdast-util-from-markdown';
 import { toMarkdown } from 'mdast-util-to-markdown';
@@ -42,35 +42,6 @@ export const getStaticPaths = () => {
 const A_C_CONTENT = `
 export const getServerSideProps = () => {
 
-}
-`;
-
-const LAYOUT_CONTENT = `
-import { headers } from "next/headers";
-import { type ReactElement } from "react";
-// default layout
-import { getLayout } from "@calcom/features/MainLayout";
-
-import PageWrapper from "@components/PageWrapperAppDir";
-
-type EventTypesLayoutProps = {
-	children: ReactElement;
-};
-
-export default function Layout({ children }: EventTypesLayoutProps) {
-	const h = headers();
-	const nonce = h.get("x-nonce") ?? undefined;
-
-	return (
-		<PageWrapper
-		getLayout={getLayout}
-		requiresLicense={false}
-		pageProps={children?.props}
-		nonce={nonce}
-		themeBasis={null}>
-		{children}
-		</PageWrapper>
-	);
 }
 `;
 
@@ -126,7 +97,7 @@ describe('next 13 app-directory-boilerplate-calcom', function () {
 			'/opt/project/pages/a/index.tsx': '',
 		});
 
-		deepStrictEqual(externalFileCommands.length, 18);
+		deepStrictEqual(externalFileCommands.length, 21);
 
 		ok(
 			externalFileCommands.some(
@@ -212,14 +183,10 @@ describe('next 13 app-directory-boilerplate-calcom', function () {
 					command.path === '/opt/project/app/[a]/c/page.tsx' &&
 					command.data.replace(/\W/gm, '') ===
 						`
-						// This file has been sourced from: /opt/project/pages/[a]/c.tsx
-						import Components from "./components";
-						// TODO reimplement getServerSideProps with custom logic
-						const getServerSideProps = () => {
-						};
-						export default async function Page(props: any) {
-							return <Components {...props}/>;
-						}
+						import Page from "@pages/[a]/c";
+
+						// TODO add metadata
+						export default Page;
 					`.replace(/\W/gm, '')
 				);
 			}),
@@ -284,7 +251,7 @@ describe('next 13 app-directory-boilerplate-calcom', function () {
 			'/opt/project/pages/[a]/c.mdx': A_C_CONTENT,
 		});
 
-		deepStrictEqual(externalFileCommands.length, 13);
+		deepStrictEqual(externalFileCommands.length, 15);
 
 		ok(
 			externalFileCommands.some((command) => {
@@ -293,15 +260,10 @@ describe('next 13 app-directory-boilerplate-calcom', function () {
 					command.path === '/opt/project/app/[a]/c/page.mdx' &&
 					command.data.replace(/\W/gm, '') ===
 						`
-						// This file has been sourced from: /opt/project/pages/[a]/c.mdx
-						import Components from "./components";
+						import Page from "@pages/[a]/c";
 
-						// TODO reimplement getServerSideProps with custom logic
-						const getServerSideProps = () => {};
-
-						export default async function Page(props: any) {
-							return <Components>{ ...props } />;
-						}
+						// TODO add metadata
+						export default Page;
 					`.replace(/\W/gm, '')
 				);
 			}),
@@ -314,19 +276,10 @@ describe('next 13 app-directory-boilerplate-calcom', function () {
 					command.path === '/opt/project/app/[a]/[b]/page.mdx' &&
 					command.data.replace(/\W/gm, '') ===
 						`
-						// This file has been sourced from: /opt/project/pages/[a]/[b].mdx
-						import Components from "./components";
-						export default async function Page(props: any) {
-							return <Components>{ ...props } />
-						}
-						
-						import Components from "./components";
+						import Page from "@pages/[a]/[b]";
 
-						const getStaticPaths = () => {};
-
-						export default async function Page(props: any) {
-						    return <Components>{ ...props } />;
-						}
+						// TODO add metadata
+						export default Page;
 					`.replace(/\W/gm, '')
 				);
 			}),
@@ -661,12 +614,11 @@ describe('next 13 app-directory-boilerplate-calcom', function () {
 
 		deepStrictEqual(
 			upsertPageCommand?.data.replace(/(?!\.)\s/gm, ''),
-			`// This file has been sourced from: /opt/project/pages/a/b/c.tsx
-			import Components from "./components";
-			
-			export default async function Page(props: any) {
-    			return <Components {...props}/>;
-			}
+			`
+			import Page from "@pages/a/b/c";
+
+			// TODO add metadata
+			export default Page;
 			`.replace(/(?!\.)\s/gm, ''),
 		);
 
@@ -723,10 +675,10 @@ describe('next 13 app-directory-boilerplate-calcom', function () {
 		const externalFileCommands = await transform({
 			'/opt/project/pages/[a]/[b].tsx': A_B_CONTENT,
 			'/opt/project/pages/[a]/c.tsx': A_C_CONTENT,
-			'/opt/project/pages/a/index.tsx': '',
+			'/opt/project/pages/a/index.tsx': INDEX_CONTENT,
 		});
 
-		deepStrictEqual(externalFileCommands.length, 9);
+		deepStrictEqual(externalFileCommands.length, 12);
 
 		ok(
 			externalFileCommands.some(
@@ -844,21 +796,6 @@ describe('next 13 app-directory-boilerplate-calcom', function () {
 					command.path === '/opt/project/app/a/layout.tsx' &&
 					command.data.replace(/\W/gm, '') ===
 						LAYOUT_CONTENT.replace(/\W/gm, '')
-				);
-			}),
-		);
-
-		ok(
-			externalFileCommands.some((command) => {
-				return (
-					command.kind === 'upsertFile' &&
-					command.path ===
-						'/opt/project/app/[a]/[b]/components.tsx' &&
-					command.data.replace(/\W/gm, '') ===
-						`
-						'use client';
-						// This file has been sourced from: /opt/project/pages/[a]/[b].tsx
-						`.replace(/\W/gm, '')
 				);
 			}),
 		);

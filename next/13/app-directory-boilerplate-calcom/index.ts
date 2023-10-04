@@ -29,6 +29,35 @@ type Dependencies = Readonly<{
 	visitMdxAst?: typeof visit;
 }>;
 
+export const LAYOUT_CONTENT = `
+import { headers } from "next/headers";
+import { type ReactElement } from "react";
+// default layout
+import { getLayout } from "@calcom/features/MainLayout";
+
+import PageWrapper from "@components/PageWrapperAppDir";
+
+type LayoutProps = {
+	children: ReactElement;
+};
+
+export default function Layout({ children }: LayoutProps) {
+	const h = headers();
+	const nonce = h.get("x-nonce") ?? undefined;
+
+	return (
+		<PageWrapper
+		getLayout={getLayout}
+		requiresLicense={false}
+		pageProps={children?.props}
+		nonce={nonce}
+		themeBasis={null}>
+			{children}
+		</PageWrapper>
+	);
+}
+`;
+
 const ROOT_ERROR_CONTENT = `
 'use client';
 import { useEffect } from 'react';
@@ -64,6 +93,7 @@ const enum FilePurpose {
 	ROOT_NOT_FOUND = 'ROOT_NOT_FOUND',
 	// route directories
 	ROUTE_PAGE = 'ROUTE_PAGE',
+	ROUTE_LAYOUT = 'ROUTE_LAYOUT',
 	ROUTE_COMPONENTS = 'ROUTE_COMPONENTS',
 }
 
@@ -77,6 +107,7 @@ const map = new Map([
 	[FilePurpose.ROOT_NOT_FOUND, ROOT_NOT_FOUND_CONTENT],
 	// route directories
 	[FilePurpose.ROUTE_PAGE, ''],
+	[FilePurpose.ROUTE_LAYOUT, ''],
 	[FilePurpose.ROUTE_COMPONENTS, ''],
 ]);
 
@@ -409,7 +440,10 @@ const buildPageFileData = (
 			}
 		});
 
-		if (!sourcingStatementInserted) {
+		if (
+			!sourcingStatementInserted &&
+			filePurpose === FilePurpose.ROOT_PAGE
+		) {
 			sourceFile.insertStatements(
 				0,
 				`// This file has been sourced from: ${options.oldPath}`,
@@ -418,9 +452,11 @@ const buildPageFileData = (
 			sourcingStatementInserted = true;
 		}
 
-		sourceFile.addStatements(`export default async function Page(props: any) {
-			return <Components {...props} />;
-		}`);
+		if (filePurpose === FilePurpose.ROOT_PAGE) {
+			sourceFile.addStatements(`export default async function Page(props: any) {
+				return <Components {...props} />;
+			}`);
+		}
 
 		removeUnusedImports(sourceFile);
 
@@ -913,6 +949,16 @@ const handleFile: Repomod<
 
 		const oldData = await api.readFile(path);
 
+		const nestedPathWithoutExtension = (
+			path.split('/pages/')[1] ?? ''
+		).replace(/\.(tsx|mdx)$/, '');
+		const pageContent = `
+		import Page from "@pages/${nestedPathWithoutExtension}";
+		
+		// TODO add metadata
+		export default Page;
+		`;
+
 		const commands: FileCommand[] = [
 			{
 				kind: 'upsertFile',
@@ -926,7 +972,7 @@ const handleFile: Repomod<
 					...options,
 					filePurpose: FilePurpose.ROUTE_PAGE,
 					oldPath: path,
-					oldData,
+					oldData: pageContent,
 				},
 			},
 			{
@@ -947,6 +993,21 @@ const handleFile: Repomod<
 			{
 				kind: 'deleteFile' as const,
 				path,
+			},
+			{
+				kind: 'upsertFile',
+				path: posix.format({
+					root: parsedPath.root,
+					dir: newDir,
+					ext: parsedPath.ext === '.mdx' ? '.mdx' : '.tsx',
+					name: 'layout',
+				}),
+				options: {
+					...options,
+					filePurpose: FilePurpose.ROUTE_LAYOUT,
+					oldPath: path,
+					data: LAYOUT_CONTENT,
+				},
 			},
 		];
 
@@ -1002,6 +1063,29 @@ const handleData: HandleData<Dependencies, State> = async (
 			options.oldPath
 		) {
 			return buildPageFileData(api, path, options, filePurpose);
+		}
+
+		if (filePurpose === FilePurpose.ROUTE_LAYOUT && options.data) {
+			const { tsmorph } = api.getDependencies();
+
+			const project = new tsmorph.Project({
+				useInMemoryFileSystem: true,
+				skipFileDependencyResolution: true,
+				compilerOptions: {
+					allowJs: true,
+				},
+			});
+
+			const sourceFile = project.createSourceFile(
+				path,
+				String(options.data),
+			);
+
+			return {
+				kind: 'upsertData',
+				path,
+				data: sourceFile.getFullText(),
+			};
 		}
 
 		if (
