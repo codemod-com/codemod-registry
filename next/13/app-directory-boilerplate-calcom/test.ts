@@ -45,6 +45,35 @@ export const getServerSideProps = () => {
 }
 `;
 
+const LAYOUT_CONTENT = `
+import { headers } from "next/headers";
+import { type ReactElement } from "react";
+// default layout
+import { getLayout } from "@calcom/features/MainLayout";
+
+import PageWrapper from "@components/PageWrapperAppDir";
+
+type EventTypesLayoutProps = {
+	children: ReactElement;
+};
+
+export default function Layout({ children }: EventTypesLayoutProps) {
+	const h = headers();
+	const nonce = h.get("x-nonce") ?? undefined;
+
+	return (
+		<PageWrapper
+		getLayout={getLayout}
+		requiresLicense={false}
+		pageProps={children?.props}
+		nonce={nonce}
+		themeBasis={null}>
+		{children}
+		</PageWrapper>
+	);
+}
+`;
+
 const transform = async (json: DirectoryJSON) => {
 	const volume = Volume.fromJSON(json);
 
@@ -84,7 +113,7 @@ const transform = async (json: DirectoryJSON) => {
 	return executeRepomod(api, repomod, '/', {}, {});
 };
 
-describe('next 13 app-directory-boilerplate', function () {
+describe('next 13 app-directory-boilerplate-calcom', function () {
 	it('should build correct files', async function (this: Context) {
 		const externalFileCommands = await transform({
 			'/opt/project/pages/index.jsx': INDEX_CONTENT,
@@ -687,6 +716,151 @@ describe('next 13 app-directory-boilerplate', function () {
 			}
 
 			`.replace(/(?!\.)\s/gm, ''),
+		);
+	});
+
+	it('should create a corresponding layout and a corresponding page in the app route', async function (this: Context) {
+		const externalFileCommands = await transform({
+			'/opt/project/pages/[a]/[b].tsx': A_B_CONTENT,
+			'/opt/project/pages/[a]/c.tsx': A_C_CONTENT,
+			'/opt/project/pages/a/index.tsx': '',
+		});
+
+		deepStrictEqual(externalFileCommands.length, 9);
+
+		ok(
+			externalFileCommands.some(
+				(command) =>
+					command.path === '/opt/project/app/[a]/[b]/page.tsx',
+			),
+		);
+
+		ok(
+			externalFileCommands.some(
+				(command) =>
+					command.path === '/opt/project/app/[a]/[b]/layout.tsx',
+			),
+		);
+
+		ok(
+			externalFileCommands.some(
+				(command) => command.path === '/opt/project/app/[a]/c/page.tsx',
+			),
+		);
+
+		ok(
+			externalFileCommands.some(
+				(command) =>
+					command.path === '/opt/project/app/[a]/c/layout.tsx',
+			),
+		);
+
+		ok(
+			externalFileCommands.some(
+				(command) => command.path === '/opt/project/app/a/page.tsx',
+			),
+		);
+
+		ok(
+			externalFileCommands.some(
+				(command) => command.path === '/opt/project/app/a/layout.tsx',
+			),
+		);
+
+		ok(
+			externalFileCommands.some((command) => {
+				return (
+					command.kind === 'upsertFile' &&
+					command.path === '/opt/project/app/[a]/[b]/page.tsx' &&
+					command.data.replace(/\W/gm, '') ===
+						`
+						import Page from "@pages/[a]/[b]";
+
+						// TODO add metadata
+						export default Page;
+					`.replace(/\W/gm, '')
+				);
+			}),
+		);
+
+		ok(
+			externalFileCommands.some((command) => {
+				return (
+					command.kind === 'upsertFile' &&
+					command.path === '/opt/project/app/[a]/c/page.tsx' &&
+					command.data.replace(/\W/gm, '') ===
+						`
+						import Page from "@pages/[a]/c";
+
+						// TODO add metadata
+						export default Page;
+					`.replace(/\W/gm, '')
+				);
+			}),
+		);
+
+		ok(
+			externalFileCommands.some((command) => {
+				return (
+					command.kind === 'upsertFile' &&
+					command.path === '/opt/project/app/a/page.tsx' &&
+					command.data.replace(/\W/gm, '') ===
+						`
+						import Page from "@pages/a/index";
+
+						// TODO add metadata
+						export default Page;
+					`.replace(/\W/gm, '')
+				);
+			}),
+		);
+
+		ok(
+			externalFileCommands.some((command) => {
+				return (
+					command.kind === 'upsertFile' &&
+					command.path === '/opt/project/app/[a]/[b]/layout.tsx' &&
+					command.data.replace(/\W/gm, '') ===
+						LAYOUT_CONTENT.replace(/\W/gm, '')
+				);
+			}),
+		);
+
+		ok(
+			externalFileCommands.some((command) => {
+				return (
+					command.kind === 'upsertFile' &&
+					command.path === '/opt/project/app/[a]/c/layout.tsx' &&
+					command.data.replace(/\W/gm, '') ===
+						LAYOUT_CONTENT.replace(/\W/gm, '')
+				);
+			}),
+		);
+
+		ok(
+			externalFileCommands.some((command) => {
+				return (
+					command.kind === 'upsertFile' &&
+					command.path === '/opt/project/app/a/layout.tsx' &&
+					command.data.replace(/\W/gm, '') ===
+						LAYOUT_CONTENT.replace(/\W/gm, '')
+				);
+			}),
+		);
+
+		ok(
+			externalFileCommands.some((command) => {
+				return (
+					command.kind === 'upsertFile' &&
+					command.path ===
+						'/opt/project/app/[a]/[b]/components.tsx' &&
+					command.data.replace(/\W/gm, '') ===
+						`
+						'use client';
+						// This file has been sourced from: /opt/project/pages/[a]/[b].tsx
+						`.replace(/\W/gm, '')
+				);
+			}),
 		);
 	});
 });

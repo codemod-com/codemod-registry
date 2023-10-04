@@ -1,6 +1,6 @@
 {
 	"schemaVersion": "1.0.0",
-	"name": "next/13/app-directory-boilerplate",
+	"name": "next/13/app-directory-boilerplate-calcom",
 	"description": "This codemod provides boilerplate for the app directory.",
 	"engine": "repomod-engine",
 	"dependencyVersionLowerThan": ["next", "13.0.0"],
