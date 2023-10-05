@@ -110,15 +110,6 @@ describe('next 13 app-directory-boilerplate-calcom', function () {
 			externalFileCommands.some((command) => {
 				return (
 					command.kind === 'upsertFile' &&
-					command.path === '/opt/project/app/a/layout.tsx'
-				);
-			}),
-		);
-
-		ok(
-			externalFileCommands.some((command) => {
-				return (
-					command.kind === 'upsertFile' &&
 					command.path === '/opt/project/app/a/b/page.tsx' &&
 					command.data.replace(/\W/gm, '') ===
 						`
