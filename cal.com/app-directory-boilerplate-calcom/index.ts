@@ -12,6 +12,10 @@ type Dependencies = Readonly<{
 	tsmorph: typeof tsmorph;
 }>;
 
+const removeLeadingLineBreaks = (input: string): string => {
+	return input.replace(/^\n+/, '');
+};
+
 export const LAYOUT_CONTENT = `
 import { headers } from "next/headers";
 import { type ReactElement } from "react";
@@ -253,13 +257,11 @@ const handleFile: Repomod<
 		const newDir = newDirArr.join(posix.sep);
 
 		const nestedPathWithoutExtension =
-			(parsedPath.dir.split('/pages/')[1] ?? '') + parsedPath.name;
-		const pageContent = `
-		import Page from "@pages/${nestedPathWithoutExtension}";
-		
+			(parsedPath.dir.split('/pages/')[1] ?? '') + '/' + parsedPath.name;
+
+		const pageContent = `import Page from "@pages/${nestedPathWithoutExtension}";
 		// TODO add metadata
-		export default Page;
-		`;
+		export default Page;`;
 
 		const oldData = await api.readFile(path);
 
@@ -276,7 +278,7 @@ const handleFile: Repomod<
 					...options,
 					filePurpose: FilePurpose.ROUTE_PAGE,
 					oldPath: path,
-					oldData: pageContent,
+					oldData: removeLeadingLineBreaks(pageContent),
 				},
 			},
 			{
@@ -291,7 +293,7 @@ const handleFile: Repomod<
 					...options,
 					filePurpose: FilePurpose.ROUTE_LAYOUT,
 					oldPath: path,
-					data: LAYOUT_CONTENT,
+					data: removeLeadingLineBreaks(LAYOUT_CONTENT),
 				},
 			},
 			{
