@@ -7,7 +7,7 @@ import {
 	buildApi,
 	executeRepomod,
 } from '@intuita-inc/repomod-engine-api';
-import { repomod } from './index.js';
+import { LAYOUT_CONTENT, repomod } from './index.js';
 import tsmorph from 'ts-morph';
 
 const transform = async (json: DirectoryJSON) => {
@@ -36,62 +36,11 @@ describe('next 13 app-directory-boilerplate-calcom', function () {
 	it('should build correct files', async function (this: Context) {
 		const externalFileCommands = await transform({
 			'/opt/project/pages/a/index.tsx': 'TODO content',
+			'/opt/project/pages/a/b.tsx': 'TODO content',
+			'/opt/project/pages/a/[b]/c.tsx': 'TODO content',
 		});
 
-		deepStrictEqual(externalFileCommands.length, 21);
-
-		ok(
-			externalFileCommands.some(
-				(command) =>
-					command.kind === 'deleteFile' &&
-					command.path === '/opt/project/pages/_app.jsx',
-			),
-		);
-
-		ok(
-			externalFileCommands.some(
-				(command) =>
-					command.kind === 'deleteFile' &&
-					command.path === '/opt/project/pages/_document.jsx',
-			),
-		);
-
-		ok(
-			externalFileCommands.some(
-				(command) => command.path === '/opt/project/app/layout.tsx',
-			),
-		);
-
-		ok(
-			externalFileCommands.some(
-				(command) => command.path === '/opt/project/app/error.tsx',
-			),
-		);
-
-		ok(
-			externalFileCommands.some(
-				(command) => command.path === '/opt/project/app/not-found.tsx',
-			),
-		);
-
-		ok(
-			externalFileCommands.some(
-				(command) => command.path === '/opt/project/app/page.tsx',
-			),
-		);
-
-		ok(
-			externalFileCommands.some(
-				(command) =>
-					command.path === '/opt/project/app/[a]/[b]/page.tsx',
-			),
-		);
-
-		ok(
-			externalFileCommands.some(
-				(command) => command.path === '/opt/project/app/[a]/c/page.tsx',
-			),
-		);
+		deepStrictEqual(externalFileCommands.length, 6);
 
 		ok(
 			externalFileCommands.some(
@@ -100,32 +49,45 @@ describe('next 13 app-directory-boilerplate-calcom', function () {
 		);
 
 		ok(
-			externalFileCommands.some((command) => {
-				return (
-					command.kind === 'upsertFile' &&
-					command.path === '/opt/project/app/components.tsx' &&
-					command.data.replace(/\W/gm, '') ===
-						`
-					'use client';
-					// This file has been sourced from: /opt/project/pages/index.jsx
-					
-					export default function Index({}) {
-						return null;
-					}
-				;`.replace(/\W/gm, '')
-				);
-			}),
+			externalFileCommands.some(
+				(command) => command.path === '/opt/project/app/a/layout.tsx',
+			),
+		);
+
+		ok(
+			externalFileCommands.some(
+				(command) => command.path === '/opt/project/app/a/b/page.tsx',
+			),
+		);
+
+		ok(
+			externalFileCommands.some(
+				(command) => command.path === '/opt/project/app/a/b/layout.tsx',
+			),
+		);
+
+		ok(
+			externalFileCommands.some(
+				(command) =>
+					command.path === '/opt/project/app/a/[b]/c/page.tsx',
+			),
+		);
+
+		ok(
+			externalFileCommands.some(
+				(command) =>
+					command.path === '/opt/project/app/a/[b]/c/layout.tsx',
+			),
 		);
 
 		ok(
 			externalFileCommands.some((command) => {
 				return (
 					command.kind === 'upsertFile' &&
-					command.path === '/opt/project/app/[a]/c/page.tsx' &&
+					command.path === '/opt/project/app/a/page.tsx' &&
 					command.data.replace(/\W/gm, '') ===
 						`
-						import Page from "@pages/[a]/c";
-
+						import Page from "@pages/a/index";
 						// TODO add metadata
 						export default Page;
 					`.replace(/\W/gm, '')
@@ -137,13 +99,70 @@ describe('next 13 app-directory-boilerplate-calcom', function () {
 			externalFileCommands.some((command) => {
 				return (
 					command.kind === 'upsertFile' &&
-					command.path ===
-						'/opt/project/app/[a]/[b]/components.tsx' &&
+					command.path === '/opt/project/app/a/layout.tsx' &&
+					command.data.replace(/\W/gm, '') ===
+						LAYOUT_CONTENT.replace(/\W/gm, '')
+				);
+			}),
+		);
+
+		ok(
+			externalFileCommands.some((command) => {
+				return (
+					command.kind === 'upsertFile' &&
+					command.path === '/opt/project/app/a/layout.tsx'
+				);
+			}),
+		);
+
+		ok(
+			externalFileCommands.some((command) => {
+				return (
+					command.kind === 'upsertFile' &&
+					command.path === '/opt/project/app/a/b/page.tsx' &&
 					command.data.replace(/\W/gm, '') ===
 						`
-						'use client';
-						// This file has been sourced from: /opt/project/pages/[a]/[b].tsx
-						`.replace(/\W/gm, '')
+						import Page from "@pages/a/b";
+						// TODO add metadata
+						export default Page;
+					`.replace(/\W/gm, '')
+				);
+			}),
+		);
+
+		ok(
+			externalFileCommands.some((command) => {
+				return (
+					command.kind === 'upsertFile' &&
+					command.path === '/opt/project/app/a/b/layout.tsx' &&
+					command.data.replace(/\W/gm, '') ===
+						LAYOUT_CONTENT.replace(/\W/gm, '')
+				);
+			}),
+		);
+
+		ok(
+			externalFileCommands.some((command) => {
+				return (
+					command.kind === 'upsertFile' &&
+					command.path === '/opt/project/app/a/[b]/c/page.tsx' &&
+					command.data.replace(/\W/gm, '') ===
+						`
+						import Page from "@pages/a/[b]/c";
+						// TODO add metadata
+						export default Page;
+					`.replace(/\W/gm, '')
+				);
+			}),
+		);
+
+		ok(
+			externalFileCommands.some((command) => {
+				return (
+					command.kind === 'upsertFile' &&
+					command.path === '/opt/project/app/a/[b]/c/layout.tsx' &&
+					command.data.replace(/\W/gm, '') ===
+						LAYOUT_CONTENT.replace(/\W/gm, '')
 				);
 			}),
 		);

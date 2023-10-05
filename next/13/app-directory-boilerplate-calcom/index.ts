@@ -47,7 +47,10 @@ const enum FilePurpose {
 	ROUTE_LAYOUT = 'ROUTE_LAYOUT',
 }
 
-const map = new Map([[FilePurpose.ROUTE_PAGE, '']]);
+const map = new Map([
+	[FilePurpose.ROUTE_PAGE, ''],
+	[FilePurpose.ROUTE_LAYOUT, ''],
+]);
 
 type State = Record<string, never>;
 
@@ -55,6 +58,32 @@ type DataAPI = Parameters<HandleData<Dependencies, State>>[0];
 
 type FileCommand = Awaited<ReturnType<HandleFile<Dependencies, State>>>[number];
 type DataCommand = Awaited<ReturnType<HandleData<Dependencies, State>>>;
+
+const addUseClientStatement = (oldPath: string) => {
+	const project = new tsmorph.Project({
+		skipFileDependencyResolution: true,
+		compilerOptions: {
+			allowJs: true,
+		},
+	});
+
+	const sourceFile = project.getSourceFile(oldPath);
+
+	if (!sourceFile) {
+		return;
+	}
+
+	const hasUseClient = sourceFile
+		.getDescendantsOfKind(SyntaxKind.StringLiteral)
+		.some((node) => {
+			const literal = node.getFullText();
+			return literal === 'use client';
+		});
+
+	if (!hasUseClient) {
+		sourceFile.insertStatements(0, `use client`);
+	}
+};
 
 const buildPageFileData = (
 	api: DataAPI,
@@ -155,11 +184,6 @@ const buildPageFileData = (
 			});
 		}
 
-		sourceFile.addImportDeclaration({
-			moduleSpecifier: './components',
-			defaultImport: 'Components',
-		});
-
 		sourceFile.getStatementsWithComments().forEach((statement, index) => {
 			if (tsmorph.Node.isVariableStatement(statement)) {
 				const declarations = statement
@@ -216,8 +240,6 @@ const handleFile: Repomod<
 		}
 
 		const newDir = newDirArr.join(posix.sep);
-
-		const oldData = await api.readFile(path);
 
 		const nestedPathWithoutExtension = (
 			path.split('/pages/')[1] ?? ''
@@ -301,10 +323,12 @@ const handleData: HandleData<Dependencies, State> = async (
 		}
 
 		if (filePurpose === FilePurpose.ROUTE_PAGE && options.oldPath) {
+			addUseClientStatement(String(options.oldPath));
 			return buildPageFileData(api, path, options, filePurpose);
 		}
 
 		if (filePurpose === FilePurpose.ROUTE_LAYOUT && options.data) {
+			addUseClientStatement(String(options.oldPath));
 			const { tsmorph } = api.getDependencies();
 
 			const project = new tsmorph.Project({
@@ -319,6 +343,8 @@ const handleData: HandleData<Dependencies, State> = async (
 				path,
 				String(options.data),
 			);
+
+			// options.oldPath
 
 			return {
 				kind: 'upsertData',
