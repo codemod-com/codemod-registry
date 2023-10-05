@@ -9,26 +9,6 @@ import {
 } from '@intuita-inc/repomod-engine-api';
 import { repomod } from './index.js';
 import tsmorph from 'ts-morph';
-import { fromMarkdown } from 'mdast-util-from-markdown';
-import { toMarkdown } from 'mdast-util-to-markdown';
-import { mdxjs } from 'micromark-extension-mdxjs';
-import { mdxFromMarkdown, mdxToMarkdown } from 'mdast-util-mdx';
-import { visit } from 'unist-util-visit';
-
-const INDEX_CONTENT = `
-import A from './testQWE';
-
-export default function Index({}) {
-	return null;
-}
-  
-export const getStaticProps = async ({}) => {
-	return {
-		props: {},
-	  	revalidate: 10,
-	}
-}
-`;
 
 const A_B_CONTENT = `
 import { X } from "../../testABC";
@@ -58,27 +38,10 @@ const transform = async (json: DirectoryJSON) => {
 		fileSystemManager,
 	);
 
-	const parseMdx = (data: string) =>
-		fromMarkdown(data, {
-			extensions: [mdxjs()],
-			mdastExtensions: [mdxFromMarkdown()],
-		});
-
-	type Root = ReturnType<typeof fromMarkdown>;
-
-	const stringifyMdx = (tree: Root) =>
-		toMarkdown(tree, { extensions: [mdxToMarkdown()] });
-
 	const api = buildApi<{
 		tsmorph: typeof tsmorph;
-		parseMdx: typeof parseMdx;
-		stringifyMdx: typeof stringifyMdx;
-		visitMdxAst: typeof visit;
 	}>(unifiedFileSystem, () => ({
 		tsmorph,
-		parseMdx,
-		stringifyMdx,
-		visitMdxAst: visit,
 	}));
 
 	return executeRepomod(api, repomod, '/', {}, {});
