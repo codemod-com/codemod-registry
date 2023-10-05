@@ -1,16 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { join, posix } from 'node:path';
-import tsmorph, {
-	ArrowFunction,
-	FunctionDeclaration,
-	Identifier,
-	JsxOpeningElement,
-	JsxSelfClosingElement,
-	Node,
-	SourceFile,
-	SyntaxKind,
-	FunctionExpression,
-} from 'ts-morph';
+import tsmorph, { SyntaxKind } from 'ts-morph';
 import type {
 	HandleData,
 	HandleFile,

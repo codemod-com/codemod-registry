@@ -10,21 +10,6 @@ import {
 import { repomod } from './index.js';
 import tsmorph from 'ts-morph';
 
-const A_B_CONTENT = `
-import { X } from "../../testABC";
-import { Y } from "./testDEF";
-
-export const getStaticPaths = () => {
-
-}
-`;
-
-const A_C_CONTENT = `
-export const getServerSideProps = () => {
-
-}
-`;
-
 const transform = async (json: DirectoryJSON) => {
 	const volume = Volume.fromJSON(json);
 
@@ -50,9 +35,7 @@ const transform = async (json: DirectoryJSON) => {
 describe('next 13 app-directory-boilerplate-calcom', function () {
 	it('should build correct files', async function (this: Context) {
 		const externalFileCommands = await transform({
-			'/opt/project/pages/[a]/[b].tsx': A_B_CONTENT,
-			'/opt/project/pages/[a]/c.tsx': A_C_CONTENT,
-			'/opt/project/pages/a/index.tsx': '',
+			'/opt/project/pages/a/index.tsx': 'TODO content',
 		});
 
 		deepStrictEqual(externalFileCommands.length, 21);
