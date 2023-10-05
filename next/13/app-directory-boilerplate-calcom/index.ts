@@ -61,7 +61,6 @@ type DataCommand = Awaited<ReturnType<HandleData<Dependencies, State>>>;
 
 const addUseClientStatement = (oldPath: string) => {
 	const project = new tsmorph.Project({
-		skipFileDependencyResolution: true,
 		compilerOptions: {
 			allowJs: true,
 		},
@@ -328,7 +327,6 @@ const handleData: HandleData<Dependencies, State> = async (
 		}
 
 		if (filePurpose === FilePurpose.ROUTE_LAYOUT && options.data) {
-			addUseClientStatement(String(options.oldPath));
 			const { tsmorph } = api.getDependencies();
 
 			const project = new tsmorph.Project({
