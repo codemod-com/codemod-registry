@@ -260,8 +260,9 @@ const handleFile: Repomod<
 			(parsedPath.dir.split('/pages/')[1] ?? '') + '/' + parsedPath.name;
 
 		const pageContent = `import Page from "@pages/${nestedPathWithoutExtension}";
-		// TODO add metadata
-		export default Page;`;
+		
+// TODO add metadata
+export default Page;`;
 
 		const oldData = await api.readFile(path);
 
