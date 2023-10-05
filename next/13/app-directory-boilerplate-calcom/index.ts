@@ -42,12 +42,14 @@ export default function Layout({ children }: LayoutProps) {
 `;
 
 const enum FilePurpose {
+	ORIGINAL_PAGE = 'ORIGINAL_PAGE',
 	// route directories
 	ROUTE_PAGE = 'ROUTE_PAGE',
 	ROUTE_LAYOUT = 'ROUTE_LAYOUT',
 }
 
 const map = new Map([
+	[FilePurpose.ORIGINAL_PAGE, ''],
 	[FilePurpose.ROUTE_PAGE, ''],
 	[FilePurpose.ROUTE_LAYOUT, ''],
 ]);
@@ -59,18 +61,22 @@ type DataAPI = Parameters<HandleData<Dependencies, State>>[0];
 type FileCommand = Awaited<ReturnType<HandleFile<Dependencies, State>>>[number];
 type DataCommand = Awaited<ReturnType<HandleData<Dependencies, State>>>;
 
-const addUseClientStatement = (oldPath: string) => {
+const addUseClientStatement = (
+	oldPath: string,
+	oldData: string,
+): DataCommand => {
 	const project = new tsmorph.Project({
+		useInMemoryFileSystem: true,
+		skipFileDependencyResolution: true,
 		compilerOptions: {
 			allowJs: true,
 		},
 	});
 
-	const sourceFile = project.getSourceFile(oldPath);
-
-	if (!sourceFile) {
-		return;
-	}
+	const sourceFile = project.createSourceFile(
+		oldPath?.replace(/\.mdx$/, '.tsx') ?? '',
+		oldData,
+	);
 
 	const hasUseClient = sourceFile
 		.getDescendantsOfKind(SyntaxKind.StringLiteral)
@@ -82,6 +88,12 @@ const addUseClientStatement = (oldPath: string) => {
 	if (!hasUseClient) {
 		sourceFile.insertStatements(0, `'use client';`);
 	}
+
+	return {
+		kind: 'upsertData',
+		path: oldPath,
+		data: sourceFile.getFullText(),
+	};
 };
 
 const buildPageFileData = (
@@ -240,15 +252,16 @@ const handleFile: Repomod<
 
 		const newDir = newDirArr.join(posix.sep);
 
-		const nestedPathWithoutExtension = (
-			path.split('/pages/')[1] ?? ''
-		).replace(/\.(tsx|mdx)$/, '');
+		const nestedPathWithoutExtension =
+			(parsedPath.dir.split('/pages/')[1] ?? '') + parsedPath.name;
 		const pageContent = `
 		import Page from "@pages/${nestedPathWithoutExtension}";
 		
 		// TODO add metadata
 		export default Page;
 		`;
+
+		const oldData = await api.readFile(path);
 
 		const commands: FileCommand[] = [
 			{
@@ -279,6 +292,21 @@ const handleFile: Repomod<
 					filePurpose: FilePurpose.ROUTE_LAYOUT,
 					oldPath: path,
 					data: LAYOUT_CONTENT,
+				},
+			},
+			{
+				kind: 'upsertFile',
+				path: posix.format({
+					root: parsedPath.root,
+					dir: parsedPath.dir,
+					ext: parsedPath.ext === '.mdx' ? '.mdx' : '.tsx',
+					name: parsedPath.name,
+				}),
+				options: {
+					...options,
+					filePurpose: FilePurpose.ORIGINAL_PAGE,
+					oldPath: path,
+					oldData,
 				},
 			},
 		];
@@ -322,7 +350,6 @@ const handleData: HandleData<Dependencies, State> = async (
 		}
 
 		if (filePurpose === FilePurpose.ROUTE_PAGE && options.oldPath) {
-			addUseClientStatement(String(options.oldPath));
 			return buildPageFileData(api, path, options, filePurpose);
 		}
 
@@ -342,13 +369,22 @@ const handleData: HandleData<Dependencies, State> = async (
 				String(options.data),
 			);
 
-			// options.oldPath
-
 			return {
 				kind: 'upsertData',
 				path,
 				data: sourceFile.getFullText(),
 			};
+		}
+
+		if (
+			filePurpose === FilePurpose.ORIGINAL_PAGE &&
+			options.oldPath &&
+			options.oldData
+		) {
+			return addUseClientStatement(
+				String(options.oldPath),
+				String(options.oldData),
+			);
 		}
 
 		return {

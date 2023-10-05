@@ -40,35 +40,60 @@ describe('next 13 app-directory-boilerplate-calcom', function () {
 			'/opt/project/pages/a/[b]/c.tsx': 'TODO content',
 		});
 
-		deepStrictEqual(externalFileCommands.length, 6);
+		deepStrictEqual(externalFileCommands.length, 9);
 
 		ok(
 			externalFileCommands.some(
-				(command) => command.path === '/opt/project/app/a/page.tsx',
-			),
-		);
-
-		ok(
-			externalFileCommands.some(
-				(command) => command.path === '/opt/project/app/a/layout.tsx',
-			),
-		);
-
-		ok(
-			externalFileCommands.some(
-				(command) => command.path === '/opt/project/app/a/b/page.tsx',
-			),
-		);
-
-		ok(
-			externalFileCommands.some(
-				(command) => command.path === '/opt/project/app/a/b/layout.tsx',
+				(command) =>
+					command.kind === 'upsertFile' &&
+					command.path === '/opt/project/app/a/page.tsx',
 			),
 		);
 
 		ok(
 			externalFileCommands.some(
 				(command) =>
+					command.kind === 'upsertFile' &&
+					command.path === '/opt/project/app/a/layout.tsx',
+			),
+		);
+
+		ok(
+			externalFileCommands.some(
+				(command) =>
+					command.kind === 'upsertFile' &&
+					command.path === '/opt/project/pages/a/index.tsx',
+			),
+		);
+
+		ok(
+			externalFileCommands.some(
+				(command) =>
+					command.kind === 'upsertFile' &&
+					command.path === '/opt/project/app/a/b/page.tsx',
+			),
+		);
+
+		ok(
+			externalFileCommands.some(
+				(command) =>
+					command.kind === 'upsertFile' &&
+					command.path === '/opt/project/app/a/b/layout.tsx',
+			),
+		);
+
+		ok(
+			externalFileCommands.some(
+				(command) =>
+					command.kind === 'upsertFile' &&
+					command.path === '/opt/project/pages/a/b.tsx',
+			),
+		);
+
+		ok(
+			externalFileCommands.some(
+				(command) =>
+					command.kind === 'upsertFile' &&
 					command.path === '/opt/project/app/a/[b]/c/page.tsx',
 			),
 		);
@@ -76,7 +101,16 @@ describe('next 13 app-directory-boilerplate-calcom', function () {
 		ok(
 			externalFileCommands.some(
 				(command) =>
+					command.kind === 'upsertFile' &&
 					command.path === '/opt/project/app/a/[b]/c/layout.tsx',
+			),
+		);
+
+		ok(
+			externalFileCommands.some(
+				(command) =>
+					command.kind === 'upsertFile' &&
+					command.path === '/opt/project/pages/a/[b]/c.tsx',
 			),
 		);
 
@@ -102,6 +136,20 @@ describe('next 13 app-directory-boilerplate-calcom', function () {
 					command.path === '/opt/project/app/a/layout.tsx' &&
 					command.data.replace(/\W/gm, '') ===
 						LAYOUT_CONTENT.replace(/\W/gm, '')
+				);
+			}),
+		);
+
+		ok(
+			externalFileCommands.some((command) => {
+				return (
+					command.kind === 'upsertFile' &&
+					command.path === '/opt/project/pages/a/index.tsx' &&
+					command.data.replace(/\W/gm, '') ===
+						`
+						'use client';
+						TODO content
+						`.replace(/\W/gm, '')
 				);
 			}),
 		);
@@ -136,6 +184,20 @@ describe('next 13 app-directory-boilerplate-calcom', function () {
 			externalFileCommands.some((command) => {
 				return (
 					command.kind === 'upsertFile' &&
+					command.path === '/opt/project/pages/a/b.tsx' &&
+					command.data.replace(/\W/gm, '') ===
+						`
+						'use client';
+						TODO content
+						`.replace(/\W/gm, '')
+				);
+			}),
+		);
+
+		ok(
+			externalFileCommands.some((command) => {
+				return (
+					command.kind === 'upsertFile' &&
 					command.path === '/opt/project/app/a/[b]/c/page.tsx' &&
 					command.data.replace(/\W/gm, '') ===
 						`
@@ -154,6 +216,20 @@ describe('next 13 app-directory-boilerplate-calcom', function () {
 					command.path === '/opt/project/app/a/[b]/c/layout.tsx' &&
 					command.data.replace(/\W/gm, '') ===
 						LAYOUT_CONTENT.replace(/\W/gm, '')
+				);
+			}),
+		);
+
+		ok(
+			externalFileCommands.some((command) => {
+				return (
+					command.kind === 'upsertFile' &&
+					command.path === '/opt/project/pages/a/[b]/c.tsx' &&
+					command.data.replace(/\W/gm, '') ===
+						`
+						'use client';
+						TODO content
+						`.replace(/\W/gm, '')
 				);
 			}),
 		);
