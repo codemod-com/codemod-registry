@@ -32,7 +32,7 @@ const transform = async (json: DirectoryJSON) => {
 	return executeRepomod(api, repomod, '/', {}, {});
 };
 
-describe('next 13 app-directory-boilerplate-calcom', function () {
+describe('cal.com app-directory-boilerplate-calcom', function () {
 	it('should build correct files', async function (this: Context) {
 		const externalFileCommands = await transform({
 			'/opt/project/pages/a/index.tsx': 'TODO content',
