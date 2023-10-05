@@ -81,7 +81,7 @@ const addUseClientStatement = (oldPath: string) => {
 		});
 
 	if (!hasUseClient) {
-		sourceFile.insertStatements(0, `use client`);
+		sourceFile.insertStatements(0, `'use client';`);
 	}
 };
 
