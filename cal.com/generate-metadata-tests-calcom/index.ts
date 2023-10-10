@@ -125,8 +125,6 @@ const handleFile: HandleFile<Dependencies, State> = async (
 
 	const newPath = api.joinPaths(state.testPath, ...paths);
 
-	console.log(newPath);
-
 	return [
 		{
 			kind: 'upsertFile',
