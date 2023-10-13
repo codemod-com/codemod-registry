@@ -14,7 +14,7 @@
 		"@babel/core": ">=7.13.0 <8.0.0",
 		"@babel/preset-env": "^7.1.6",
 		"@effect/schema": "0.26.1",
-		"@intuita-inc/repomod-engine-api": "^1.2.1",
+		"@intuita-inc/filemod": "1.0.0",
 		"@types/chai": "^4.3.4",
 		"@types/jscodeshift": "^0.11.6",
 		"@types/mocha": "^10.0.1",

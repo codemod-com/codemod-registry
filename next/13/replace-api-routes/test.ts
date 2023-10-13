@@ -4,8 +4,8 @@ import {
 	FileSystemManager,
 	UnifiedFileSystem,
 	buildApi,
-	executeRepomod,
-} from '@intuita-inc/repomod-engine-api';
+	executeFilemod,
+} from '@intuita-inc/filemod';
 import { repomod } from './index.js';
 import tsmorph from 'ts-morph';
 import { deepStrictEqual } from 'node:assert';
@@ -34,7 +34,7 @@ const transform = async (json: DirectoryJSON) => {
 		unifiedFileSystem,
 	}));
 
-	return executeRepomod(api, repomod, '/', {}, {});
+	return executeFilemod(api, repomod, '/', {}, {});
 };
 
 describe('next 13 replace-API-routes', function () {

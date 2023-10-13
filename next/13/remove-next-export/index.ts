@@ -1,13 +1,13 @@
 import { posix } from 'node:path';
 import tsmorph from 'ts-morph';
-import type { Repomod } from '@intuita-inc/repomod-engine-api';
+import type { Filemod } from '@intuita-inc/filemod';
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 type Dependencies = Readonly<{
 	tsmorph: typeof tsmorph;
 }>;
 
-export const repomod: Repomod<Dependencies, Record<string, unknown>> = {
+export const repomod: Filemod<Dependencies, Record<string, unknown>> = {
 	includePatterns: ['**/package.json', '**/next.config.js', '**/*.{md,sh}'],
 	excludePatterns: ['**/node_modules/**'],
 	handleData: async (api, path, data) => {

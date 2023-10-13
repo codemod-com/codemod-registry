@@ -1,4 +1,4 @@
-import { Repomod } from '@intuita-inc/repomod-engine-api';
+import { Filemod } from '@intuita-inc/filemod';
 import jscodeshift from 'jscodeshift';
 
 type Dependencies = {
@@ -14,7 +14,7 @@ const FILE_MARKER = 'fileMarker';
 const FEATURE_FLAG_NAME = 'featureFlagName';
 const FUNCTION_NAME = 'functionName';
 
-export const repomod: Repomod<Dependencies, State> = {
+export const repomod: Filemod<Dependencies, State> = {
 	includePatterns: ['**/*.{js,jsx,ts,tsx,cjs,mjs}'],
 	excludePatterns: ['**/node_modules/**'],
 	initializeState: async (_, previousState) => {

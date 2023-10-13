@@ -4,8 +4,8 @@ import {
 	FileSystemManager,
 	UnifiedFileSystem,
 	buildApi,
-	executeRepomod,
-} from '@intuita-inc/repomod-engine-api';
+	executeFilemod,
+} from '@intuita-inc/filemod';
 import { repomod, projectContainer, subTreeCacheContainer } from './index.js';
 import tsmorph from 'ts-morph';
 import { fromMarkdown } from 'mdast-util-from-markdown';
@@ -59,7 +59,7 @@ const transform = async (json: DirectoryJSON) => {
 		unifiedFileSystem,
 	}));
 
-	return executeRepomod(api, repomod, '/', {}, {});
+	return executeFilemod(api, repomod, '/', {}, {});
 };
 
 describe('next 13 replace-next-head', function () {

@@ -17,7 +17,13 @@ export default function transform(
 		},
 	}).replaceWith((path) => {
 		// Replace addHandler with addApiHandler
-		path.node.callee.property.name = 'addApiHandler';
+		if (
+			'property' in path.node.callee &&
+			'name' in path.node.callee.property
+		) {
+			path.node.callee.property.name = 'addApiHandler';
+		}
+
 		return path.node;
 	});
 

@@ -10,10 +10,7 @@ import tsmorph, {
 	JsxSelfClosingElement,
 } from 'ts-morph';
 
-import type {
-	Repomod,
-	UnifiedFileSystem,
-} from '@intuita-inc/repomod-engine-api';
+import type { Filemod, UnifiedFileSystem } from '@intuita-inc/filemod';
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 type Dependencies = Readonly<{
@@ -340,7 +337,7 @@ type State = {
 	translationsCollected: boolean;
 };
 
-export const repomod: Repomod<Dependencies, State> = {
+export const repomod: Filemod<Dependencies, State> = {
 	includePatterns: ['**/*.{js,jsx,ts,tsx,cjs,mjs,json}'],
 	excludePatterns: ['**/node_modules/**'],
 	initializeState: async (_, previousState) => {
