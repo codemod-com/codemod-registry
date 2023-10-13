@@ -17,10 +17,7 @@ import tsmorph, {
 	FunctionDeclaration,
 } from 'ts-morph';
 
-import type {
-	Repomod,
-	UnifiedFileSystem,
-} from '@intuita-inc/repomod-engine-api';
+import type { Filemod, UnifiedFileSystem } from '@intuita-inc/filemod';
 import type { fromMarkdown } from 'mdast-util-from-markdown';
 import type { visit } from 'unist-util-visit';
 import type { filter } from 'unist-util-filter';
@@ -1027,7 +1024,7 @@ type MetadataTreeNode = {
 };
 
 type FileAPI = Parameters<
-	NonNullable<Repomod<Dependencies, State>['handleFile']>
+	NonNullable<Filemod<Dependencies, State>['handleFile']>
 >[0];
 
 export const projectContainer = buildContainer<tsmorph.Project | null>(null);
@@ -1724,7 +1721,7 @@ const getTsCompilerOptions = async (api: FileAPI, baseUrl: string) => {
 	}
 };
 
-export const repomod: Repomod<Dependencies, Record<string, unknown>> = {
+export const repomod: Filemod<Dependencies, Record<string, unknown>> = {
 	includePatterns: ['**/pages/**/*.{jsx,tsx,js,ts,cjs,ejs,mdx}'],
 	excludePatterns: ['**/node_modules/**', '**/pages/api/**'],
 	handleFile: async (api, path, options) => {

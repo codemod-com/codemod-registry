@@ -4,8 +4,8 @@ import {
 	FileSystemManager,
 	UnifiedFileSystem,
 	buildApi,
-	executeRepomod,
-} from '@intuita-inc/repomod-engine-api';
+	executeFilemod,
+} from '@intuita-inc/filemod';
 import { repomod } from './index.js';
 import { deepStrictEqual } from 'node:assert';
 
@@ -29,7 +29,7 @@ const transform = async (json: DirectoryJSON, options: Options) => {
 
 	const api = buildApi<Record<string, never>>(unifiedFileSystem, () => ({}));
 
-	return executeRepomod(api, repomod, '/', options, {});
+	return executeFilemod(api, repomod, '/', options, {});
 };
 
 describe('next-i18n copy keys', function () {

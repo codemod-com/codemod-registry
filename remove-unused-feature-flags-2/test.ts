@@ -2,8 +2,8 @@ import {
 	FileSystemManager,
 	UnifiedFileSystem,
 	buildApi,
-	executeRepomod,
-} from '@intuita-inc/repomod-engine-api';
+	executeFilemod,
+} from '@intuita-inc/filemod';
 import jscodeshift from 'jscodeshift';
 import { DirectoryJSON, Volume, createFsFromVolume } from 'memfs';
 import { repomod } from './index.js';
@@ -29,7 +29,7 @@ const transform = async (json: DirectoryJSON) => {
 		jscodeshift,
 	}));
 
-	return executeRepomod(
+	return executeFilemod(
 		api,
 		repomod,
 		'/',

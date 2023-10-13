@@ -1,11 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { join, posix } from 'node:path';
 import tsmorph, { SyntaxKind } from 'ts-morph';
-import type {
-	HandleData,
-	HandleFile,
-	Repomod,
-} from '@intuita-inc/repomod-engine-api';
+import type { HandleData, HandleFile, Filemod } from '@intuita-inc/filemod';
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 type Dependencies = Readonly<{
@@ -229,7 +225,7 @@ const buildPageFileData = (
 	};
 };
 
-const handleFile: Repomod<
+const handleFile: Filemod<
 	Dependencies,
 	Record<string, never>
 >['handleFile'] = async (api, path, options) => {
@@ -402,7 +398,7 @@ const handleData: HandleData<Dependencies, State> = async (
 	}
 };
 
-export const repomod: Repomod<Dependencies, State> = {
+export const repomod: Filemod<Dependencies, State> = {
 	includePatterns: ['**/pages/**/*.{js,jsx,ts,tsx}'],
 	excludePatterns: ['**/node_modules/**', '**/pages/api/**'],
 	handleFile,

@@ -5,8 +5,8 @@ import {
 	FileSystemManager,
 	UnifiedFileSystem,
 	buildApi,
-	executeRepomod,
-} from '@intuita-inc/repomod-engine-api';
+	executeFilemod,
+} from '@intuita-inc/filemod';
 import { LAYOUT_CONTENT, repomod } from './index.js';
 import tsmorph from 'ts-morph';
 
@@ -14,12 +14,14 @@ const transform = async (json: DirectoryJSON) => {
 	const volume = Volume.fromJSON(json);
 
 	const fileSystemManager = new FileSystemManager(
-		volume.promises.readdir as any,
-		volume.promises.readFile as any,
-		volume.promises.stat as any,
+		// @ts-expect-error type convergence
+		volume.promises.readdir,
+		volume.promises.readFile,
+		volume.promises.stat,
 	);
 	const unifiedFileSystem = new UnifiedFileSystem(
-		createFsFromVolume(volume) as any,
+		// @ts-expect-error type convergence
+		createFsFromVolume(volume),
 		fileSystemManager,
 	);
 
@@ -29,7 +31,7 @@ const transform = async (json: DirectoryJSON) => {
 		tsmorph,
 	}));
 
-	return executeRepomod(api, repomod, '/', {}, {});
+	return executeFilemod(api, repomod, '/', {}, {});
 };
 
 describe('cal.com app-directory-boilerplate-calcom', function () {

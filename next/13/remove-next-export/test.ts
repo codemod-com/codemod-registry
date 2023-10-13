@@ -2,8 +2,8 @@ import {
 	FileSystemManager,
 	UnifiedFileSystem,
 	buildApi,
-	executeRepomod,
-} from '@intuita-inc/repomod-engine-api';
+	executeFilemod,
+} from '@intuita-inc/filemod';
 import { Volume, createFsFromVolume } from 'memfs';
 import tsmorph from 'ts-morph';
 import { repomod } from './index.js';
@@ -68,7 +68,7 @@ const transform = async () => {
 		tsmorph,
 	}));
 
-	return executeRepomod(api, repomod, '/', {}, {});
+	return executeFilemod(api, repomod, '/', {}, {});
 };
 
 describe('next 13 remove-next-export', function () {

@@ -5,26 +5,28 @@ import {
 	FileSystemManager,
 	UnifiedFileSystem,
 	buildApi,
-	executeRepomod,
-} from '@intuita-inc/repomod-engine-api';
+	executeFilemod,
+} from '@intuita-inc/filemod';
 import { buildData, repomod } from './index.js';
 
 const transform = async (json: DirectoryJSON) => {
 	const volume = Volume.fromJSON(json);
 
 	const fileSystemManager = new FileSystemManager(
-		volume.promises.readdir as any,
-		volume.promises.readFile as any,
-		volume.promises.stat as any,
+		// @ts-expect-error type convergence
+		volume.promises.readdir,
+		volume.promises.readFile,
+		volume.promises.stat,
 	);
 	const unifiedFileSystem = new UnifiedFileSystem(
-		createFsFromVolume(volume) as any,
+		// @ts-expect-error type convergence
+		createFsFromVolume(volume),
 		fileSystemManager,
 	);
 
 	const api = buildApi<Record<string, never>>(unifiedFileSystem, () => ({}));
 
-	return executeRepomod(api, repomod, '/', { testPath: '/opt/tests' }, {});
+	return executeFilemod(api, repomod, '/', { testPath: '/opt/tests' }, {});
 };
 
 type ExternalFileCommand = Awaited<ReturnType<typeof transform>>[number];

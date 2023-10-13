@@ -9,10 +9,7 @@ import tsmorph, {
 	Block,
 } from 'ts-morph';
 
-import type {
-	Repomod,
-	UnifiedFileSystem,
-} from '@intuita-inc/repomod-engine-api';
+import type { Filemod, UnifiedFileSystem } from '@intuita-inc/filemod';
 
 import { posix } from 'node:path';
 import { ParsedPath } from 'path/posix';
@@ -349,7 +346,7 @@ const rewriteAPIRoute = (sourceFile: SourceFile) => {
 	rewriteReqResImports(sourceFile);
 };
 
-export const repomod: Repomod<Dependencies, Record<string, unknown>> = {
+export const repomod: Filemod<Dependencies, Record<string, unknown>> = {
 	includePatterns: ['**/pages/api/**/*.{js,ts,cjs,ejs}'],
 	excludePatterns: ['**/node_modules/**'],
 	handleFile: async (api, path) => {

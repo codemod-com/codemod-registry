@@ -11,11 +11,7 @@ import tsmorph, {
 	SyntaxKind,
 	FunctionExpression,
 } from 'ts-morph';
-import type {
-	HandleData,
-	HandleFile,
-	Repomod,
-} from '@intuita-inc/repomod-engine-api';
+import type { HandleData, HandleFile, Filemod } from '@intuita-inc/filemod';
 import type { fromMarkdown } from 'mdast-util-from-markdown';
 import type { visit } from 'unist-util-visit';
 
@@ -714,7 +710,7 @@ const injectLayoutClientComponent = (sourceFile: SourceFile) => {
 	);
 };
 
-const handleFile: Repomod<
+const handleFile: Filemod<
 	Dependencies,
 	Record<string, never>
 >['handleFile'] = async (api, path, options) => {
@@ -1076,7 +1072,7 @@ const handleData: HandleData<Dependencies, State> = async (
 	}
 };
 
-export const repomod: Repomod<Dependencies, State> = {
+export const repomod: Filemod<Dependencies, State> = {
 	includePatterns: ['**/pages/**/*.{js,jsx,ts,tsx,cjs,mjs,mdx}'],
 	excludePatterns: ['**/node_modules/**', '**/pages/api/**'],
 	handleFile,

@@ -1,8 +1,4 @@
-import {
-	Repomod,
-	HandleData,
-	HandleFile,
-} from '@intuita-inc/repomod-engine-api';
+import { Filemod, HandleData, HandleFile } from '@intuita-inc/filemod';
 import { posix } from 'node:path';
 
 export const buildData = (appPath: string) => `
@@ -83,7 +79,7 @@ type State = {
 	testPath: string | null;
 };
 
-const initializeState: Repomod<Dependencies, State>['initializeState'] = async (
+const initializeState: Filemod<Dependencies, State>['initializeState'] = async (
 	options,
 ) => ({
 	testPath: typeof options.testPath === 'string' ? options.testPath : null,
@@ -157,7 +153,7 @@ const handleData: HandleData<Dependencies, State> = async (
 	};
 };
 
-export const repomod: Repomod<Dependencies, State> = {
+export const repomod: Filemod<Dependencies, State> = {
 	includePatterns: ['**/pages/**/*.{js,jsx,ts,tsx}'],
 	excludePatterns: ['**/node_modules/**', '**/pages/api/**'],
 	initializeState,

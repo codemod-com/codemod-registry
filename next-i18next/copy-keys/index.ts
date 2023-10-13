@@ -1,4 +1,4 @@
-import { Repomod } from '@intuita-inc/repomod-engine-api';
+import { Filemod } from '@intuita-inc/filemod';
 
 type Dependencies = Record<string, never>;
 type State = {
@@ -8,7 +8,7 @@ type State = {
 	map: Map<string, string>;
 };
 
-export const repomod: Repomod<Dependencies, State> = {
+export const repomod: Filemod<Dependencies, State> = {
 	includePatterns: ['**/locales/**/*.json'],
 	excludePatterns: ['**/node_modules/**'],
 	initializeState: async (options) => {
