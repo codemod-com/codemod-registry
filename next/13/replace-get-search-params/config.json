@@ -1,0 +1,14 @@
+{
+	"schemaVersion": "1.0.0",
+	"name": "next/13/replace-get-search-params",
+	"description": "The codemod replaces getSearchParams with compatGetSearchParams",
+	"engine": "jscodeshift",
+	"extensions": ["js*", "ts*"],
+	"dependencies": [
+		{
+			"name": "next",
+			"range": "<13"
+		}
+	],
+	"owner": "intuita"
+}
