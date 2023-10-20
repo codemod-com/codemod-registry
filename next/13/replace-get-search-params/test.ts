@@ -43,7 +43,7 @@ const transform = async (json: DirectoryJSON) => {
 	);
 };
 
-describe('next 13 replace-replace-get-search-params', function () {
+describe('next 13 replace-replace-use-search-params', function () {
 	it('should replace useSearchParams with useCompatSearchParams', async function (this: Context) {
 		const A_CONTENT = `
 			import { useSearchParams, useParams } from 'next/navigation';

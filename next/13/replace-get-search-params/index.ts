@@ -1,3 +1,19 @@
+/**
+ * This code uses searchParamsToUrlQuery function from public repository, which is subject to the original license terms.
+ * Original file: https://github.com/vercel/next.js/blob/ab7b0f59fb0d793fb4ee593ae93f7e08bab23b5b/packages/next/src/shared/lib/router/utils/querystring.ts
+ *
+ * The MIT License (MIT)
+
+Copyright (c) 2023 Vercel, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * License URL: https://github.com/vercel/next.js/blob/canary/license.md
+ */
+
 import {
 	CallExpression,
 	Collection,
@@ -69,7 +85,6 @@ export const useCompatSearchParams = () => {
 
     const paramsAsObj = {
       ...searchParams, 
-      // Merge params into \`query\`, overwriting any specified in search
       //ref: https://github.com/vercel/next.js/blob/ab7b0f59fb0d793fb4ee593ae93f7e08bab23b5b/packages/next/src/shared/lib/router/router.ts#L1502
       ...params,
   };
