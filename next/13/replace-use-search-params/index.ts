@@ -7,7 +7,7 @@ import {
 } from 'jscodeshift';
 import jscodeshift from 'jscodeshift';
 
-import type { HandleFile, Repomod } from '@intuita-inc/repomod-engine-api';
+import type { HandleFile, Filemod } from '@intuita-inc/filemod';
 
 type Settings = {
 	useCompatSearchParamsHookAbsolutePath: string;
@@ -195,7 +195,7 @@ const noop = {
 	kind: 'noop',
 } as const;
 
-export const repomod: Repomod<Dependencies, State> = {
+export const repomod: Filemod<Dependencies, State> = {
 	includePatterns: ['**/*.{jsx,tsx,js,ts,cjs,ejs}'],
 	excludePatterns: ['**/node_modules/**', '**/pages/api/**'],
 	initializeState: async (_, previousState) => {

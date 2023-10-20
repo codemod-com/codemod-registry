@@ -1,4 +1,3 @@
-
 # Migrate prop types to typescript
 
 ## Description
@@ -7,13 +6,13 @@ This codemod removes `React.FC`, `React.FunctionComponent` and `React.SFC` and r
 
 This codemod supports:
 
-- Inline defined props.
-- Generics.
-- Props defined with intersection.
-- Component modules defined using intersection.
-- Regular named functions.
-- Functions that accept a component definition.
-- Using FC, FunctionComponent and SFC as a named export.
+-   Inline defined props.
+-   Generics.
+-   Props defined with intersection.
+-   Component modules defined using intersection.
+-   Regular named functions.
+-   Functions that accept a component definition.
+-   Using FC, FunctionComponent and SFC as a named export.
 
 ## Example
 
