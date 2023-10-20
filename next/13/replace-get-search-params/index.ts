@@ -9,7 +9,10 @@ import jscodeshift from 'jscodeshift';
 
 import type { HandleFile, Repomod } from '@intuita-inc/repomod-engine-api';
 
-type Settings = { hookPath: string };
+type Settings = {
+	useCompatSearchParamsHookAbsolutePath: string;
+	useCompatSearchParamsHookModuleSpecifier: string;
+};
 
 type ModFunction<T, D extends 'read' | 'write'> = (
 	j: JSCodeshift,
@@ -22,6 +25,58 @@ type LazyModFunction = [
 	Collection<any>,
 	Settings,
 ];
+
+type Dependencies = {
+	jscodeshift: typeof jscodeshift;
+};
+
+type State = {
+	useCompatSearchParamsHookCreated: boolean;
+};
+
+type FileCommand = Awaited<ReturnType<HandleFile<Dependencies, State>>>[number];
+
+export const USE_COMPAT_SEARCH_PARAMS_HOOK_CONTENT = `
+import { ReadonlyURLSearchParams, useParams, useSearchParams } from "next/navigation"
+
+type ParsedUrlQuery = Record<string, string | string[]>;
+
+// ref: https://github.com/vercel/next.js/blob/ab7b0f59fb0d793fb4ee593ae93f7e08bab23b5b/packages/next/src/shared/lib/router/utils/querystring.ts#L3C17-L3C39
+
+export const searchParamsToUrlQuery = (
+    searchParams: ReadonlyURLSearchParams
+  ): ParsedUrlQuery => {
+    const query: ParsedUrlQuery = {}
+
+    searchParams.forEach((value, key) => {
+      if (!query.hasOwnProperty(key)) {
+        query[key] = value
+      } else if (Array.isArray(query[key])) {
+        (query[key] as string[]).push(value)
+      } else {
+        query[key] = [query[key] as string, value]
+      }
+    })
+    return query
+  }
+
+  
+export const useCompatSearchParams = () => {
+    const _searchParams = useSearchParams();
+    const params = useParams() ?? {};
+
+    const searchParams =  searchParamsToUrlQuery(_searchParams);
+
+    const paramsAsObj = {
+      ...searchParams, 
+      // Merge params into \`query\`, overwriting any specified in search
+      //ref: https://github.com/vercel/next.js/blob/ab7b0f59fb0d793fb4ee593ae93f7e08bab23b5b/packages/next/src/shared/lib/router/router.ts#L1502
+      ...params,
+  };
+
+   return new Map(Object.entries(paramsAsObj));
+}
+`;
 
 const replaceCallExpression: ModFunction<CallExpression, 'write'> = (
 	j,
@@ -56,13 +111,13 @@ const findCallExpressions: ModFunction<File, 'read'> = (j, root, settings) => {
 const addImportDeclaration: ModFunction<File, 'write'> = (
 	j,
 	root,
-	settings,
+	{ useCompatSearchParamsHookModuleSpecifier },
 ) => {
 	root.find(j.Program).forEach((programPath) => {
 		programPath.value.body.unshift(
 			j.importDeclaration(
 				[j.importSpecifier(j.identifier('useCompatSearchParams'))],
-				j.literal(`${settings.hookPath}/useCompatSearchParams`),
+				j.literal(useCompatSearchParamsHookModuleSpecifier),
 			),
 		);
 	});
@@ -103,21 +158,17 @@ const findImportDeclaration: ModFunction<File, 'read'> = (
 ) => {
 	const lazyModFunctions: LazyModFunction[] = [];
 
-	root.find(j.ImportDeclaration)
-		.filter((importDeclarationPath) => {
-			const sourceValue = importDeclarationPath.value.source.value;
-			return (
-				sourceValue === 'next/navigation' ||
-				sourceValue === 'next/router'
-			);
-		})
-		.forEach((importDeclarationPath) => {
-			lazyModFunctions.push([
-				replaceImportDeclaration,
-				j(importDeclarationPath),
-				settings,
-			]);
-		});
+	root.find(j.ImportDeclaration, {
+		source: {
+			value: 'next/navigation',
+		},
+	}).forEach((importDeclarationPath) => {
+		lazyModFunctions.push([
+			replaceImportDeclaration,
+			j(importDeclarationPath),
+			settings,
+		]);
+	});
 
 	return [false, lazyModFunctions];
 };
@@ -165,62 +216,6 @@ export default function transform(
 	return root.toSource();
 }
 
-const useCompatSearchParamsHookContent = `
-import { ReadonlyURLSearchParams, useParams, useSearchParams } from "next/navigation"
-
-type ParsedUrlQuery = Record<string, string | string[]>;
-
-// ref: https://github.com/vercel/next.js/blob/ab7b0f59fb0d793fb4ee593ae93f7e08bab23b5b/packages/next/src/shared/lib/router/utils/querystring.ts#L3C17-L3C39
-
-export const searchParamsToUrlQuery = (
-    searchParams: ReadonlyURLSearchParams
-  ): ParsedUrlQuery => {
-    const query: ParsedUrlQuery = {}
-
-    searchParams.forEach((value, key) => {
-      if (!query.hasOwnProperty(key)) {
-        query[key] = value
-      } else if (Array.isArray(query[key])) {
-        (query[key] as string[]).push(value)
-      } else {
-        query[key] = [query[key] as string, value]
-      }
-    })
-    return query
-  }
-
-  
-export const useCompatSearchParams = () => {
-    const _searchParams = useSearchParams();
-    const params = useParams() ?? {};
-
-    const searchParams =  searchParamsToUrlQuery(_searchParams);
-
-    const paramsAsObj = {
-      ...searchParams, 
-      // Merge params into \`query\`, overwriting any specified in search
-      //ref: https://github.com/vercel/next.js/blob/ab7b0f59fb0d793fb4ee593ae93f7e08bab23b5b/packages/next/src/shared/lib/router/router.ts#L1502
-      ...params,
-  };
-
-   return new Map(Object.entries(paramsAsObj));
-}
-`;
-
-type Dependencies = {
-	jscodeshift: typeof jscodeshift;
-};
-
-type State = {
-	useCompatSearchParamsHookCreated: boolean;
-};
-
-type FileCommand = Awaited<ReturnType<HandleFile<Dependencies, State>>>[number];
-
-const enum FilePurpose {
-	USE_COMPAT_SEARCH_PARAMS_HOOK = 'USE_COMPAT_SEARCH_PARAMS_HOOK',
-}
-
 const noop = {
 	kind: 'noop',
 } as const;
@@ -238,29 +233,30 @@ export const repomod: Repomod<Dependencies, State> = {
 	handleFile: async (_, path, options, state) => {
 		const commands: FileCommand[] = [];
 
+		if (typeof options.useCompatSearchParamsHookAbsolutePath !== 'string') {
+			throw new Error(
+				'Missing useCompatSearchParamsHookAbsolutePath option',
+			);
+		}
+
+		if (state !== null && !state.useCompatSearchParamsHookCreated) {
+			commands.push({
+				kind: 'upsertFile',
+				path: options.useCompatSearchParamsHookAbsolutePath,
+				options: {
+					...options,
+					fileContent: USE_COMPAT_SEARCH_PARAMS_HOOK_CONTENT,
+				},
+			});
+
+			state.useCompatSearchParamsHookCreated = true;
+		}
+
 		commands.push({
 			kind: 'upsertFile',
 			path,
 			options,
 		});
-
-		if (state !== null && !state.useCompatSearchParamsHookCreated) {
-			state.useCompatSearchParamsHookCreated = true;
-			const hookPath =
-				typeof options.hookPath === 'string'
-					? options.hookPath
-					: 'hooks';
-
-			commands.push({
-				kind: 'upsertFile',
-				path: `${hookPath}/useCompatSearchParams.tsx`,
-				options: {
-					...options,
-					filePurpose: FilePurpose.USE_COMPAT_SEARCH_PARAMS_HOOK,
-					fileContent: useCompatSearchParamsHookContent,
-				},
-			});
-		}
 
 		return commands;
 	},
@@ -268,30 +264,40 @@ export const repomod: Repomod<Dependencies, State> = {
 		api,
 		path,
 		data,
-		{ hookPath, filePurpose, fileContent },
+		{
+			useCompatSearchParamsHookAbsolutePath,
+			useCompatSearchParamsHookModuleSpecifier,
+		},
 	) => {
 		if (
-			filePurpose === FilePurpose.USE_COMPAT_SEARCH_PARAMS_HOOK &&
-			typeof fileContent === 'string'
+			typeof useCompatSearchParamsHookAbsolutePath !== 'string' ||
+			typeof useCompatSearchParamsHookModuleSpecifier !== 'string'
 		) {
+			throw new Error('Missing required options');
+		}
+
+		if (path === useCompatSearchParamsHookAbsolutePath) {
 			return {
 				kind: 'upsertData',
 				path,
-				data: fileContent,
+				data: USE_COMPAT_SEARCH_PARAMS_HOOK_CONTENT,
 			};
 		}
 
 		const { jscodeshift } = api.getDependencies();
 
-		if (typeof hookPath !== 'string') {
-			throw new Error('Missing hookPath');
+		try {
+			transform(jscodeshift, data, {
+				useCompatSearchParamsHookAbsolutePath,
+				useCompatSearchParamsHookModuleSpecifier,
+			});
+		} catch (e) {
+			console.error(e);
 		}
-
-		if (!data.includes('useSearchParams')) {
-			return noop;
-		}
-
-		const rewrittenData = transform(jscodeshift, data, { hookPath });
+		const rewrittenData = transform(jscodeshift, data, {
+			useCompatSearchParamsHookAbsolutePath,
+			useCompatSearchParamsHookModuleSpecifier,
+		});
 
 		if (rewrittenData === undefined) {
 			return noop;
