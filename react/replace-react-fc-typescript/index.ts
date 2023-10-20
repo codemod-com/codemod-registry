@@ -35,7 +35,6 @@ import {
 	TSTypeAnnotation,
 	JSCodeshift,
 	FunctionExpression,
-	CallExpression,
 } from 'jscodeshift';
 
 export const parser = 'tsx';
@@ -46,15 +45,10 @@ const isTsTypeReference = (x: unknown): x is TSTypeReference =>
 	(x as TSTypeReference).type === 'TSTypeReference';
 const isObjectPattern = (x: unknown): x is ObjectPattern =>
 	(x as ObjectPattern).type === 'ObjectPattern';
-const isTsIntersectionType = (x: unknown): x is TSIntersectionType =>
-	(x as TSIntersectionType).type === 'TSIntersectionType';
+
 const isArrowFunctionExpression = (x: unknown): x is ArrowFunctionExpression =>
 	(x as ArrowFunctionExpression).type === 'ArrowFunctionExpression';
 // Using a function that accepts a component definition
-const isCallExpression = (x: unknown): x is CallExpression =>
-	x?.type === 'CallExpression';
-const isTSIntersectionType = (x: unknown): x is TSIntersectionType =>
-	x?.type === 'TSIntersectionType';
 
 export default function transform(fileInfo: FileInfo, api: API) {
 	const j = api.j;
@@ -63,10 +57,12 @@ export default function transform(fileInfo: FileInfo, api: API) {
 		let reactFcOrSfcNode;
 		if (isIdentifier(n.node.id)) {
 			if (
-				isTSIntersectionType(n.node.id.typeAnnotation!.typeAnnotation)
+				j.TSIntersectionType.check(
+					n.node.id.typeAnnotation!.typeAnnotation,
+				)
 			) {
 				reactFcOrSfcNode = n.node.id.typeAnnotation!.typeAnnotation
-					.types[0] as TSTypeReference;
+					?.types[0] as TSTypeReference;
 			} else {
 				reactFcOrSfcNode = n.node.id.typeAnnotation!
 					.typeAnnotation as TSTypeReference;
@@ -84,7 +80,7 @@ export default function transform(fileInfo: FileInfo, api: API) {
 		);
 		// build the new nodes
 		const componentFunctionNode = (
-			isCallExpression(n.node.init)
+			j.CallExpression.check(n.node.init)
 				? n.node.init.arguments[0]
 				: n.node.init
 		) as ArrowFunctionExpression | FunctionExpression;
@@ -122,7 +118,7 @@ export default function transform(fileInfo: FileInfo, api: API) {
 			componentFunctionFirstParameter = j.objectPattern.from({
 				...restParams,
 				// remove locations because properties might have a spread like ({ id, ...rest }) => and it breaks otherwise
-				// @ts-expect-error
+				/* eslint-disable @typescript-eslint/no-unused-vars*/
 				properties: properties.map(({ loc, ...rest }) => {
 					const key =
 						rest.type.slice(0, 1).toLowerCase() +
@@ -131,6 +127,7 @@ export default function transform(fileInfo: FileInfo, api: API) {
 					// manually doing this works ok. restElement has the properties needed
 					if (key === 'restElement') {
 						const prop = rest as unknown;
+						// @ts-expect-error props unknonw
 						return j.restProperty.from({ argument: prop.argument });
 					}
 					return j[key].from({ ...rest });
@@ -152,7 +149,7 @@ export default function transform(fileInfo: FileInfo, api: API) {
 			});
 		}
 		let newVariableDeclarator: VariableDeclarator;
-		if (isCallExpression(n.node.init)) {
+		if (j.CallExpression.check(n.node.init)) {
 			newVariableDeclarator = j.variableDeclarator.from({
 				...n.node,
 				init: {
@@ -173,7 +170,7 @@ export default function transform(fileInfo: FileInfo, api: API) {
 
 	function removeReactFCorSFCdeclaration(n: ASTPath<VariableDeclarator>) {
 		const { id, ...restOfNode } = n.node;
-		// @ts-expect-error
+		/* eslint-disable @typescript-eslint/no-unused-vars*/
 		const { typeAnnotation, ...restOfId } = id as Identifier;
 		const newId = j.identifier.from({ ...restOfId });
 		const newVariableDeclarator = j.variableDeclarator.from({
@@ -188,10 +185,11 @@ export default function transform(fileInfo: FileInfo, api: API) {
 		let hasModifications = false;
 		const newSource = root
 			.find(j.VariableDeclarator, (n: unknown) => {
+				// @ts-expect-error n unknown
 				const identifier = n?.id;
 				let typeName;
 				if (
-					isTSIntersectionType(
+					j.TSIntersectionType.check(
 						identifier?.typeAnnotation?.typeAnnotation,
 					)
 				) {
@@ -254,12 +252,12 @@ function extractPropsDefinitionFromReactFC(
 
 	// form of React.FC<Props> or React.SFC<Props>
 	if (isTsTypeReference(typeParameterFirstParam)) {
-		// @ts-expect-error
+		/* eslint-disable @typescript-eslint/no-unused-vars*/ /* eslint-disable @typescript-eslint/no-unused-vars*/
 		const { loc, ...rest } = typeParameterFirstParam;
 		newInnerTypeAnnotation = j.tsTypeReference.from({ ...rest });
-	} else if (isTsIntersectionType(typeParameterFirstParam)) {
+	} else if (j.TSIntersectionType.check(typeParameterFirstParam)) {
 		// form of React.FC<Props & Props2>
-		// @ts-expect-error
+		/* eslint-disable @typescript-eslint/no-unused-vars*/
 		const { loc, ...rest } = typeParameterFirstParam;
 		newInnerTypeAnnotation = j.tsIntersectionType.from({
 			...rest,
@@ -282,7 +280,7 @@ function extractPropsDefinitionFromReactFC(
 }
 
 // dynamically call the api method to build the proper node. For example TSPropertySignature becomes tsPropertySignature
-// @ts-expect-error
+// @ts-expect-error object types 	/* eslint-disable @typescript-eslint/no-unused-vars*/
 function buildDynamicalNodeByType(j: JSCodeshift, { loc, ...rest }: unknown) {
 	const key = rest.type.slice(0, 2).toLowerCase() + rest.type.slice(2);
 	return j[key].from({ ...rest });
