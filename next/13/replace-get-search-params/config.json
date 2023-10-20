@@ -2,12 +2,28 @@
 	"schemaVersion": "1.0.0",
 	"name": "next/13/replace-get-search-params",
 	"description": "The codemod replaces getSearchParams with compatGetSearchParams",
-	"engine": "jscodeshift",
+	"engine": "repomod",
 	"extensions": ["js*", "ts*"],
 	"dependencies": [
 		{
 			"name": "next",
 			"range": "<13"
+		}
+	],
+	"arguments": [
+		{
+			"name": "useCompatSearchParamsHookAbsolutePath",
+			"description": "Absolute path of the hook that will be created by the codemod",
+			"kind": "string",
+			"required": true,
+			"default": ""
+		},
+		{
+			"name": "useCompatSearchParamsHookModuleSpecifier",
+			"description": "The string that will be used as ModuleSpecifier for the import desclarations that will be inserted (import { useCompatSearchParams } from 'useCompatSearchParamsHookModuleSpecifier')",
+			"kind": "string",
+			"default": "",
+			"required": true
 		}
 	],
 	"owner": "intuita"
