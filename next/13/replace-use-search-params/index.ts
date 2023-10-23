@@ -37,10 +37,8 @@ type State = {
 type FileCommand = Awaited<ReturnType<HandleFile<Dependencies, State>>>[number];
 
 export const USE_COMPAT_SEARCH_PARAMS_HOOK_CONTENT = `
-import {  useParams, useSearchParams } from "next/navigation"
-
-  export const useCompatSearchParams = () => {
-    const _searchParams = useSearchParams();
+export const useCompatSearchParams = () => {
+    const _searchParams = useSearchParams() ?? new URLSearchParams();
     const params = useParams() ?? {};
 
     const searchParams = new URLSearchParams(_searchParams.toString());
@@ -55,7 +53,7 @@ import {  useParams, useSearchParams } from "next/navigation"
    
     });
   
-    return searchParams;
+    return new ReadonlyURLSearchParams(searchParams);
   };
 `;
 
