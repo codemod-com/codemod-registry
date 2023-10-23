@@ -42,10 +42,7 @@ const addUseClientStatement = (
 		},
 	});
 
-	const sourceFile = project.createSourceFile(
-		oldPath?.replace(/\.mdx$/, '.tsx') ?? '',
-		oldData,
-	);
+	const sourceFile = project.createSourceFile(oldPath ?? '', oldData);
 
 	const hasUseClient = sourceFile
 		.getDescendantsOfKind(SyntaxKind.StringLiteral)
@@ -85,10 +82,7 @@ const buildPageFileData = (
 		const oldPath =
 			typeof options.oldPath === 'string' ? options.oldPath : null;
 
-		const sourceFile = project.createSourceFile(
-			oldPath?.replace(/\.mdx$/, '.tsx') ?? '',
-			input,
-		);
+		const sourceFile = project.createSourceFile(oldPath ?? '', input);
 
 		sourceFile.getFunctions().forEach((fn) => {
 			if (fn.isDefaultExport()) {
@@ -221,10 +215,7 @@ const handleFile: Filemod<
 			},
 		});
 
-		const sourceFile = project.createSourceFile(
-			path?.replace(/\.mdx$/, '.tsx') ?? '',
-			oldData,
-		);
+		const sourceFile = project.createSourceFile(path ?? '', oldData);
 
 		const notNeedLayout = sourceFile
 			.getDescendantsOfKind(SyntaxKind.JsxOpeningElement)
@@ -260,7 +251,7 @@ export default Page;`;
 				path: posix.format({
 					root: parsedPath.root,
 					dir: newDir,
-					ext: parsedPath.ext === '.mdx' ? '.mdx' : '.tsx',
+					ext: parsedPath.ext,
 					name: 'page',
 				}),
 				options: {
@@ -275,7 +266,7 @@ export default Page;`;
 				path: posix.format({
 					root: parsedPath.root,
 					dir: parsedPath.dir,
-					ext: parsedPath.ext === '.mdx' ? '.mdx' : '.tsx',
+					ext: parsedPath.ext,
 					name: parsedPath.name,
 				}),
 				options: {
