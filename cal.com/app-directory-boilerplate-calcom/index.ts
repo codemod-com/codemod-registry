@@ -12,46 +12,15 @@ const removeLeadingLineBreaks = (input: string): string => {
 	return input.replace(/^\n+/, '');
 };
 
-export const LAYOUT_CONTENT = `
-import { headers } from "next/headers";
-import { type ReactElement } from "react";
-// default layout
-import { getLayout } from "@calcom/features/MainLayout";
-
-import PageWrapper from "@components/PageWrapperAppDir";
-
-type LayoutProps = {
-	children: ReactElement;
-};
-
-export default function Layout({ children }: LayoutProps) {
-	const h = headers();
-	const nonce = h.get("x-nonce") ?? undefined;
-
-	return (
-		<PageWrapper
-		getLayout={getLayout}
-		requiresLicense={false}
-		pageProps={children?.props}
-		nonce={nonce}
-		themeBasis={null}>
-			{children}
-		</PageWrapper>
-	);
-}
-`;
-
 const enum FilePurpose {
 	ORIGINAL_PAGE = 'ORIGINAL_PAGE',
 	// route directories
 	ROUTE_PAGE = 'ROUTE_PAGE',
-	ROUTE_LAYOUT = 'ROUTE_LAYOUT',
 }
 
 const map = new Map([
 	[FilePurpose.ORIGINAL_PAGE, ''],
 	[FilePurpose.ROUTE_PAGE, ''],
-	[FilePurpose.ROUTE_LAYOUT, ''],
 ]);
 
 type State = Record<string, never>;
@@ -241,9 +210,34 @@ const handleFile: Filemod<
 		return [];
 	}
 
+	const oldData = await api.readFile(path);
+
 	if (!endsWithPages) {
+		const project = new tsmorph.Project({
+			useInMemoryFileSystem: true,
+			skipFileDependencyResolution: true,
+			compilerOptions: {
+				allowJs: true,
+			},
+		});
+
+		const sourceFile = project.createSourceFile(
+			path?.replace(/\.mdx$/, '.tsx') ?? '',
+			oldData,
+		);
+
+		const notNeedLayout = sourceFile
+			.getDescendantsOfKind(SyntaxKind.JsxOpeningElement)
+			.some(
+				(jsxOpeningElement) =>
+					jsxOpeningElement.getTagNameNode().getText() === 'Shell',
+			);
+
 		const newDirArr = directoryNames.map((name) =>
-			name.replace('pages', 'app'),
+			name.replace(
+				'pages',
+				`app/future/${notNeedLayout ? '(no-layout)' : '(layout)'}`,
+			),
 		);
 
 		if (!nameIsIndex) {
@@ -260,8 +254,6 @@ const handleFile: Filemod<
 // TODO add metadata
 export default Page;`;
 
-		const oldData = await api.readFile(path);
-
 		const commands: FileCommand[] = [
 			{
 				kind: 'upsertFile',
@@ -276,21 +268,6 @@ export default Page;`;
 					filePurpose: FilePurpose.ROUTE_PAGE,
 					oldPath: path,
 					oldData: removeLeadingLineBreaks(pageContent),
-				},
-			},
-			{
-				kind: 'upsertFile',
-				path: posix.format({
-					root: parsedPath.root,
-					dir: newDir,
-					ext: parsedPath.ext === '.mdx' ? '.mdx' : '.tsx',
-					name: 'layout',
-				}),
-				options: {
-					...options,
-					filePurpose: FilePurpose.ROUTE_LAYOUT,
-					oldPath: path,
-					data: removeLeadingLineBreaks(LAYOUT_CONTENT),
 				},
 			},
 			{
@@ -350,29 +327,6 @@ const handleData: HandleData<Dependencies, State> = async (
 
 		if (filePurpose === FilePurpose.ROUTE_PAGE && options.oldPath) {
 			return buildPageFileData(api, path, options, filePurpose);
-		}
-
-		if (filePurpose === FilePurpose.ROUTE_LAYOUT && options.data) {
-			const { tsmorph } = api.getDependencies();
-
-			const project = new tsmorph.Project({
-				useInMemoryFileSystem: true,
-				skipFileDependencyResolution: true,
-				compilerOptions: {
-					allowJs: true,
-				},
-			});
-
-			const sourceFile = project.createSourceFile(
-				path,
-				String(options.data),
-			);
-
-			return {
-				kind: 'upsertData',
-				path,
-				data: sourceFile.getFullText(),
-			};
 		}
 
 		if (
