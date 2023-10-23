@@ -37,7 +37,7 @@ const transform = async (json: DirectoryJSON) => {
 describe('cal.com app-directory-boilerplate-calcom', function () {
 	it('should build correct files', async function (this: Context) {
 		const externalFileCommands = await transform({
-			'/opt/project/pages/a/index.tsx': 'TODO content', // root page
+			'/opt/project/pages/a/index.tsx': 'TODO content',
 			'/opt/project/pages/a/b.tsx': `
 			export default function B(props) {
 				return <Shell isPublic title='1'>Shell</Shell>
@@ -48,9 +48,10 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 				return <Shell  subtitle='1'>Shell</Shell>
 			}
 			`,
+			'/opt/project/pages/a/d.tsx': 'TODO content',
 		});
 
-		deepStrictEqual(externalFileCommands.length, 6);
+		deepStrictEqual(externalFileCommands.length, 8);
 
 		ok(
 			externalFileCommands.some(
@@ -100,6 +101,23 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 				(command) =>
 					command.kind === 'upsertFile' &&
 					command.path === '/opt/project/pages/a/[b]/c.tsx',
+			),
+		);
+
+		ok(
+			externalFileCommands.some(
+				(command) =>
+					command.kind === 'upsertFile' &&
+					command.path ===
+						'/opt/project/app/future/(layout)/a/d/page.tsx',
+			),
+		);
+
+		ok(
+			externalFileCommands.some(
+				(command) =>
+					command.kind === 'upsertFile' &&
+					command.path === '/opt/project/pages/a/d.tsx',
 			),
 		);
 
@@ -192,6 +210,36 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 						export default function C(props) {
 							return <Shell  subtitle='1'>Shell</Shell>
 						}
+						`.replace(/\W/gm, '')
+				);
+			}),
+		);
+
+		ok(
+			externalFileCommands.some((command) => {
+				return (
+					command.kind === 'upsertFile' &&
+					command.path ===
+						'/opt/project/app/future/(layout)/a/d/page.tsx' &&
+					command.data.replace(/\W/gm, '') ===
+						`
+						import Page from "@pages/a/d";
+						// TODO add metadata
+						export default Page;
+					`.replace(/\W/gm, '')
+				);
+			}),
+		);
+
+		ok(
+			externalFileCommands.some((command) => {
+				return (
+					command.kind === 'upsertFile' &&
+					command.path === '/opt/project/pages/a/d.tsx' &&
+					command.data.replace(/\W/gm, '') ===
+						`
+						'use client';
+						TODO content
 						`.replace(/\W/gm, '')
 				);
 			}),
