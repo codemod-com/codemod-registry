@@ -266,14 +266,6 @@ export const repomod: Filemod<Dependencies, State> = {
 
 		const { jscodeshift } = api.getDependencies();
 
-		try {
-			transform(jscodeshift, data, {
-				useCompatSearchParamsHookAbsolutePath,
-				useCompatSearchParamsHookModuleSpecifier,
-			});
-		} catch (e) {
-			console.error(e);
-		}
 		const rewrittenData = transform(jscodeshift, data, {
 			useCompatSearchParamsHookAbsolutePath,
 			useCompatSearchParamsHookModuleSpecifier,
