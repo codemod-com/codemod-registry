@@ -42,14 +42,20 @@ import {  useParams, useSearchParams } from "next/navigation"
   export const useCompatSearchParams = () => {
     const _searchParams = useSearchParams();
     const params = useParams() ?? {};
-  
-    const map = new Map<string, string[] | string>(_searchParams);
-  
+
+    const searchParams = new URLSearchParams(_searchParams.toString());
+
     Object.getOwnPropertyNames(params).forEach((key) => {
-      map.set(key, params[key]);
+      const param = params[key];
+      const paramArr = typeof param === 'string' ?  param.split('/') : param;
+
+      paramArr.forEach(p => {
+        searchParams.append(key, p)
+      })
+   
     });
   
-    return map;
+    return searchParams;
   };
 `;
 
@@ -148,7 +154,7 @@ const findImportDeclaration: ModFunction<File, 'read'> = (
 	return [false, lazyModFunctions];
 };
 
-export default function transform(
+function transform(
 	jscodeshift: JSCodeshift,
 	data: string,
 	settings: Settings,
@@ -207,7 +213,6 @@ export const repomod: Filemod<Dependencies, State> = {
 	},
 	handleFile: async (_, path, options, state) => {
 		const commands: FileCommand[] = [];
-
 		if (typeof options.useCompatSearchParamsHookAbsolutePath !== 'string') {
 			throw new Error(
 				'Missing useCompatSearchParamsHookAbsolutePath option',
