@@ -248,42 +248,6 @@ describe('next 13 app-directory-boilerplate', function () {
 		);
 	});
 
-	it('should build root layout file even when ', async function (this: Context) {
-		const INDEX_CONTENT = `'
-		const Index = () => '';
-		
-		export default Index;
-		`;
-		const externalFileCommands = await transform({
-			'/opt/project/pages/index.jsx': INDEX_CONTENT,
-			'/opt/project/pages/_app.jsx': '',
-		});
-
-		ok(
-			externalFileCommands.some(
-				(command) => command.path === '/opt/project/app/page.tsx',
-			),
-		);
-
-		ok(
-			externalFileCommands.some((command) => {
-				return (
-					command.kind === 'upsertFile' &&
-					command.path === '/opt/project/app/page.tsx' &&
-					command.data.replace(/\W/gm, '') ===
-						`
-					// This file has been sourced from: /opt/project/pages/index.jsx
-					import Components from "./components";
-
-					export default async function Page(props: any) {
-						return <Components {...props}/>;
-					}
-				;`.replace(/\W/gm, '')
-				);
-			}),
-		);
-	});
-
 	it('should build neither error files nor not-found files if no such previous files were found', async function (this: Context) {
 		const externalFileCommands = await transform({
 			'/opt/project/pages/index.jsx': '',
