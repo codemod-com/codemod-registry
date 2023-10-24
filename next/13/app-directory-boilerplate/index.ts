@@ -276,6 +276,57 @@ const buildComponentsFileData = (
 	};
 };
 
+const getPageConfig = (fileContent: string, filePath: string): string => {
+	const project = new tsmorph.Project({
+		useInMemoryFileSystem: true,
+		skipFileDependencyResolution: true,
+		compilerOptions: {
+			allowJs: true,
+		},
+	});
+
+	const sourceFile = project.createSourceFile(filePath, fileContent);
+
+	let nextjsConfig = '';
+
+	sourceFile.getFunctions().forEach((fn) => {
+		if (fn.isDefaultExport()) {
+			return;
+		}
+
+		const id = fn.getName() ?? '';
+
+		if (
+			['getStaticProps', 'getServerSideProps', 'getStaticPaths'].includes(
+				id,
+			)
+		) {
+			fn.setIsExported(false);
+			nextjsConfig += `${fn.getText()} \n`;
+		}
+	});
+
+	sourceFile.getVariableStatements().forEach((statement) => {
+		statement.getDeclarations().forEach((declaration) => {
+			const id = declaration.getName() ?? '';
+
+			if (
+				[
+					'getStaticProps',
+					'getServerSideProps',
+					'getStaticPaths',
+				].includes(id) &&
+				declaration.hasExportKeyword()
+			) {
+				statement.setIsExported(false);
+				nextjsConfig += `${statement.getText()} \n`;
+			}
+		});
+	});
+
+	return nextjsConfig;
+};
+
 const buildPageFileData = (
 	api: DataAPI,
 	path: string,
@@ -297,48 +348,13 @@ const buildPageFileData = (
 		});
 
 		const oldPath =
-			typeof options.oldPath === 'string' ? options.oldPath : null;
+			typeof options.oldPath === 'string'
+				? options.oldPath?.replace(/\.mdx$/, '.tsx')
+				: '';
 
-		const sourceFile = project.createSourceFile(
-			oldPath?.replace(/\.mdx$/, '.tsx') ?? '',
-			input,
-		);
+		const nextjsConfig = getPageConfig(input, oldPath);
 
-		sourceFile.getFunctions().forEach((fn) => {
-			if (fn.isDefaultExport()) {
-				fn.remove();
-				return;
-			}
-
-			const id = fn.getName() ?? '';
-
-			if (
-				[
-					'getStaticProps',
-					'getServerSideProps',
-					'getStaticPaths',
-				].includes(id)
-			) {
-				fn.setIsExported(false);
-			}
-		});
-
-		sourceFile.getVariableStatements().forEach((statement) => {
-			statement.getDeclarations().forEach((declaration) => {
-				const id = declaration.getName() ?? '';
-
-				if (
-					[
-						'getStaticProps',
-						'getServerSideProps',
-						'getStaticPaths',
-					].includes(id) &&
-					declaration.hasExportKeyword()
-				) {
-					statement.setIsExported(false);
-				}
-			});
-		});
+		const sourceFile = project.createSourceFile(oldPath, nextjsConfig);
 
 		// removeUnneededImportDeclarations(sourceFile);
 
