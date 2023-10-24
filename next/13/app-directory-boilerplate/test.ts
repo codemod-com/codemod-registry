@@ -212,7 +212,7 @@ describe('next 13 app-directory-boilerplate', function () {
 		);
 	});
 
-	it('migrated page keep only data fetching hooks and wrapped client component', async function (this: Context) {
+	it('migrated page should keep only data-fetching hooks and wrapped client component', async function (this: Context) {
 		const INDEX_CONTENT = `'
 		const Index = () => '';
 		
@@ -245,6 +245,31 @@ describe('next 13 app-directory-boilerplate', function () {
 				;`.replace(/\W/gm, '')
 				);
 			}),
+		);
+	});
+
+	it('should build root layout file with default content when _document does not exist, should not create client component', async function (this: Context) {
+		const INDEX_CONTENT = `'
+		const Index = () => '';
+		
+		export default Index;
+		`;
+		const externalFileCommands = await transform({
+			'/opt/project/pages/index.jsx': INDEX_CONTENT,
+			'/opt/project/pages/_app.jsx': '',
+		});
+		ok(
+			!externalFileCommands.some(
+				(command) =>
+					command.path ===
+					'/opt/project/app/layout-client-component.tsx',
+			),
+		);
+
+		ok(
+			externalFileCommands.some(
+				(command) => command.path === '/opt/project/app/layout.tsx',
+			),
 		);
 	});
 
@@ -352,9 +377,11 @@ describe('next 13 app-directory-boilerplate', function () {
 		`;
 
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		const [upsertFileCommand, _, deleteIndexJsxCommand] = await transform({
-			'/opt/project/pages/index.jsx': content,
-		});
+		const [, upsertFileCommand, _, deleteIndexJsxCommand] = await transform(
+			{
+				'/opt/project/pages/index.jsx': content,
+			},
+		);
 
 		deepStrictEqual(upsertFileCommand?.kind, 'upsertFile');
 		deepStrictEqual(upsertFileCommand?.path, '/opt/project/app/page.tsx');
@@ -389,9 +416,11 @@ describe('next 13 app-directory-boilerplate', function () {
 		`;
 
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		const [upsertFileCommand, _, deleteIndexJsxCommand] = await transform({
-			'/opt/project/pages/index.jsx': content,
-		});
+		const [, upsertFileCommand, _, deleteIndexJsxCommand] = await transform(
+			{
+				'/opt/project/pages/index.jsx': content,
+			},
+		);
 
 		deepStrictEqual(upsertFileCommand?.kind, 'upsertFile');
 		deepStrictEqual(upsertFileCommand?.path, '/opt/project/app/page.tsx');
@@ -699,7 +728,7 @@ describe('next 13 app-directory-boilerplate', function () {
 			}
 		`;
 
-		const [command] = await transform({
+		const [, command] = await transform({
 			'/opt/project/pages/index.tsx': index,
 		});
 

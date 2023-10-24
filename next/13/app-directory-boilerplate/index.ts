@@ -50,6 +50,20 @@ export default function NotFound() {
 }
 `;
 
+const ROOT_LAYOUT_DEFAULT_CONTENT = `
+export default function RootLayout({
+	children,
+  }: {
+	children: React.ReactNode
+  }) {
+	return (
+	  <html lang="en">
+		<body>{children}</body>
+	  </html>
+	)
+  }
+`;
+
 const enum FilePurpose {
 	// root directory
 	ROOT_LAYOUT = 'ROOT_LAYOUT',
@@ -65,7 +79,7 @@ const enum FilePurpose {
 
 const map = new Map([
 	// root directory
-	[FilePurpose.ROOT_LAYOUT, ''],
+	[FilePurpose.ROOT_LAYOUT, ROOT_LAYOUT_DEFAULT_CONTENT],
 	[FilePurpose.ROOT_LAYOUT_COMPONENT, ''],
 	[FilePurpose.ROOT_ERROR, ROOT_ERROR_CONTENT],
 	[FilePurpose.ROOT_PAGE, ''],
@@ -847,11 +861,7 @@ const handleFile: Filemod<
 			api,
 		);
 
-		if (underscoreDocumentPath !== null && underscoreAppPath !== null) {
-			const underscoreDocumentData = await api.readFile(
-				underscoreDocumentPath,
-			);
-
+		if (underscoreAppPath !== null && underscoreDocumentPath !== null) {
 			const underscoreAppData = await api.readFile(underscoreAppPath);
 
 			commands.unshift({
@@ -869,23 +879,32 @@ const handleFile: Filemod<
 					filePurpose: FilePurpose.ROOT_LAYOUT_COMPONENT,
 				},
 			});
-
-			commands.unshift({
-				kind: 'upsertFile' as const,
-				path: posix.format({
-					root: parsedPath.root,
-					dir: newDir,
-					ext: EXTENSION,
-					name: 'layout',
-				}),
-				options: {
-					...options,
-					underscoreDocumentPath,
-					underscoreDocumentData,
-					filePurpose: FilePurpose.ROOT_LAYOUT,
-				},
-			});
 		}
+
+		let underscoreDocumentData: string | null = null;
+
+		if (underscoreDocumentPath !== null) {
+			underscoreDocumentData = await api.readFile(underscoreDocumentPath);
+		}
+
+		commands.unshift({
+			kind: 'upsertFile' as const,
+			path: posix.format({
+				root: parsedPath.root,
+				dir: newDir,
+				ext: EXTENSION,
+				name: 'layout',
+			}),
+			options: {
+				...options,
+				...(underscoreDocumentPath &&
+					underscoreDocumentData && {
+						underscoreDocumentPath,
+						underscoreDocumentData,
+					}),
+				filePurpose: FilePurpose.ROOT_LAYOUT,
+			},
+		});
 
 		if (rootErrorPathIncluded) {
 			commands.push({
@@ -1016,11 +1035,16 @@ const handleData: HandleData<Dependencies, State> = async (
 			return buildPageFileData(api, path, options, filePurpose);
 		}
 
-		if (
-			filePurpose === FilePurpose.ROOT_LAYOUT &&
-			options.underscoreDocumentData
-		) {
+		if (filePurpose === FilePurpose.ROOT_LAYOUT) {
 			const { tsmorph } = api.getDependencies();
+
+			if (options.underscoreDocumentData === undefined) {
+				return {
+					kind: 'upsertData',
+					path,
+					data: map.get(FilePurpose.ROOT_LAYOUT) ?? '',
+				};
+			}
 
 			const project = new tsmorph.Project({
 				useInMemoryFileSystem: true,
