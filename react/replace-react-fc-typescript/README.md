@@ -1,4 +1,4 @@
-# Migrate prop types to typescript
+# Replace React FC Typescript
 
 ## Description
 
