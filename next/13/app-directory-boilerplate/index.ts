@@ -881,7 +881,7 @@ const handleFile: Filemod<
 			});
 		}
 
-		let underscoreDocumentData: string | null = null;
+		let underscoreDocumentData: string | undefined;
 
 		if (underscoreDocumentPath !== null) {
 			underscoreDocumentData = await api.readFile(underscoreDocumentPath);
