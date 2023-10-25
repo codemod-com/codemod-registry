@@ -1,5 +1,4 @@
 {
-
   "files": [
     "README.md"
   ],
@@ -15,6 +14,17 @@
       "profile": "https://maxleiter.com/",
       "contributions": [
         "code"
+      ]
+    },
+    {
+      "login": "grzpab",
+      "name": "Greg Pabian",
+      "avatar_url": "https://avatars.githubusercontent.com/u/35925521?v=4",
+      "profile": "https://medium.com/@greg-pabian/",
+      "contributions": [
+        "code",
+        "bug",
+        "doc"
       ]
     }
   ],
