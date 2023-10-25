@@ -26,6 +26,16 @@
         "bug",
         "doc"
       ]
+    },
+    {
+      "login": "DmytroHryshyn",
+      "name": "DmytroHryshyn",
+      "avatar_url": "https://avatars.githubusercontent.com/u/125881252?v=4",
+      "profile": "https://github.com/DmytroHryshyn",
+      "contributions": [
+        "code",
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
