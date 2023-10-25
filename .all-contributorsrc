@@ -1,4 +1,27 @@
 {
-  "projectName": "<codemod-registry>",
-  "projectOwner": "<intuita-inc>"
+
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "commitType": "docs",
+  "commitConvention": "angular",
+  "contributors": [
+    {
+      "login": "MaxLeiter",
+      "name": "Max Leiter",
+      "avatar_url": "https://avatars.githubusercontent.com/u/8675906?v=4",
+      "profile": "https://maxleiter.com/",
+      "contributions": [
+        "code"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "skipCi": true,
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "projectName": "codemod-registry",
+  "projectOwner": "intuita-inc"
 }
