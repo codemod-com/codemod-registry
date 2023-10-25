@@ -36,6 +36,16 @@
         "code",
         "bug"
       ]
+    },
+    {
+      "login": "alex-from-intuita",
+      "name": "Alex Bit",
+      "avatar_url": "https://avatars.githubusercontent.com/u/78109534?v=4",
+      "profile": "https://intuita.io/",
+      "contributions": [
+        "code",
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
