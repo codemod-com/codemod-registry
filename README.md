@@ -1,4 +1,7 @@
 # Codemod Registry
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 This repo contains an organized and maintained collection of codemods that can be used to help you upgrade several frameworks and libraries for your projects.
 
@@ -20,3 +23,25 @@ The codemods in this registry can be run easily using [Intuita’s VS Code Exten
 
 To contribute to the codemod registry, please read [our guide on adding your codemods to the codemod registry](https://docs.intuita.io/docs/codemod-registry/importing-codemods).
 If you are not a codemod developer, but you would like to have the community contribute on developing a codemod you’re interested in, then feel free to [request a codemod here](https://feedback.intuita.io/codemod-requests).
+
+## Contributors ✨
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/mohab-sameh"><img src="https://avatars.githubusercontent.com/u/37941642?v=4?s=100" width="100px;" alt="Mohab Sameh"/><br /><sub><b>Mohab Sameh</b></sub></a><br /><a href="https://github.com/intuita-inc/codemod-registry/commits?author=mohab-sameh" title="Documentation">📖</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
