@@ -46,6 +46,17 @@
         "code",
         "doc"
       ]
+    },
+    {
+      "login": "hbjORbj",
+      "name": "Benny Joo",
+      "avatar_url": "https://avatars.githubusercontent.com/u/32841130?v=4",
+      "profile": "https://github.com/hbjORbj",
+      "contributions": [
+        "code",
+        "bug",
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
