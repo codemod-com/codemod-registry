@@ -11,7 +11,7 @@
 
 Codemod Registry is an open-source, single-stop repository for codemods and code automation recipes. Codemod Registry brings an ever-growing variety of helpful codemods all in one place.
 
-Codemods available in Codemod Registry are automatically integrated into [Intuita's platform](https://docs.intuita.io/docs/intro) and all developers who have Intuita's [CLI](https://docs.intuita.io/docs/cli/quickstart) or [IDE extension](https://marketplace.visualstudio.com/items?itemName=Intuita.intuita-vscode-extension) can then discover, share, and run those codemods with a single click.
+Codemods available in Codemod Registry are automatically integrated into [Intuita's platform](https://docs.intuita.io/docs/intro) and all developers who have Intuita's CLI or IDE extension can then discover, share, and run those codemods with a single click.
 
 Currently, Intuita's platform supports `jscodeshift`, `ts-morph`, and Uber's Piranha codemod engines. If you would like to see a specific codemod engine supported, please [leave us a feature request](https://feedback.intuita.io/feature-requests-and-bugs).
 
@@ -21,7 +21,7 @@ If there is a codemod you would like to see available in Codemod Registry, pleas
 
 Adding or using codemods in Codemod Registry allows for:
 
-🔗 Automatic integration with [Intuita VS Code Extension](https://marketplace.visualstudio.com/items?itemName=Intuita.intuita-vscode-extension).
+🔗 Automatic integration with the Intuita [CLI](https://docs.intuita.io/docs/cli/quickstart) and [VS Code extension](https://marketplace.visualstudio.com/items?itemName=Intuita.intuita-vscode-extension).
 
 :octocat: Ensuring codemods are reviewed and improved by [a community of codemod experts](https://join.slack.com/t/intuita-inc/shared_invite/zt-1tvxm6ct0-mLZld_78yguDYOSM7DM7Cw).
 
