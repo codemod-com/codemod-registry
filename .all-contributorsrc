@@ -76,6 +76,16 @@
       "contributions": [
         "ideas"
       ]
+    },
+    {
+      "login": "kevtran2",
+      "name": "kevtran2",
+      "avatar_url": "https://avatars.githubusercontent.com/u/44513934?v=4",
+      "profile": "https://github.com/kevtran2",
+      "contributions": [
+        "doc",
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
