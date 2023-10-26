@@ -6,7 +6,7 @@
 
 # Codemod Registry
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-6-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-7-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 Codemod Registry is an open-source, single-stop repository for codemods and code automation recipes. Codemod Registry brings an ever-growing variety of helpful codemods all in one place.
@@ -62,6 +62,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
       <td align="center" valign="top" width="14.28%"><a href="https://intuita.io/"><img src="https://avatars.githubusercontent.com/u/78109534?v=4?s=100" width="100px;" alt="Alex Bit"/><br /><sub><b>Alex Bit</b></sub></a><br /><a href="https://github.com/intuita-inc/codemod-registry/commits?author=alex-from-intuita" title="Code">💻</a> <a href="https://github.com/intuita-inc/codemod-registry/commits?author=alex-from-intuita" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/hbjORbj"><img src="https://avatars.githubusercontent.com/u/32841130?v=4?s=100" width="100px;" alt="Benny Joo"/><br /><sub><b>Benny Joo</b></sub></a><br /><a href="https://github.com/intuita-inc/codemod-registry/commits?author=hbjORbj" title="Code">💻</a> <a href="https://github.com/intuita-inc/codemod-registry/issues?q=author%3AhbjORbj" title="Bug reports">🐛</a> <a href="https://github.com/intuita-inc/codemod-registry/commits?author=hbjORbj" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/mohab-sameh"><img src="https://avatars.githubusercontent.com/u/37941642?v=4?s=100" width="100px;" alt="Mohab Sameh"/><br /><sub><b>Mohab Sameh</b></sub></a><br /><a href="https://github.com/intuita-inc/codemod-registry/commits?author=mohab-sameh" title="Code">💻</a> <a href="https://github.com/intuita-inc/codemod-registry/commits?author=mohab-sameh" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://zergus.github.io/"><img src="https://avatars.githubusercontent.com/u/5468045?v=4?s=100" width="100px;" alt="Serhii Melnyk"/><br /><sub><b>Serhii Melnyk</b></sub></a><br /><a href="#ideas-Zergus" title="Ideas, Planning, & Feedback">🤔</a></td>
     </tr>
   </tbody>
 </table>
