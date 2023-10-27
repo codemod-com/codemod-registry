@@ -28,60 +28,93 @@ Changes to the original file: add any typings in places where the compiler compl
 
 import type { API, FileInfo } from 'jscodeshift';
 
-const importToChange = 'ImageResponse';
-
-export default function transform(file: FileInfo, api: API) {
+export default function transformer(file: FileInfo, api: API) {
 	const j = api.jscodeshift;
+	const root = j(file.source);
 
 	let dirtyFlag = false;
 
-	// Find import declarations that match the pattern
-	file.source = j(file.source)
-		.find(j.ImportDeclaration, {
-			source: {
-				value: 'next/server',
-			},
-		})
-		.forEach((path) => {
-			const importSpecifiers = path.node.specifiers;
-			const importNamesToChange = importSpecifiers.filter(
-				(specifier) => specifier.local.name === importToChange,
-			);
-			const importsNamesRemained = importSpecifiers.filter(
-				(specifier) => specifier.local.name !== importToChange,
-			);
+	// Find the metadata export
+	const metadataExport = root.find(j.ExportNamedDeclaration, {
+		declaration: {
+			type: 'VariableDeclaration',
+			declarations: [
+				{
+					id: { name: 'metadata' },
+				},
+			],
+		},
+	});
 
-			// If the import includes the specified import name, create a new import for it from 'next/og'
+	if (metadataExport.size() !== 1) {
+		return;
+	}
 
-			if (importNamesToChange.length > 0) {
-				// Replace the original import with the remaining specifiers
-				// path.node.specifiers = remainingSpecifiers
-				const newImportStatement = j.importDeclaration(
-					importNamesToChange,
-					j.stringLiteral('next/og'),
-				);
-				path.insertBefore(newImportStatement);
-				dirtyFlag = true;
-			}
-			if (importsNamesRemained.length > 0) {
-				const remainingSpecifiers = importSpecifiers.filter(
-					(specifier) => specifier.local.name !== importToChange,
-				);
+	const metadataObject = metadataExport.find(j.ObjectExpression).get(0).node;
+	if (!metadataObject) {
+		console.error('Could not find metadata object');
+		return;
+	}
 
-				const nextServerRemainImportsStatement = j.importDeclaration(
-					remainingSpecifiers,
-					j.stringLiteral('next/server'),
-				);
-				path.insertBefore(nextServerRemainImportsStatement);
-				dirtyFlag = true;
-			}
-			j(path).remove();
-		})
-		.toSource();
+	let metadataProperties = metadataObject.properties;
+	let viewportProperties;
+
+	const viewport = metadataProperties.find(
+		(prop) => prop.key.name === 'viewport',
+	);
+	if (viewport) {
+		viewportProperties = viewport.value.properties;
+		metadataProperties = metadataProperties.filter(
+			(prop) => prop.key.name !== 'viewport',
+		);
+	} else {
+		viewportProperties = [];
+	}
+
+	const colorScheme = metadataProperties.find(
+		(prop) => prop.key.name === 'colorScheme',
+	);
+	if (colorScheme) {
+		viewportProperties.push(colorScheme);
+		metadataProperties = metadataProperties.filter(
+			(prop) => prop.key.name !== 'colorScheme',
+		);
+	}
+
+	const themeColor = metadataProperties.find(
+		(prop) => prop.key.name === 'themeColor',
+	);
+	if (themeColor) {
+		viewportProperties.push(themeColor);
+		metadataProperties = metadataProperties.filter(
+			(prop) => prop.key.name !== 'themeColor',
+		);
+	}
+
+	// Update the metadata export
+	metadataExport
+		.find(j.ObjectExpression)
+		.replaceWith(j.objectExpression(metadataProperties));
+
+	// Create the new viewport object
+	const viewportExport = j.exportNamedDeclaration(
+		j.variableDeclaration('const', [
+			j.variableDeclarator(
+				j.identifier('viewport'),
+				j.objectExpression(viewportProperties),
+			),
+		]),
+	);
+
+	// Append the viewport export to the body of the program
+	if (viewportProperties.length) {
+		root.get().node.program.body.push(viewportExport);
+		dirtyFlag = true;
+	}
 
 	if (!dirtyFlag) {
 		return undefined;
 	}
 
-	return file.source;
+	return root.toSource();
 }
