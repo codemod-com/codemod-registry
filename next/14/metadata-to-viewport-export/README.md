@@ -9,13 +9,13 @@ This codemod moves transforms imports from `next/server` to `next/og` for usage 
 ### Before
 
 ```jsx
-import { ImageResponse } from 'next/server'
+import { ImageResponse } from 'next/server';
 ```
 
 ### After
 
 ```jsx
-import { ImageResponse } from 'next/og'
+import { ImageResponse } from 'next/og';
 ```
 
 ## Applicability Criteria
