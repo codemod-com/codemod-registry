@@ -2,33 +2,20 @@
 
 ## Description
 
-This codemod migrates certain viewport metadata to `viewport` export.
+This codemod moves transforms imports from `next/server` to `next/og` for usage of [Dynamic OG Image Generation](https://nextjs.org/docs/app/building-your-application/optimizing/metadata#dynamic-image-generation).
 
 ## Example
 
 ### Before
 
 ```jsx
-export const metadata = {
-	title: 'My App',
-	themeColor: 'dark',
-	viewport: {
-		width: 1,
-	},
-};
+import { ImageResponse } from 'next/server';
 ```
 
 ### After
 
 ```jsx
-export const metadata = {
-	title: 'My App',
-};
-
-export const viewport = {
-	width: 1,
-	themeColor: 'dark',
-};
+import { ImageResponse } from 'next/og';
 ```
 
 ## Applicability Criteria
@@ -59,4 +46,4 @@ jscodeshift
 
 ### Links for more info
 
--   [Use `viewport` export](https://nextjs.org/docs/pages/building-your-application/upgrading/codemods#use-viewport-export)
+-   [Migrate `ImageResponse` imports](https://nextjs.org/docs/pages/building-your-application/upgrading/codemods#migrate-imageresponse-imports)
