@@ -1,3 +1,5 @@
 node_modules
 pnpm-lock.yaml
 build
+.all-contributorsrc
+README.md
