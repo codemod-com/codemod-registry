@@ -28,13 +28,26 @@ import transform from './index.js';
 import { buildApi } from '../../../utilities.js';
 
 describe('next 14 next-og-import', function () {
-	it('should move transform import from server to og', function () {
+	it('should migrate viewport metadata to viewport export.', function () {
 		const INPUT = `
-            import { ImageResponse } from 'next/server';
+			export const metadata = {
+				title: 'My App',
+				themeColor: 'dark',
+				viewport: {
+				  width: 1,
+				},
+			}
         `;
 
 		const OUTPUT = `
-            import { ImageResponse } from 'next/og';
+			export const metadata = {
+				title: 'My App',
+			}
+
+			  export const viewport = {
+				width: 1,
+				themeColor: 'dark',
+			}
         `;
 
 		const fileInfo: FileInfo = {
