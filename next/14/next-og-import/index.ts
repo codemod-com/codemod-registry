@@ -30,7 +30,7 @@ import type { API, FileInfo } from 'jscodeshift';
 
 const importToChange = 'ImageResponse';
 
-export default function transformer(file: FileInfo, api: API) {
+export default function transform(file: FileInfo, api: API) {
 	const j = api.jscodeshift;
 
 	let dirtyFlag = false;

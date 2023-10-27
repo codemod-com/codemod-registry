@@ -28,7 +28,7 @@ Changes to the original file: add any typings in places where the compiler compl
 
 import type { API, FileInfo } from 'jscodeshift';
 
-export default function transformer(file: FileInfo, api: API) {
+export default function transform(file: FileInfo, api: API) {
 	const j = api.jscodeshift;
 	const root = j(file.source);
 
