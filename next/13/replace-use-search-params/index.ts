@@ -213,10 +213,12 @@ export const repomod: Filemod<Dependencies, State> = {
 		} = options;
 
 		const absolutePathPresent =
-			typeof useCompatSearchParamsHookAbsolutePath === 'string';
+			typeof useCompatSearchParamsHookAbsolutePath === 'string' &&
+			useCompatSearchParamsHookAbsolutePath !== '';
 
 		const relativePathPresent =
-			typeof useCompatSearchParamsHookRelativePath === 'string';
+			typeof useCompatSearchParamsHookRelativePath === 'string' &&
+			useCompatSearchParamsHookRelativePath !== '';
 
 		const hookPathType = absolutePathPresent
 			? 'absolute'
