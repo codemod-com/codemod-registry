@@ -27,7 +27,11 @@ const transform = async (json: DirectoryJSON, options: Options) => {
 		fileSystemManager,
 	);
 
-	const api = buildApi<Record<string, never>>(unifiedFileSystem, () => ({}));
+	const api = buildApi<Record<string, never>>(
+		unifiedFileSystem,
+		() => ({}),
+		'/',
+	);
 
 	return executeFilemod(api, repomod, '/', options, {});
 };

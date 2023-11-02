@@ -3,7 +3,10 @@
 	"name": "next/13/replace-use-search-params",
 	"description": "The codemod replaces getSearchParams with compatGetSearchParams",
 	"engine": "repomod-engine",
-	"extensions": ["js*", "ts*"],
+	"extensions": [
+		"js*",
+		"ts*"
+	],
 	"dependencies": [
 		{
 			"name": "next",
@@ -15,7 +18,14 @@
 			"name": "useCompatSearchParamsHookAbsolutePath",
 			"description": "Absolute path of the hook that will be created by the codemod",
 			"kind": "string",
-			"required": true,
+			"required": false,
+			"default": ""
+		},
+		{
+			"name": "useCompatSearchParamsHookRelativePath",
+			"description": "Relative path of the hook that will be created by the codemod",
+			"kind": "string",
+			"required": false,
 			"default": ""
 		},
 		{

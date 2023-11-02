@@ -25,9 +25,13 @@ const transform = async (json: DirectoryJSON) => {
 
 	const api = buildApi<{
 		jscodeshift: typeof jscodeshift;
-	}>(unifiedFileSystem, () => ({
-		jscodeshift,
-	}));
+	}>(
+		unifiedFileSystem,
+		() => ({
+			jscodeshift,
+		}),
+		'/',
+	);
 
 	return executeFilemod(
 		api,

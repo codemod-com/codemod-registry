@@ -64,9 +64,13 @@ const transform = async () => {
 
 	const api = buildApi<{
 		tsmorph: typeof tsmorph;
-	}>(unifiedFileSystem, () => ({
-		tsmorph,
-	}));
+	}>(
+		unifiedFileSystem,
+		() => ({
+			tsmorph,
+		}),
+		'/',
+	);
 
 	return executeFilemod(api, repomod, '/', {}, {});
 };

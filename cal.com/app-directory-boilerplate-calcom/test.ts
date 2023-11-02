@@ -27,9 +27,13 @@ const transform = async (json: DirectoryJSON) => {
 
 	const api = buildApi<{
 		tsmorph: typeof tsmorph;
-	}>(unifiedFileSystem, () => ({
-		tsmorph,
-	}));
+	}>(
+		unifiedFileSystem,
+		() => ({
+			tsmorph,
+		}),
+		'/',
+	);
 
 	return executeFilemod(api, repomod, '/', {}, {});
 };

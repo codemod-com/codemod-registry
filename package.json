@@ -14,7 +14,7 @@
 		"@babel/core": ">=7.13.0 <8.0.0",
 		"@babel/preset-env": "^7.1.6",
 		"@effect/schema": "0.26.1",
-		"@intuita-inc/filemod": "1.0.0",
+		"@intuita-inc/filemod": "1.1.0",
 		"@types/chai": "^4.3.4",
 		"@types/jscodeshift": "^0.11.6",
 		"@types/mocha": "^10.0.1",
@@ -50,7 +50,7 @@
 		"tar": "^6.1.15",
 		"ts-morph": "19.0.0",
 		"ts-node": "10.9.1",
-		"typescript": "5.1.6",
+		"typescript": "5.2.2",
 		"unist-util-filter": "^5.0.1",
 		"unist-util-visit": "^5.0.0"
 	},

@@ -14,28 +14,36 @@ const transform = async (json: DirectoryJSON) => {
 	const volume = Volume.fromJSON(json);
 
 	const fileSystemManager = new FileSystemManager(
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		volume.promises.readdir as any,
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		volume.promises.readFile as any,
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		volume.promises.stat as any,
 	);
 	const unifiedFileSystem = new UnifiedFileSystem(
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		createFsFromVolume(volume) as any,
 		fileSystemManager,
 	);
 
 	const api = buildApi<{
 		jscodeshift: typeof jscodeshift;
-	}>(unifiedFileSystem, () => ({
-		jscodeshift,
-	}));
+	}>(
+		unifiedFileSystem,
+		() => ({
+			jscodeshift,
+		}),
+		'/opt/project',
+	);
 
 	return executeFilemod(
 		api,
 		repomod,
 		'/',
 		{
-			useCompatSearchParamsHookAbsolutePath:
-				'/opt/project/hooks/useCompatSearchParams.tsx',
+			useCompatSearchParamsHookRelativePath:
+				'hooks/useCompatSearchParams.tsx',
 			useCompatSearchParamsHookModuleSpecifier:
 				'hooks/useCompatSearchParams.tsx',
 		},
