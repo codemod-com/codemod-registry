@@ -3,10 +3,7 @@
 	"name": "next/13/replace-use-search-params",
 	"description": "The codemod replaces getSearchParams with compatGetSearchParams",
 	"engine": "repomod-engine",
-	"extensions": [
-		"js*",
-		"ts*"
-	],
+	"extensions": ["js*", "ts*"],
 	"dependencies": [
 		{
 			"name": "next",
