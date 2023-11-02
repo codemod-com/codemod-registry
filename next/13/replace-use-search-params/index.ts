@@ -8,7 +8,6 @@ import {
 import jscodeshift from 'jscodeshift';
 
 import type { HandleFile, Filemod } from '@intuita-inc/filemod';
-import { join } from 'node:path';
 
 type State = {
 	hookCreated: boolean;
@@ -255,7 +254,7 @@ export const repomod: Filemod<Dependencies, State> = {
 
 		if (state !== null && !state.hookCreated) {
 			if (state.hookPathType === 'relative') {
-				const hookPath = join(
+				const hookPath = api.joinPaths(
 					api.currentWorkingDirectory,
 					state.hookPath,
 				);
