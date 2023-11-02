@@ -8,53 +8,57 @@ import {
 import jscodeshift from 'jscodeshift';
 
 import type { HandleFile, Filemod } from '@intuita-inc/filemod';
+import { join } from 'node:path';
 
-type Settings = {
-	useCompatSearchParamsHookAbsolutePath: string;
-	useCompatSearchParamsHookModuleSpecifier: string;
+type State = {
+	hookCreated: boolean;
+	hookModuleSpecifier: string;
+	hookPathType: 'relative' | 'absolute';
+	hookPath: string;
 };
 
 type ModFunction<T, D extends 'read' | 'write'> = (
 	j: JSCodeshift,
 	root: Collection<T>,
-	settings: Settings,
+	settings: State,
 ) => [D extends 'write' ? boolean : false, ReadonlyArray<LazyModFunction>];
 
 type LazyModFunction = [
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	ModFunction<any, 'read' | 'write'>,
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	Collection<any>,
-	Settings,
+	State,
 ];
 
 type Dependencies = {
 	jscodeshift: typeof jscodeshift;
 };
 
-type State = {
-	useCompatSearchParamsHookCreated: boolean;
-};
-
 type FileCommand = Awaited<ReturnType<HandleFile<Dependencies, State>>>[number];
 
 export const USE_COMPAT_SEARCH_PARAMS_HOOK_CONTENT = `
+import { ReadonlyURLSearchParams, useParams, useSearchParams } from "next/navigation";
+
 export const useCompatSearchParams = () => {
-    const _searchParams = useSearchParams() ?? new URLSearchParams();
-    const params = useParams() ?? {};
+  const _searchParams = useSearchParams() ?? new URLSearchParams();
+  const params = useParams() ?? {};
 
-    const searchParams = new URLSearchParams(_searchParams.toString());
+  const searchParams = new URLSearchParams(_searchParams.toString());
+  Object.getOwnPropertyNames(params).forEach((key) => {
+    searchParams.delete(key);
 
-    Object.getOwnPropertyNames(params).forEach((key) => {
-      const param = params[key];
-      const paramArr = typeof param === 'string' ?  param.split('/') : param;
+    const param = params[key];
+    const paramArr = typeof param === "string" ? param.split("/") : param;
 
-      paramArr.forEach(p => {
-        searchParams.append(key, p)
-      })
-   
+    paramArr.forEach((p) => {
+      searchParams.append(key, p);
     });
-  
-    return new ReadonlyURLSearchParams(searchParams);
-  };
+  });
+
+  return new ReadonlyURLSearchParams(searchParams);
+};
+
 `;
 
 const replaceCallExpression: ModFunction<CallExpression, 'write'> = (
@@ -90,13 +94,13 @@ const findCallExpressions: ModFunction<File, 'read'> = (j, root, settings) => {
 const addImportDeclaration: ModFunction<File, 'write'> = (
 	j,
 	root,
-	{ useCompatSearchParamsHookModuleSpecifier },
+	{ hookModuleSpecifier },
 ) => {
 	root.find(j.Program).forEach((programPath) => {
 		programPath.value.body.unshift(
 			j.importDeclaration(
 				[j.importSpecifier(j.identifier('useCompatSearchParams'))],
-				j.literal(useCompatSearchParamsHookModuleSpecifier),
+				j.literal(hookModuleSpecifier),
 			),
 		);
 	});
@@ -155,7 +159,7 @@ const findImportDeclaration: ModFunction<File, 'read'> = (
 function transform(
 	jscodeshift: JSCodeshift,
 	data: string,
-	settings: Settings,
+	settings: State,
 ): string | undefined {
 	let dirtyFlag = false;
 	const j = jscodeshift.withParser('tsx');
@@ -202,32 +206,77 @@ const noop = {
 export const repomod: Filemod<Dependencies, State> = {
 	includePatterns: ['**/*.{jsx,tsx,js,ts,cjs,ejs}'],
 	excludePatterns: ['**/node_modules/**', '**/pages/api/**'],
-	initializeState: async (_, previousState) => {
-		return (
-			previousState ?? {
-				useCompatSearchParamsHookCreated: false,
-			}
-		);
-	},
-	handleFile: async (_, path, options, state) => {
-		const commands: FileCommand[] = [];
-		if (typeof options.useCompatSearchParamsHookAbsolutePath !== 'string') {
+	initializeState: async (options, previousState) => {
+		const {
+			useCompatSearchParamsHookAbsolutePath,
+			useCompatSearchParamsHookRelativePath,
+			useCompatSearchParamsHookModuleSpecifier,
+		} = options;
+
+		const absolutePathPresent =
+			typeof useCompatSearchParamsHookAbsolutePath === 'string';
+
+		const relativePathPresent =
+			typeof useCompatSearchParamsHookRelativePath === 'string';
+
+		const hookPathType = absolutePathPresent
+			? 'absolute'
+			: relativePathPresent
+			? 'relative'
+			: null;
+
+		const hookPath = absolutePathPresent
+			? useCompatSearchParamsHookAbsolutePath
+			: relativePathPresent
+			? useCompatSearchParamsHookRelativePath
+			: null;
+
+		if (
+			hookPathType === null ||
+			hookPath === null ||
+			typeof useCompatSearchParamsHookModuleSpecifier !== 'string'
+		) {
 			throw new Error(
-				'Missing useCompatSearchParamsHookAbsolutePath option',
+				'Neither the absolute nor the relative hook paths are present in the options',
 			);
 		}
 
-		if (state !== null && !state.useCompatSearchParamsHookCreated) {
-			commands.push({
-				kind: 'upsertFile',
-				path: options.useCompatSearchParamsHookAbsolutePath,
-				options: {
-					...options,
-					fileContent: USE_COMPAT_SEARCH_PARAMS_HOOK_CONTENT,
-				},
-			});
+		return (
+			previousState ?? {
+				hookCreated: false,
+				hookPathType,
+				hookPath,
+				hookModuleSpecifier: useCompatSearchParamsHookModuleSpecifier,
+			}
+		);
+	},
+	handleFile: async (api, path, options, state) => {
+		const commands: FileCommand[] = [];
 
-			state.useCompatSearchParamsHookCreated = true;
+		if (state !== null && !state.hookCreated) {
+			if (state.hookPathType === 'relative') {
+				commands.push({
+					kind: 'upsertFile',
+					path: join(api.currentWorkingDirectory, state.hookPath),
+					options: {
+						...options,
+						fileContent: USE_COMPAT_SEARCH_PARAMS_HOOK_CONTENT,
+					},
+				});
+
+				state.hookCreated = true;
+			} else if (state.hookPathType === 'absolute') {
+				commands.push({
+					kind: 'upsertFile',
+					path: state.hookPath,
+					options: {
+						...options,
+						fileContent: USE_COMPAT_SEARCH_PARAMS_HOOK_CONTENT,
+					},
+				});
+
+				state.hookCreated = true;
+			}
 		}
 
 		commands.push({
@@ -238,36 +287,25 @@ export const repomod: Filemod<Dependencies, State> = {
 
 		return commands;
 	},
-	handleData: async (
-		api,
-		path,
-		data,
-		{
-			useCompatSearchParamsHookAbsolutePath,
-			useCompatSearchParamsHookModuleSpecifier,
-		},
-	) => {
-		if (
-			typeof useCompatSearchParamsHookAbsolutePath !== 'string' ||
-			typeof useCompatSearchParamsHookModuleSpecifier !== 'string'
-		) {
-			throw new Error('Missing required options');
+	handleData: async (api, path, data, options, state) => {
+		if (!state) {
+			throw new Error('Could not find state.');
 		}
 
-		if (path === useCompatSearchParamsHookAbsolutePath) {
+		if (
+			'fileContent' in options &&
+			typeof options.fileContent === 'string'
+		) {
 			return {
 				kind: 'upsertData',
 				path,
-				data: USE_COMPAT_SEARCH_PARAMS_HOOK_CONTENT,
+				data: options.fileContent,
 			};
 		}
 
 		const { jscodeshift } = api.getDependencies();
 
-		const rewrittenData = transform(jscodeshift, data, {
-			useCompatSearchParamsHookAbsolutePath,
-			useCompatSearchParamsHookModuleSpecifier,
-		});
+		const rewrittenData = transform(jscodeshift, data, state);
 
 		if (rewrittenData === undefined) {
 			return noop;

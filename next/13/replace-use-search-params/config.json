@@ -15,7 +15,14 @@
 			"name": "useCompatSearchParamsHookAbsolutePath",
 			"description": "Absolute path of the hook that will be created by the codemod",
 			"kind": "string",
-			"required": true,
+			"required": false,
+			"default": ""
+		},
+		{
+			"name": "useCompatSearchParamsHookRelativePath",
+			"description": "Relative path of the hook that will be created by the codemod",
+			"kind": "string",
+			"required": false,
 			"default": ""
 		},
 		{

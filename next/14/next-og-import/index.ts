@@ -44,10 +44,14 @@ export default function transform(file: FileInfo, api: API) {
 		})
 		.forEach((path) => {
 			const importSpecifiers = path.node.specifiers;
+			// @ts-expect-error nullability
 			const importNamesToChange = importSpecifiers.filter(
+				// @ts-expect-error nullability
 				(specifier) => specifier.local.name === importToChange,
 			);
+			// @ts-expect-error nullability
 			const importsNamesRemained = importSpecifiers.filter(
+				// @ts-expect-error nullability
 				(specifier) => specifier.local.name !== importToChange,
 			);
 
@@ -64,7 +68,9 @@ export default function transform(file: FileInfo, api: API) {
 				dirtyFlag = true;
 			}
 			if (importsNamesRemained.length > 0) {
+				// @ts-expect-error nullability
 				const remainingSpecifiers = importSpecifiers.filter(
+					// @ts-expect-error nullability
 					(specifier) => specifier.local.name !== importToChange,
 				);
 

@@ -50,14 +50,18 @@ const transform = async (json: DirectoryJSON) => {
 		visitMdxAst: typeof visit;
 		filterMdxAst: typeof filter;
 		unifiedFileSystem: UnifiedFileSystem;
-	}>(unifiedFileSystem, () => ({
-		tsmorph,
-		parseMdx,
-		stringifyMdx,
-		visitMdxAst: visit,
-		filterMdxAst: filter,
+	}>(
 		unifiedFileSystem,
-	}));
+		() => ({
+			tsmorph,
+			parseMdx,
+			stringifyMdx,
+			visitMdxAst: visit,
+			filterMdxAst: filter,
+			unifiedFileSystem,
+		}),
+		'/',
+	);
 
 	return executeFilemod(api, repomod, '/', {}, {});
 };

@@ -60,34 +60,35 @@ export default function transform(file: FileInfo, api: API) {
 	let viewportProperties;
 
 	const viewport = metadataProperties.find(
-		(prop) => prop.key.name === 'viewport',
+		(prop: { key: { name: string } }) => prop.key.name === 'viewport',
 	);
 	if (viewport) {
 		viewportProperties = viewport.value.properties;
 		metadataProperties = metadataProperties.filter(
-			(prop) => prop.key.name !== 'viewport',
+			(prop: { key: { name: string } }) => prop.key.name !== 'viewport',
 		);
 	} else {
 		viewportProperties = [];
 	}
 
 	const colorScheme = metadataProperties.find(
-		(prop) => prop.key.name === 'colorScheme',
+		(prop: { key: { name: string } }) => prop.key.name === 'colorScheme',
 	);
 	if (colorScheme) {
 		viewportProperties.push(colorScheme);
 		metadataProperties = metadataProperties.filter(
-			(prop) => prop.key.name !== 'colorScheme',
+			(prop: { key: { name: string } }) =>
+				prop.key.name !== 'colorScheme',
 		);
 	}
 
 	const themeColor = metadataProperties.find(
-		(prop) => prop.key.name === 'themeColor',
+		(prop: { key: { name: string } }) => prop.key.name === 'themeColor',
 	);
 	if (themeColor) {
 		viewportProperties.push(themeColor);
 		metadataProperties = metadataProperties.filter(
-			(prop) => prop.key.name !== 'themeColor',
+			(prop: { key: { name: string } }) => prop.key.name !== 'themeColor',
 		);
 	}
 
