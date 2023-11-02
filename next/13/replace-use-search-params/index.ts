@@ -255,25 +255,38 @@ export const repomod: Filemod<Dependencies, State> = {
 
 		if (state !== null && !state.hookCreated) {
 			if (state.hookPathType === 'relative') {
-				commands.push({
-					kind: 'upsertFile',
-					path: join(api.currentWorkingDirectory, state.hookPath),
-					options: {
-						...options,
-						fileContent: USE_COMPAT_SEARCH_PARAMS_HOOK_CONTENT,
-					},
-				});
+				const hookPath = join(
+					api.currentWorkingDirectory,
+					state.hookPath,
+				);
+
+				const hookPathExists = api.exists(hookPath);
+
+				if (!hookPathExists) {
+					commands.push({
+						kind: 'upsertFile',
+						path: hookPath,
+						options: {
+							...options,
+							fileContent: USE_COMPAT_SEARCH_PARAMS_HOOK_CONTENT,
+						},
+					});
+				}
 
 				state.hookCreated = true;
 			} else if (state.hookPathType === 'absolute') {
-				commands.push({
-					kind: 'upsertFile',
-					path: state.hookPath,
-					options: {
-						...options,
-						fileContent: USE_COMPAT_SEARCH_PARAMS_HOOK_CONTENT,
-					},
-				});
+				const hookPathExists = api.exists(state.hookPath);
+
+				if (!hookPathExists) {
+					commands.push({
+						kind: 'upsertFile',
+						path: state.hookPath,
+						options: {
+							...options,
+							fileContent: USE_COMPAT_SEARCH_PARAMS_HOOK_CONTENT,
+						},
+					});
+				}
 
 				state.hookCreated = true;
 			}

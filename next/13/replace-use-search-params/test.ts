@@ -132,4 +132,43 @@ describe('next 13 replace-replace-use-search-params', function () {
 			expectedResult.replace(/\s/gm, ''),
 		);
 	});
+
+	it('should replace useSearchParams with useCompatSearchParams without creating the hook file', async function (this: Context) {
+		const A_CONTENT = `
+			import { useSearchParams, useParams } from 'next/navigation';
+
+			export default function C() {
+				const s = useSearchParams();
+
+				return null;
+			}
+`;
+
+		const [upsertFileCommand] = await transform({
+			'/opt/project/components/a.tsx': A_CONTENT,
+			'/opt/project/hooks/useCompatSearchParams.tsx': '',
+		});
+
+		const expectedResult = `
+		import { useCompatSearchParams } from "hooks/useCompatSearchParams.tsx";
+		import { useParams } from 'next/navigation';
+
+			export default function C() {
+				const s = useCompatSearchParams();
+
+				return null;
+			}
+		`;
+
+		deepStrictEqual(upsertFileCommand?.kind, 'upsertFile');
+		deepStrictEqual(
+			upsertFileCommand.path,
+			'/opt/project/components/a.tsx',
+		);
+
+		deepStrictEqual(
+			upsertFileCommand.data.replace(/\s/gm, ''),
+			expectedResult.replace(/\s/gm, ''),
+		);
+	});
 });
