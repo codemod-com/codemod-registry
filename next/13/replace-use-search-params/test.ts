@@ -10,7 +10,11 @@ import { repomod } from './index.js';
 import { Context } from 'mocha';
 import { deepStrictEqual } from 'node:assert';
 
-const transform = async (json: DirectoryJSON) => {
+type Options = Readonly<{
+	hookModuleCreation?: boolean;
+}>;
+
+const transform = async (json: DirectoryJSON, options: Options) => {
 	const volume = Volume.fromJSON(json);
 
 	const fileSystemManager = new FileSystemManager(
@@ -46,6 +50,7 @@ const transform = async (json: DirectoryJSON) => {
 				'hooks/useCompatSearchParams.tsx',
 			useCompatSearchParamsHookModuleSpecifier:
 				'hooks/useCompatSearchParams.tsx',
+			hookModuleCreation: options.hookModuleCreation,
 		},
 		{},
 	);
@@ -61,11 +66,14 @@ describe('next 13 replace-replace-use-search-params', function () {
 
 				return null;
 			}
-`;
+		`;
 
-		const [upsertHookCommand, upsertFileCommand] = await transform({
-			'/opt/project/components/a.tsx': A_CONTENT,
-		});
+		const [upsertHookCommand, upsertFileCommand] = await transform(
+			{
+				'/opt/project/components/a.tsx': A_CONTENT,
+			},
+			{},
+		);
 
 		const expectedResult = `
 		import { useCompatSearchParams } from "hooks/useCompatSearchParams.tsx";
@@ -96,6 +104,49 @@ describe('next 13 replace-replace-use-search-params', function () {
 		);
 	});
 
+	it('should replace useSearchParams with useCompatSearchParams but not create the hook file', async function (this: Context) {
+		const A_CONTENT = `
+			import { useSearchParams, useParams } from 'next/navigation';
+
+			export default function C() {
+				const s = useSearchParams();
+
+				return null;
+			}
+`;
+
+		const [upsertFileCommand] = await transform(
+			{
+				'/opt/project/components/a.tsx': A_CONTENT,
+			},
+			{
+				hookModuleCreation: false,
+			},
+		);
+
+		const expectedResult = `
+		import { useCompatSearchParams } from "hooks/useCompatSearchParams.tsx";
+		import { useParams } from 'next/navigation';
+
+			export default function C() {
+				const s = useCompatSearchParams();
+
+				return null;
+			}
+		`;
+
+		deepStrictEqual(upsertFileCommand?.kind, 'upsertFile');
+		deepStrictEqual(
+			upsertFileCommand.path,
+			'/opt/project/components/a.tsx',
+		);
+
+		deepStrictEqual(
+			upsertFileCommand.data.replace(/\s/gm, ''),
+			expectedResult.replace(/\s/gm, ''),
+		);
+	});
+
 	it('should remove next/navigation import if no specifiers left after useSearchParams specifier removal', async function (this: Context) {
 		const A_CONTENT = `
 			import { useSearchParams } from 'next/navigation';
@@ -107,9 +158,12 @@ describe('next 13 replace-replace-use-search-params', function () {
 			}
 `;
 
-		const [, upsertFileCommand] = await transform({
-			'/opt/project/components/a.tsx': A_CONTENT,
-		});
+		const [, upsertFileCommand] = await transform(
+			{
+				'/opt/project/components/a.tsx': A_CONTENT,
+			},
+			{},
+		);
 
 		const expectedResult = `
 		import { useCompatSearchParams } from "hooks/useCompatSearchParams.tsx";
@@ -144,10 +198,13 @@ describe('next 13 replace-replace-use-search-params', function () {
 			}
 `;
 
-		const [upsertFileCommand] = await transform({
-			'/opt/project/components/a.tsx': A_CONTENT,
-			'/opt/project/hooks/useCompatSearchParams.tsx': '',
-		});
+		const [upsertFileCommand] = await transform(
+			{
+				'/opt/project/components/a.tsx': A_CONTENT,
+				'/opt/project/hooks/useCompatSearchParams.tsx': '',
+			},
+			{},
+		);
 
 		const expectedResult = `
 		import { useCompatSearchParams } from "hooks/useCompatSearchParams.tsx";

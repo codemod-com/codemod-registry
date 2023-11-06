@@ -10,10 +10,11 @@ import jscodeshift from 'jscodeshift';
 import type { HandleFile, Filemod } from '@intuita-inc/filemod';
 
 type State = {
-	hookCreated: boolean;
+	hookModuleCreated: boolean;
 	hookModuleSpecifier: string;
 	hookPathType: 'relative' | 'absolute';
 	hookPath: string;
+	hookModuleCreation: boolean;
 };
 
 type ModFunction<T, D extends 'read' | 'write'> = (
@@ -242,19 +243,29 @@ export const repomod: Filemod<Dependencies, State> = {
 			);
 		}
 
+		const hookModuleCreation =
+			typeof options.hookModuleCreation === 'boolean'
+				? options.hookModuleCreation
+				: true;
+
 		return (
 			previousState ?? {
-				hookCreated: false,
+				hookModuleCreated: false,
 				hookPathType,
 				hookPath,
 				hookModuleSpecifier: useCompatSearchParamsHookModuleSpecifier,
+				hookModuleCreation,
 			}
 		);
 	},
 	handleFile: async (api, path, options, state) => {
 		const commands: FileCommand[] = [];
 
-		if (state !== null && !state.hookCreated) {
+		if (
+			state !== null &&
+			state.hookModuleCreation &&
+			!state.hookModuleCreated
+		) {
 			if (state.hookPathType === 'relative') {
 				const hookPath = api.joinPaths(
 					api.currentWorkingDirectory,
@@ -274,7 +285,7 @@ export const repomod: Filemod<Dependencies, State> = {
 					});
 				}
 
-				state.hookCreated = true;
+				state.hookModuleCreated = true;
 			} else if (state.hookPathType === 'absolute') {
 				const hookPathExists = api.exists(state.hookPath);
 
@@ -289,7 +300,7 @@ export const repomod: Filemod<Dependencies, State> = {
 					});
 				}
 
-				state.hookCreated = true;
+				state.hookModuleCreated = true;
 			}
 		}
 
