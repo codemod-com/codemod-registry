@@ -27,8 +27,14 @@
 			"name": "useCompatSearchParamsHookModuleSpecifier",
 			"description": "The string that will be used as ModuleSpecifier for the import desclarations that will be inserted (import { useCompatSearchParams } from 'useCompatSearchParamsHookModuleSpecifier')",
 			"kind": "string",
-			"default": "",
 			"required": true
+		},
+		{
+			"name": "hookModuleCreation",
+			"description": "Whether to create the module (file) that contains the compatGetSearchParams hook or not",
+			"kind": "boolean",
+			"default": true,
+			"required": false
 		}
 	],
 	"owner": "intuita"
