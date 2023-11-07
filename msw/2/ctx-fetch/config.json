@@ -1,0 +1,9 @@
+{
+	"schemaVersion": "1.0.0",
+	"name": "msw/2/ctx-fetch",
+	"description": "Replaces ctx.fetch calls with expected way of calling it as of msw v2",
+	"engine": "ts-morph",
+	"extensions": ["js*", "ts*"],
+	"dependencyVersionLowerThan": ["msw", "2.0.0"],
+	"owner": "intuita"
+}
