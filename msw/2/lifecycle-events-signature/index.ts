@@ -32,11 +32,15 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 			if (!cbNode) {
 				return;
 			}
-			const callback = cbNode.asKindOrThrow(
-				cbNode.getKind() as
-					| SyntaxKind.ArrowFunction
-					| SyntaxKind.FunctionExpression,
-			);
+
+			const callback =
+				cbNode.asKind(SyntaxKind.ArrowFunction) ??
+				cbNode.asKind(SyntaxKind.FunctionExpression);
+
+			if (!callback) {
+				return;
+			}
+
 			const [requestParam, requestIdParam] = callback.getChildrenOfKind(
 				SyntaxKind.Parameter,
 			);
