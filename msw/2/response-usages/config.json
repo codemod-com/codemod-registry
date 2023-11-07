@@ -1,0 +1,9 @@
+{
+	"schemaVersion": "1.0.0",
+	"name": "msw/2/response-usages",
+	"description": "Replaces res() calls inside request handlers to using HttpResponse helper class with replacement for utilities.",
+	"engine": "ts-morph",
+	"extensions": ["js*", "ts*"],
+	"dependencyVersionLowerThan": ["msw", "2.0.0"],
+	"owner": "intuita"
+}
