@@ -7,6 +7,7 @@ import {
 	type Block,
 	type CallExpression,
 	type FunctionExpression,
+	type ImportSpecifier,
 	type SourceFile,
 } from 'ts-morph';
 
@@ -14,20 +15,16 @@ function addNamedImportDeclaration(
 	sourceFile: SourceFile,
 	moduleSpecifier: string,
 	name: string,
-) {
+): ImportSpecifier {
 	const importDeclaration =
-		sourceFile.getImportDeclaration(moduleSpecifier) ||
+		sourceFile.getImportDeclaration(moduleSpecifier) ??
 		sourceFile.addImportDeclaration({ moduleSpecifier });
 
-	if (
-		importDeclaration
-			.getNamedImports()
-			.some((specifier) => specifier.getName() === name)
-	) {
-		return importDeclaration;
-	}
+	const existing = importDeclaration
+		.getNamedImports()
+		.find((specifier) => specifier.getName() === name);
 
-	return importDeclaration.addNamedImport({ name });
+	return existing ?? importDeclaration.addNamedImport({ name });
 }
 
 function getImportDeclarationAlias(
@@ -43,6 +40,7 @@ function getImportDeclarationAlias(
 	const namedImport = importDeclaration
 		.getNamedImports()
 		.find((specifier) => specifier.getName() === name);
+
 	if (!namedImport) {
 		return null;
 	}
@@ -58,23 +56,24 @@ function isMSWCall(sourceFile: SourceFile, callExpr: CallExpression) {
 		'graphql',
 	);
 
-	const identifiers = callExpr
-		.getChildrenOfKind(SyntaxKind.PropertyAccessExpression)[0]
-		?.getChildrenOfKind(SyntaxKind.Identifier);
+	const identifiers =
+		callExpr
+			.getChildrenOfKind(SyntaxKind.PropertyAccessExpression)
+			.at(0)
+			?.getChildrenOfKind(SyntaxKind.Identifier) ?? [];
 
-	const caller = identifiers?.[0];
-	let method = identifiers?.[1];
+	const caller = identifiers.at(0);
 
 	if (!caller) {
 		return false;
 	}
 
-	if (!method) {
-		method = caller;
-	}
+	const method = identifiers.at(1) ?? caller;
+
+	const methodText = method.getText();
 
 	const isHttpCall =
-		caller?.getText() === httpCallerName &&
+		caller.getText() === httpCallerName &&
 		// This is what would be cool to get through inferring the type via
 		// typeChecker/langServer/diagnostics etc, for example
 		[
@@ -86,18 +85,24 @@ function isMSWCall(sourceFile: SourceFile, callExpr: CallExpression) {
 			'delete',
 			'head',
 			'options',
-		].includes(method.getText());
+		].includes(methodText);
 
 	const isGraphQLCall =
-		caller?.getText() === graphqlCallerName &&
-		['query', 'mutation'].includes(method.getText());
+		caller.getText() === graphqlCallerName &&
+		['query', 'mutation'].includes(methodText);
 
 	return isHttpCall || isGraphQLCall;
 }
 
 function getCallbackData(
 	expression: CallExpression,
-): [Block, ParameterDeclaration[], FunctionExpression | ArrowFunction] | null {
+):
+	| [
+			Block,
+			ReadonlyArray<ParameterDeclaration>,
+			FunctionExpression | ArrowFunction,
+	  ]
+	| null {
 	const mockCallback = expression.getArguments()[1];
 
 	if (!mockCallback) {
@@ -106,16 +111,21 @@ function getCallbackData(
 
 	const cbParams = mockCallback.getChildrenOfKind(SyntaxKind.Parameter);
 
-	let callbackBody = mockCallback.getChildrenOfKind(SyntaxKind.Block)[0];
-	if (!callbackBody) {
-		callbackBody = mockCallback as Block;
+	const callbackBody =
+		mockCallback.getChildrenOfKind(SyntaxKind.Block).at(0) ?? null;
+
+	if (callbackBody === null) {
+		return null;
 	}
 
-	const syntaxCb = mockCallback.asKindOrThrow(
-		mockCallback.getKind() as
-			| SyntaxKind.ArrowFunction
-			| SyntaxKind.FunctionExpression,
-	);
+	const syntaxCb =
+		mockCallback.asKind(SyntaxKind.ArrowFunction) ??
+		mockCallback.asKind(SyntaxKind.FunctionExpression) ??
+		null;
+
+	if (syntaxCb === null) {
+		return null;
+	}
 
 	return [callbackBody, cbParams, syntaxCb];
 }
@@ -126,14 +136,18 @@ const contentTypeToMethod: Record<string, string> = {
 	'text/plain': 'text',
 };
 
-function shouldProcessFile(sourceFile: SourceFile) {
-	return !!sourceFile
-		.getImportDeclarations()
-		.find((decl) =>
-			decl.getModuleSpecifier().getLiteralText().startsWith('msw'),
-		);
+function shouldProcessFile(sourceFile: SourceFile): boolean {
+	return (
+		sourceFile
+			.getImportDeclarations()
+			.find((decl) =>
+				decl.getModuleSpecifier().getLiteralText().startsWith('msw'),
+			) !== undefined
+	);
 }
 
+// https://mswjs.io/docs/migrations/1.x-to-2.x/#response-declaration
+// https://mswjs.io/docs/migrations/1.x-to-2.x/#context-utilities
 export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 	if (!shouldProcessFile(sourceFile)) {
 		return undefined;
@@ -144,34 +158,31 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 		.filter((callExpr) => isMSWCall(sourceFile, callExpr))
 		.forEach((expression) => {
 			const callbackData = getCallbackData(expression);
-			if (!callbackData) return;
+			if (callbackData === null) {
+				return;
+			}
 
 			const [callbackBody, callbackParams, syntaxCb] = callbackData;
 			const [, resParam, ctxParam] = callbackParams;
-			if (!resParam) return;
-
-			// https://mswjs.io/docs/migrations/1.x-to-2.x/#response-declaration
-			// https://mswjs.io/docs/migrations/1.x-to-2.x/#context-utilities
+			if (!resParam) {
+				return;
+			}
 
 			callbackBody
 				.getDescendantsOfKind(SyntaxKind.CallExpression)
 				.filter(
 					(callExpr) =>
 						callExpr
-							.getFirstChild()
-							?.getText()
-							.startsWith(resParam?.getText()),
+							.getDescendantsOfKind(SyntaxKind.Identifier)
+							.at(0)
+							?.getText() === resParam.getText(),
 				)
 				.forEach((callExpr) => {
-					const callMembers = callExpr
-						.getFirstChild()
-						?.getChildren()
-						.map((c) => c.getText());
-
-					let resMethod: string | undefined;
-					if (callMembers?.[2]) {
-						resMethod = callMembers[2];
-					}
+					const [, resMethod] =
+						callExpr
+							.getFirstChild()
+							?.getChildrenOfKind(SyntaxKind.Identifier)
+							.map((c) => c.getText()) ?? [];
 
 					// https://mswjs.io/docs/migrations/1.x-to-2.x/#resonce
 					if (resMethod === 'once') {
@@ -183,28 +194,30 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 						.filter(
 							(ce) =>
 								ce
-									.getFirstChild()
-									?.getFirstChild()
+									.getDescendantsOfKind(SyntaxKind.Identifier)
+									.at(0)
 									?.getText() === ctxParam?.getText(),
 						);
 
-					// console.log(intrinsicCtxCalls.map((call) => call.getText()));
-
-					let httpResponseMethod = 'json';
-					let httpResponseBody: Record<string, unknown> | string = '';
-					let httpResponseCookieString = '';
-					let httpResponseStatus = '';
+					let httpResponseMethod: string | null = null;
+					let httpResponseBody:
+						| Record<string, unknown>
+						| string
+						| null = null;
+					let httpResponseCookieString: string | null = null;
+					let httpResponseStatus: string | null = null;
 					const httpResponseHeaders: Record<string, string> = {};
-					let httpResponseData = '';
-					let httpResponseErrors = '';
-					let httpResponseExtensions = '';
+					let httpResponseData: string | null = null;
+					let httpResponseErrors: string | null = null;
+					let httpResponseExtensions: string | null = null;
 
 					for (const call of intrinsicCtxCalls) {
 						const [ctxCallPropertyAccessor, , ctxCallBody] =
-							call?.getChildren() || [];
+							call?.getChildren() ?? [];
 
 						const callType = ctxCallPropertyAccessor
-							?.getChildrenOfKind(SyntaxKind.Identifier)[1]
+							?.getChildrenOfKind(SyntaxKind.Identifier)
+							.at(1)
 							?.getText();
 
 						if (
@@ -229,6 +242,10 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 								continue;
 							}
 
+							if (httpResponseCookieString === null) {
+								httpResponseCookieString = '';
+							}
+
 							httpResponseCookieString += `${cookieName.getLiteralText()}=${encodeURIComponent(
 								cookieValue.getLiteralText(),
 							)};`;
@@ -246,23 +263,21 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 								'content-type'
 							) {
 								httpResponseMethod =
-									httpResponseMethod ||
+									httpResponseMethod ??
 									contentTypeToMethod[
 										headerValue
 											.getLiteralText()
 											.toLowerCase()
-									] ||
-									'json';
+									] ??
+									null;
 							} else {
 								httpResponseHeaders[
 									headerName.getLiteralText()
 								] = headerValue.getLiteralText();
 							}
 						} else if (callType === 'delay') {
-							const [delayTimeNode] =
-								ctxCallBody.getChildrenOfKind(
-									SyntaxKind.NumericLiteral,
-								);
+							const delayTimeNode = ctxCallBody.getFirstChild();
+
 							addNamedImportDeclaration(
 								sourceFile,
 								'msw',
@@ -272,18 +287,16 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 							const posBeforeDelayed = callExpr
 								.getParent()
 								?.getChildIndex();
+
 							if (!delayTimeNode || !posBeforeDelayed) {
 								continue;
 							}
-							callbackBody!.insertStatements(
+
+							callbackBody.insertStatements(
 								posBeforeDelayed,
-								(writer) => {
-									writer.newLineIfLastNot();
-									writer.write(
-										`await delay(${delayTimeNode.getText()});`,
-									);
-								},
+								`await delay(${delayTimeNode.getText()});`,
 							);
+
 							if (!syntaxCb.isAsync()) {
 								syntaxCb.setIsAsync(true);
 							}
@@ -300,7 +313,7 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 							httpResponseExtensions = ctxCallBody.getText();
 						} else if (callType === 'body') {
 							httpResponseBody =
-								httpResponseBody || ctxCallBody.getText();
+								httpResponseBody ?? ctxCallBody.getText();
 						}
 					}
 
@@ -351,7 +364,9 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 						ts.factory.createCallExpression(
 							ts.factory.createPropertyAccessExpression(
 								ts.factory.createIdentifier('HttpResponse'),
-								ts.factory.createIdentifier(httpResponseMethod),
+								ts.factory.createIdentifier(
+									httpResponseMethod ?? 'json',
+								),
 							),
 							undefined,
 							resOptions.length
@@ -375,7 +390,7 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 					);
 
 					callExpr.replaceWithText(result);
-					callExpr.insertArgument(0, httpResponseBody || 'null');
+					callExpr.insertArgument(0, httpResponseBody ?? 'null');
 
 					if (
 						httpResponseData ||
@@ -383,7 +398,7 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 						httpResponseExtensions
 					) {
 						const tsMorphOptsNode = (
-							callExpr.getArguments()[1] ||
+							callExpr.getArguments().at(1) ??
 							callExpr.insertArgument(1, '{}')
 						).asKindOrThrow(SyntaxKind.ObjectLiteralExpression);
 

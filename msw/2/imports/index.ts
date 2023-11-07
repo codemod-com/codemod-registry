@@ -1,23 +1,19 @@
-import { ImportSpecifier, SourceFile, SyntaxKind } from 'ts-morph';
+import { SyntaxKind, type ImportSpecifier, type SourceFile } from 'ts-morph';
 
 function addNamedImportDeclaration(
 	sourceFile: SourceFile,
 	moduleSpecifier: string,
 	name: string,
-) {
+): ImportSpecifier {
 	const importDeclaration =
-		sourceFile.getImportDeclaration(moduleSpecifier) ||
+		sourceFile.getImportDeclaration(moduleSpecifier) ??
 		sourceFile.addImportDeclaration({ moduleSpecifier });
 
-	if (
-		importDeclaration
-			.getNamedImports()
-			.some((specifier) => specifier.getName() === name)
-	) {
-		return importDeclaration;
-	}
+	const existing = importDeclaration
+		.getNamedImports()
+		.find((specifier) => specifier.getName() === name);
 
-	return importDeclaration.addNamedImport({ name });
+	return existing ?? importDeclaration.addNamedImport({ name });
 }
 
 function aliasAwareRename(specifier: ImportSpecifier, name: string) {
@@ -30,12 +26,14 @@ function aliasAwareRename(specifier: ImportSpecifier, name: string) {
 	return specifier;
 }
 
-function shouldProcessFile(sourceFile: SourceFile) {
-	return !!sourceFile
-		.getImportDeclarations()
-		.find((decl) =>
-			decl.getModuleSpecifier().getLiteralText().startsWith('msw'),
-		);
+function shouldProcessFile(sourceFile: SourceFile): boolean {
+	return (
+		sourceFile
+			.getImportDeclarations()
+			.find((decl) =>
+				decl.getModuleSpecifier().getLiteralText().startsWith('msw'),
+			) !== undefined
+	);
 }
 
 export function handleSourceFile(sourceFile: SourceFile): string | undefined {
@@ -51,6 +49,7 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 			const setupWorkerImport = declaration
 				.getNamedImports()
 				.find((specifier) => specifier.getName() === 'setupWorker');
+
 			if (setupWorkerImport) {
 				setupWorkerImport.remove();
 				if (!declaration.getNamedImports().length) {
@@ -81,14 +80,16 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 						importName === 'rest' ? 'http' : 'HttpHandler',
 					);
 
-					if (
-						importName === 'HttpHandler' &&
-						!specifier.isTypeOnly()
-					) {
-						specifier.setIsTypeOnly(true);
-					}
+					// Apparently can be used as a constructor
+					// if (
+					// 	importName === 'HttpHandler' &&
+					// 	!specifier.isTypeOnly()
+					// ) {
+					// 	specifier.setIsTypeOnly(true);
+					// }
 				});
 
+			// Not generic anymore
 			sourceFile
 				.getDescendantsOfKind(SyntaxKind.TypeReference)
 				.filter((tr) => tr.getText().startsWith('HttpHandler'))

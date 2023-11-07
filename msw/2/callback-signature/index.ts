@@ -26,7 +26,7 @@ function getImportDeclarationAlias(
 		return null;
 	}
 
-	return namedImport.getAliasNode()?.getText() || namedImport.getName();
+	return namedImport.getAliasNode()?.getText() ?? namedImport.getName();
 }
 
 function isMSWCall(sourceFile: SourceFile, callExpr: CallExpression) {
@@ -117,7 +117,7 @@ function shouldProcessFile(sourceFile: SourceFile): boolean {
 			.getImportDeclarations()
 			.find((decl) =>
 				decl.getModuleSpecifier().getLiteralText().startsWith('msw'),
-			) === undefined
+			) !== undefined
 	);
 }
 
