@@ -53,6 +53,7 @@ export function getImportDeclarationAlias(
 	const namedImport = importDeclaration
 		.getNamedImports()
 		.find((specifier) => specifier.getName() === name);
+
 	if (!namedImport) {
 		return null;
 	}
@@ -237,7 +238,13 @@ export function isMSWCall(sourceFile: SourceFile, callExpr: CallExpression) {
 
 export function getCallbackData(
 	expression: CallExpression,
-): [Block, ParameterDeclaration[], FunctionExpression | ArrowFunction] | null {
+):
+	| [
+			Block,
+			ReadonlyArray<ParameterDeclaration>,
+			FunctionExpression | ArrowFunction,
+	  ]
+	| null {
 	const mockCallback = expression.getArguments()[1];
 
 	if (!mockCallback) {
@@ -246,16 +253,21 @@ export function getCallbackData(
 
 	const cbParams = mockCallback.getChildrenOfKind(SyntaxKind.Parameter);
 
-	let callbackBody = mockCallback.getChildrenOfKind(SyntaxKind.Block)[0];
-	if (!callbackBody) {
-		callbackBody = mockCallback as Block;
+	const callbackBody =
+		mockCallback.getChildrenOfKind(SyntaxKind.Block).at(0) ?? null;
+
+	if (callbackBody === null) {
+		return null;
 	}
 
-	const syntaxCb = mockCallback.asKindOrThrow(
-		mockCallback.getKind() as
-			| SyntaxKind.ArrowFunction
-			| SyntaxKind.FunctionExpression,
-	);
+	const syntaxCb =
+		mockCallback.asKind(SyntaxKind.ArrowFunction) ??
+		mockCallback.asKind(SyntaxKind.FunctionExpression) ??
+		null;
+
+	if (syntaxCb === null) {
+		return null;
+	}
 
 	return [callbackBody, cbParams, syntaxCb];
 }

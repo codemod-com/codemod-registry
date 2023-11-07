@@ -7,7 +7,6 @@ import {
 	type Block,
 	type CallExpression,
 	type FunctionExpression,
-	type ImportDeclaration,
 	type ImportSpecifier,
 } from 'ts-morph';
 
@@ -15,20 +14,16 @@ function addNamedImportDeclaration(
 	sourceFile: SourceFile,
 	moduleSpecifier: string,
 	name: string,
-): ImportDeclaration | ImportSpecifier {
+): ImportSpecifier {
 	const importDeclaration =
 		sourceFile.getImportDeclaration(moduleSpecifier) ??
 		sourceFile.addImportDeclaration({ moduleSpecifier });
 
-	if (
-		importDeclaration
-			.getNamedImports()
-			.some((specifier) => specifier.getName() === name)
-	) {
-		return importDeclaration;
-	}
+	const existing = importDeclaration
+		.getNamedImports()
+		.find((specifier) => specifier.getName() === name);
 
-	return importDeclaration.addNamedImport({ name });
+	return existing ?? importDeclaration.addNamedImport({ name });
 }
 
 function getImportDeclarationAlias(
@@ -78,23 +73,24 @@ function isMSWCall(sourceFile: SourceFile, callExpr: CallExpression) {
 		'graphql',
 	);
 
-	const identifiers = callExpr
-		.getChildrenOfKind(SyntaxKind.PropertyAccessExpression)[0]
-		?.getChildrenOfKind(SyntaxKind.Identifier);
+	const identifiers =
+		callExpr
+			.getChildrenOfKind(SyntaxKind.PropertyAccessExpression)
+			.at(0)
+			?.getChildrenOfKind(SyntaxKind.Identifier) ?? [];
 
-	const caller = identifiers?.[0];
-	let method = identifiers?.[1];
+	const caller = identifiers.at(0);
 
 	if (!caller) {
 		return false;
 	}
 
-	if (!method) {
-		method = caller;
-	}
+	const method = identifiers.at(1) ?? caller;
+
+	const methodText = method.getText();
 
 	const isHttpCall =
-		caller?.getText() === httpCallerName &&
+		caller.getText() === httpCallerName &&
 		// This is what would be cool to get through inferring the type via
 		// typeChecker/langServer/diagnostics etc, for example
 		[
@@ -106,18 +102,24 @@ function isMSWCall(sourceFile: SourceFile, callExpr: CallExpression) {
 			'delete',
 			'head',
 			'options',
-		].includes(method.getText());
+		].includes(methodText);
 
 	const isGraphQLCall =
-		caller?.getText() === graphqlCallerName &&
-		['query', 'mutation'].includes(method.getText());
+		caller.getText() === graphqlCallerName &&
+		['query', 'mutation'].includes(methodText);
 
 	return isHttpCall || isGraphQLCall;
 }
 
 function getCallbackData(
 	expression: CallExpression,
-): [Block, ParameterDeclaration[], FunctionExpression | ArrowFunction] | null {
+):
+	| [
+			Block,
+			ReadonlyArray<ParameterDeclaration>,
+			FunctionExpression | ArrowFunction,
+	  ]
+	| null {
 	const mockCallback = expression.getArguments()[1];
 
 	if (!mockCallback) {
@@ -126,16 +128,21 @@ function getCallbackData(
 
 	const cbParams = mockCallback.getChildrenOfKind(SyntaxKind.Parameter);
 
-	let callbackBody = mockCallback.getChildrenOfKind(SyntaxKind.Block)[0];
-	if (!callbackBody) {
-		callbackBody = mockCallback as Block;
+	const callbackBody =
+		mockCallback.getChildrenOfKind(SyntaxKind.Block).at(0) ?? null;
+
+	if (callbackBody === null) {
+		return null;
 	}
 
-	const syntaxCb = mockCallback.asKindOrThrow(
-		mockCallback.getKind() as
-			| SyntaxKind.ArrowFunction
-			| SyntaxKind.FunctionExpression,
-	);
+	const syntaxCb =
+		mockCallback.asKind(SyntaxKind.ArrowFunction) ??
+		mockCallback.asKind(SyntaxKind.FunctionExpression) ??
+		null;
+
+	if (syntaxCb === null) {
+		return null;
+	}
 
 	return [callbackBody, cbParams, syntaxCb];
 }
@@ -166,23 +173,23 @@ export function replaceReferences(
 	codeBlock
 		.getDescendantsOfKind(SyntaxKind.PropertyAccessExpression)
 		.forEach((accessExpr) => {
+			const accessIds = accessExpr.getChildrenOfKind(
+				SyntaxKind.Identifier,
+			);
+
+			const accessOwnerName = accessIds.at(0)?.getText();
+			const accessedPropertyName = accessIds.at(-1)?.getText();
+
 			if (
 				replaced.includes(accessExpr.getName()) &&
-				accessExpr
-					.getChildrenOfKind(SyntaxKind.Identifier)[0]
-					?.getText() === callerName
+				accessOwnerName === callerName
 			) {
-				const accessed = accessExpr
-					.getChildrenOfKind(SyntaxKind.Identifier)
-					.at(-1)
-					?.getText();
-
-				if (!accessed) {
+				if (!accessedPropertyName) {
 					throw new Error('Could not find accessed identifier');
 				}
 
 				didReplace = true;
-				accessExpr.replaceWithText(accessed);
+				accessExpr.replaceWithText(accessedPropertyName);
 			}
 		});
 
@@ -208,19 +215,20 @@ export function replaceReferences(
 			if (toReplaceFromBinding.length) {
 				didReplace = true;
 
+				const toReplaceRegex = toReplaceFromBinding.join('|');
 				bindingPattern?.replaceWithText(
 					bindingPattern
 						.getText()
 						.replace(
 							new RegExp(
-								`(,\\s*)?(${toReplaceFromBinding.join(
-									'|',
-								)})+(\\s*,)?`,
+								`(,\\s*)?(${toReplaceRegex})+(\\s*,)?`,
 								'g',
 							),
 							(fullMatch, p1, _p2, p3) => {
-								if (fullMatch && ![p1, p3].includes(fullMatch))
+								if (![p1, p3].includes(fullMatch)) {
 									return '';
+								}
+
 								return fullMatch;
 							},
 						),
@@ -247,12 +255,14 @@ export function replaceReferences(
 	return didReplace;
 }
 
-function shouldProcessFile(sourceFile: SourceFile) {
-	return !!sourceFile
-		.getImportDeclarations()
-		.find((decl) =>
-			decl.getModuleSpecifier().getLiteralText().startsWith('msw'),
-		);
+function shouldProcessFile(sourceFile: SourceFile): boolean {
+	return (
+		sourceFile
+			.getImportDeclarations()
+			.find((decl) =>
+				decl.getModuleSpecifier().getLiteralText().startsWith('msw'),
+			) !== undefined
+	);
 }
 
 // https://mswjs.io/docs/migrations/1.x-to-2.x/#ctxfetch
@@ -266,7 +276,7 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 		.filter((callExpr) => isMSWCall(sourceFile, callExpr))
 		.forEach((expression) => {
 			const callbackData = getCallbackData(expression);
-			if (!callbackData) {
+			if (callbackData === null) {
 				return;
 			}
 
