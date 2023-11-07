@@ -1,13 +1,11 @@
-import { type SourceFile, SyntaxKind } from 'ts-morph';
+import { SourceFile, SyntaxKind } from 'ts-morph';
 
-function shouldProcessFile(sourceFile: SourceFile): boolean {
-	return (
-		sourceFile
-			.getImportDeclarations()
-			.find((decl) =>
-				decl.getModuleSpecifier().getLiteralText().startsWith('msw'),
-			) !== undefined
-	);
+function shouldProcessFile(sourceFile: SourceFile) {
+	return !!sourceFile
+		.getImportDeclarations()
+		.find((decl) =>
+			decl.getModuleSpecifier().getLiteralText().startsWith('msw'),
+		);
 }
 
 // https://mswjs.io/docs/migrations/1.x-to-2.x/#printhandlers
@@ -24,18 +22,12 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 		.forEach((id) => {
 			id.replaceWithText('listHandlers');
 
-			const callExpressionEndPosition =
-				id
-					.getAncestors()
-					.find(
-						(parent) =>
-							parent.getKind() === SyntaxKind.CallExpression,
-					)
-					?.getEnd() ?? null;
-
-			if (callExpressionEndPosition === null) {
-				return;
-			}
+			const callExpressionEndPosition = id
+				.getAncestors()
+				.find(
+					(parent) => parent.getKind() === SyntaxKind.CallExpression,
+				)!
+				.getEnd();
 
 			sourceFile
 				.insertText(
