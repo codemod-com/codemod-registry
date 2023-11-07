@@ -1,0 +1,9 @@
+{
+	"schemaVersion": "1.0.0",
+	"name": "msw/2/request-changes",
+	"description": "Replaces old ways of accessing req properties to new ones",
+	"engine": "ts-morph",
+	"extensions": ["js*", "ts*"],
+	"dependencyVersionLowerThan": ["msw", "2.0.0"],
+	"owner": "intuita"
+}
