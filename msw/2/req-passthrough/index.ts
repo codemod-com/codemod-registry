@@ -243,7 +243,9 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 		.filter((callExpr) => isMSWCall(sourceFile, callExpr))
 		.forEach((expression) => {
 			const callbackData = getCallbackData(expression);
-			if (!callbackData) return;
+			if (!callbackData) {
+				return;
+			}
 
 			const [callbackBody, callbackParams] = callbackData;
 			const [reqParam] = callbackParams;

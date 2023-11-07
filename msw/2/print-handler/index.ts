@@ -22,12 +22,18 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 		.forEach((id) => {
 			id.replaceWithText('listHandlers');
 
-			const callExpressionEndPosition = id
-				.getAncestors()
-				.find(
-					(parent) => parent.getKind() === SyntaxKind.CallExpression,
-				)!
-				.getEnd();
+			const callExpressionEndPosition =
+				id
+					.getAncestors()
+					.find(
+						(parent) =>
+							parent.getKind() === SyntaxKind.CallExpression,
+					)
+					?.getEnd() ?? null;
+
+			if (callExpressionEndPosition === null) {
+				return;
+			}
 
 			sourceFile
 				.insertText(

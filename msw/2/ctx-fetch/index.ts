@@ -7,16 +7,17 @@ import {
 	type Block,
 	type CallExpression,
 	type FunctionExpression,
-	type PropertyAccessExpression,
+	type ImportDeclaration,
+	type ImportSpecifier,
 } from 'ts-morph';
 
 function addNamedImportDeclaration(
 	sourceFile: SourceFile,
 	moduleSpecifier: string,
 	name: string,
-) {
+): ImportDeclaration | ImportSpecifier {
 	const importDeclaration =
-		sourceFile.getImportDeclaration(moduleSpecifier) ||
+		sourceFile.getImportDeclaration(moduleSpecifier) ??
 		sourceFile.addImportDeclaration({ moduleSpecifier });
 
 	if (
@@ -43,6 +44,7 @@ function getImportDeclarationAlias(
 	const namedImport = importDeclaration
 		.getNamedImports()
 		.find((specifier) => specifier.getName() === name);
+
 	if (!namedImport) {
 		return null;
 	}
@@ -52,27 +54,20 @@ function getImportDeclarationAlias(
 
 function searchIdentifiers(
 	codeBlock: Block,
-	searchables: string[],
-	matchCb?: (matchedVal: string) => void,
-) {
-	const matched = new Set<string>();
-	for (const parent of (
-		codeBlock.getDescendantsOfKind(
-			SyntaxKind.PropertyAccessExpression,
-		) as Array<PropertyAccessExpression | BindingElement>
-	).concat(codeBlock.getDescendantsOfKind(SyntaxKind.BindingElement))) {
+	searchables: ReadonlyArray<string>,
+): ReadonlySet<string> {
+	const matchedStrings = [
+		...codeBlock.getDescendantsOfKind(SyntaxKind.PropertyAccessExpression),
+		...codeBlock.getDescendantsOfKind(SyntaxKind.BindingElement),
+	].flatMap((parent) => {
 		const identifiers = parent.getDescendantsOfKind(SyntaxKind.Identifier);
-		searchables
-			.filter((tested) =>
-				identifiers.some((id) => id.getText() === tested),
-			)
-			.forEach((matchedText) => {
-				matched.add(matchedText);
-				matchCb?.(matchedText);
-			});
-	}
 
-	return matched;
+		return searchables.filter((tested) =>
+			identifiers.some((id) => id.getText() === tested),
+		);
+	});
+
+	return new Set(matchedStrings);
 }
 
 function isMSWCall(sourceFile: SourceFile, callExpr: CallExpression) {
@@ -181,6 +176,7 @@ export function replaceReferences(
 					.getChildrenOfKind(SyntaxKind.Identifier)
 					.at(-1)
 					?.getText();
+
 				if (!accessed) {
 					throw new Error('Could not find accessed identifier');
 				}
@@ -201,6 +197,7 @@ export function replaceReferences(
 					const destructuredReplaced = bindingEl
 						.getDescendantsOfKind(SyntaxKind.Identifier)
 						.find((d) => replaced.includes(d.getText()));
+
 					if (destructuredReplaced) {
 						replaceDestructureAliases(bindingEl);
 
@@ -269,7 +266,9 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 		.filter((callExpr) => isMSWCall(sourceFile, callExpr))
 		.forEach((expression) => {
 			const callbackData = getCallbackData(expression);
-			if (!callbackData) return;
+			if (!callbackData) {
+				return;
+			}
 
 			const [callbackBody, callbackParams] = callbackData;
 			const [, , ctxParam] = callbackParams;

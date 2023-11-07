@@ -1,9 +1,5 @@
 {
 	"schemaVersion": "1.0.0",
 	"name": "msw/2/callback-signature",
-	"description": "Replaces the old callback signature",
-	"engine": "ts-morph",
-	"extensions": ["js*", "ts*"],
-	"dependencyVersionLowerThan": ["msw", "2.0.0"],
-	"owner": "intuita"
+	"engine": "ts-morph"
 }
