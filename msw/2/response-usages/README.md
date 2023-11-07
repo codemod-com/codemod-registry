@@ -7,10 +7,6 @@ To send a response from MSW handler, one would previously use something like `re
 
 This codemod does not remove unused properties on the callback signature due to the fact that there are more changes in other codemods included in the `upgrade-recipe` that rely on it. To apply these changes, you will have to run the recipe or run a `callback-signature` codemod that will do only that and replace all the references of old signature arguments.
 
-### WARNING
-
-This codemod runs `.fixUnusedIdentifiers()` on a source file you are running it on. This would remove any unused declarations in the file. This is due to atomicity of this mod, which blindly inserts the callback structure into each msw handler callback and then cleans up the variables that are not used.
-
 ## Example
 
 ### Before
@@ -140,7 +136,7 @@ graphql.query('GetUser', (req, res, ctx) => {
 
 ```ts
 graphql.query('GetUser', (req, res, ctx) => {
-  return HttpResponse.json(
+  return res(
     data: {
       user: { firstName: 'John' },
     },
