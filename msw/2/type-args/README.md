@@ -9,7 +9,7 @@ There is a change to generic type interface of rest.method() calls. This codemod
 ### Before
 
 ```ts
-rest.get<ReqBodyType, PathParamsType>('/resource', (req, res, ctx) => {
+rest.get<PathParamsType, ReqBodyType>('/resource', (req, res, ctx) => {
   return res(ctx.json({ firstName: 'John' }));
 });
 ```
@@ -17,7 +17,7 @@ rest.get<ReqBodyType, PathParamsType>('/resource', (req, res, ctx) => {
 ### After
 
 ```ts
-rest.get<PathParamsType, ReqBodyType>('/resource', (req, res, ctx) => {
+rest.get<ReqBodyType, PathParamsType>('/resource', (req, res, ctx) => {
   return res(ctx.json({ firstName: 'John' }));
 });
 ```
@@ -25,7 +25,7 @@ rest.get<PathParamsType, ReqBodyType>('/resource', (req, res, ctx) => {
 ### Before
 
 ```ts
-rest.get<ReqBodyType>('/resource', (req, res, ctx) => {
+rest.get<PathParamsType>('/resource', (req, res, ctx) => {
   return res(ctx.json({ firstName: 'John' }));
 });
 ```
@@ -33,7 +33,7 @@ rest.get<ReqBodyType>('/resource', (req, res, ctx) => {
 ### After
 
 ```ts
-rest.get<any, ReqBodyType>('/resource', (req, res, ctx) => {
+rest.get<any, PathParamsType>('/resource', (req, res, ctx) => {
   return res(ctx.json({ firstName: 'John' }));
 });
 ```

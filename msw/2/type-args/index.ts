@@ -13,7 +13,6 @@ function getImportDeclarationAlias(
 	const namedImport = importDeclaration
 		.getNamedImports()
 		.find((specifier) => specifier.getName() === name);
-
 	if (!namedImport) {
 		return null;
 	}
@@ -29,24 +28,23 @@ function isMSWCall(sourceFile: SourceFile, callExpr: CallExpression) {
 		'graphql',
 	);
 
-	const identifiers =
-		callExpr
-			.getChildrenOfKind(SyntaxKind.PropertyAccessExpression)
-			.at(0)
-			?.getChildrenOfKind(SyntaxKind.Identifier) ?? [];
+	const identifiers = callExpr
+		.getChildrenOfKind(SyntaxKind.PropertyAccessExpression)[0]
+		?.getChildrenOfKind(SyntaxKind.Identifier);
 
-	const caller = identifiers.at(0);
+	const caller = identifiers?.[0];
+	let method = identifiers?.[1];
 
 	if (!caller) {
 		return false;
 	}
 
-	const method = identifiers.at(1) ?? caller;
-
-	const methodText = method.getText();
+	if (!method) {
+		method = caller;
+	}
 
 	const isHttpCall =
-		caller.getText() === httpCallerName &&
+		caller?.getText() === httpCallerName &&
 		// This is what would be cool to get through inferring the type via
 		// typeChecker/langServer/diagnostics etc, for example
 		[
@@ -58,23 +56,21 @@ function isMSWCall(sourceFile: SourceFile, callExpr: CallExpression) {
 			'delete',
 			'head',
 			'options',
-		].includes(methodText);
+		].includes(method.getText());
 
 	const isGraphQLCall =
-		caller.getText() === graphqlCallerName &&
-		['query', 'mutation'].includes(methodText);
+		caller?.getText() === graphqlCallerName &&
+		['query', 'mutation'].includes(method.getText());
 
 	return isHttpCall || isGraphQLCall;
 }
 
-function shouldProcessFile(sourceFile: SourceFile): boolean {
-	return (
-		sourceFile
-			.getImportDeclarations()
-			.find((decl) =>
-				decl.getModuleSpecifier().getLiteralText().startsWith('msw'),
-			) !== undefined
-	);
+function shouldProcessFile(sourceFile: SourceFile) {
+	return !!sourceFile
+		.getImportDeclarations()
+		.find((decl) =>
+			decl.getModuleSpecifier().getLiteralText().startsWith('msw'),
+		);
 }
 
 export function handleSourceFile(sourceFile: SourceFile): string | undefined {
@@ -87,14 +83,13 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 		.filter((callExpr) => isMSWCall(sourceFile, callExpr))
 		.forEach((expression) => {
 			const genericTypeArgs = expression.getTypeArguments();
-
 			if (genericTypeArgs.length) {
 				const newArgs = [
 					// unknown does not work:
 					// Type 'unknown' does not satisfy the constraint 'PathParams<never>'.
-					genericTypeArgs.at(1)?.getText() || 'any',
-					genericTypeArgs.at(0)!.getText(),
-					genericTypeArgs.at(2)?.getText(),
+					genericTypeArgs[1]?.getText() || 'any',
+					genericTypeArgs[0]!.getText(),
+					genericTypeArgs[2]?.getText(),
 				].filter(Boolean) as string[];
 
 				expression.insertTypeArguments(0, newArgs);
