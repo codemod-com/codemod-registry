@@ -136,7 +136,7 @@ graphql.query('GetUser', (req, res, ctx) => {
 
 ```ts
 graphql.query('GetUser', (req, res, ctx) => {
-  return res(
+  return HttpResponse.json(
     data: {
       user: { firstName: 'John' },
     },
