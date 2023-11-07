@@ -1,0 +1,9 @@
+{
+	"schemaVersion": "1.0.0",
+	"name": "msw/2/type-args",
+	"description": "Replaces generic type arguments of old rest.method() calls.",
+	"engine": "ts-morph",
+	"extensions": ["js*", "ts*"],
+	"dependencyVersionLowerThan": ["msw", "2.0.0"],
+	"owner": "intuita"
+}
