@@ -7,6 +7,7 @@ import {
 	type Block,
 	type CallExpression,
 	type FunctionExpression,
+	type PropertyAccessExpression,
 	type SourceFile,
 } from 'ts-morph';
 
@@ -23,7 +24,6 @@ function getImportDeclarationAlias(
 	const namedImport = importDeclaration
 		.getNamedImports()
 		.find((specifier) => specifier.getName() === name);
-
 	if (!namedImport) {
 		return null;
 	}
@@ -31,19 +31,29 @@ function getImportDeclarationAlias(
 	return namedImport.getAliasNode()?.getText() || namedImport.getName();
 }
 
-function searchIdentifiers(codeBlock: Block, searchables: string[]) {
-	const matchedStrings = [
-		...codeBlock.getDescendantsOfKind(SyntaxKind.PropertyAccessExpression),
-		...codeBlock.getDescendantsOfKind(SyntaxKind.BindingElement),
-	].flatMap((parent) => {
+function searchIdentifiers(
+	codeBlock: Block,
+	searchables: string[],
+	matchCb?: (matchedVal: string) => void,
+) {
+	const matched = new Set<string>();
+	for (const parent of (
+		codeBlock.getDescendantsOfKind(
+			SyntaxKind.PropertyAccessExpression,
+		) as Array<PropertyAccessExpression | BindingElement>
+	).concat(codeBlock.getDescendantsOfKind(SyntaxKind.BindingElement))) {
 		const identifiers = parent.getDescendantsOfKind(SyntaxKind.Identifier);
+		searchables
+			.filter((tested) =>
+				identifiers.some((id) => id.getText() === tested),
+			)
+			.forEach((matchedText) => {
+				matched.add(matchedText);
+				matchCb?.(matchedText);
+			});
+	}
 
-		return searchables.filter((tested) =>
-			identifiers.some((id) => id.getText() === tested),
-		);
-	});
-
-	return new Set(matchedStrings);
+	return matched;
 }
 
 function replaceDestructureAliases(bindingEl: BindingElement) {
@@ -159,24 +169,23 @@ function isMSWCall(sourceFile: SourceFile, callExpr: CallExpression) {
 		'graphql',
 	);
 
-	const identifiers =
-		callExpr
-			.getChildrenOfKind(SyntaxKind.PropertyAccessExpression)
-			.at(0)
-			?.getChildrenOfKind(SyntaxKind.Identifier) ?? [];
+	const identifiers = callExpr
+		.getChildrenOfKind(SyntaxKind.PropertyAccessExpression)[0]
+		?.getChildrenOfKind(SyntaxKind.Identifier);
 
-	const caller = identifiers.at(0);
+	const caller = identifiers?.[0];
+	let method = identifiers?.[1];
 
 	if (!caller) {
 		return false;
 	}
 
-	const method = identifiers.at(1) ?? caller;
-
-	const methodText = method.getText();
+	if (!method) {
+		method = caller;
+	}
 
 	const isHttpCall =
-		caller.getText() === httpCallerName &&
+		caller?.getText() === httpCallerName &&
 		// This is what would be cool to get through inferring the type via
 		// typeChecker/langServer/diagnostics etc, for example
 		[
@@ -188,24 +197,18 @@ function isMSWCall(sourceFile: SourceFile, callExpr: CallExpression) {
 			'delete',
 			'head',
 			'options',
-		].includes(methodText);
+		].includes(method.getText());
 
 	const isGraphQLCall =
-		caller.getText() === graphqlCallerName &&
-		['query', 'mutation'].includes(methodText);
+		caller?.getText() === graphqlCallerName &&
+		['query', 'mutation'].includes(method.getText());
 
 	return isHttpCall || isGraphQLCall;
 }
 
 function getCallbackData(
 	expression: CallExpression,
-):
-	| [
-			Block,
-			ReadonlyArray<ParameterDeclaration>,
-			FunctionExpression | ArrowFunction,
-	  ]
-	| null {
+): [Block, ParameterDeclaration[], FunctionExpression | ArrowFunction] | null {
 	const mockCallback = expression.getArguments()[1];
 
 	if (!mockCallback) {
@@ -214,33 +217,26 @@ function getCallbackData(
 
 	const cbParams = mockCallback.getChildrenOfKind(SyntaxKind.Parameter);
 
-	const callbackBody =
-		mockCallback.getChildrenOfKind(SyntaxKind.Block).at(0) ?? null;
-
-	if (callbackBody === null) {
-		return null;
+	let callbackBody = mockCallback.getChildrenOfKind(SyntaxKind.Block)[0];
+	if (!callbackBody) {
+		callbackBody = mockCallback as Block;
 	}
 
-	const syntaxCb =
-		mockCallback.asKind(SyntaxKind.ArrowFunction) ??
-		mockCallback.asKind(SyntaxKind.FunctionExpression) ??
-		null;
-
-	if (syntaxCb === null) {
-		return null;
-	}
+	const syntaxCb = mockCallback.asKindOrThrow(
+		mockCallback.getKind() as
+			| SyntaxKind.ArrowFunction
+			| SyntaxKind.FunctionExpression,
+	);
 
 	return [callbackBody, cbParams, syntaxCb];
 }
 
-function shouldProcessFile(sourceFile: SourceFile): boolean {
-	return (
-		sourceFile
-			.getImportDeclarations()
-			.find((decl) =>
-				decl.getModuleSpecifier().getLiteralText().startsWith('msw'),
-			) !== undefined
-	);
+function shouldProcessFile(sourceFile: SourceFile) {
+	return !!sourceFile
+		.getImportDeclarations()
+		.find((decl) =>
+			decl.getModuleSpecifier().getLiteralText().startsWith('msw'),
+		);
 }
 
 // https://mswjs.io/docs/migrations/1.x-to-2.x/#request-changes
@@ -254,35 +250,37 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 		.filter((callExpr) => isMSWCall(sourceFile, callExpr))
 		.forEach((expression) => {
 			const callbackData = getCallbackData(expression);
-			if (callbackData === null) {
-				return;
-			}
+			if (!callbackData) return;
 
 			const [callbackBody, callbackParams, syntaxCb] = callbackData;
 			const [reqParam] = callbackParams;
 
-			const signatureMatches = searchIdentifiers(callbackBody, [
-				'cookies',
-				'params',
-			]);
+			const matchedValues: Set<string> = new Set();
 
-			if (signatureMatches.size) {
+			let tempMatched = searchIdentifiers(
+				callbackBody,
+				['cookies', 'params'],
+				(matchedVal) => matchedValues.add(matchedVal),
+			);
+
+			if (tempMatched.size) {
 				replaceReferences(
 					callbackBody,
-					Array.from(signatureMatches),
+					Array.from(matchedValues),
 					reqParam?.getText(),
 				);
 			}
 
-			const reqCallMatches = searchIdentifiers(callbackBody, [
-				'searchParams',
-				'url',
-			]);
+			tempMatched = searchIdentifiers(
+				callbackBody,
+				['searchParams', 'url'],
+				() => matchedValues.add('request'),
+			);
 
-			if (reqCallMatches.size) {
+			if (tempMatched.size) {
 				replaceReferences(
 					callbackBody,
-					['request'],
+					['searchParams', 'url'],
 					reqParam?.getText(),
 				);
 
@@ -302,16 +300,17 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 				callbackBody
 					.getDescendantsOfKind(SyntaxKind.Identifier)
 					.forEach((id) => {
-						if (
-							id.getText() === 'searchParams' &&
-							id
-								.getParentIfKind(
-									SyntaxKind.PropertyAccessExpression,
-								)
-								?.getFirstChild()
-								?.getText() === 'searchParams'
-						) {
-							id.replaceWithText('url.searchParams');
+						if (id.getText() === 'searchParams') {
+							if (
+								id
+									.getParentIfKind(
+										SyntaxKind.PropertyAccessExpression,
+									)
+									?.getFirstChild()
+									?.getText() === 'searchParams'
+							) {
+								id.replaceWithText('url.searchParams');
+							}
 						}
 					});
 			}
@@ -332,6 +331,8 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 					],
 					declarationKind: VariableDeclarationKind.Const,
 				});
+
+				matchedValues.add('request');
 
 				if (!syntaxCb.isAsync()) {
 					syntaxCb.setIsAsync(true);
