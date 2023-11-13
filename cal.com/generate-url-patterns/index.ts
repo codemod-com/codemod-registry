@@ -87,13 +87,17 @@ const handleFile: HandleFile<Dependencies, State> = async (
 		const parsedPath = posix.parse(path);
 		const directoryNames = parsedPath.dir.split(posix.sep);
 
-		if (!directoryNames.includes('pages')) {
+		if (!directoryNames.includes('apps')) {
 			return [];
 		}
 
-		const parts = directoryNames
-			.slice(directoryNames.lastIndexOf('pages') + 1)
-			.concat(parsedPath.name === 'index' ? [] : [parsedPath.name]);
+		const parts = directoryNames.slice(
+			directoryNames.lastIndexOf('apps') + 1,
+		);
+
+		if (parts.length === 0) {
+			return [];
+		}
 
 		const pathname = parts
 			.map((part) => {
@@ -119,7 +123,8 @@ const handleFile: HandleFile<Dependencies, State> = async (
 				return null;
 			})
 			.filter(isNeitherNullNorUndefined)
-			.join('/');
+			.map((part) => `/${part}`)
+			.join('');
 
 		const partialEnvVar = parts
 			.map((part) => {
@@ -157,21 +162,6 @@ const handleFile: HandleFile<Dependencies, State> = async (
 	return [];
 };
 
-const buildRoutes = (entries: ReadonlyArray<Entry>) => {
-	const statements = entries
-		.map(
-			({ pathname, envVar }) =>
-				`["${pathname}", Boolean(process.env.${envVar})] as const,`,
-		)
-		.join('\n');
-
-	return `
-	const ROUTES: [URLPattern, boolean][] = [
-		${statements}
-  	].map(([pathname, enabled]) => [new URLPattern({ pathname }), enabled]);
-	`;
-};
-
 const handleData: HandleData<Dependencies, State> = async (
 	api,
 	path,
@@ -185,17 +175,16 @@ const handleData: HandleData<Dependencies, State> = async (
 
 	if (path === state.turboPath) {
 		const json = JSON.parse(data);
-		const globalEnv: string[] = json.globalEnv;
+
+		const globalEnv = new Set<string>(json.globalEnv);
 
 		for (const { envVar } of state.entries) {
-			globalEnv.push(envVar);
+			globalEnv.add(envVar);
 		}
-
-		globalEnv.sort();
 
 		const newData = JSON.stringify({
 			...json,
-			globalEnv,
+			globalEnv: Array.from(globalEnv).sort(),
 		});
 
 		return {
@@ -208,9 +197,7 @@ const handleData: HandleData<Dependencies, State> = async (
 	if (path === state.middlewarePath) {
 		const { jscodeshift } = api.getDependencies();
 		const { VariableDeclarator, Program } = jscodeshift;
-		const root = jscodeshift(data);
-
-		const routes = buildRoutes(state.entries);
+		const root = jscodeshift.withParser('tsx')(data);
 
 		const buildElement = (entry: Entry): TSAsExpressionKind => {
 			return {
@@ -373,7 +360,7 @@ const handleData: HandleData<Dependencies, State> = async (
 		if (routesVariableDeclarators.length === 0) {
 			root.find(Program).nodes()[0]?.body.push(variableDeclation);
 		} else {
-			routesVariableDeclarators.replaceWith(routes);
+			routesVariableDeclarators.replaceWith(variableDeclation);
 		}
 
 		const source = root.toSource();

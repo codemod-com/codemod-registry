@@ -65,13 +65,16 @@ describe('generate-url-patterns', function () {
 				'/opt/project/turbo.json': JSON.stringify({
 					globalEnv: ['OTHER_ENVVAR'],
 				}),
-				'/opt/project/middleware.ts': 'const other = true;',
-				'/opt/project/pages/somePage.tsx': '',
-				'/opt/project/pages/noSegment/index.tsx': '',
-				'/opt/project/pages/dynamicSegment/[a].tsx': '',
-				'/opt/project/pages/dynamicSegment/[b]/[c].tsx': '',
-				'/opt/project/pages/catchAllDynamicSegments/[...d].tsx': '',
-				'/opt/project/pages/optionalCatchAllDynamicSegments/[[...e]]/f.tsx':
+				'/opt/project/middleware.ts': `
+					import { type X } from 'y';
+					const other = true;
+				`,
+				'/opt/project/apps/noSegment/page.tsx': '',
+				'/opt/project/apps/dynamicSegment/[a]/page.tsx': '',
+				'/opt/project/apps/dynamicSegment/[b]/[c]/page.tsx': '',
+				'/opt/project/apps/catchAllDynamicSegments/[...d]/page..tsx':
+					'',
+				'/opt/project/apps/optionalCatchAllDynamicSegments/[[...e]]/f/page.tsx':
 					'',
 			},
 			{
@@ -87,7 +90,6 @@ describe('generate-url-patterns', function () {
 				'APP_ROUTER_DYNAMICSEGMENT_B_C_ENABLED',
 				'APP_ROUTER_NOSEGMENT_ENABLED',
 				'APP_ROUTER_OPTIONALCATCHALLDYNAMICSEGMENTS_E_F_ENABLED',
-				'APP_ROUTER_SOMEPAGE_ENABLED',
 				'OTHER_ENVVAR',
 			],
 		});
@@ -103,30 +105,31 @@ describe('generate-url-patterns', function () {
 			removeWhitespaces({
 				kind: 'upsertFile',
 				path: '/opt/project/middleware.ts',
-				data: `const other = true;
+				data: `import { type X } from 'y';
+				const other = true;
 
-                const ROUTES: [URLPattern, boolean][] = [
-                ["somePage", Boolean(process.env.APP_ROUTER_SOMEPAGE_ENABLED)] as const,
-                ["noSegment", Boolean(process.env.APP_ROUTER_NOSEGMENT_ENABLED)] as const,
-                [
-                    "dynamicSegment/:a",
-                    Boolean(process.env.APP_ROUTER_DYNAMICSEGMENT_A_ENABLED)
-                ] as const,
-                [
-                    "catchAllDynamicSegments/:d+",
-                    Boolean(process.env.APP_ROUTER_CATCHALLDYNAMICSEGMENTS_D_ENABLED)
-                ] as const,
-                [
-                    "optionalCatchAllDynamicSegments/:e*/f",
-                    Boolean(process.env.APP_ROUTER_OPTIONALCATCHALLDYNAMICSEGMENTS_E_F_ENABLED)
-                ] as const,
-                [
-                    "dynamicSegment/:b/:c",
-                    Boolean(process.env.APP_ROUTER_DYNAMICSEGMENT_B_C_ENABLED)
-                ] as const
-                ].map(([pathname, enabled]) => [new URLPattern({
-                    pathname
-                }), enabled]);`,
+				const ROUTES: [URLPattern, boolean][] = [
+					["/noSegment", Boolean(process.env.APP_ROUTER_NOSEGMENT_ENABLED)] as const,
+					[
+						"/dynamicSegment/:a",
+						Boolean(process.env.APP_ROUTER_DYNAMICSEGMENT_A_ENABLED)
+					] as const,
+					[
+						"/catchAllDynamicSegments/:d+",
+						Boolean(process.env.APP_ROUTER_CATCHALLDYNAMICSEGMENTS_D_ENABLED)
+					] as const,
+					[
+						"/optionalCatchAllDynamicSegments/:e*/f",
+						Boolean(process.env.APP_ROUTER_OPTIONALCATCHALLDYNAMICSEGMENTS_E_F_ENABLED)
+					] as const,
+					[
+						"/dynamicSegment/:b/:c",
+						Boolean(process.env.APP_ROUTER_DYNAMICSEGMENT_B_C_ENABLED)
+					] as const
+				].map(([pathname, enabled]) => [new URLPattern({
+					pathname
+				}), enabled]);
+`,
 			}),
 		);
 	});
