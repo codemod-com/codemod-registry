@@ -66,10 +66,6 @@ rest.get('/user', (req, res, ctx) => {
   await delay(500);
 
   return HttpResponse.text("Hello world", {
-    headers: {
-      'X-Custom': 'value',
-      'Set-Cookie': 'roses=red;violets=blue;',
-    },
     status: 401,
   });
 });
@@ -156,7 +152,7 @@ graphql.query('GetUser', (req, res, ctx) => {
 
 ## Applicability Criteria
 
-MSW version >= 2.0.0
+MSW version >= 1.0.0
 
 ## Other Metadata
 

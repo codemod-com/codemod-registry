@@ -120,20 +120,17 @@ function getCallbackData(
 			FunctionExpression | ArrowFunction,
 	  ]
 	| null {
-	const mockCallback = expression.getArguments()[1];
+	const mockCallback = expression.getArguments().at(1) ?? null;
 
-	if (!mockCallback) {
+	if (mockCallback === null) {
 		return null;
 	}
 
 	const cbParams = mockCallback.getChildrenOfKind(SyntaxKind.Parameter);
 
 	const callbackBody =
-		mockCallback.getChildrenOfKind(SyntaxKind.Block).at(0) ?? null;
-
-	if (callbackBody === null) {
-		return null;
-	}
+		mockCallback.getChildrenOfKind(SyntaxKind.Block).at(0) ??
+		(mockCallback as Block);
 
 	const syntaxCb =
 		mockCallback.asKind(SyntaxKind.ArrowFunction) ??

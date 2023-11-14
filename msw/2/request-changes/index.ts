@@ -46,7 +46,10 @@ function searchIdentifiers(codeBlock: Block, searchables: string[]) {
 	return new Set(matchedStrings);
 }
 
-function replaceDestructureAliases(bindingEl: BindingElement) {
+function replaceDestructureAliases(
+	bindingEl: BindingElement,
+	newName?: string,
+) {
 	const directIds = bindingEl.getChildrenOfKind(SyntaxKind.Identifier);
 
 	const [nameNode, aliasNode] = directIds;
@@ -58,7 +61,9 @@ function replaceDestructureAliases(bindingEl: BindingElement) {
 	if (directIds.length === 2) {
 		aliasNode
 			.findReferencesAsNodes()
-			.forEach((ref) => ref.replaceWithText(nameNode.getText()));
+			.forEach((ref) =>
+				ref.replaceWithText(newName ?? nameNode.getText()),
+			);
 	}
 }
 
@@ -66,6 +71,7 @@ function replaceReferences(
 	codeBlock: Block | SourceFile,
 	replaced: string[],
 	callerName: string | undefined,
+	newName?: string,
 ) {
 	let didReplace = false;
 
@@ -87,7 +93,7 @@ function replaceReferences(
 				}
 
 				didReplace = true;
-				accessExpr.replaceWithText(accessed);
+				accessExpr.replaceWithText(newName ?? accessed);
 			}
 		});
 
@@ -103,7 +109,7 @@ function replaceReferences(
 						.getDescendantsOfKind(SyntaxKind.Identifier)
 						.find((d) => replaced.includes(d.getText()));
 					if (destructuredReplaced) {
-						replaceDestructureAliases(bindingEl);
+						replaceDestructureAliases(bindingEl, newName);
 
 						toReplaceFromBinding.push(bindingEl.getText());
 					}
@@ -206,20 +212,17 @@ function getCallbackData(
 			FunctionExpression | ArrowFunction,
 	  ]
 	| null {
-	const mockCallback = expression.getArguments()[1];
+	const mockCallback = expression.getArguments().at(1) ?? null;
 
-	if (!mockCallback) {
+	if (mockCallback === null) {
 		return null;
 	}
 
 	const cbParams = mockCallback.getChildrenOfKind(SyntaxKind.Parameter);
 
 	const callbackBody =
-		mockCallback.getChildrenOfKind(SyntaxKind.Block).at(0) ?? null;
-
-	if (callbackBody === null) {
-		return null;
-	}
+		mockCallback.getChildrenOfKind(SyntaxKind.Block).at(0) ??
+		(mockCallback as Block);
 
 	const syntaxCb =
 		mockCallback.asKind(SyntaxKind.ArrowFunction) ??
@@ -280,11 +283,7 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 			]);
 
 			if (reqCallMatches.size) {
-				replaceReferences(
-					callbackBody,
-					['request'],
-					reqParam?.getText(),
-				);
+				replaceReferences(callbackBody, ['url'], reqParam?.getText());
 
 				// call searchParams on newly created url object
 				const varStatement = callbackBody.insertVariableStatement(0, {
@@ -317,16 +316,27 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 			}
 
 			// https://mswjs.io/docs/migrations/1.x-to-2.x/#request-body
+			const isVariableNameTaken =
+				callbackBody
+					.getDescendantsOfKind(SyntaxKind.VariableDeclaration)
+					.find(
+						(vd) =>
+							vd
+								.getFirstChildIfKind(SyntaxKind.Identifier)
+								?.getText() === 'body',
+					) ?? false;
+
 			const replacementOccurred = replaceReferences(
 				callbackBody,
 				['body'],
 				reqParam?.getText(),
+				isVariableNameTaken ? 'reqBody' : undefined,
 			);
 			if (replacementOccurred) {
 				callbackBody.insertVariableStatement(0, {
 					declarations: [
 						{
-							name: 'body',
+							name: isVariableNameTaken ? 'reqBody' : 'body',
 							initializer: 'await request.json()',
 						},
 					],
