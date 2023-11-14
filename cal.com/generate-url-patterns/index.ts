@@ -191,6 +191,8 @@ const handleData: HandleData<Dependencies, State> = async (
 			globalEnv.push(envVar);
 		}
 
+		globalEnv.sort();
+
 		const newData = JSON.stringify({
 			...json,
 			globalEnv,
