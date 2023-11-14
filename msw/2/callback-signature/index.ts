@@ -84,20 +84,17 @@ function getCallbackData(
 			FunctionExpression | ArrowFunction,
 	  ]
 	| null {
-	const mockCallback = expression.getArguments()[1];
+	const mockCallback = expression.getArguments().at(1) ?? null;
 
-	if (!mockCallback) {
+	if (mockCallback === null) {
 		return null;
 	}
 
 	const cbParams = mockCallback.getChildrenOfKind(SyntaxKind.Parameter);
 
 	const callbackBody =
-		mockCallback.getChildrenOfKind(SyntaxKind.Block).at(0) ?? null;
-
-	if (callbackBody === null) {
-		return null;
-	}
+		mockCallback.getChildrenOfKind(SyntaxKind.Block).at(0) ??
+		(mockCallback as Block);
 
 	const syntaxCb =
 		mockCallback.asKind(SyntaxKind.ArrowFunction) ??
@@ -135,7 +132,7 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 			if (callbackData === null) {
 				return;
 			}
-			const [, callParams, syntaxCb] = callbackData;
+			const [callbackBody, callParams, syntaxCb] = callbackData;
 			const [reqParam] = callParams;
 
 			const references = reqParam?.findReferencesAsNodes() ?? [];
@@ -143,13 +140,41 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 				ref.replaceWithText('request');
 			});
 
-			callParams.forEach((param) => {
-				param.remove();
-			});
+			const paramList =
+				syntaxCb.getLastChildByKind(SyntaxKind.SyntaxList) ?? null;
+			const isParenthesized =
+				syntaxCb.getChildrenOfKind(SyntaxKind.OpenParenToken).length >
+				0;
+			if (paramList === null) {
+				return;
+			}
 
-			syntaxCb.addParameter({
-				name: `{ request, params, cookies }`,
-			});
+			const possibleParams = ['request', 'params', 'cookies'];
+			const foundDeclarations = [] as string[];
+			// In order to prevent duplicate identifier error, since it won't get replaced
+			// by fixUnusedIdentifiers call.
+			callbackBody
+				.getDescendantsOfKind(SyntaxKind.VariableDeclaration)
+				.forEach((vd) =>
+					possibleParams.forEach((param) => {
+						const found =
+							vd
+								.getFirstChildIfKind(SyntaxKind.Identifier)
+								?.getText() === param;
+						if (found) {
+							foundDeclarations.push(param);
+						}
+					}),
+				);
+
+			const toAddFinal = possibleParams.filter(
+				(p) => !foundDeclarations.includes(p),
+			);
+			// paramsToAdd
+			const toReplaceWith = `{ ${toAddFinal.join(', ')} }`;
+			paramList.replaceWithText(
+				isParenthesized ? toReplaceWith : `(${toReplaceWith})`,
+			);
 		});
 
 	sourceFile.fixUnusedIdentifiers();
