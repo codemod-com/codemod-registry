@@ -31,7 +31,10 @@ function getImportDeclarationAlias(
 	return namedImport.getAliasNode()?.getText() || namedImport.getName();
 }
 
-function searchIdentifiers(codeBlock: Block, searchables: string[]) {
+function searchIdentifiers(
+	codeBlock: Block | FunctionExpression | ArrowFunction,
+	searchables: string[],
+) {
 	const matchedStrings = [
 		...codeBlock.getDescendantsOfKind(SyntaxKind.PropertyAccessExpression),
 		...codeBlock.getDescendantsOfKind(SyntaxKind.BindingElement),
@@ -68,7 +71,7 @@ function replaceDestructureAliases(
 }
 
 function replaceReferences(
-	codeBlock: Block | SourceFile,
+	codeBlock: SourceFile | Block | FunctionExpression | ArrowFunction,
 	replaced: string[],
 	callerName: string | undefined,
 	newName?: string,
@@ -207,7 +210,7 @@ function getCallbackData(
 	expression: CallExpression,
 ):
 	| [
-			Block,
+			Block | FunctionExpression | ArrowFunction,
 			ReadonlyArray<ParameterDeclaration>,
 			FunctionExpression | ArrowFunction,
 	  ]
@@ -220,10 +223,6 @@ function getCallbackData(
 
 	const cbParams = mockCallback.getChildrenOfKind(SyntaxKind.Parameter);
 
-	const callbackBody =
-		mockCallback.getChildrenOfKind(SyntaxKind.Block).at(0) ??
-		(mockCallback as Block);
-
 	const syntaxCb =
 		mockCallback.asKind(SyntaxKind.ArrowFunction) ??
 		mockCallback.asKind(SyntaxKind.FunctionExpression) ??
@@ -232,6 +231,9 @@ function getCallbackData(
 	if (syntaxCb === null) {
 		return null;
 	}
+
+	const callbackBody =
+		mockCallback.getChildrenOfKind(SyntaxKind.Block).at(0) ?? syntaxCb;
 
 	return [callbackBody, cbParams, syntaxCb];
 }

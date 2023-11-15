@@ -79,7 +79,7 @@ function getCallbackData(
 	expression: CallExpression,
 ):
 	| [
-			Block,
+			Block | FunctionExpression | ArrowFunction,
 			ReadonlyArray<ParameterDeclaration>,
 			FunctionExpression | ArrowFunction,
 	  ]
@@ -92,10 +92,6 @@ function getCallbackData(
 
 	const cbParams = mockCallback.getChildrenOfKind(SyntaxKind.Parameter);
 
-	const callbackBody =
-		mockCallback.getChildrenOfKind(SyntaxKind.Block).at(0) ??
-		(mockCallback as Block);
-
 	const syntaxCb =
 		mockCallback.asKind(SyntaxKind.ArrowFunction) ??
 		mockCallback.asKind(SyntaxKind.FunctionExpression) ??
@@ -104,6 +100,9 @@ function getCallbackData(
 	if (syntaxCb === null) {
 		return null;
 	}
+
+	const callbackBody =
+		mockCallback.getChildrenOfKind(SyntaxKind.Block).at(0) ?? syntaxCb;
 
 	return [callbackBody, cbParams, syntaxCb];
 }
@@ -123,7 +122,7 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 		return undefined;
 	}
 
-	const toInsertManually = {} as Record<number, string>;
+	const toInsertManually: Record<number, string> = {};
 
 	sourceFile
 		.getDescendantsOfKind(SyntaxKind.CallExpression)
