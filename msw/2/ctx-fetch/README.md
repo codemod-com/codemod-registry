@@ -40,7 +40,7 @@ const handlers: RestHandler[] = [
 
 ## Applicability Criteria
 
-MSW version >= 2.0.0
+MSW version >= 1.0.0
 
 ## Other Metadata
 

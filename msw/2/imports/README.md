@@ -26,7 +26,7 @@ const handlers: RestHandler[] = [
 
 ```ts
 import { setupWorker } from 'msw/browser';
-import { http as caller, type HttpHandler } from 'msw';
+import { http as caller, HttpHandler } from 'msw';
 
 const handlers: HttpHandler[] = [
   caller.get('/user', (req, res, ctx) => {
@@ -37,7 +37,7 @@ const handlers: HttpHandler[] = [
 
 ## Applicability Criteria
 
-MSW version >= 2.0.0
+MSW version >= 1.0.0
 
 ## Other Metadata
 

@@ -48,7 +48,7 @@ function getImportDeclarationAlias(
 }
 
 function searchIdentifiers(
-	codeBlock: Block,
+	codeBlock: Block | ArrowFunction | FunctionExpression,
 	searchables: ReadonlyArray<string>,
 ): ReadonlySet<string> {
 	const matchedStrings = [
@@ -115,25 +115,18 @@ function getCallbackData(
 	expression: CallExpression,
 ):
 	| [
-			Block,
+			Block | FunctionExpression | ArrowFunction,
 			ReadonlyArray<ParameterDeclaration>,
 			FunctionExpression | ArrowFunction,
 	  ]
 	| null {
-	const mockCallback = expression.getArguments()[1];
+	const mockCallback = expression.getArguments().at(1) ?? null;
 
-	if (!mockCallback) {
+	if (mockCallback === null) {
 		return null;
 	}
 
 	const cbParams = mockCallback.getChildrenOfKind(SyntaxKind.Parameter);
-
-	const callbackBody =
-		mockCallback.getChildrenOfKind(SyntaxKind.Block).at(0) ?? null;
-
-	if (callbackBody === null) {
-		return null;
-	}
 
 	const syntaxCb =
 		mockCallback.asKind(SyntaxKind.ArrowFunction) ??
@@ -143,6 +136,9 @@ function getCallbackData(
 	if (syntaxCb === null) {
 		return null;
 	}
+
+	const callbackBody =
+		mockCallback.getChildrenOfKind(SyntaxKind.Block).at(0) ?? syntaxCb;
 
 	return [callbackBody, cbParams, syntaxCb];
 }
@@ -164,7 +160,7 @@ export function replaceDestructureAliases(bindingEl: BindingElement) {
 }
 
 export function replaceReferences(
-	codeBlock: Block | SourceFile,
+	codeBlock: SourceFile | Block | ArrowFunction | FunctionExpression,
 	replaced: string[],
 	callerName: string | undefined,
 ) {

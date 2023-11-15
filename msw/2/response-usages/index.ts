@@ -98,25 +98,18 @@ function getCallbackData(
 	expression: CallExpression,
 ):
 	| [
-			Block,
+			Block | FunctionExpression | ArrowFunction,
 			ReadonlyArray<ParameterDeclaration>,
 			FunctionExpression | ArrowFunction,
 	  ]
 	| null {
-	const mockCallback = expression.getArguments()[1];
+	const mockCallback = expression.getArguments().at(1) ?? null;
 
-	if (!mockCallback) {
+	if (mockCallback === null) {
 		return null;
 	}
 
 	const cbParams = mockCallback.getChildrenOfKind(SyntaxKind.Parameter);
-
-	const callbackBody =
-		mockCallback.getChildrenOfKind(SyntaxKind.Block).at(0) ?? null;
-
-	if (callbackBody === null) {
-		return null;
-	}
 
 	const syntaxCb =
 		mockCallback.asKind(SyntaxKind.ArrowFunction) ??
@@ -126,6 +119,9 @@ function getCallbackData(
 	if (syntaxCb === null) {
 		return null;
 	}
+
+	const callbackBody =
+		mockCallback.getChildrenOfKind(SyntaxKind.Block).at(0) ?? syntaxCb;
 
 	return [callbackBody, cbParams, syntaxCb];
 }
@@ -427,7 +423,6 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 		});
 
 	addNamedImportDeclaration(sourceFile, 'msw', 'HttpResponse');
-	sourceFile.fixUnusedIdentifiers();
 
 	return sourceFile.getFullText();
 }

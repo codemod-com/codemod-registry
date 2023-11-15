@@ -8,17 +8,17 @@ The recipe includes the following codemods:
 
 -   [imports](https://github.com/intuita-inc/codemod-registry/tree/main/msw/2/imports)
 -   [request-changes](https://github.com/intuita-inc/codemod-registry/tree/main/msw/2/request-changes)
--   [ctx-fetch](https://github.com/intuita-inc/codemod-registry/tree/main/next/13/ctx-fetch)
--   [req-passthrough](https://github.com/intuita-inc/codemod-registry/tree/main/next/13/req-passthrough)
--   [response-usages](https://github.com/intuita-inc/codemod-registry/tree/main/next/13/response-usages)
--   [lifecycle-events-signature](https://github.com/intuita-inc/codemod-registry/tree/main/next/13/lifecycle-events-signature)
--   [print-handler](https://github.com/intuita-inc/codemod-registry/tree/main/next/13/print-handler)
--   [type-args](https://github.com/intuita-inc/codemod-registry/tree/main/next/13/type-args)
--   [callback-signature](https://github.com/intuita-inc/codemod-registry/tree/main/next/13/callback-signature)
+-   [ctx-fetch](https://github.com/intuita-inc/codemod-registry/tree/main/msw/2/ctx-fetch)
+-   [req-passthrough](https://github.com/intuita-inc/codemod-registry/tree/main/msw/2/req-passthrough)
+-   [response-usages](https://github.com/intuita-inc/codemod-registry/tree/main/msw/2/response-usages)
+-   [callback-signature](https://github.com/intuita-inc/codemod-registry/tree/main/msw/2/callback-signature)
+-   [type-args](https://github.com/intuita-inc/codemod-registry/tree/main/msw/2/type-args)
+-   [lifecycle-events-signature](https://github.com/intuita-inc/codemod-registry/tree/main/msw/2/lifecycle-events-signature)
+-   [print-handler](https://github.com/intuita-inc/codemod-registry/tree/main/msw/2/print-handler)
 
 ## Applicability Criteria
 
-MSW version >= 2.0.0
+MSW version >= 1.0.0
 
 ## Other Metadata
 

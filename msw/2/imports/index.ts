@@ -79,14 +79,6 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 						specifier,
 						importName === 'rest' ? 'http' : 'HttpHandler',
 					);
-
-					// Apparently can be used as a constructor
-					// if (
-					// 	importName === 'HttpHandler' &&
-					// 	!specifier.isTypeOnly()
-					// ) {
-					// 	specifier.setIsTypeOnly(true);
-					// }
 				});
 
 			// Not generic anymore
@@ -102,7 +94,13 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 			// Remove old imports
 			declaration
 				.getNamedImports()
-				.filter((s) => ['MockedRequest'].includes(s.getText()))
+				.filter((s) =>
+					[
+						'MockedRequest',
+						'DefaultRequestMultipartBody',
+						'DefaultBodyType',
+					].find((oldImport) => s.getText().includes(oldImport)),
+				)
 				.forEach((specifier) => specifier.remove());
 		});
 
