@@ -11,16 +11,16 @@ import type { TSAsExpressionKind } from 'ast-types/gen/kinds.js';
 
 type Dependencies = { jscodeshift: JSCodeshift };
 
-type Entry = {
+type Entry = Readonly<{
 	pathname: string;
 	envVar: string;
-};
+}>;
 
 type State = {
 	step: 'READING' | 'UPSERTING';
 	turboPath: string;
 	middlewarePath: string;
-	entries: Entry[];
+	entries: Set<Entry>;
 };
 
 const initializeState: InitializeState<State> = async (
@@ -48,7 +48,7 @@ const initializeState: InitializeState<State> = async (
 		step: 'READING',
 		turboPath,
 		middlewarePath,
-		entries: [],
+		entries: new Set(),
 	};
 };
 
@@ -141,7 +141,7 @@ const handleFile: HandleFile<Dependencies, State> = async (
 
 		const envVar = ['APP_ROUTER', partialEnvVar, 'ENABLED'].join('_');
 
-		state.entries.push({
+		state.entries.add({
 			pathname,
 			envVar,
 		});
@@ -248,6 +248,10 @@ const handleData: HandleData<Dependencies, State> = async (
 			};
 		};
 
+		const elements = Array.from(state.entries)
+			.sort((a, b) => a.pathname.localeCompare(b.pathname))
+			.map((entry) => buildElement(entry));
+
 		const variableDeclarator = jscodeshift.variableDeclarator(
 			{
 				type: 'Identifier',
@@ -280,9 +284,7 @@ const handleData: HandleData<Dependencies, State> = async (
 					type: 'MemberExpression',
 					object: {
 						type: 'ArrayExpression',
-						elements: state.entries.map((entry) =>
-							buildElement(entry),
-						),
+						elements,
 					},
 					property: {
 						type: 'Identifier',
