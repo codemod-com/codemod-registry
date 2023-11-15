@@ -4,12 +4,16 @@
 
 There is a change to generic type interface of rest.method() calls. This codemod puts the generic arguments in the correct order to keep type safety.
 
+### WARNING
+
+This codemod runs `.fixUnusedIdentifiers()` on a source file you are running it on. This would remove any unused declarations in the file. This is due to atomicity of this mod, which blindly inserts the callback structure into each msw handler callback and then cleans up the variables that are not used.
+
 ## Example
 
 ### Before
 
 ```ts
-rest.get<ReqBodyType, PathParamsType>('/resource', (req, res, ctx) => {
+http.get<ReqBodyType, PathParamsType>('/resource', (req, res, ctx) => {
   return res(ctx.json({ firstName: 'John' }));
 });
 ```
@@ -17,7 +21,7 @@ rest.get<ReqBodyType, PathParamsType>('/resource', (req, res, ctx) => {
 ### After
 
 ```ts
-rest.get<PathParamsType, ReqBodyType>('/resource', (req, res, ctx) => {
+http.get<PathParamsType, ReqBodyType>('/resource', (req, res, ctx) => {
   return res(ctx.json({ firstName: 'John' }));
 });
 ```
@@ -25,7 +29,7 @@ rest.get<PathParamsType, ReqBodyType>('/resource', (req, res, ctx) => {
 ### Before
 
 ```ts
-rest.get<ReqBodyType>('/resource', (req, res, ctx) => {
+http.get<ReqBodyType>('/resource', (req, res, ctx) => {
   return res(ctx.json({ firstName: 'John' }));
 });
 ```
@@ -33,9 +37,59 @@ rest.get<ReqBodyType>('/resource', (req, res, ctx) => {
 ### After
 
 ```ts
-rest.get<any, ReqBodyType>('/resource', (req, res, ctx) => {
+http.get<any, ReqBodyType>('/resource', (req, res, ctx) => {
   return res(ctx.json({ firstName: 'John' }));
 });
+```
+
+### Before
+
+```ts
+const handlers: RestHandler<DefaultBodyType>[] = [
+  http.get('/resource', (req, res, ctx) => {
+    return res(ctx.json({ firstName: 'John' }));
+  }),
+];
+```
+
+### After
+
+```ts
+const handlers: HttpHandler[] = [
+  http.get<any, DefaultBodyType>('/resource', (req, res, ctx) => {
+    return res(ctx.json({ firstName: 'John' }));
+  }),
+];
+```
+
+### Before
+
+```ts
+export function mockFactory(
+  url: string,
+  resolver: ResponseResolver<
+    MockedRequest<{ id: string }>,
+    RestContext,
+    Awaited<ImportedPromiseBodyType>
+  >,
+) {
+  return http.get(url, resolver);
+};
+```
+
+### After
+
+```ts
+export function mockFactory(
+  url: string,
+  resolver: ResponseResolver<
+    HttpRequestResolverExtras<PathParams>,
+    { id: string },
+    Awaited<ImportedPromiseBodyType>
+  >,
+) {
+  return http.get(url, resolver);
+};
 ```
 
 ## Applicability Criteria
@@ -50,7 +104,7 @@ v1.0.0
 
 ### Change Mode
 
-**Autonomous**: Changes can safely be pushed and merged without further human involvement.
+**Assistive**: The automation partially completes changes. Human involvement is needed to make changes ready to be pushed and merged.
 
 ### **Codemod Engine**
 
@@ -58,7 +112,7 @@ v1.0.0
 
 ### Estimated Time Saving
 
-~15 seconds per occurrence
+Up to 15 minutes per occurrence
 
 ### Owner
 
