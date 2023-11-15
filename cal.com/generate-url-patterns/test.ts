@@ -69,12 +69,12 @@ describe('generate-url-patterns', function () {
 					import { type X } from 'y';
 					const other = true;
 				`,
-				'/opt/project/apps/noSegment/page.tsx': '',
-				'/opt/project/apps/dynamicSegment/[a]/page.tsx': '',
-				'/opt/project/apps/dynamicSegment/[b]/[c]/page.tsx': '',
-				'/opt/project/apps/catchAllDynamicSegments/[...d]/page..tsx':
+				'/opt/project/app/future/noSegment/page.tsx': '',
+				'/opt/project/app/future/dynamicSegment/[a]/page.tsx': '',
+				'/opt/project/app/future/dynamicSegment/[b]/[c]/page.tsx': '',
+				'/opt/project/app/future/catchAllDynamicSegments/[...d]/page.tsx':
 					'',
-				'/opt/project/apps/optionalCatchAllDynamicSegments/[[...e]]/f/page.tsx':
+				'/opt/project/app/future/(someLayout)/optionalCatchAllDynamicSegments/[[...e]]/f/page.tsx':
 					'',
 			},
 			{
@@ -119,12 +119,12 @@ describe('generate-url-patterns', function () {
 						Boolean(process.env.APP_ROUTER_CATCHALLDYNAMICSEGMENTS_D_ENABLED)
 					] as const,
 					[
-						"/optionalCatchAllDynamicSegments/:e*/f",
-						Boolean(process.env.APP_ROUTER_OPTIONALCATCHALLDYNAMICSEGMENTS_E_F_ENABLED)
-					] as const,
-					[
 						"/dynamicSegment/:b/:c",
 						Boolean(process.env.APP_ROUTER_DYNAMICSEGMENT_B_C_ENABLED)
+					] as const,
+					[
+						"/optionalCatchAllDynamicSegments/:e*/f",
+						Boolean(process.env.APP_ROUTER_OPTIONALCATCHALLDYNAMICSEGMENTS_E_F_ENABLED)
 					] as const
 				].map(([pathname, enabled]) => [new URLPattern({
 					pathname

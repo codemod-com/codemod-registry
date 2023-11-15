@@ -52,12 +52,12 @@ const initializeState: InitializeState<State> = async (
 	};
 };
 
-const COMMON_PART_REGEX = /^(?<cpart>[a-zA-Z0-9]+)$/;
-const DYNAMIC_SEGMENT_PART_REGEX = /^\[(?<dspart>[a-zA-Z0-9]+)\]$/;
+const COMMON_PART_REGEX = /^(?<cpart>[a-zA-Z0-9-_]+)$/;
+const DYNAMIC_SEGMENT_PART_REGEX = /^\[(?<dspart>[a-zA-Z0-9-_]+)\]$/;
 const CATCH_ALL_DYNAMIC_SEGMENT_PART_REGEX =
-	/^\[\.{3}(?<cadspart>[a-zA-Z0-9])+\]$/;
+	/^\[\.{3}(?<cadspart>[a-zA-Z0-9-_])+\]$/;
 const OPTIONAL_CATCH_ALL_DYNAMIC_SEGMENT_PART_REGEX =
-	/^\[{2}\.{3}(?<ocadspart>[a-zA-Z0-9]+)\]{2}$/;
+	/^\[{2}\.{3}(?<ocadspart>[a-zA-Z0-9-_]+)\]{2}$/;
 
 const isNeitherNullNorUndefined = <T>(
 	t: NonNullable<T> | null | undefined,
@@ -74,7 +74,7 @@ const getRegexGroups = (part: string) => {
 };
 
 const handleFile: HandleFile<Dependencies, State> = async (
-	api,
+	_,
 	path,
 	options,
 	state,
@@ -87,13 +87,13 @@ const handleFile: HandleFile<Dependencies, State> = async (
 		const parsedPath = posix.parse(path);
 		const directoryNames = parsedPath.dir.split(posix.sep);
 
-		if (!directoryNames.includes('apps')) {
+		if (!directoryNames.includes('app') || parsedPath.name !== 'page') {
 			return [];
 		}
 
-		const parts = directoryNames.slice(
-			directoryNames.lastIndexOf('apps') + 1,
-		);
+		const parts = directoryNames
+			.slice(directoryNames.lastIndexOf('app') + 1)
+			.filter((part) => part !== 'future');
 
 		if (parts.length === 0) {
 			return [];
@@ -134,7 +134,7 @@ const handleFile: HandleFile<Dependencies, State> = async (
 				const somePart =
 					cpart ?? dspart ?? cadspart ?? ocadspart ?? null;
 
-				return somePart?.toUpperCase() ?? null;
+				return somePart?.replace(/-/g, '_').toUpperCase() ?? null;
 			})
 			.filter(isNeitherNullNorUndefined)
 			.join('_');
@@ -166,7 +166,7 @@ const handleData: HandleData<Dependencies, State> = async (
 	api,
 	path,
 	data,
-	options,
+	_,
 	state,
 ) => {
 	if (state === null) {
@@ -248,94 +248,57 @@ const handleData: HandleData<Dependencies, State> = async (
 			};
 		};
 
-		const variableDeclation = jscodeshift.variableDeclaration('const', [
-			jscodeshift.variableDeclarator(
-				{
-					type: 'Identifier',
-					name: 'ROUTES',
+		const variableDeclarator = jscodeshift.variableDeclarator(
+			{
+				type: 'Identifier',
+				name: 'ROUTES',
+				typeAnnotation: {
+					type: 'TSTypeAnnotation',
 					typeAnnotation: {
-						type: 'TSTypeAnnotation',
-						typeAnnotation: {
-							type: 'TSArrayType',
-							elementType: {
-								type: 'TSTupleType',
-								elementTypes: [
-									{
-										type: 'TSTypeReference',
-										typeName: {
-											type: 'Identifier',
-											name: 'URLPattern',
-										},
+						type: 'TSArrayType',
+						elementType: {
+							type: 'TSTupleType',
+							elementTypes: [
+								{
+									type: 'TSTypeReference',
+									typeName: {
+										type: 'Identifier',
+										name: 'URLPattern',
 									},
-									{
-										type: 'TSBooleanKeyword',
-									},
-								],
-							},
+								},
+								{
+									type: 'TSBooleanKeyword',
+								},
+							],
 						},
 					},
 				},
-				{
-					type: 'CallExpression',
-					callee: {
-						type: 'MemberExpression',
-						object: {
-							type: 'ArrayExpression',
-							elements: state.entries.map((entry) =>
-								buildElement(entry),
-							),
-						},
-						property: {
-							type: 'Identifier',
-							name: 'map',
-						},
+			},
+			{
+				type: 'CallExpression',
+				callee: {
+					type: 'MemberExpression',
+					object: {
+						type: 'ArrayExpression',
+						elements: state.entries.map((entry) =>
+							buildElement(entry),
+						),
 					},
-					arguments: [
-						{
-							type: 'ArrowFunctionExpression',
-							params: [
-								{
-									type: 'ArrayPattern',
-									elements: [
-										{
-											type: 'Identifier',
-											name: 'pathname',
-										},
-										{
-											type: 'Identifier',
-											name: 'enabled',
-										},
-									],
-								},
-							],
-							body: {
-								type: 'ArrayExpression',
+					property: {
+						type: 'Identifier',
+						name: 'map',
+					},
+				},
+				arguments: [
+					{
+						type: 'ArrowFunctionExpression',
+						params: [
+							{
+								type: 'ArrayPattern',
 								elements: [
 									{
-										type: 'NewExpression',
-										callee: {
-											type: 'Identifier',
-											name: 'URLPattern',
-										},
-										arguments: [
-											{
-												type: 'ObjectExpression',
-												properties: [
-													{
-														type: 'ObjectProperty',
-														key: {
-															type: 'Identifier',
-															name: 'pathname',
-														},
-														value: {
-															type: 'Identifier',
-															name: 'pathname',
-														},
-														shorthand: true,
-													},
-												],
-											},
-										],
+										type: 'Identifier',
+										name: 'pathname',
 									},
 									{
 										type: 'Identifier',
@@ -343,11 +306,46 @@ const handleData: HandleData<Dependencies, State> = async (
 									},
 								],
 							},
+						],
+						body: {
+							type: 'ArrayExpression',
+							elements: [
+								{
+									type: 'NewExpression',
+									callee: {
+										type: 'Identifier',
+										name: 'URLPattern',
+									},
+									arguments: [
+										{
+											type: 'ObjectExpression',
+											properties: [
+												{
+													type: 'ObjectProperty',
+													key: {
+														type: 'Identifier',
+														name: 'pathname',
+													},
+													value: {
+														type: 'Identifier',
+														name: 'pathname',
+													},
+													shorthand: true,
+												},
+											],
+										},
+									],
+								},
+								{
+									type: 'Identifier',
+									name: 'enabled',
+								},
+							],
 						},
-					],
-				},
-			),
-		]);
+					},
+				],
+			},
+		);
 
 		const routesVariableDeclarators = root.find(VariableDeclarator, {
 			type: 'VariableDeclarator',
@@ -358,9 +356,13 @@ const handleData: HandleData<Dependencies, State> = async (
 		});
 
 		if (routesVariableDeclarators.length === 0) {
+			const variableDeclation = jscodeshift.variableDeclaration('const', [
+				variableDeclarator,
+			]);
+
 			root.find(Program).nodes()[0]?.body.push(variableDeclation);
 		} else {
-			routesVariableDeclarators.replaceWith(variableDeclation);
+			routesVariableDeclarators.replaceWith(() => variableDeclarator);
 		}
 
 		const source = root.toSource();
@@ -371,7 +373,7 @@ const handleData: HandleData<Dependencies, State> = async (
 	return { kind: 'noop' };
 };
 
-const handleFinish: HandleFinish<State> = async (options, state) => {
+const handleFinish: HandleFinish<State> = async (_, state) => {
 	if (state === null) {
 		throw new Error('The state is not set');
 	}
