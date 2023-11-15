@@ -74,7 +74,7 @@ describe('generate-url-patterns', function () {
 				'/opt/project/app/future/dynamicSegment/[b]/[c]/page.tsx': '',
 				'/opt/project/app/future/catchAllDynamicSegments/[...d]/page.tsx':
 					'',
-				'/opt/project/app/future/(someLayout)/optionalCatchAllDynamicSegments/[[...e]]/f/page.tsx':
+				'/opt/project/app/future/(someLayout)/optionalCatchAllDynamicSegments/[[...element]]/f/page.tsx':
 					'',
 			},
 			{
@@ -89,7 +89,7 @@ describe('generate-url-patterns', function () {
 				'APP_ROUTER_DYNAMICSEGMENT_A_ENABLED',
 				'APP_ROUTER_DYNAMICSEGMENT_B_C_ENABLED',
 				'APP_ROUTER_NOSEGMENT_ENABLED',
-				'APP_ROUTER_OPTIONALCATCHALLDYNAMICSEGMENTS_E_F_ENABLED',
+				'APP_ROUTER_OPTIONALCATCHALLDYNAMICSEGMENTS_ELEMENT_F_ENABLED',
 				'OTHER_ENVVAR',
 			],
 		});
@@ -123,8 +123,8 @@ describe('generate-url-patterns', function () {
 						Boolean(process.env.APP_ROUTER_DYNAMICSEGMENT_B_C_ENABLED)
 					] as const,
 					[
-						"/optionalCatchAllDynamicSegments/:e*/f",
-						Boolean(process.env.APP_ROUTER_OPTIONALCATCHALLDYNAMICSEGMENTS_E_F_ENABLED)
+						"/optionalCatchAllDynamicSegments/:element*/f",
+						Boolean(process.env.APP_ROUTER_OPTIONALCATCHALLDYNAMICSEGMENTS_ELEMENT_F_ENABLED)
 					] as const
 				].map(([pathname, enabled]) => [new URLPattern({
 					pathname

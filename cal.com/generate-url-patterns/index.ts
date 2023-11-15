@@ -55,7 +55,7 @@ const initializeState: InitializeState<State> = async (
 const COMMON_PART_REGEX = /^(?<cpart>[a-zA-Z0-9-_]+)$/;
 const DYNAMIC_SEGMENT_PART_REGEX = /^\[(?<dspart>[a-zA-Z0-9-_]+)\]$/;
 const CATCH_ALL_DYNAMIC_SEGMENT_PART_REGEX =
-	/^\[\.{3}(?<cadspart>[a-zA-Z0-9-_])+\]$/;
+	/^\[\.{3}(?<cadspart>[a-zA-Z0-9-_]+)\]$/;
 const OPTIONAL_CATCH_ALL_DYNAMIC_SEGMENT_PART_REGEX =
 	/^\[{2}\.{3}(?<ocadspart>[a-zA-Z0-9-_]+)\]{2}$/;
 
