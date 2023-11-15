@@ -312,7 +312,7 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 							paramsType?.getText() || 'any',
 							bodyType.getText(),
 							resBodyType?.getText() || undefined,
-						].filter(isNeitherNullNorUndefined);
+						].filter(Boolean) as string[];
 
 						if (genericTypeArgs.length) {
 							expression.insertTypeArguments(0, newArgs);
