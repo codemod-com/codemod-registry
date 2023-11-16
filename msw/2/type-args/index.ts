@@ -128,6 +128,10 @@ function getCallbackData(
 	return [callbackBody, cbParams, syntaxCb];
 }
 
+const isNeitherNullNorUndefined = <T>(
+	t: NonNullable<T> | null | undefined,
+): t is NonNullable<T> => t !== null && t !== undefined;
+
 function shouldProcessFile(sourceFile: SourceFile): boolean {
 	return (
 		sourceFile
@@ -171,7 +175,7 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 					genericTypeArgs.at(1)?.getText() || 'any',
 					genericTypeArgs.at(0)!.getText(),
 					genericTypeArgs.at(2)?.getText(),
-				].filter(Boolean) as string[];
+				].filter(isNeitherNullNorUndefined);
 
 				expression.insertTypeArguments(0, newArgs);
 				genericTypeArgs.forEach((arg) =>
@@ -308,7 +312,7 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 							paramsType?.getText() || 'any',
 							bodyType.getText(),
 							resBodyType?.getText() || undefined,
-						].filter(Boolean) as string[];
+						].filter(isNeitherNullNorUndefined);
 
 						if (genericTypeArgs.length) {
 							expression.insertTypeArguments(0, newArgs);
