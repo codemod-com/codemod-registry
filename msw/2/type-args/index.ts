@@ -29,6 +29,27 @@ function getImportDeclarationAlias(
 	return namedImport.getAliasNode()?.getText() || namedImport.getName();
 }
 
+function addNamedImportDeclaration(
+	sourceFile: SourceFile,
+	moduleSpecifier: string,
+	name: string,
+	isTypeOnly?: boolean,
+) {
+	const importDeclaration =
+		sourceFile.getImportDeclaration(moduleSpecifier) ||
+		sourceFile.addImportDeclaration({ moduleSpecifier });
+
+	if (
+		importDeclaration
+			.getNamedImports()
+			.some((specifier) => specifier.getName() === name)
+	) {
+		return importDeclaration;
+	}
+
+	return importDeclaration.addNamedImport({ name, isTypeOnly });
+}
+
 function isMSWCall(sourceFile: SourceFile, callExpr: CallExpression) {
 	const httpCallerName = getImportDeclarationAlias(sourceFile, 'msw', 'http');
 	const graphqlCallerName = getImportDeclarationAlias(
@@ -107,6 +128,10 @@ function getCallbackData(
 	return [callbackBody, cbParams, syntaxCb];
 }
 
+const isNeitherNullNorUndefined = <T>(
+	t: NonNullable<T> | null | undefined,
+): t is NonNullable<T> => t !== null && t !== undefined;
+
 function shouldProcessFile(sourceFile: SourceFile): boolean {
 	return (
 		sourceFile
@@ -124,6 +149,19 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 
 	const toInsertManually: Record<number, string> = {};
 
+	// Unwrap MockedRequest
+	sourceFile
+		.getDescendantsOfKind(SyntaxKind.TypeReference)
+		.filter((tr) => tr.getText().startsWith('MockedRequest'))
+		.forEach((tr) => {
+			const [bodyType] = tr.getTypeArguments();
+			if (bodyType === undefined) {
+				return;
+			}
+
+			tr.replaceWithText(bodyType.getText());
+		});
+
 	sourceFile
 		.getDescendantsOfKind(SyntaxKind.CallExpression)
 		.filter((callExpr) => isMSWCall(sourceFile, callExpr))
@@ -137,7 +175,7 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 					genericTypeArgs.at(1)?.getText() || 'any',
 					genericTypeArgs.at(0)!.getText(),
 					genericTypeArgs.at(2)?.getText(),
-				].filter(Boolean) as string[];
+				].filter(isNeitherNullNorUndefined);
 
 				expression.insertTypeArguments(0, newArgs);
 				genericTypeArgs.forEach((arg) =>
@@ -202,6 +240,110 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 			}
 		});
 
+	// ResponseResolver
+	let modifiedResponseResolver = false;
+
+	sourceFile
+		.getDescendantsOfKind(SyntaxKind.TypeReference)
+		.filter((tr) => tr.getText().startsWith('ResponseResolver'))
+		.forEach((tr) => {
+			const [bodyType, ctxType] = tr.getTypeArguments();
+			if (bodyType === undefined) {
+				return;
+			}
+
+			if (bodyType.getText() === 'RestRequest') {
+				bodyType.replaceWithText('DefaultBodyType');
+				addNamedImportDeclaration(sourceFile, 'msw', 'DefaultBodyType');
+			}
+
+			if (ctxType) {
+				ctxType.replaceWithText(bodyType.getText());
+			} else {
+				tr.insertTypeArgument(1, bodyType.getText());
+			}
+
+			bodyType.replaceWithText('HttpRequestResolverExtras<PathParams>');
+
+			modifiedResponseResolver = true;
+		});
+
+	if (modifiedResponseResolver) {
+		addNamedImportDeclaration(
+			sourceFile,
+			'msw/lib/core/handlers/HttpHandler',
+			'HttpRequestResolverExtras',
+			true,
+		);
+		addNamedImportDeclaration(sourceFile, 'msw', 'PathParams', true);
+	}
+
+	// const handlers: RestHandler<BodyType>[] => const handlers = [http.get<any, BodyType>()]
+	sourceFile
+		.getDescendantsOfKind(SyntaxKind.TypeReference)
+		.filter((tr) => tr.getText().startsWith('HttpHandler'))
+		.forEach((tr) => {
+			if (tr.getText() !== 'HttpHandler') {
+				const [bodyType, paramsType, resBodyType] =
+					tr.getTypeArguments();
+
+				if (bodyType === undefined) {
+					return;
+				}
+
+				const parentBlock =
+					tr.getFirstAncestorByKind(SyntaxKind.VariableDeclaration) ??
+					tr.getFirstAncestorByKind(SyntaxKind.FunctionExpression) ??
+					null;
+
+				if (parentBlock === null) {
+					return;
+				}
+
+				const toReplaceReferenceWith = 'HttpHandler';
+
+				parentBlock
+					.getDescendantsOfKind(SyntaxKind.CallExpression)
+					.filter((callExpr) => isMSWCall(sourceFile, callExpr))
+					.forEach((expression) => {
+						const genericTypeArgs = expression.getTypeArguments();
+
+						const newArgs = [
+							paramsType?.getText() || 'any',
+							bodyType.getText(),
+							resBodyType?.getText() || undefined,
+						].filter(isNeitherNullNorUndefined);
+
+						if (genericTypeArgs.length) {
+							expression.insertTypeArguments(0, newArgs);
+							genericTypeArgs.forEach((arg) =>
+								expression.removeTypeArgument(arg),
+							);
+						} else {
+							const braceToken =
+								expression.getFirstChildByKind(
+									SyntaxKind.OpenParenToken,
+								) ?? null;
+
+							if (braceToken === null) {
+								return;
+							}
+
+							// To avoid messing up the insert indices
+							const deletionShift =
+								braceToken.getEnd() -
+								(1 +
+									(tr.getText().length -
+										toReplaceReferenceWith.length));
+
+							toInsertManually[deletionShift] = `<${newArgs}>`;
+						}
+					});
+
+				tr.replaceWithText(toReplaceReferenceWith);
+			}
+		});
+
 	let offset = 0;
 	Object.entries(toInsertManually)
 		.sort(([pos1], [pos2]) => +pos1 - +pos2)
@@ -209,6 +351,8 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 			sourceFile.insertText(+pos + offset, value);
 			offset += value.length;
 		});
+
+	sourceFile.fixUnusedIdentifiers();
 
 	return sourceFile.getFullText();
 }

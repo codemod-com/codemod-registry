@@ -7,14 +7,34 @@ This recipe is a set of codemods that will upgrade your project from using msw v
 The recipe includes the following codemods:
 
 -   [imports](https://github.com/intuita-inc/codemod-registry/tree/main/msw/2/imports)
+-   [type-args](https://github.com/intuita-inc/codemod-registry/tree/main/msw/2/type-args)
 -   [request-changes](https://github.com/intuita-inc/codemod-registry/tree/main/msw/2/request-changes)
 -   [ctx-fetch](https://github.com/intuita-inc/codemod-registry/tree/main/msw/2/ctx-fetch)
 -   [req-passthrough](https://github.com/intuita-inc/codemod-registry/tree/main/msw/2/req-passthrough)
 -   [response-usages](https://github.com/intuita-inc/codemod-registry/tree/main/msw/2/response-usages)
 -   [callback-signature](https://github.com/intuita-inc/codemod-registry/tree/main/msw/2/callback-signature)
--   [type-args](https://github.com/intuita-inc/codemod-registry/tree/main/msw/2/type-args)
 -   [lifecycle-events-signature](https://github.com/intuita-inc/codemod-registry/tree/main/msw/2/lifecycle-events-signature)
 -   [print-handler](https://github.com/intuita-inc/codemod-registry/tree/main/msw/2/print-handler)
+
+### FNs
+This recipe does not change the signatures of MSW handlers, if they were called using a custom factory function, for example to provide more type-safety or else. For example, the following code will only be partially updated:
+
+```ts
+export function mockFactory<T extends MyComplexType>(
+  url: string,
+  resolver: MyResolverType,
+) {
+  return rest.get(url, resolver);
+}
+
+const handlers = [
+  mockFactory('/some/url', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+    );
+  }),
+];
+```
 
 ## Applicability Criteria
 
@@ -30,11 +50,11 @@ v1.0.0
 
 ### Change Mode
 
-**Autonomous**: Changes can safely be pushed and merged without further human involvement.
+**Assistive**: The automation partially completes changes. Human involvement is needed to make changes ready to be pushed and merged.
 
 ### Estimated Time Saving
 
-Depending on the size of the project, this recipe can save up to 30 minutes and more.
+Depending on the size of the project, this recipe can save up to 6 hours of dedicated work and more.
 
 ### Owner
 

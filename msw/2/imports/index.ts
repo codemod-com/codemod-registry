@@ -1,4 +1,4 @@
-import { SyntaxKind, type ImportSpecifier, type SourceFile } from 'ts-morph';
+import { type ImportSpecifier, type SourceFile } from 'ts-morph';
 
 function addNamedImportDeclaration(
 	sourceFile: SourceFile,
@@ -80,28 +80,6 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 						importName === 'rest' ? 'http' : 'HttpHandler',
 					);
 				});
-
-			// Not generic anymore
-			sourceFile
-				.getDescendantsOfKind(SyntaxKind.TypeReference)
-				.filter((tr) => tr.getText().startsWith('HttpHandler'))
-				.forEach((tr) => {
-					if (tr.getText() !== 'HttpHandler') {
-						tr.replaceWithText('HttpHandler');
-					}
-				});
-
-			// Remove old imports
-			declaration
-				.getNamedImports()
-				.filter((s) =>
-					[
-						'MockedRequest',
-						'DefaultRequestMultipartBody',
-						'DefaultBodyType',
-					].find((oldImport) => s.getText().includes(oldImport)),
-				)
-				.forEach((specifier) => specifier.remove());
 		});
 
 	return sourceFile.getFullText();
