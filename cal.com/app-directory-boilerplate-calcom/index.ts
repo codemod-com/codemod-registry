@@ -217,19 +217,47 @@ const handleFile: Filemod<
 
 		const sourceFile = project.createSourceFile(path ?? '', oldData);
 
-		const notNeedLayout = sourceFile
-			.getDescendantsOfKind(SyntaxKind.JsxOpeningElement)
-			.some(
-				(jsxOpeningElement) =>
-					jsxOpeningElement.getTagNameNode().getText() === 'Shell',
+		let usesGetProps = sourceFile
+			.getFunctions()
+			.some((fn) =>
+				['getStaticProps', 'getServerSideProps'].includes(
+					fn.getName() ?? '',
+				),
 			);
 
-		const newDirArr = directoryNames.map((name) =>
-			name.replace(
-				'pages',
-				`app/future/${notNeedLayout ? '(no-layout)' : '(layout)'}`,
-			),
-		);
+		sourceFile.getVariableStatements().forEach((statement) => {
+			usesGetProps = statement
+				.getDeclarations()
+				.some((declaration) =>
+					['getStaticProps', 'getServerSideProps'].includes(
+						declaration.getName() ?? '',
+					),
+				);
+		});
+
+		let newDirArr: string[] = [];
+		if (usesGetProps) {
+			newDirArr = directoryNames.map((name) =>
+				name.replace('pages', 'app/future/(individual-page-wrapper)'),
+			);
+		} else {
+			const importsGetLayout = sourceFile
+				.getImportDeclarations()
+				.some(
+					(importDeclaration) =>
+						importDeclaration.getNamedImports()[0]?.getName() ===
+						'getLayout',
+				);
+
+			newDirArr = directoryNames.map((name) =>
+				name.replace(
+					'pages',
+					`app/future/(shared-page-wrapper)/${
+						importsGetLayout ? '(layout)' : '(no-layout)'
+					}`,
+				),
+			);
+		}
 
 		if (!nameIsIndex) {
 			newDirArr.push(parsedPath.name);
