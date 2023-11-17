@@ -19,6 +19,7 @@ import { constants } from 'node:fs';
 import { deflate } from 'node:zlib';
 import { promisify } from 'node:util';
 import * as tar from 'tar';
+import { homedir } from 'node:os';
 
 const promisifiedDeflate = promisify(deflate);
 
@@ -140,6 +141,10 @@ const removeDirectoryContents = async (directoryPath: string) => {
 };
 
 const build = async () => {
+	const lastArgument = process.argv.at(-1);
+
+	const buildTarget = lastArgument === '--homedir' ? 'homedir' : 'build';
+
 	const cwd = fileURLToPath(new URL('.', import.meta.url));
 
 	const configFilePaths = globSync('**/config.json', {
@@ -152,7 +157,10 @@ const build = async () => {
 
 	// emitting names
 
-	const buildDirectoryPath = join(cwd, './build');
+	const buildDirectoryPath =
+		buildTarget === 'homedir'
+			? join(homedir(), '.intuita')
+			: join(cwd, './build');
 
 	await mkdir(buildDirectoryPath, { recursive: true });
 
@@ -276,18 +284,20 @@ const build = async () => {
 		}
 	}
 
-	await tar.create(
-		{
-			cwd: buildDirectoryPath,
-			portable: true,
-			file: join(buildDirectoryPath, 'registry.tar.gz'),
-			gzip: true,
-			filter: (path) => {
-				return !path.endsWith('.z');
+	if (buildTarget === 'build') {
+		await tar.create(
+			{
+				cwd: buildDirectoryPath,
+				portable: true,
+				file: join(buildDirectoryPath, 'registry.tar.gz'),
+				gzip: true,
+				filter: (path) => {
+					return !path.endsWith('.z');
+				},
 			},
-		},
-		await readdir(buildDirectoryPath),
-	);
+			await readdir(buildDirectoryPath),
+		);
+	}
 };
 
 await build();

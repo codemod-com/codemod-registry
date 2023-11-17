@@ -5,6 +5,7 @@
 	"type": "module",
 	"scripts": {
 		"build": "ts-node --esm ./build.ts",
+		"build:homedir": "ts-node --esm ./build.ts --homedir",
 		"test": "mocha",
 		"lint:eslint": "eslint . --fix --ext ts",
 		"lint:prettier": "prettier --write .",
