@@ -109,19 +109,19 @@ describe('generate-url-patterns', function () {
 				const other = true;
 
 				const ROUTES: [URLPattern, boolean][] = [
-					["/noSegment", Boolean(process.env.APP_ROUTER_NOSEGMENT_ENABLED)] as const,
-					[
-						"/dynamicSegment/:a",
-						Boolean(process.env.APP_ROUTER_DYNAMICSEGMENT_A_ENABLED)
-					] as const,
 					[
 						"/catchAllDynamicSegments/:d+",
 						Boolean(process.env.APP_ROUTER_CATCHALLDYNAMICSEGMENTS_D_ENABLED)
 					] as const,
 					[
+						"/dynamicSegment/:a",
+						Boolean(process.env.APP_ROUTER_DYNAMICSEGMENT_A_ENABLED)
+					] as const,
+					[
 						"/dynamicSegment/:b/:c",
 						Boolean(process.env.APP_ROUTER_DYNAMICSEGMENT_B_C_ENABLED)
 					] as const,
+					["/noSegment", Boolean(process.env.APP_ROUTER_NOSEGMENT_ENABLED)] as const,
 					[
 						"/optionalCatchAllDynamicSegments/:element*/f",
 						Boolean(process.env.APP_ROUTER_OPTIONALCATCHALLDYNAMICSEGMENTS_ELEMENT_F_ENABLED)
