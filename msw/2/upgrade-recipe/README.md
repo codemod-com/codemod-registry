@@ -36,6 +36,8 @@ const handlers = [
 ];
 ```
 
+Also, if you were using req.body in your interceptors, this codemod will blindly assume you want `await request.json()` instead of any other type. You will have to correct that manually.
+
 ## Applicability Criteria
 
 MSW version >= 1.0.0
