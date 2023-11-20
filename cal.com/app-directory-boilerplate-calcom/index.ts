@@ -291,12 +291,48 @@ const handleFile: Filemod<
 		const nestedPathWithoutExtension =
 			(parsedPath.dir.split('/pages/')[1] ?? '') + '/' + parsedPath.name;
 
-		const pageContent = `import Page from "@pages/${nestedPathWithoutExtension}";
-import { _generateMetadata } from "app/_utils";
-		
-export const generateMetadata = async () => await _generateMetadata(() => "", () => "");
+		let pageContent = '';
+		if (newPagePath.includes('(individual-page-wrapper')) {
+			pageContent = `
+			import OldPage from "@pages/${nestedPathWithoutExtension}";
+			import { _generateMetadata } from "app/_utils";
+			import type { Params } from "next/dist/shared/lib/router/utils/route-matcher";
+			import PageWrapper from "@components/PageWrapperAppDir";
+			import { headers } from "next/headers";
+			${
+				pageUsesLayout
+					? 'import { getLayout } from "@calcom/features/MainLayoutAppDir";'
+					: ''
+			}
 
-export default Page;`;
+			export const generateMetadata = async () => await _generateMetadata(() => "", () => "");
+			
+			type PageProps = Readonly<{
+				params: Params;
+			  }>;
+
+			const Page = ({ params }: PageProps) => {
+				const h = headers();
+				const nonce = h.get("x-nonce") ?? undefined;
+			  
+				return (
+				  <PageWrapper ${
+						pageUsesLayout ? 'getLayout={getLayout} ' : ''
+					}requiresLicense={false} nonce={nonce} themeBasis={null}>
+					<OldPage />
+				  </PageWrapper>
+				);
+			  };
+			  
+			  export default Page;`;
+		} else {
+			pageContent = `import Page from "@pages/${nestedPathWithoutExtension}";
+			import { _generateMetadata } from "app/_utils";
+			
+			export const generateMetadata = async () => await _generateMetadata(() => "", () => "");
+			
+			export default Page;`;
+		}
 
 		const commands: FileCommand[] = [
 			{
