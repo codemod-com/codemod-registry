@@ -207,18 +207,39 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 
 		ok(
 			externalFileCommands.some((command) => {
+				const expected = `
+					import OldPage from "@pages/a/[b]/c";
+					import { _generateMetadata } from "app/_utils";
+					import type { Params } from "next/dist/shared/lib/router/utils/route-matcher";
+					import PageWrapper from "@components/PageWrapperAppDir";
+					import { headers } from "next/headers";
+					
+
+					export const generateMetadata = async () => await _generateMetadata(() => "", () => "");
+					
+					type PageProps = Readonly<{
+						params: Params;
+					}>;
+
+					const Page = ({ params }: PageProps) => {
+						const h = headers();
+						const nonce = h.get("x-nonce") ?? undefined;
+						
+						return (
+							<PageWrapper requiresLicense={false} nonce={nonce} themeBasis={null}>
+								<OldPage />
+							</PageWrapper>
+						);
+					};
+					
+					export default Page;`;
+
 				return (
 					command.kind === 'upsertFile' &&
 					command.path ===
 						'/opt/project/app/future/(individual-page-wrapper)/a/[b]/c/page.tsx' &&
 					command.data.replace(/\W/gm, '') ===
-						`
-						import Page from "@pages/a/[b]/c";
-						import { _generateMetadata } from "app/_utils";
-						
-						export const generateMetadata = async () => await _generateMetadata(() => "", () => "");
-						export default Page;
-					`.replace(/\W/gm, '')
+						expected.replace(/\W/gm, '')
 				);
 			}),
 		);
@@ -244,18 +265,38 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 
 		ok(
 			externalFileCommands.some((command) => {
+				const expected = `
+					import OldPage from "@pages/a/d";
+					import { _generateMetadata } from "app/_utils";
+					import type { Params } from "next/dist/shared/lib/router/utils/route-matcher";
+					import PageWrapper from "@components/PageWrapperAppDir";
+					import { headers } from "next/headers";
+					
+
+					export const generateMetadata = async () => await _generateMetadata(() => "", () => "");
+					
+					type PageProps = Readonly<{
+						params: Params;
+					}>;
+
+					const Page = ({ params }: PageProps) => {
+						const h = headers();
+						const nonce = h.get("x-nonce") ?? undefined;
+						
+						return (
+							<PageWrapper requiresLicense={false} nonce={nonce} themeBasis={null}>
+								<OldPage />
+							</PageWrapper>
+						);
+					};
+					
+					export default Page;`;
 				return (
 					command.kind === 'upsertFile' &&
 					command.path ===
 						'/opt/project/app/future/(individual-page-wrapper)/a/d/page.tsx' &&
 					command.data.replace(/\W/gm, '') ===
-						`
-						import Page from "@pages/a/d";
-						import { _generateMetadata } from "app/_utils";
-						
-						export const generateMetadata = async () => await _generateMetadata(() => "", () => "");
-						export default Page;
-					`.replace(/\W/gm, '')
+						expected.replace(/\W/gm, '')
 				);
 			}),
 		);

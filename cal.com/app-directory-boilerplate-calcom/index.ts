@@ -497,6 +497,53 @@ const usesLayout = (sourceFile: SourceFile) => {
 		);
 };
 
+const getPageContent = (
+	newPagePath: string,
+	usesLayout: boolean,
+	nestedPathWithoutExtension: string,
+) => {
+	if (newPagePath.includes('(individual-page-wrapper')) {
+		return `
+			import OldPage from "@pages/${nestedPathWithoutExtension}";
+			import { _generateMetadata } from "app/_utils";
+			import type { Params } from "next/dist/shared/lib/router/utils/route-matcher";
+			import PageWrapper from "@components/PageWrapperAppDir";
+			import { headers } from "next/headers";
+			${
+				usesLayout
+					? 'import { getLayout } from "@calcom/features/MainLayoutAppDir";'
+					: ''
+			}
+
+			export const generateMetadata = async () => await _generateMetadata(() => "", () => "");
+			
+			type PageProps = Readonly<{
+				params: Params;
+			  }>;
+
+			const Page = ({ params }: PageProps) => {
+				const h = headers();
+				const nonce = h.get("x-nonce") ?? undefined;
+			  
+				return (
+				  <PageWrapper ${
+						usesLayout ? 'getLayout={getLayout} ' : ''
+					}requiresLicense={false} nonce={nonce} themeBasis={null}>
+					<OldPage />
+				  </PageWrapper>
+				);
+			  };
+			  
+			  export default Page;`;
+	}
+	return `import Page from "@pages/${nestedPathWithoutExtension}";
+			import { _generateMetadata } from "app/_utils";
+			
+			export const generateMetadata = async () => await _generateMetadata(() => "", () => "");
+			
+			export default Page;`;
+};
+
 const getNewPagePath = (
 	directoryNames: string[],
 	fileName: string,
@@ -568,12 +615,11 @@ const handleFile: Filemod<
 		const nestedPathWithoutExtension =
 			(parsedPath.dir.split('/pages/')[1] ?? '') + '/' + parsedPath.name;
 
-		const pageContent = `import Page from "@pages/${nestedPathWithoutExtension}";
-import { _generateMetadata } from "app/_utils";
-		
-export const generateMetadata = async () => await _generateMetadata(() => "", () => "");
-
-export default Page;`;
+		const pageContent = getPageContent(
+			newPagePath,
+			pageUsesLayout,
+			nestedPathWithoutExtension,
+		);
 
 		const commands: FileCommand[] = [
 			{
