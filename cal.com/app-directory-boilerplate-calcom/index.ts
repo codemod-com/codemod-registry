@@ -1,6 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { join, posix } from 'node:path';
-import tsmorph, { SourceFile, SyntaxKind } from 'ts-morph';
+import tsmorph, {
+	ArrowFunction,
+	FunctionDeclaration,
+	FunctionExpression,
+	Identifier,
+	Node,
+	SourceFile,
+	SyntaxKind,
+} from 'ts-morph';
 import type { HandleData, HandleFile, Filemod } from '@intuita-inc/filemod';
 
 // eslint-disable-next-line @typescript-eslint/ban-types
@@ -62,6 +70,267 @@ const addUseClientStatement = (
 	};
 };
 
+const ROUTE_SEGMENT_CONFIG_OPTIONS = [
+	'dynamic',
+	'dynamicParams',
+	'revalidate',
+	'fetchCache',
+	'runtime',
+	'preferredRegion',
+	'maxDuration',
+];
+
+const getAncestorByDeclaration = (declarationNode: Node): Node | null => {
+	let ancestor: Node | null = null;
+
+	const parameter = Node.isParameterDeclaration(declarationNode)
+		? declarationNode
+		: declarationNode.getFirstAncestorByKind(SyntaxKind.Parameter);
+	const importDeclaration = declarationNode.getFirstAncestorByKind(
+		SyntaxKind.ImportDeclaration,
+	);
+
+	if (parameter !== undefined) {
+		ancestor = parameter;
+	} else if (importDeclaration !== undefined) {
+		ancestor = importDeclaration;
+	} else if (Node.isFunctionDeclaration(declarationNode)) {
+		ancestor = declarationNode;
+	} else if (Node.isVariableDeclaration(declarationNode)) {
+		// variable statement
+		ancestor = declarationNode.getParent()?.getParent() ?? null;
+	} else if (Node.isBindingElement(declarationNode)) {
+		ancestor =
+			declarationNode.getFirstAncestorByKind(
+				SyntaxKind.VariableStatement,
+			) ?? null;
+	}
+
+	return ancestor;
+};
+const DEPENDENCY_TREE_MAX_DEPTH = 3;
+
+const getDependenciesForIdentifiers = (
+	identifiers: ReadonlyArray<Identifier>,
+	depth: number = 0,
+) => {
+	if (depth > DEPENDENCY_TREE_MAX_DEPTH) {
+		return {};
+	}
+
+	const dependencies: Record<string, string> = {};
+
+	identifiers.forEach((identifier) => {
+		const parent = identifier.getParent();
+
+		if (Node.isParameterDeclaration(parent)) {
+			return;
+		}
+
+		if (
+			(Node.isPropertyAccessExpression(parent) ||
+				Node.isElementAccessExpression(parent)) &&
+			identifier.getChildIndex() !== 0
+		) {
+			return;
+		}
+
+		if (
+			Node.isPropertyAssignment(parent) &&
+			parent.getNameNode() === identifier
+		) {
+			return;
+		}
+
+		const [firstDeclaration] =
+			identifier.getSymbol()?.getDeclarations() ?? [];
+
+		const localSourceFile = identifier.getFirstAncestorByKind(
+			SyntaxKind.SourceFile,
+		);
+
+		// check if declaration exists in current sourceFile
+		if (
+			firstDeclaration === undefined ||
+			firstDeclaration.getFirstAncestorByKind(SyntaxKind.SourceFile) !==
+				localSourceFile
+		) {
+			return;
+		}
+
+		const ancestor = getAncestorByDeclaration(firstDeclaration);
+
+		if (ancestor === null) {
+			return;
+		}
+
+		dependencies[identifier.getText()] = ancestor.getText();
+
+		// recursivelly check for dependencies until reached parameter or import
+		if (
+			Node.isImportDeclaration(ancestor) ||
+			Node.isParameterDeclaration(ancestor)
+		) {
+			return;
+		}
+
+		const ancestorIdentifiers = ancestor
+			.getDescendantsOfKind(SyntaxKind.Identifier)
+			.filter((i) => {
+				if (i.getText() === identifier.getText()) {
+					return false;
+				}
+
+				if (ancestor && Node.isFunctionDeclaration(ancestor)) {
+					const declaration = i.getSymbol()?.getDeclarations()[0];
+
+					// ensure we dont collect identifiers from function inner scope in nested functions
+					if (
+						declaration?.getFirstAncestorByKind(
+							SyntaxKind.FunctionDeclaration,
+						) === ancestor
+					) {
+						return false;
+					}
+				}
+
+				const parent = i.getParent();
+
+				return (
+					!Node.isBindingElement(parent) &&
+					!Node.isPropertyAssignment(parent) &&
+					!(
+						Node.isPropertyAccessExpression(parent) &&
+						i.getChildIndex() !== 0
+					)
+				);
+			});
+
+		const dependenciesOfAncestor = getDependenciesForIdentifiers(
+			ancestorIdentifiers,
+			depth + 1,
+		);
+		Object.assign(dependencies, dependenciesOfAncestor);
+	});
+
+	return dependencies;
+};
+
+const getRouteSegmentConfig = (sourceFile: SourceFile): string => {
+	let nextjsConfig = '';
+
+	sourceFile.getVariableStatements().forEach((statement) => {
+		statement.getDeclarations().forEach((declaration) => {
+			const id = declaration.getName() ?? '';
+
+			if (
+				declaration.hasExportKeyword() &&
+				ROUTE_SEGMENT_CONFIG_OPTIONS.includes(id)
+			) {
+				nextjsConfig += `${statement.getText()} \n`;
+			}
+		});
+	});
+
+	return nextjsConfig;
+};
+
+const getServerSideDataHookWithDeps = (sourceFile: SourceFile) => {
+	let nextjsConfig = '';
+
+	const getDataAF = sourceFile
+		.getDescendantsOfKind(SyntaxKind.ArrowFunction)
+		.find((AF) => {
+			const parent = AF.getParent();
+			return (
+				Node.isVariableDeclaration(parent) &&
+				parent.getName() === 'getData'
+			);
+		});
+
+	if (getDataAF === undefined) {
+		return nextjsConfig;
+	}
+
+	const identifiers = getDataAF
+		.getBody()
+		.getDescendantsOfKind(SyntaxKind.Identifier);
+
+	const dependencies = getDependenciesForIdentifiers(identifiers);
+
+	nextjsConfig += Object.values(dependencies).reverse().join('\n');
+	nextjsConfig += `${getDataAF.getParent().getText()} \n`;
+
+	return nextjsConfig;
+};
+
+type PageComponent = ArrowFunction | FunctionExpression | FunctionDeclaration;
+
+const getPageComponent = (sourceFile: SourceFile): PageComponent | null => {
+	const defaultExportedFunctionDeclaration = sourceFile
+		.getFunctions()
+		.find((f) => f.isDefaultExport());
+
+	if (defaultExportedFunctionDeclaration !== undefined) {
+		return defaultExportedFunctionDeclaration;
+	}
+
+	const exportAssignment = sourceFile
+		.getStatements()
+		.find((s) => Node.isExportAssignment(s));
+
+	const declarations =
+		exportAssignment
+			?.getFirstDescendantByKind(SyntaxKind.Identifier)
+			?.getSymbol()
+			?.getDeclarations() ?? [];
+
+	let pageComponent: PageComponent | null = null;
+
+	declarations.forEach((d) => {
+		if (Node.isVariableDeclaration(d)) {
+			const initializer = d?.getInitializer();
+
+			if (
+				Node.isArrowFunction(initializer) ||
+				Node.isFunctionExpression(initializer)
+			) {
+				pageComponent = initializer;
+				return;
+			}
+		}
+
+		if (Node.isFunctionDeclaration(d)) {
+			pageComponent = d;
+		}
+	});
+
+	return pageComponent ?? null;
+};
+
+const getPositionAfterImports = (sourceFile: SourceFile): number => {
+	const lastImportDeclaration =
+		sourceFile.getLastChildByKind(SyntaxKind.ImportDeclaration) ?? null;
+
+	return (lastImportDeclaration?.getChildIndex() ?? 0) + 1;
+};
+
+const getPositionAfterComponent = (sourceFile: SourceFile): number => {
+	const component = getPageComponent(sourceFile);
+
+	if (component === null) {
+		return 0;
+	}
+
+	return (
+		(Node.isFunctionDeclaration(component)
+			? component.getChildIndex()
+			: component
+					.getFirstAncestorByKind(SyntaxKind.VariableStatement)
+					?.getChildIndex() ?? 0) + 1
+	);
+};
+
 const buildPageFileData = (
 	api: DataAPI,
 	path: string,
@@ -70,7 +339,10 @@ const buildPageFileData = (
 ): DataCommand => {
 	const { tsmorph } = api.getDependencies();
 
-	const rewriteWithTsMorph = (input: string): string => {
+	const rewriteWithTsMorph = (
+		input: string,
+		legacyPageData: string,
+	): string => {
 		const project = new tsmorph.Project({
 			useInMemoryFileSystem: true,
 			skipFileDependencyResolution: true,
@@ -82,7 +354,24 @@ const buildPageFileData = (
 		const oldPath =
 			typeof options.oldPath === 'string' ? options.oldPath : null;
 
-		const sourceFile = project.createSourceFile(oldPath ?? '', input);
+		const sourceFile = project.createSourceFile(path ?? '', input);
+
+		const legacyPageSourceFile = project.createSourceFile(
+			oldPath ?? '',
+			legacyPageData,
+		);
+
+		// inserting route segment config to the future page
+		const routeSegmentConfig = getRouteSegmentConfig(legacyPageSourceFile);
+
+		sourceFile.addStatements(routeSegmentConfig);
+
+		// inserting server side data hooks along with its dependencies to the future page
+		const serverSideDataHooks =
+			getServerSideDataHookWithDeps(legacyPageSourceFile);
+		const positionAfterImports = getPositionAfterImports(sourceFile);
+
+		sourceFile.insertStatements(positionAfterImports, serverSideDataHooks);
 
 		sourceFile.getFunctions().forEach((fn) => {
 			if (fn.isDefaultExport()) {
@@ -158,56 +447,40 @@ const buildPageFileData = (
 			});
 		}
 
-		sourceFile.getStatementsWithComments().forEach((statement, index) => {
-			if (tsmorph.Node.isVariableStatement(statement)) {
-				const declarations = statement
-					.getDeclarationList()
-					.getDeclarations();
-
-				const getServerSidePropsUsed = declarations.some(
-					(declaration) =>
-						declaration.getName() === 'getServerSideProps',
-				);
-
-				if (getServerSidePropsUsed) {
-					sourceFile.insertStatements(
-						index,
-						'// TODO reimplement getServerSideProps with custom logic\n',
-					);
-				}
-			}
-		});
-
 		return sourceFile.getFullText();
 	};
 
 	return {
 		kind: 'upsertData',
 		path,
-		data: rewriteWithTsMorph(String(options.oldData ?? '')),
+		data: rewriteWithTsMorph(
+			String(options.oldData ?? ''),
+			String(options.legacyPageData ?? ''),
+		),
 	};
 };
 
+const SERVER_SIDE_DATA_HOOKS_NAMES = ['getStaticProps', 'getServerSideProps'];
+
 const usesServerSideData = (sourceFile: SourceFile) => {
-	let usesServerSideData = sourceFile
-		.getFunctions()
-		.some((fn) =>
-			['getStaticProps', 'getServerSideProps'].includes(
-				fn.getName() ?? '',
-			),
-		);
-
-	sourceFile.getVariableStatements().forEach((statement) => {
-		usesServerSideData = statement
-			.getDeclarations()
-			.some((declaration) =>
-				['getStaticProps', 'getServerSideProps'].includes(
-					declaration.getName() ?? '',
-				),
-			);
-	});
-
-	return usesServerSideData;
+	return (
+		sourceFile
+			.getFunctions()
+			.some((fn) =>
+				SERVER_SIDE_DATA_HOOKS_NAMES.includes(fn.getName() ?? ''),
+			) ||
+		sourceFile
+			.getVariableStatements()
+			.some((statement) =>
+				statement
+					.getDeclarations()
+					.some((declaration) =>
+						SERVER_SIDE_DATA_HOOKS_NAMES.includes(
+							declaration.getName() ?? '',
+						),
+					),
+			)
+	);
 };
 
 const usesLayout = (sourceFile: SourceFile) => {
@@ -312,6 +585,7 @@ export default Page;`;
 					filePurpose: FilePurpose.ROUTE_PAGE,
 					oldPath: path,
 					oldData: removeLeadingLineBreaks(pageContent),
+					legacyPageData: oldData,
 				},
 			},
 			{
