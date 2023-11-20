@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { join, posix } from 'node:path';
-import tsmorph, { SyntaxKind } from 'ts-morph';
+import tsmorph, { SourceFile, SyntaxKind } from 'ts-morph';
 import type { HandleData, HandleFile, Filemod } from '@intuita-inc/filemod';
 
 // eslint-disable-next-line @typescript-eslint/ban-types
@@ -188,6 +188,67 @@ const buildPageFileData = (
 	};
 };
 
+const usesServerSideData = (sourceFile: SourceFile) => {
+	let usesServerSideData = sourceFile
+		.getFunctions()
+		.some((fn) =>
+			['getStaticProps', 'getServerSideProps'].includes(
+				fn.getName() ?? '',
+			),
+		);
+
+	sourceFile.getVariableStatements().forEach((statement) => {
+		usesServerSideData = statement
+			.getDeclarations()
+			.some((declaration) =>
+				['getStaticProps', 'getServerSideProps'].includes(
+					declaration.getName() ?? '',
+				),
+			);
+	});
+
+	return usesServerSideData;
+};
+
+const usesLayout = (sourceFile: SourceFile) => {
+	return sourceFile
+		.getImportDeclarations()
+		.some(
+			(importDeclaration) =>
+				importDeclaration.getNamedImports()[0]?.getName() ===
+				'getLayout',
+		);
+};
+
+const getNewPagePath = (
+	directoryNames: string[],
+	fileName: string,
+	usesServerSideData: boolean,
+	usesLayout: boolean,
+) => {
+	const newDirArr = directoryNames.map((name) => {
+		if (name !== 'pages') {
+			return name;
+		}
+
+		if (usesServerSideData) {
+			return 'app/future/(individual-page-wrapper)';
+		}
+
+		if (usesLayout) {
+			return 'app/future/(shared-page-wrapper)/(layout)';
+		}
+
+		return 'app/future/(shared-page-wrapper)/(no-layout)';
+	});
+
+	if (fileName !== 'index') {
+		newDirArr.push(fileName);
+	}
+
+	return newDirArr.join(posix.sep);
+};
+
 const handleFile: Filemod<
 	Dependencies,
 	Record<string, never>
@@ -217,53 +278,15 @@ const handleFile: Filemod<
 
 		const sourceFile = project.createSourceFile(path ?? '', oldData);
 
-		let usesGetProps = sourceFile
-			.getFunctions()
-			.some((fn) =>
-				['getStaticProps', 'getServerSideProps'].includes(
-					fn.getName() ?? '',
-				),
-			);
+		const pageUsesServerSideData = usesServerSideData(sourceFile);
+		const pageUsesLayout = usesLayout(sourceFile);
 
-		sourceFile.getVariableStatements().forEach((statement) => {
-			usesGetProps = statement
-				.getDeclarations()
-				.some((declaration) =>
-					['getStaticProps', 'getServerSideProps'].includes(
-						declaration.getName() ?? '',
-					),
-				);
-		});
-
-		let newDirArr: string[] = [];
-		if (usesGetProps) {
-			newDirArr = directoryNames.map((name) =>
-				name.replace('pages', 'app/future/(individual-page-wrapper)'),
-			);
-		} else {
-			const importsGetLayout = sourceFile
-				.getImportDeclarations()
-				.some(
-					(importDeclaration) =>
-						importDeclaration.getNamedImports()[0]?.getName() ===
-						'getLayout',
-				);
-
-			newDirArr = directoryNames.map((name) =>
-				name.replace(
-					'pages',
-					`app/future/(shared-page-wrapper)/${
-						importsGetLayout ? '(layout)' : '(no-layout)'
-					}`,
-				),
-			);
-		}
-
-		if (!nameIsIndex) {
-			newDirArr.push(parsedPath.name);
-		}
-
-		const newDir = newDirArr.join(posix.sep);
+		const newPagePath = getNewPagePath(
+			directoryNames,
+			parsedPath.name,
+			pageUsesServerSideData,
+			pageUsesLayout,
+		);
 
 		const nestedPathWithoutExtension =
 			(parsedPath.dir.split('/pages/')[1] ?? '') + '/' + parsedPath.name;
@@ -278,7 +301,7 @@ export default Page;`;
 				kind: 'upsertFile',
 				path: posix.format({
 					root: parsedPath.root,
-					dir: newDir,
+					dir: newPagePath,
 					ext: parsedPath.ext,
 					name: 'page',
 				}),
