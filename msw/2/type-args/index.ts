@@ -128,9 +128,27 @@ function getCallbackData(
 	return [callbackBody, cbParams, syntaxCb];
 }
 
-const isNeitherNullNorUndefined = <T>(
+function isNeitherNullNorUndefined<T>(
 	t: NonNullable<T> | null | undefined,
-): t is NonNullable<T> => t !== null && t !== undefined;
+): t is NonNullable<T> {
+	return t !== null && t !== undefined;
+}
+
+function deleteByPos(
+	sourceFile: SourceFile,
+	positionObject: Record<number, string>,
+) {
+	let offset = 0;
+	Object.entries(positionObject)
+		.sort(([pos1], [pos2]) => +pos1 - +pos2)
+		.forEach(([pos, value]) => {
+			sourceFile.insertText(+pos + offset, value);
+			offset += value.length;
+		});
+	Object.getOwnPropertyNames(positionObject).forEach((prop) => {
+		delete positionObject[Number(prop)];
+	});
+}
 
 function shouldProcessFile(sourceFile: SourceFile): boolean {
 	return (
@@ -160,84 +178,6 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 			}
 
 			tr.replaceWithText(bodyType.getText());
-		});
-
-	sourceFile
-		.getDescendantsOfKind(SyntaxKind.CallExpression)
-		.filter((callExpr) => isMSWCall(sourceFile, callExpr))
-		.forEach((expression) => {
-			const genericTypeArgs = expression.getTypeArguments();
-
-			if (genericTypeArgs.length) {
-				const newArgs = [
-					// unknown does not work:
-					// Type 'unknown' does not satisfy the constraint 'PathParams<never>'.
-					genericTypeArgs.at(1)?.getText() || 'any',
-					genericTypeArgs.at(0)!.getText(),
-					genericTypeArgs.at(2)?.getText(),
-				].filter(isNeitherNullNorUndefined);
-
-				expression.insertTypeArguments(0, newArgs);
-				genericTypeArgs.forEach((arg) =>
-					expression.removeTypeArgument(arg),
-				);
-			}
-
-			const callbackData = getCallbackData(expression);
-			if (callbackData === null) {
-				return;
-			}
-			const [callbackBody] = callbackData;
-
-			const bodyCasts = callbackBody
-				.getDescendantsOfKind(SyntaxKind.AsExpression)
-				.filter((asExpr) =>
-					asExpr
-						.getDescendantsOfKind(SyntaxKind.Identifier)
-						.find((id) => id.getText() === 'body'),
-				);
-
-			if (bodyCasts.length) {
-				bodyCasts.forEach((asExpr) => {
-					const castedProperty =
-						asExpr.getFirstChild()?.getText() ?? null;
-					const castedToType =
-						asExpr
-							.getChildrenOfKind(SyntaxKind.TypeReference)
-							.at(0)
-							?.getText() ?? null;
-
-					if (castedProperty === null || castedToType === null) {
-						return;
-					}
-
-					asExpr.replaceWithText(castedProperty);
-
-					const existingBodyType =
-						expression.getTypeArguments().at(1) ?? null;
-
-					if (existingBodyType !== null) {
-						existingBodyType.replaceWithText(castedToType);
-					} else {
-						const callerEndPos =
-							expression.getFirstChild()?.getEnd() ?? null;
-
-						if (callerEndPos === null) {
-							return;
-						}
-
-						// Has to be done like that, because addTypeArguments throws if no <> (generic braces) are there,
-						// and insertText forgets all the previously navigated nodes, so it breaks the forEach loop.
-						// Uncomment below and read the function jsdoc:
-						// sourceFile.insertText(callerEndPos, `<any, ${castedToType}>`);
-
-						// using new Map would be nicer, but it's harder to iterate over, so whatever
-						toInsertManually[
-							callerEndPos
-						] = `<any, ${castedToType}>`;
-					}
-				});
-			}
 		});
 
 	// ResponseResolver
@@ -336,7 +276,9 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 									(tr.getText().length -
 										toReplaceReferenceWith.length));
 
-							toInsertManually[deletionShift] = `<${newArgs}>`;
+							toInsertManually[deletionShift] = `<${newArgs.join(
+								', ',
+							)}>`;
 						}
 					});
 
@@ -344,13 +286,71 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 			}
 		});
 
-	let offset = 0;
-	Object.entries(toInsertManually)
-		.sort(([pos1], [pos2]) => +pos1 - +pos2)
-		.forEach(([pos, value]) => {
-			sourceFile.insertText(+pos + offset, value);
-			offset += value.length;
+	deleteByPos(sourceFile, toInsertManually);
+
+	// Body casts
+	sourceFile
+		.getDescendantsOfKind(SyntaxKind.CallExpression)
+		.filter((callExpr) => isMSWCall(sourceFile, callExpr))
+		.forEach((expression) => {
+			const callbackData = getCallbackData(expression);
+			if (callbackData === null) {
+				return;
+			}
+			const [callbackBody] = callbackData;
+
+			const bodyCasts = callbackBody
+				.getDescendantsOfKind(SyntaxKind.AsExpression)
+				.filter((asExpr) =>
+					asExpr
+						.getDescendantsOfKind(SyntaxKind.Identifier)
+						.find((id) => id.getText() === 'body'),
+				);
+
+			if (bodyCasts.length) {
+				bodyCasts.forEach((asExpr) => {
+					const castedProperty =
+						asExpr.getFirstChild()?.getText() ?? null;
+					const castedToType =
+						asExpr
+							.getChildrenOfKind(SyntaxKind.TypeReference)
+							.at(0)
+							?.getText() ?? null;
+
+					if (castedProperty === null || castedToType === null) {
+						return;
+					}
+
+					asExpr.replaceWithText(castedProperty);
+
+					const existingBodyType =
+						expression.getTypeArguments().at(1) ?? null;
+
+					if (existingBodyType !== null) {
+						existingBodyType.replaceWithText(castedToType);
+					} else {
+						const callerEndPos =
+							expression.getFirstChild()?.getEnd() ?? null;
+
+						if (callerEndPos === null) {
+							return;
+						}
+
+						// Has to be done like that, because addTypeArguments throws if no <> (generic braces) are there,
+						// and insertText forgets all the previously navigated nodes, so it breaks the forEach loop.
+						// Uncomment below and read the function jsdoc:
+						// sourceFile.insertText(callerEndPos, `<any, ${castedToType}>`);
+
+						// using new Map would be nicer, but it's harder to iterate over, so whatever
+						toInsertManually[
+							callerEndPos
+						] = `<any, ${castedToType}>`;
+					}
+				});
+			}
 		});
+
+	deleteByPos(sourceFile, toInsertManually);
 
 	sourceFile.fixUnusedIdentifiers();
 
