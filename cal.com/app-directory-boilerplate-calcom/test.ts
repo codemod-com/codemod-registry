@@ -146,7 +146,9 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 					command.data.replace(/\W/gm, '') ===
 						`
 						import Page from "@pages/a/index";
-						// TODO add metadata
+						import { _generateMetadata } from "app/_utils";
+
+						export const generateMetadata = async () => await _generateMetadata(() => "", () => "");
 						export default Page;
 					`.replace(/\W/gm, '')
 				);
@@ -176,7 +178,9 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 					command.data.replace(/\W/gm, '') ===
 						`
 						import Page from "@pages/a/b";
-						// TODO add metadata
+						import { _generateMetadata } from "app/_utils";
+						
+						export const generateMetadata = async () => await _generateMetadata(() => "", () => "");
 						export default Page;
 					`.replace(/\W/gm, '')
 				);
@@ -210,7 +214,9 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 					command.data.replace(/\W/gm, '') ===
 						`
 						import Page from "@pages/a/[b]/c";
-						// TODO add metadata
+						import { _generateMetadata } from "app/_utils";
+						
+						export const generateMetadata = async () => await _generateMetadata(() => "", () => "");
 						export default Page;
 					`.replace(/\W/gm, '')
 				);
@@ -245,7 +251,9 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 					command.data.replace(/\W/gm, '') ===
 						`
 						import Page from "@pages/a/d";
-						// TODO add metadata
+						import { _generateMetadata } from "app/_utils";
+						
+						export const generateMetadata = async () => await _generateMetadata(() => "", () => "");
 						export default Page;
 					`.replace(/\W/gm, '')
 				);
