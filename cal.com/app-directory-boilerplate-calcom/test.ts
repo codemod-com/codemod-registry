@@ -312,16 +312,17 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 		deepStrictEqual(
 			upsertPageCommand?.data.replace(/(?!\.)\s/gm, ''),
 			`import Page from "@pages/a/index";
+			import {_generateMetadata} from "app/_utils";
 			import b from 'b';
 			import { a } from 'a';
 			const getServerSideProps = (ctx) => {
 				return a + b;
 			}
-			getData = () => {
+			const getData = () => {
 				getServerSideProps();
 			} 
 
-			// TODO add metadata
+			export const generateMetadata = async ()=> await _generateMetadata(()=>"",()=>"");
 			export default Page;
 			export const dynamic="force-dynamic";
 			`.replace(/(?!\.)\s/gm, ''),

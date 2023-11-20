@@ -259,7 +259,11 @@ const getServerSideDataHookWithDeps = (sourceFile: SourceFile) => {
 	const dependencies = getDependenciesForIdentifiers(identifiers);
 
 	dataHooksWithDeps += Object.values(dependencies).reverse().join('\n');
-	dataHooksWithDeps += `${getDataAF.getParent().getText()} \n`;
+	dataHooksWithDeps += `${
+		getDataAF
+			.getFirstAncestorByKind(SyntaxKind.VariableStatement)
+			?.getText() ?? ''
+	} \n`;
 
 	return dataHooksWithDeps;
 };
