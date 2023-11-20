@@ -236,7 +236,7 @@ const getRouteSegmentConfig = (sourceFile: SourceFile): string => {
 };
 
 const getServerSideDataHookWithDeps = (sourceFile: SourceFile) => {
-	let nextjsConfig = '';
+	let dataHooksWithDeps = '';
 
 	const getDataAF = sourceFile
 		.getDescendantsOfKind(SyntaxKind.ArrowFunction)
@@ -249,7 +249,7 @@ const getServerSideDataHookWithDeps = (sourceFile: SourceFile) => {
 		});
 
 	if (getDataAF === undefined) {
-		return nextjsConfig;
+		return dataHooksWithDeps;
 	}
 
 	const identifiers = getDataAF
@@ -258,10 +258,10 @@ const getServerSideDataHookWithDeps = (sourceFile: SourceFile) => {
 
 	const dependencies = getDependenciesForIdentifiers(identifiers);
 
-	nextjsConfig += Object.values(dependencies).reverse().join('\n');
-	nextjsConfig += `${getDataAF.getParent().getText()} \n`;
+	dataHooksWithDeps += Object.values(dependencies).reverse().join('\n');
+	dataHooksWithDeps += `${getDataAF.getParent().getText()} \n`;
 
-	return nextjsConfig;
+	return dataHooksWithDeps;
 };
 
 type PageComponent = ArrowFunction | FunctionExpression | FunctionDeclaration;
