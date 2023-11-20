@@ -38,7 +38,7 @@ const transform = async (json: DirectoryJSON) => {
 	return executeFilemod(api, repomod, '/', {}, {});
 };
 
-describe.only('cal.com app-directory-boilerplate-calcom', function () {
+describe('cal.com app-directory-boilerplate-calcom', function () {
 	it('should build correct files', async function (this: Context) {
 		const externalFileCommands = await transform({
 			'/opt/project/pages/a/index.tsx': 'TODO content',
