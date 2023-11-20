@@ -43,16 +43,28 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 		const externalFileCommands = await transform({
 			'/opt/project/pages/a/index.tsx': 'TODO content',
 			'/opt/project/pages/a/b.tsx': `
+			import { getLayout } from './getLayout';
 			export default function B(props) {
-				return <Shell isPublic title='1'>Shell</Shell>
+				return <Component />;
 			}
+			B.getLayout = getLayout;
 			`,
 			'/opt/project/pages/a/[b]/c.tsx': `
+			export const getServerSideProps = (ctx) => {
+				return null;
+			}
 			export default function C(props) {
-				return <Shell  subtitle='1'>Shell</Shell>
+				return <Component />;
 			}
 			`,
-			'/opt/project/pages/a/d.tsx': 'TODO content',
+			'/opt/project/pages/a/d.tsx': `
+			export const getStaticProps = (ctx) => {
+				return null;
+			}
+			export default function C(props) {
+				return <Component />;
+			}
+			`,
 		});
 
 		deepStrictEqual(externalFileCommands.length, 8);
@@ -62,7 +74,7 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 				(command) =>
 					command.kind === 'upsertFile' &&
 					command.path ===
-						'/opt/project/app/future/(layout)/a/page.tsx',
+						'/opt/project/app/future/(shared-page-wrapper)/(no-layout)/a/page.tsx',
 			),
 		);
 
@@ -79,7 +91,7 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 				(command) =>
 					command.kind === 'upsertFile' &&
 					command.path ===
-						'/opt/project/app/future/(no-layout)/a/b/page.tsx',
+						'/opt/project/app/future/(shared-page-wrapper)/(layout)/a/b/page.tsx',
 			),
 		);
 
@@ -96,7 +108,7 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 				(command) =>
 					command.kind === 'upsertFile' &&
 					command.path ===
-						'/opt/project/app/future/(no-layout)/a/[b]/c/page.tsx',
+						'/opt/project/app/future/(individual-page-wrapper)/a/[b]/c/page.tsx',
 			),
 		);
 
@@ -113,7 +125,7 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 				(command) =>
 					command.kind === 'upsertFile' &&
 					command.path ===
-						'/opt/project/app/future/(layout)/a/d/page.tsx',
+						'/opt/project/app/future/(individual-page-wrapper)/a/d/page.tsx',
 			),
 		);
 
@@ -130,7 +142,7 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 				return (
 					command.kind === 'upsertFile' &&
 					command.path ===
-						'/opt/project/app/future/(layout)/a/page.tsx' &&
+						'/opt/project/app/future/(shared-page-wrapper)/(no-layout)/a/page.tsx' &&
 					command.data.replace(/\W/gm, '') ===
 						`
 						import Page from "@pages/a/index";
@@ -160,7 +172,7 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 				return (
 					command.kind === 'upsertFile' &&
 					command.path ===
-						'/opt/project/app/future/(no-layout)/a/b/page.tsx' &&
+						'/opt/project/app/future/(shared-page-wrapper)/(layout)/a/b/page.tsx' &&
 					command.data.replace(/\W/gm, '') ===
 						`
 						import Page from "@pages/a/b";
@@ -179,9 +191,11 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 					command.data.replace(/\W/gm, '') ===
 						`
 						'use client';
+						import { getLayout } from './getLayout';
 						export default function B(props) {
-							return <Shell isPublic title='1'>Shell</Shell>
+							return <Component />;
 						}
+						B.getLayout = getLayout;
 						`.replace(/\W/gm, '')
 				);
 			}),
@@ -192,7 +206,7 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 				return (
 					command.kind === 'upsertFile' &&
 					command.path ===
-						'/opt/project/app/future/(no-layout)/a/[b]/c/page.tsx' &&
+						'/opt/project/app/future/(individual-page-wrapper)/a/[b]/c/page.tsx' &&
 					command.data.replace(/\W/gm, '') ===
 						`
 						import Page from "@pages/a/[b]/c";
@@ -211,8 +225,11 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 					command.data.replace(/\W/gm, '') ===
 						`
 						'use client';
+						export const getServerSideProps = (ctx) => {
+							return null;
+						}
 						export default function C(props) {
-							return <Shell  subtitle='1'>Shell</Shell>
+							return <Component />;
 						}
 						`.replace(/\W/gm, '')
 				);
@@ -224,7 +241,7 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 				return (
 					command.kind === 'upsertFile' &&
 					command.path ===
-						'/opt/project/app/future/(layout)/a/d/page.tsx' &&
+						'/opt/project/app/future/(individual-page-wrapper)/a/d/page.tsx' &&
 					command.data.replace(/\W/gm, '') ===
 						`
 						import Page from "@pages/a/d";
@@ -243,7 +260,12 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 					command.data.replace(/\W/gm, '') ===
 						`
 						'use client';
-						TODO content
+						export const getStaticProps = (ctx) => {
+							return null;
+						}
+						export default function C(props) {
+							return <Component />;
+						}
 						`.replace(/\W/gm, '')
 				);
 			}),
