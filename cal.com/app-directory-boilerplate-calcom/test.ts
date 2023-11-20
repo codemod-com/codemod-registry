@@ -279,4 +279,53 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 			}),
 		);
 	});
+
+	it('should insert router segment config and server-side data hooks to the future page', async function (this: Context) {
+		const [upsertPageCommand] = await transform({
+			'/opt/project/pages/a/index.tsx': `
+			import C from 'C';
+			import { a } from 'a';
+			import b from 'b';
+
+			export const getServerSideProps = (ctx) => {
+				return a + b;
+			}
+			
+			const getData = () => {
+				getServerSideProps();
+			}
+
+			export default function P() {
+				return <C />;
+			}
+
+			export const dynamic="force-dynamic";
+			`,
+		});
+
+		deepStrictEqual(upsertPageCommand?.kind, 'upsertFile');
+		deepStrictEqual(
+			upsertPageCommand?.path,
+			'/opt/project/app/future/(individual-page-wrapper)/a/page.tsx',
+		);
+
+		deepStrictEqual(
+			upsertPageCommand?.data.replace(/(?!\.)\s/gm, ''),
+			`import Page from "@pages/a/index";
+			import {_generateMetadata} from "app/_utils";
+			import b from 'b';
+			import { a } from 'a';
+			const getServerSideProps = (ctx) => {
+				return a + b;
+			}
+			const getData = () => {
+				getServerSideProps();
+			} 
+
+			export const generateMetadata = async ()=> await _generateMetadata(()=>"",()=>"");
+			export default Page;
+			export const dynamic="force-dynamic";
+			`.replace(/(?!\.)\s/gm, ''),
+		);
+	});
 });
