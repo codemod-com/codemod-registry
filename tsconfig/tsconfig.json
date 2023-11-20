@@ -1,0 +1,16 @@
+{
+	"compilerOptions": {
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"isolatedModules": true,
+		"module": "NodeNext",
+		"preserveWatchOutput": true,
+		"skipLibCheck": true,
+		"strict": true,
+		"target": "ES6"
+	},
+	"exclude": ["node_modules"],
+	"ts-node": {
+		"transpileOnly": true
+	}
+}
