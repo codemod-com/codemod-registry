@@ -54,6 +54,6 @@ v1.0.0
 
 ### Links for more info
 
--   https://mswjs.io/docs/migrations/1.x-to-2.x/#printhandlers
+-   https://mswjs.io/docs/migrations/1.x-to-2.x/#reqpassthrough
 
 
