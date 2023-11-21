@@ -1,16 +1,13 @@
 import {
-	API,
 	ASTNode,
 	ArrowFunctionExpression,
 	Collection,
 	File,
-	FileInfo,
 	FunctionDeclaration,
 	FunctionExpression,
 	Identifier,
 	JSCodeshift,
 	Node,
-	Transform,
 } from 'jscodeshift';
 import type { HandleData, HandleFile, Filemod } from '@intuita-inc/filemod';
 
@@ -19,8 +16,8 @@ type Dependencies = Readonly<{
 }>;
 
 type State = {
-	step: RepomodStep
-}
+	step: RepomodStep;
+};
 
 type FileCommand = Awaited<ReturnType<HandleFile<Dependencies, State>>>[number];
 
@@ -52,7 +49,7 @@ export const buildLegacyContext = (headers: ReadonlyHeaders, cookies: ReadonlyRe
     req: { headers, cookies }
   }
 }
-`
+`;
 
 type Settings = Partial<Record<string, string | boolean | Collection<any>>>;
 
@@ -154,7 +151,9 @@ const getDataFunctionFactory = (
 	const isSSR = decoratedFunctionName === 'getServerSideProps';
 
 	return j(`
-	async function getData(ctx: ${ isSSR ? 'GetServerSidePropsContext' : 'GetStaticPropsContext'}) {
+	async function getData(ctx: ${
+		isSSR ? 'GetServerSidePropsContext' : 'GetStaticPropsContext'
+	}) {
 		const result = await ${decoratedFunctionName}(ctx);
 		
 		if("redirect" in result) {
@@ -184,49 +183,44 @@ const buildPageProps = (j: JSCodeshift) => {
 			j.tsTypeReference(j.identifier('PageProps')),
 		),
 	});
-}
+};
 
-const buildGetDataVariableDeclaration = (j: JSCodeshift, firstParam: Node | null) => {
-
-	const callExpression =  j.awaitExpression(
-		j.callExpression(j.identifier(`getData`), [
-			j.identifier('legacyCtx'),
-		]),
+const buildGetDataVariableDeclaration = (
+	j: JSCodeshift,
+	firstParam: Node | null,
+) => {
+	const callExpression = j.awaitExpression(
+		j.callExpression(j.identifier(`getData`), [j.identifier('legacyCtx')]),
 	);
 
 	const id = j.Identifier.check(firstParam)
-			? j.identifier(firstParam.name)
-			: j.ObjectPattern.check(firstParam)
-			? j.objectPattern.from({
-					...firstParam,
-					typeAnnotation: null,
-			  })
-			: null;
+		? j.identifier(firstParam.name)
+		: j.ObjectPattern.check(firstParam)
+		? j.objectPattern.from({
+				...firstParam,
+				typeAnnotation: null,
+		  })
+		: null;
 
 	return id === null
-				? j.expressionStatement(callExpression)
-				: j.variableDeclaration('const', [
-						j.variableDeclarator(id, callExpression),
-				  ]);
-}
-
+		? j.expressionStatement(callExpression)
+		: j.variableDeclaration('const', [
+				j.variableDeclarator(id, callExpression),
+		  ]);
+};
 
 const buildBuildLegacyCtxVariableDeclaration = (j: JSCodeshift) => {
 	return j.variableDeclaration('const', [
 		j.variableDeclarator(
-		  j.identifier('legacyCtx'),
-		  j.callExpression(
-			j.identifier('buildLegacyCtx'),
-			[
-			  j.identifier('params'),
-			  j.callExpression(j.identifier('headers'), []),
-			  j.callExpression(j.identifier('cookies'), [])
-			]
-		  )
-		)
-	  ]);
-	
-}
+			j.identifier('legacyCtx'),
+			j.callExpression(j.identifier('buildLegacyCtx'), [
+				j.identifier('params'),
+				j.callExpression(j.identifier('headers'), []),
+				j.callExpression(j.identifier('cookies'), []),
+			]),
+		),
+	]);
+};
 
 const addGenerateStaticParamsFunctionDeclaration: ModFunction<File, 'write'> = (
 	j,
@@ -288,42 +282,42 @@ const addPageParamsTypeAlias: ModFunction<File, 'write'> = (j, root) => {
 };
 
 const addImportStatement: ModFunction<File, 'write'> = (j, root, settings) => {
-		if (
-			typeof settings.specifierNames !== 'string' ||
-			typeof settings.sourceName !== 'string'
-		) {
-			return [false, []];
-		}
-	
-		const specifiers = settings.specifierNames.split(',');
-	
-		const alreadyExists =
-			root.find(j.ImportDeclaration, {
-				specifiers: specifiers.map((s) => ({
-					type: 'ImportSpecifier' as const,
-					imported: {
-						type: 'Identifier' as const,
-						name: s,
-					},
-				})),
-				source: {
-					type: 'StringLiteral',
-					value: settings.sourceName,
-				},
-			}).length !== 0;
-	
-		if (alreadyExists) {
-			return [false, []];
-		}
-	
-		const importDeclaration = j.importDeclaration(
-			specifiers.map((s) => j.importSpecifier(j.identifier(s))),
-			j.literal(settings.sourceName),
-		);
-	
-		root.find(j.Program).get('body', 0).insertBefore(importDeclaration);
-	
+	if (
+		typeof settings.specifierNames !== 'string' ||
+		typeof settings.sourceName !== 'string'
+	) {
 		return [false, []];
+	}
+
+	const specifiers = settings.specifierNames.split(',');
+
+	const alreadyExists =
+		root.find(j.ImportDeclaration, {
+			specifiers: specifiers.map((s) => ({
+				type: 'ImportSpecifier' as const,
+				imported: {
+					type: 'Identifier' as const,
+					name: s,
+				},
+			})),
+			source: {
+				type: 'StringLiteral',
+				value: settings.sourceName,
+			},
+		}).length !== 0;
+
+	if (alreadyExists) {
+		return [false, []];
+	}
+
+	const importDeclaration = j.importDeclaration(
+		specifiers.map((s) => j.importSpecifier(j.identifier(s))),
+		j.literal(settings.sourceName),
+	);
+
+	root.find(j.Program).get('body', 0).insertBefore(importDeclaration);
+
+	return [false, []];
 };
 
 const addGetDataFunctionAsWrapper: ModFunction<File, 'write'> = (
@@ -362,14 +356,6 @@ const addGetDataFunctionAsWrapper: ModFunction<File, 'write'> = (
 				{
 					specifierNames: 'notFound,redirect',
 					sourceName: 'next/navigation',
-				},
-			],
-			[
-				addImportStatement,
-				root,
-				{
-					specifierNames: 'buildLegacyCtx',
-					sourceName: '@lib/buildLegacyCtx',
 				},
 			],
 			[addPageParamsTypeAlias, root, {}],
@@ -419,57 +405,59 @@ const addGetDataFunctionInline: ModFunction<File, 'write'> = (
 
 			if (j.ObjectExpression.check(argument)) {
 				argument.properties.forEach((property) => {
-						if (
-							!j.Property.check(property) ||
-							!j.ObjectExpression.check(property.value) ||
-							!j.Identifier.check(property.key)
-						) {
-							return;
-						}
+					if (
+						(!j.Property.check(property) &&
+							!j.ObjectProperty.check(property)) ||
+						!j.ObjectExpression.check(property.value) ||
+						!j.Identifier.check(property.key)
+					) {
+						return;
+					}
 
-						const { key, value } = property;
+					const { key, value } = property;
 
-						if (key.name === 'props') {
-							returnStatementPath.value.argument = value;
-						}
+					if (key.name === 'props') {
+						returnStatementPath.value.argument = value;
+					}
 
-						if (key.name === 'redirect') {
-							j(value)
-								.find(j.ObjectProperty, {
-									key: {
-										type: 'Identifier',
-										name: 'destination',
-									},
-								})
-								.forEach((objectPropertyPath) => {
-									if (
-										!j.StringLiteral.check(
-											objectPropertyPath.value.value,
-										) &&
-										!j.Identifier.check(
-											objectPropertyPath.value.value,
-										)
-									) {
-										return;
-									}
+					if (key.name === 'redirect') {
+						j(value)
+							.find(j.ObjectProperty, {
+								key: {
+									type: 'Identifier',
+									name: 'destination',
+								},
+							})
+							.forEach((objectPropertyPath) => {
+								if (
+									!j.StringLiteral.check(
+										objectPropertyPath.value.value,
+									) &&
+									!j.Identifier.check(
+										objectPropertyPath.value.value,
+									)
+								) {
+									return;
+								}
 
-									returnStatementPath.value.argument =
-										j.callExpression(
-											j.identifier('redirect'),
-											[objectPropertyPath.value.value],
-										);
-								});
+								returnStatementPath.value.argument =
+									j.callExpression(j.identifier('redirect'), [
+										objectPropertyPath.value.value,
+									]);
+							});
 
-							usedRedirect = true;
-						}
+						usedRedirect = true;
+					}
 
-						if (key.name === 'notFound') {
-							returnStatementPath.value.argument =
-								j.callExpression(j.identifier('notFound'), []);
+					if (key.name === 'notFound') {
+						returnStatementPath.value.argument = j.callExpression(
+							j.identifier('notFound'),
+							[],
+						);
 
-							usedNotFound = true;
-						}
-					});
+						usedNotFound = true;
+					}
+				});
 			}
 		});
 
@@ -1024,7 +1012,7 @@ export const findComponentFunctionDefinition: ModFunction<File, 'read'> = (
 	lazyModFunctions.push([
 		addGetDataVariableDeclaration,
 		j(pageComponentFunction),
-		{ ...settings, fileNode: root, },
+		{ ...settings, fileNode: root },
 	]);
 
 	return [false, lazyModFunctions];
@@ -1034,28 +1022,34 @@ const addGetDataVariableDeclaration: ModFunction<
 	FunctionDeclaration | ArrowFunctionExpression,
 	'write'
 > = (j, root, settings) => {
-
 	let getDataAdded = false;
 	const lazyModFunctions: LazyModFunction[] = [];
 
 	root.forEach((path) => {
 		const fn = path.value;
 
-		if(!j.JSXElement.check(fn.body) && !j.JSXFragment.check(fn.body) && !j.BlockStatement.check(fn.body)) {
+		if (
+			!j.JSXElement.check(fn.body) &&
+			!j.JSXFragment.check(fn.body) &&
+			!j.BlockStatement.check(fn.body)
+		) {
 			return;
 		}
 
-		// if has implicit return, wrap in block 
+		// if has implicit return, wrap in block
 		if (j.JSXElement.check(fn.body) || j.JSXFragment.check(fn.body)) {
 			fn.body = j.blockStatement.from({
 				body: [j.returnStatement(fn.body)],
 			});
 		}
 
-		const legacyCtxVariableDeclaration = buildBuildLegacyCtxVariableDeclaration(j);
-		const getDataVariableDeclaration = buildGetDataVariableDeclaration(j, fn.params[0] ?? null)
+		const legacyCtxVariableDeclaration =
+			buildBuildLegacyCtxVariableDeclaration(j);
+		const getDataVariableDeclaration = buildGetDataVariableDeclaration(
+			j,
+			fn.params[0] ?? null,
+		);
 
-		
 		if (j.BlockStatement.check(fn.body)) {
 			fn.body.body.unshift(getDataVariableDeclaration);
 			fn.body.body.unshift(legacyCtxVariableDeclaration);
@@ -1066,9 +1060,24 @@ const addGetDataVariableDeclaration: ModFunction<
 		getDataAdded = true;
 	});
 
-	if(getDataAdded && settings.fileNode && typeof settings.fileNode === 'object') {
-		lazyModFunctions.push([addImportStatement, settings.fileNode, { specifierNames: 'headers,cookies', sourceName: 'next/headers' }])
-		lazyModFunctions.push([addImportStatement, settings.fileNode, { specifierNames: 'buildLegacyCtx', sourceName: settings.buildLegacyCtxUtilAbsolutePath }])
+	if (
+		getDataAdded &&
+		settings.fileNode &&
+		typeof settings.fileNode === 'object'
+	) {
+		lazyModFunctions.push([
+			addImportStatement,
+			settings.fileNode,
+			{ specifierNames: 'headers,cookies', sourceName: 'next/headers' },
+		]);
+		lazyModFunctions.push([
+			addImportStatement,
+			settings.fileNode,
+			{
+				specifierNames: 'buildLegacyCtx',
+				sourceName: settings.buildLegacyCtxUtilAbsolutePath,
+			},
+		]);
 	}
 
 	return [getDataAdded, lazyModFunctions];
@@ -1089,12 +1098,11 @@ const getExportDefaultName = (
 	return declaration.declaration.name;
 };
 
-function transform(
+export function transform(
 	j: JSCodeshift,
 	source: string,
 	options: Record<string, string>,
 ): string | undefined {
-
 	let dirtyFlag = false;
 
 	const root = j(source);
@@ -1108,7 +1116,7 @@ function transform(
 		}).length !== 0;
 
 	const settings = {
-		...options, 
+		...options,
 		includeParams: hasGetStaticPathsFunction,
 	};
 
@@ -1133,12 +1141,12 @@ function transform(
 		}
 	};
 
-	try{
+	try {
 		for (const lazyModFunction of lazyModFunctions) {
 			handleLazyModFunction(lazyModFunction);
 		}
-	} catch(e) {
-		console.error(e)
+	} catch (e) {
+		console.error(e);
 	}
 
 	if (!dirtyFlag) {
@@ -1230,22 +1238,26 @@ function transform(
 	return root.toSource();
 }
 
-const handleFile: HandleFile<
-	Dependencies,
-	State
->= async (_, path, options, state) => {
+const handleFile: HandleFile<Dependencies, State> = async (
+	_,
+	path,
+	options,
+	state,
+) => {
 	const { buildLegacyCtxUtilAbsolutePath } = options;
-	if(typeof buildLegacyCtxUtilAbsolutePath !== 'string') {
-		throw new Error(`Expected buildLegacyCtxUtilAbsolutePath to be a string, got ${typeof buildLegacyCtxUtilAbsolutePath}`)
+	if (typeof buildLegacyCtxUtilAbsolutePath !== 'string') {
+		throw new Error(
+			`Expected buildLegacyCtxUtilAbsolutePath to be a string, got ${typeof buildLegacyCtxUtilAbsolutePath}`,
+		);
 	}
 
-	if(state === null) {
+	if (state === null) {
 		return [];
 	}
 
 	const commands: FileCommand[] = [];
 
-	if(state.step === RepomodStep.ADD_BUILD_LEGACY_CTX_UTIL) {
+	if (state.step === RepomodStep.ADD_BUILD_LEGACY_CTX_UTIL) {
 		commands.push({
 			kind: 'upsertFile',
 			path: buildLegacyCtxUtilAbsolutePath,
@@ -1255,7 +1267,6 @@ const handleFile: HandleFile<
 			},
 		});
 	}
-
 
 	commands.push({
 		kind: 'upsertFile',
@@ -1275,15 +1286,20 @@ const handleData: HandleData<Dependencies, State> = async (
 ) => {
 	const { buildLegacyCtxUtilAbsolutePath } = options;
 
-	if(typeof buildLegacyCtxUtilAbsolutePath !== 'string') {
-		throw new Error(`Expected buildLegacyCtxUtilAbsolutePath to be a string, got ${typeof buildLegacyCtxUtilAbsolutePath}`)
+	if (typeof buildLegacyCtxUtilAbsolutePath !== 'string') {
+		throw new Error(
+			`Expected buildLegacyCtxUtilAbsolutePath to be a string, got ${typeof buildLegacyCtxUtilAbsolutePath}`,
+		);
 	}
 
-	if(state === null) {
+	if (state === null) {
 		return noop;
 	}
 
-	if(state.step === RepomodStep.ADD_BUILD_LEGACY_CTX_UTIL && typeof options.fileContent === 'string') {
+	if (
+		state.step === RepomodStep.ADD_BUILD_LEGACY_CTX_UTIL &&
+		typeof options.fileContent === 'string'
+	) {
 		state.step = RepomodStep.ADD_GET_SERVER_SIDE_DATA_HOOKS;
 		return {
 			kind: 'upsertData',
@@ -1292,10 +1308,12 @@ const handleData: HandleData<Dependencies, State> = async (
 		};
 	}
 
-	if(state.step === RepomodStep.ADD_GET_SERVER_SIDE_DATA_HOOKS) {
+	if (state.step === RepomodStep.ADD_GET_SERVER_SIDE_DATA_HOOKS) {
 		const { jscodeshift } = api.getDependencies();
 
-		const rewrittenData = transform(jscodeshift, data, { buildLegacyCtxUtilAbsolutePath });
+		const rewrittenData = transform(jscodeshift, data, {
+			buildLegacyCtxUtilAbsolutePath,
+		});
 
 		if (rewrittenData === undefined) {
 			return noop;
@@ -1312,19 +1330,18 @@ const handleData: HandleData<Dependencies, State> = async (
 };
 
 const enum RepomodStep {
-	ADD_BUILD_LEGACY_CTX_UTIL = "ADD_BUILD_LEGACY_CTX_UTIL", 
-	ADD_GET_SERVER_SIDE_DATA_HOOKS = "ADD_GET_SERVER_SIDE_DATA_HOOKS"
-} 
+	ADD_BUILD_LEGACY_CTX_UTIL = 'ADD_BUILD_LEGACY_CTX_UTIL',
+	ADD_GET_SERVER_SIDE_DATA_HOOKS = 'ADD_GET_SERVER_SIDE_DATA_HOOKS',
+}
 
 export const repomod: Filemod<Dependencies, State> = {
 	includePatterns: ['**/pages/**/*.{js,jsx,ts,tsx}'],
 	excludePatterns: ['**/node_modules/**', '**/pages/api/**'],
-	initializeState: async (_, previousState)  => {
-
-		if(previousState === null) {
+	initializeState: async (_, previousState) => {
+		if (previousState === null) {
 			return {
-				step: RepomodStep.ADD_BUILD_LEGACY_CTX_UTIL
-			}
+				step: RepomodStep.ADD_BUILD_LEGACY_CTX_UTIL,
+			};
 		}
 
 		return previousState;
