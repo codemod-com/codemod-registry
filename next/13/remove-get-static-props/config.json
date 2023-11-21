@@ -10,5 +10,13 @@
 			"range": "<13"
 		}
 	],
+	"arguments": [
+		{
+			"name": "buildLegacyCtxUtilAbsolutePath",
+			"description": "Absolute path of buildLegacyCtx utility file",
+			"kind": "string",
+			"required": true
+		}
+	],
 	"owner": "intuita"
 }

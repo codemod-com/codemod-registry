@@ -1099,12 +1099,12 @@ const getExportDefaultName = (
 };
 
 export function transform(
-	j: JSCodeshift,
+	jscodeshift: JSCodeshift,
 	source: string,
 	options: Record<string, string>,
 ): string | undefined {
 	let dirtyFlag = false;
-
+	const j = jscodeshift.withParser('tsx');
 	const root = j(source);
 
 	const hasGetStaticPathsFunction =
