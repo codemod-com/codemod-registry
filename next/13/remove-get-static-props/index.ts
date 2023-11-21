@@ -111,7 +111,12 @@ const getDataFunctionFactory = (
 ) => {
 	return j(`
 	async function getData({ params }: { params: Params }) {
-		const result = await ${decoratedFunctionName}({ params });
+		const ctx  = buildLegacyContext({ params, ${
+			decoratedFunctionName === 'getStaticProps'
+				? ''
+				: 'headers: headers(), cookies: cookies()'
+		}});
+		const result = await ${decoratedFunctionName}(ctx);
 		
 		if("redirect" in result) {
 			redirect(result.redirect.destination);	
@@ -261,6 +266,14 @@ const addGetDataFunctionAsWrapper: ModFunction<File, 'write'> = (
 				{
 					specifierNames: 'notFound,redirect',
 					sourceName: 'next/navigation',
+				},
+			],
+			[
+				addImportStatement,
+				root,
+				{
+					specifierNames: 'buildLegacyCtx',
+					sourceName: '@lib/buildLegacyCtx',
 				},
 			],
 			[addPageParamsTypeAlias, root, {}],
