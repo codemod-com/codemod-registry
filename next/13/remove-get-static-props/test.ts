@@ -57,7 +57,7 @@ const transform = async (json: DirectoryJSON, options: Options) => {
 describe.only('new', function () {
 	it('should', async function (this: Context) {
 		const A_CONTENT = `
-		export async function getServerSideProps() {
+		export async function getServerSideProps(ctx) {
 			const users = await promise;
 			return { props: { users } };
 		}
@@ -76,8 +76,10 @@ describe.only('new', function () {
 
 		console.log(upsertBuildLegacyCtxUtilCommand, upsertFileCommand, '???')
 		const expectedResult = `
-		import { GetServerSidePropsContext } from "next";
+		import { buildLegacyCtx } from"/opt/project/hooks/buildLegacyCtx.tsx";
 		import { headers, cookies } from "next/headers";	
+		import { GetServerSidePropsContext } from "next";
+		
 		type Params = {
 			[key: string]: string | string[] | undefined
 		};
@@ -86,20 +88,19 @@ describe.only('new', function () {
 				params: Params
 		};
 
-		export async function getServerSideProps(ctx: GetServerSidePropsContext) {
+		export async function getServerSideProps(ctx) {
 			const users = await promise;
 			return { props: { users } };
 		}
 
-		async function getData(props: GetServerSidePropsContext) {
+		async function getData(ctx: GetServerSidePropsContext) {
 			const users = await promise;
 			return { users };
 		}
 			
-		export default function Component({ params }) {
-			const ctx = buildLegacyCtx(params, headers(), cookies());
-
-			const { users } = await getData(ctx);
+		export default async function Component({ params }: PageProps) {
+			const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+			const { users } = await getData(legacyCtx);
 
 			return users.map(user => <b>user</b>)
 		}

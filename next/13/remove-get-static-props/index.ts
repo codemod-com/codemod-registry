@@ -151,13 +151,10 @@ const getDataFunctionFactory = (
 	j: JSCodeshift,
 	decoratedFunctionName: string,
 ) => {
+	const isSSR = decoratedFunctionName === 'getServerSideProps';
+
 	return j(`
-	async function getData({ params }: { params: Params }) {
-		const ctx  = buildLegacyContext({ params, ${
-			decoratedFunctionName === 'getStaticProps'
-				? ''
-				: 'headers: headers(), cookies: cookies()'
-		}});
+	async function getData(ctx: ${ isSSR ? 'GetServerSidePropsContext' : 'GetStaticPropsContext'}) {
 		const result = await ${decoratedFunctionName}(ctx);
 		
 		if("redirect" in result) {
@@ -291,42 +288,42 @@ const addPageParamsTypeAlias: ModFunction<File, 'write'> = (j, root) => {
 };
 
 const addImportStatement: ModFunction<File, 'write'> = (j, root, settings) => {
-	if (
-		typeof settings.specifierNames !== 'string' ||
-		typeof settings.sourceName !== 'string'
-	) {
-		return [false, []];
-	}
-
-	const specifiers = settings.specifierNames.split(',');
-
-	const alreadyExists =
-		root.find(j.ImportDeclaration, {
-			specifiers: specifiers.map((s) => ({
-				type: 'ImportSpecifier' as const,
-				imported: {
-					type: 'Identifier' as const,
-					name: s,
+		if (
+			typeof settings.specifierNames !== 'string' ||
+			typeof settings.sourceName !== 'string'
+		) {
+			return [false, []];
+		}
+	
+		const specifiers = settings.specifierNames.split(',');
+	
+		const alreadyExists =
+			root.find(j.ImportDeclaration, {
+				specifiers: specifiers.map((s) => ({
+					type: 'ImportSpecifier' as const,
+					imported: {
+						type: 'Identifier' as const,
+						name: s,
+					},
+				})),
+				source: {
+					type: 'StringLiteral',
+					value: settings.sourceName,
 				},
-			})),
-			source: {
-				type: 'StringLiteral',
-				value: settings.sourceName,
-			},
-		}).length !== 0;
-
-	if (alreadyExists) {
+			}).length !== 0;
+	
+		if (alreadyExists) {
+			return [false, []];
+		}
+	
+		const importDeclaration = j.importDeclaration(
+			specifiers.map((s) => j.importSpecifier(j.identifier(s))),
+			j.literal(settings.sourceName),
+		);
+	
+		root.find(j.Program).get('body', 0).insertBefore(importDeclaration);
+	
 		return [false, []];
-	}
-
-	const importDeclaration = j.importDeclaration(
-		specifiers.map((s) => j.importSpecifier(j.identifier(s))),
-		j.literal(settings.sourceName),
-	);
-
-	root.find(j.Program).get('body', 0).insertBefore(importDeclaration);
-
-	return [false, []];
 };
 
 const addGetDataFunctionAsWrapper: ModFunction<File, 'write'> = (
@@ -421,17 +418,16 @@ const addGetDataFunctionInline: ModFunction<File, 'write'> = (
 			const { argument } = returnStatementPath.value;
 
 			if (j.ObjectExpression.check(argument)) {
-				j(argument)
-					.find(j.ObjectProperty)
-					.forEach((property) => {
+				argument.properties.forEach((property) => {
 						if (
-							!j.ObjectExpression.check(property.value.value) ||
-							!j.Identifier.check(property.value.key)
+							!j.Property.check(property) ||
+							!j.ObjectExpression.check(property.value) ||
+							!j.Identifier.check(property.key)
 						) {
 							return;
 						}
 
-						const { key, value } = property.value;
+						const { key, value } = property;
 
 						if (key.name === 'props') {
 							returnStatementPath.value.argument = value;
@@ -1028,7 +1024,7 @@ export const findComponentFunctionDefinition: ModFunction<File, 'read'> = (
 	lazyModFunctions.push([
 		addGetDataVariableDeclaration,
 		j(pageComponentFunction),
-		settings,
+		{ ...settings, fileNode: root, },
 	]);
 
 	return [false, lazyModFunctions];
@@ -1037,9 +1033,10 @@ export const findComponentFunctionDefinition: ModFunction<File, 'read'> = (
 const addGetDataVariableDeclaration: ModFunction<
 	FunctionDeclaration | ArrowFunctionExpression,
 	'write'
-> = (j, root) => {
+> = (j, root, settings) => {
 
 	let getDataAdded = false;
+	const lazyModFunctions: LazyModFunction[] = [];
 
 	root.forEach((path) => {
 		const fn = path.value;
@@ -1069,7 +1066,12 @@ const addGetDataVariableDeclaration: ModFunction<
 		getDataAdded = true;
 	});
 
-	return [getDataAdded, []];
+	if(getDataAdded && settings.fileNode && typeof settings.fileNode === 'object') {
+		lazyModFunctions.push([addImportStatement, settings.fileNode, { specifierNames: 'headers,cookies', sourceName: 'next/headers' }])
+		lazyModFunctions.push([addImportStatement, settings.fileNode, { specifierNames: 'buildLegacyCtx', sourceName: settings.buildLegacyCtxUtilAbsolutePath }])
+	}
+
+	return [getDataAdded, lazyModFunctions];
 };
 
 const getExportDefaultName = (
@@ -1106,6 +1108,7 @@ function transform(
 		}).length !== 0;
 
 	const settings = {
+		...options, 
 		includeParams: hasGetStaticPathsFunction,
 	};
 
@@ -1130,8 +1133,12 @@ function transform(
 		}
 	};
 
-	for (const lazyModFunction of lazyModFunctions) {
-		handleLazyModFunction(lazyModFunction);
+	try{
+		for (const lazyModFunction of lazyModFunctions) {
+			handleLazyModFunction(lazyModFunction);
+		}
+	} catch(e) {
+		console.error(e)
 	}
 
 	if (!dirtyFlag) {
@@ -1266,6 +1273,11 @@ const handleData: HandleData<Dependencies, State> = async (
 	options,
 	state,
 ) => {
+	const { buildLegacyCtxUtilAbsolutePath } = options;
+
+	if(typeof buildLegacyCtxUtilAbsolutePath !== 'string') {
+		throw new Error(`Expected buildLegacyCtxUtilAbsolutePath to be a string, got ${typeof buildLegacyCtxUtilAbsolutePath}`)
+	}
 
 	if(state === null) {
 		return noop;
@@ -1283,7 +1295,7 @@ const handleData: HandleData<Dependencies, State> = async (
 	if(state.step === RepomodStep.ADD_GET_SERVER_SIDE_DATA_HOOKS) {
 		const { jscodeshift } = api.getDependencies();
 
-		const rewrittenData = transform(jscodeshift, data, state);
+		const rewrittenData = transform(jscodeshift, data, { buildLegacyCtxUtilAbsolutePath });
 
 		if (rewrittenData === undefined) {
 			return noop;
