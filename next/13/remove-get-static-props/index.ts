@@ -11,6 +11,47 @@ import {
 	JSCodeshift,
 	Transform,
 } from 'jscodeshift';
+import type { HandleData, HandleFile, Filemod } from '@intuita-inc/filemod';
+
+type Dependencies = Readonly<{
+	jscodeshift: JSCodeshift;
+}>;
+
+type State = {
+	step: RepomodStep
+}
+
+type FileCommand = Awaited<ReturnType<HandleFile<Dependencies, State>>>[number];
+
+const noop = {
+	kind: 'noop',
+} as const;
+
+const ADD_BUILD_LEGACY_CTX_UTIL_CONTENT = `
+import { ReadonlyHeaders } from "next/dist/server/web/spec-extension/adapters/headers";
+import { ReadonlyRequestCookies } from "next/dist/server/web/spec-extension/adapters/request-cookies";
+import { headers, cookies } from "next/headers";
+
+// returns query object same as ctx.query but for app dir
+export const getQuery = (url: string, params: Record<string, string | string[]>) => {
+  if (!url.length) {
+    return params;
+  }
+
+  const { searchParams } = new URL(url);
+  const searchParamsObj = Object.fromEntries(searchParams.entries());
+
+  return { ...searchParamsObj, ...params };
+};
+
+export const buildLegacyContext = (headers: ReadonlyHeaders, cookies: ReadonlyRequestCookies, params: Record<string, string | string[]>) => {
+  return {
+    query: getQuery(headers.get('x-url') ?? '', params), 
+    params, 
+    req: { headers, cookies }
+  }
+}
+`
 
 type Settings = Partial<Record<string, string | boolean | Collection<any>>>;
 
@@ -377,24 +418,6 @@ const addGetDataFunctionInline: ModFunction<File, 'write'> = (
 					});
 			}
 		});
-
-	// const objPattern = j.objectPattern([
-	// 	j.property.from({
-	// 		kind: 'init',
-	// 		key: j.identifier('params'),
-	// 		value: j.identifier('params'),
-	// 		shorthand: true,
-	// 	}),
-	// ]);
-	// const objectTypeAnnotation = j.objectTypeAnnotation([
-	// 	j.objectTypeProperty(
-	// 		j.identifier('params'),
-	// 		j.genericTypeAnnotation(j.identifier('Params'), null),
-	// 		false,
-	// 	),
-	// ]);
-	// const typeAnnotation = j.typeAnnotation(objectTypeAnnotation);
-	// objPattern.typeAnnotation = typeAnnotation;
 
 	const contextTypeName =
 		settings.functionName === 'getStaticProps'
@@ -1043,15 +1066,15 @@ const getExportDefaultName = (
 	return declaration.declaration.name;
 };
 
-export default function transform(
-	file: FileInfo,
-	api: API,
+function transform(
+	j: JSCodeshift,
+	source: string,
+	options: Record<string, string>,
 ): string | undefined {
-	const j = api.jscodeshift;
 
 	let dirtyFlag = false;
 
-	const root = j(file.source);
+	const root = j(source);
 
 	const hasGetStaticPathsFunction =
 		root.find(j.FunctionDeclaration, {
@@ -1179,4 +1202,100 @@ export default function transform(
 	return root.toSource();
 }
 
-transform satisfies Transform;
+const handleFile: HandleFile<
+	Dependencies,
+	State
+>= async (_, path, options, state) => {
+	const { buildLegacyCtxUtilAbsolutePath } = options;
+	if(typeof buildLegacyCtxUtilAbsolutePath !== 'string') {
+		throw new Error(`Expected buildLegacyCtxUtilAbsolutePath to be a string, got ${typeof buildLegacyCtxUtilAbsolutePath}`)
+	}
+
+	if(state === null) {
+		return [];
+	}
+
+	const commands: FileCommand[] = [];
+
+	if(state.step === RepomodStep.ADD_BUILD_LEGACY_CTX_UTIL) {
+		commands.push({
+			kind: 'upsertFile',
+			path: buildLegacyCtxUtilAbsolutePath,
+			options: {
+				...options,
+				fileContent: ADD_BUILD_LEGACY_CTX_UTIL_CONTENT,
+			},
+		});
+	}
+
+
+	commands.push({
+		kind: 'upsertFile',
+		path,
+		options,
+	});
+
+	return commands;
+};
+
+const handleData: HandleData<Dependencies, State> = async (
+	api,
+	path,
+	data,
+	options,
+	state,
+) => {
+
+	if(state === null) {
+		return noop;
+	}
+
+	if(state.step === RepomodStep.ADD_BUILD_LEGACY_CTX_UTIL && typeof options.fileContent === 'string') {
+		state.step = RepomodStep.ADD_GET_SERVER_SIDE_DATA_HOOKS;
+		return {
+			kind: 'upsertData',
+			path,
+			data: options.fileContent,
+		};
+	}
+
+	if(state.step === RepomodStep.ADD_GET_SERVER_SIDE_DATA_HOOKS) {
+		const { jscodeshift } = api.getDependencies();
+
+		const rewrittenData = transform(jscodeshift, data, state);
+
+		if (rewrittenData === undefined) {
+			return noop;
+		}
+
+		return {
+			kind: 'upsertData',
+			path,
+			data: rewrittenData,
+		};
+	}
+
+	return noop;
+};
+
+const enum RepomodStep {
+	ADD_BUILD_LEGACY_CTX_UTIL = "ADD_BUILD_LEGACY_CTX_UTIL", 
+	ADD_GET_SERVER_SIDE_DATA_HOOKS = "ADD_GET_SERVER_SIDE_DATA_HOOKS"
+} 
+
+export const repomod: Filemod<Dependencies, State> = {
+	includePatterns: ['**/pages/**/*.{js,jsx,ts,tsx}'],
+	excludePatterns: ['**/node_modules/**', '**/pages/api/**'],
+	initializeState: async (_, previousState)  => {
+
+		if(previousState === null) {
+			return {
+				step: RepomodStep.ADD_BUILD_LEGACY_CTX_UTIL
+			}
+		}
+
+		return previousState;
+	},
+	handleFile,
+	handleData,
+};
