@@ -20,7 +20,7 @@ const removeLeadingLineBreaks = (input: string): string => {
 	return input.replace(/^\n+/, '');
 };
 
-const removeSpaceInEachLine = (input: string): string => {
+const removeLeadingSpaceInEachLine = (input: string): string => {
 	return input.replace(/^\s+/gm, '');
 };
 
@@ -639,7 +639,7 @@ const handleFile: Filemod<
 					filePurpose: FilePurpose.ROUTE_PAGE,
 					oldPath: path,
 					oldData: removeLeadingLineBreaks(
-						removeSpaceInEachLine(pageContent),
+						removeLeadingSpaceInEachLine(pageContent),
 					),
 					legacyPageData: oldData,
 				},
