@@ -185,9 +185,9 @@ const handleFile: HandleFile<Dependencies, State> = async (
 };
 
 const handleData: HandleData<Dependencies, State> = async (
-	api,
+	_,
 	path,
-	data,
+	__,
 	options,
 	state,
 ) => {
@@ -265,6 +265,7 @@ const handleData: HandleData<Dependencies, State> = async (
 				types,
 				scripts,
 				files,
+				type: 'module',
 			});
 
 			return {
