@@ -198,8 +198,9 @@ describe('next 13 remove-get-static-props', function () {
 		const OUTPUT = `
 			import { buildLegacyCtx } from "/opt/project/hooks/buildLegacyCtx.tsx";
 			import { headers, cookies } from "next/headers";	
+			import { GetStaticPropsContext } from "next";
 			import { notFound, redirect } from "next/navigation";
-			
+
 			type Params = {
 				[key: string]: string | string[] | undefined
 			};
@@ -214,7 +215,7 @@ describe('next 13 remove-get-static-props', function () {
 				return res;
 			}
 
-			async function getData(ctx: GetStaticPropsContext) {
+			const getData =  async (ctx: GetStaticPropsContext) => {
 				const result = await getStaticProps(ctx);
 				
 				if("redirect" in result) {
@@ -1612,6 +1613,7 @@ describe('next 13 remove-get-static-props', function () {
 		const OUTPUT = `
 		import { buildLegacyCtx } from "/opt/project/hooks/buildLegacyCtx.tsx";
 		import { headers, cookies } from "next/headers";	
+		import { GetStaticPropsContext } from "next";
 		import { notFound, redirect } from "next/navigation";
 		type Params = {
 			[key: string]: string | string[] | undefined
@@ -1625,7 +1627,7 @@ describe('next 13 remove-get-static-props', function () {
 				return fetchData();
 			}
 
-			async function getData(ctx: GetStaticPropsContext) {
+			const getData = async (ctx: GetStaticPropsContext) => {
 				const result = await getStaticProps(ctx);
 				
 				if("redirect" in result) {

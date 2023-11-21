@@ -5,7 +5,6 @@ import {
 	File,
 	FunctionDeclaration,
 	FunctionExpression,
-	Identifier,
 	JSCodeshift,
 	Node,
 } from 'jscodeshift';
@@ -151,9 +150,9 @@ const getDataFunctionFactory = (
 	const isSSR = decoratedFunctionName === 'getServerSideProps';
 
 	return j(`
-	async function getData(ctx: ${
+	const getData = async (ctx: ${
 		isSSR ? 'GetServerSidePropsContext' : 'GetStaticPropsContext'
-	}) {
+	}) => {
 		const result = await ${decoratedFunctionName}(ctx);
 		
 		if("redirect" in result) {
@@ -166,7 +165,7 @@ const getDataFunctionFactory = (
 		
 		return "props" in result ? result.props : {};
 	}`)
-		.find(j.FunctionDeclaration)
+		.find(j.VariableDeclaration)
 		.paths()[0]!;
 };
 
@@ -328,6 +327,7 @@ const addGetDataFunctionAsWrapper: ModFunction<File, 'write'> = (
 	const functionName = settings.functionName as string;
 
 	const getDataFunctionDeclaration = getDataFunctionFactory(j, functionName);
+	const isSSR = functionName === 'getServerSideProps';
 
 	const program = root.find(j.Program);
 
@@ -356,6 +356,16 @@ const addGetDataFunctionAsWrapper: ModFunction<File, 'write'> = (
 				{
 					specifierNames: 'notFound,redirect',
 					sourceName: 'next/navigation',
+				},
+			],
+			[
+				addImportStatement,
+				root,
+				{
+					specifierNames: isSSR
+						? 'GetServerSidePropsContext'
+						: 'GetStaticPropsContext',
+					sourceName: 'next',
 				},
 			],
 			[addPageParamsTypeAlias, root, {}],
@@ -619,8 +629,7 @@ export const findArrowFunctionExpressions: ModFunction<File, 'read'> = (
 	variableDeclaratorCollection
 		.find(j.ArrowFunctionExpression)
 		.forEach((arrowFunctionExpressionPath) => {
-			const id = arrowFunctionExpressionPath.parent.value
-				.id as Identifier;
+			const { id } = arrowFunctionExpressionPath.parent.value;
 
 			if (!j.Identifier.check(id)) {
 				return;
@@ -681,27 +690,22 @@ export const findReturnStatements: ModFunction<FunctionDeclaration, 'read'> = (
 
 	const returnStatementCollection = root.find(j.ReturnStatement);
 
-	returnStatementCollection.forEach((returnStatementPath) => {
-		const returnStatementCollection = j(returnStatementPath);
-		if (settings.functionName === 'getStaticPaths') {
-			lazyModFunctions.push([
-				findFallbackObjectProperty,
-				returnStatementCollection,
-				settings,
-			]);
+	if (settings.functionName === 'getStaticPaths') {
+		lazyModFunctions.push([
+			findFallbackObjectProperty,
+			returnStatementCollection,
+			settings,
+		]);
 
-			return;
-		}
+		return [false, lazyModFunctions];
+	}
 
+	if (settings.functionName === 'getStaticProps') {
 		lazyModFunctions.push([
 			findRevalidateObjectProperty,
 			returnStatementCollection,
 			settings,
 		]);
-	});
-
-	if (settings.functionName === 'getStaticPaths') {
-		return [false, lazyModFunctions];
 	}
 
 	const functionCanBeInlined = returnStatementCollection.every(
@@ -711,15 +715,14 @@ export const findReturnStatements: ModFunction<FunctionDeclaration, 'read'> = (
 
 	const file = root.closest(j.File);
 
-	if (functionCanBeInlined) {
-		lazyModFunctions.push([
-			addGetDataFunctionInline,
-			file,
-			{ ...settings, function: root },
-		]);
-	} else {
-		lazyModFunctions.push([addGetDataFunctionAsWrapper, file, settings]);
-	}
+	const addGetDataLazyModFunction = functionCanBeInlined
+		? addGetDataFunctionInline
+		: addGetDataFunctionAsWrapper;
+	lazyModFunctions.push([
+		addGetDataLazyModFunction,
+		file,
+		{ ...settings, fileNode: file, function: root },
+	]);
 
 	return [false, lazyModFunctions];
 };
@@ -1310,7 +1313,6 @@ const handleData: HandleData<Dependencies, State> = async (
 		const rewrittenData = transform(jscodeshift, data, {
 			buildLegacyCtxUtilAbsolutePath,
 		});
-
 		if (rewrittenData === undefined) {
 			return noop;
 		}
