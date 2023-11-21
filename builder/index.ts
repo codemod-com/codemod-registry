@@ -136,8 +136,6 @@ const build = async () => {
 
 	const names = configFilePaths.map(dirname);
 
-	console.log(names);
-
 	// emitting names
 
 	const buildDirectoryPath =
