@@ -1141,12 +1141,8 @@ export function transform(
 		}
 	};
 
-	try {
-		for (const lazyModFunction of lazyModFunctions) {
-			handleLazyModFunction(lazyModFunction);
-		}
-	} catch (e) {
-		console.error(e);
+	for (const lazyModFunction of lazyModFunctions) {
+		handleLazyModFunction(lazyModFunction);
 	}
 
 	if (!dirtyFlag) {
