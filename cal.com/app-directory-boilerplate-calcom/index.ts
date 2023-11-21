@@ -323,22 +323,6 @@ const getPositionAfterImports = (sourceFile: SourceFile): number => {
 	return (lastImportDeclaration?.getChildIndex() ?? 0) + 1;
 };
 
-const getPositionAfterComponent = (sourceFile: SourceFile): number => {
-	const component = getPageComponent(sourceFile);
-
-	if (component === null) {
-		return 0;
-	}
-
-	return (
-		(Node.isFunctionDeclaration(component)
-			? component.getChildIndex()
-			: component
-					.getFirstAncestorByKind(SyntaxKind.VariableStatement)
-					?.getChildIndex() ?? 0) + 1
-	);
-};
-
 const buildPageFileData = (
 	api: DataAPI,
 	path: string,
