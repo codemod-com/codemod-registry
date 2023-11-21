@@ -352,8 +352,12 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 
 		deepStrictEqual(
 			upsertPageCommand?.data.replace(/(?!\.)\s/gm, ''),
-			`import Page from "@pages/a/index";
+			`import OldPage from "@pages/a/index";
 			import {_generateMetadata} from "app/_utils";
+			import type {Params} from "next/dist/shared/lib/router/utils/route-matcher";
+			import PageWrapper from "@components/PageWrapperAppDir";
+			import {headers} from "next/headers";
+
 			import b from 'b';
 			import { a } from 'a';
 			const getServerSideProps = (ctx) => {
@@ -364,6 +368,11 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 			} 
 
 			export const generateMetadata = async ()=> await _generateMetadata(()=>"",()=>"");
+			type PageProps=Readonly<{params:Params;}>;
+			const Page=({params}:PageProps)=>{
+				const h=headers();
+				const nonce=h.get("x-nonce") ?? undefined;
+			return(<PageWrapper requiresLicense={false} nonce={nonce }themeBasis={null}><OldPage/></PageWrapper>);};
 			export default Page;
 			export const dynamic="force-dynamic";
 			`.replace(/(?!\.)\s/gm, ''),
