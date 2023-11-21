@@ -20,6 +20,10 @@ const removeLeadingLineBreaks = (input: string): string => {
 	return input.replace(/^\n+/, '');
 };
 
+const removeSpaceInEachLine = (input: string): string => {
+	return input.replace(/^\s+/gm, '');
+};
+
 const enum FilePurpose {
 	ORIGINAL_PAGE = 'ORIGINAL_PAGE',
 	// route directories
@@ -634,7 +638,9 @@ const handleFile: Filemod<
 					...options,
 					filePurpose: FilePurpose.ROUTE_PAGE,
 					oldPath: path,
-					oldData: removeLeadingLineBreaks(pageContent),
+					oldData: removeLeadingLineBreaks(
+						removeSpaceInEachLine(pageContent),
+					),
 					legacyPageData: oldData,
 				},
 			},
