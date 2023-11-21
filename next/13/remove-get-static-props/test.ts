@@ -1,21 +1,124 @@
-import { FileInfo } from 'jscodeshift';
-import assert from 'node:assert';
-import transform from './index.js';
-import { buildApi } from '../../../utilities.js';
+import {
+	FileSystemManager,
+	UnifiedFileSystem,
+	buildApi,
+	executeFilemod,
+} from '@intuita-inc/filemod';
+import jscodeshift from 'jscodeshift';
+import { DirectoryJSON, Volume, createFsFromVolume } from 'memfs';
+import { repomod } from './index.js';
+import { Context } from 'mocha';
+import assert, { deepStrictEqual } from 'node:assert';
+import { transform as jscodeshiftTransform } from './index.js';
+
+const globalOptions = {
+	buildLegacyCtxUtilAbsolutePath: '/opt/project/hooks/buildLegacyCtx.tsx',
+};
+
+const transform = async (json: DirectoryJSON) => {
+	const volume = Volume.fromJSON(json);
+
+	const fileSystemManager = new FileSystemManager(
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		volume.promises.readdir as any,
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		volume.promises.readFile as any,
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		volume.promises.stat as any,
+	);
+	const unifiedFileSystem = new UnifiedFileSystem(
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		createFsFromVolume(volume) as any,
+		fileSystemManager,
+	);
+
+	const api = buildApi<{
+		jscodeshift: typeof jscodeshift;
+	}>(unifiedFileSystem, () => ({
+		jscodeshift,
+	}));
+
+	return executeFilemod(api, repomod, '/', globalOptions, {});
+};
 
 describe('next 13 remove-get-static-props', function () {
+	it('should build correct file', async function (this: Context) {
+		const A_CONTENT = `
+		export async function getServerSideProps(ctx) {
+			const users = await promise;
+			return { props: { users } };
+		}
+
+		export default function Component({ users }) {
+			return users.map(user => <b>user</b>)
+		}
+		`;
+
+		const [upsertBuildLegacyCtxUtilCommand, upsertFileCommand] =
+			await transform(
+				{
+					'/opt/project/pages/a.tsx': A_CONTENT,
+				},
+				{},
+			);
+
+		const expectedResult = `
+		import { buildLegacyCtx } from "/opt/project/hooks/buildLegacyCtx.tsx";
+		import { headers, cookies } from "next/headers";	
+		import { GetServerSidePropsContext } from "next";
+		
+		type Params = {
+			[key: string]: string | string[] | undefined
+		};
+
+		type PageProps = {
+				params: Params
+		};
+
+		export async function getServerSideProps(ctx) {
+			const users = await promise;
+			return { props: { users } };
+		}
+
+		async function getData(ctx: GetServerSidePropsContext) {
+			const users = await promise;
+			return { users };
+		}
+			
+		export default async function Component({ params }: PageProps) {
+			const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+			const { users } = await getData(legacyCtx);
+
+			return users.map(user => <b>user</b>)
+		}
+		`;
+
+		deepStrictEqual(upsertBuildLegacyCtxUtilCommand?.kind, 'upsertFile');
+		deepStrictEqual(
+			upsertBuildLegacyCtxUtilCommand.path,
+			'/opt/project/hooks/buildLegacyCtx.tsx',
+		);
+
+		deepStrictEqual(upsertFileCommand?.kind, 'upsertFile');
+		deepStrictEqual(upsertFileCommand.path, '/opt/project/pages/a.tsx');
+
+		deepStrictEqual(
+			upsertFileCommand.data.replace(/\s/gm, ''),
+			expectedResult.replace(/\s/gm, ''),
+		);
+	});
+
 	it('should not remove anything if getStaticProps', function () {
 		const INPUT = `
 			export default function Component() {
 	          }
 	      `;
 
-		const fileInfo: FileInfo = {
-			path: 'index.js',
-			source: INPUT,
-		};
-
-		const actualOutput = transform(fileInfo, buildApi('tsx'));
+		const actualOutput = jscodeshiftTransform(
+			jscodeshift.withParser('tsx'),
+			INPUT,
+			globalOptions,
+		);
 
 		assert.deepEqual(actualOutput, undefined);
 	});
@@ -34,6 +137,8 @@ describe('next 13 remove-get-static-props', function () {
 	      `;
 
 		const OUTPUT = `
+		import { buildLegacyCtx } from "/opt/project/hooks/buildLegacyCtx.tsx";
+		import { headers, cookies } from "next/headers";	
 		import { GetStaticPropsContext } from "next";
 		type Params = {
 			[key: string]: string | string[] | undefined
@@ -58,9 +163,8 @@ describe('next 13 remove-get-static-props', function () {
 		}
 
 			export default async function Component({ params }: PageProps) {
-				const {users} = await getData({
-					params, 
-				});
+				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+				const {users} = await getData(legacyCtx);
 
 				return users.map(user => <b>user</b>)
 			}
@@ -68,12 +172,11 @@ describe('next 13 remove-get-static-props', function () {
 			export const dynamic = "force-static";
 		`;
 
-		const fileInfo: FileInfo = {
-			path: 'index.js',
-			source: INPUT,
-		};
-
-		const actualOutput = transform(fileInfo, buildApi('tsx'));
+		const actualOutput = jscodeshiftTransform(
+			jscodeshift.withParser('tsx'),
+			INPUT,
+			globalOptions,
+		);
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),
@@ -87,13 +190,14 @@ describe('next 13 remove-get-static-props', function () {
 				const res = { props: { users } };
 				return res;
 			}
-
 			export default function Component({ users }) {
 				return users.map(user => <b>user</b>)
-	          }
+			}
 	      `;
 
 		const OUTPUT = `
+			import { buildLegacyCtx } from "/opt/project/hooks/buildLegacyCtx.tsx";
+			import { headers, cookies } from "next/headers";	
 			import { notFound, redirect } from "next/navigation";
 			
 			type Params = {
@@ -110,8 +214,8 @@ describe('next 13 remove-get-static-props', function () {
 				return res;
 			}
 
-			async function getData({ params }: { params: Params }) {
-				const result = await getStaticProps({ params });
+			async function getData(ctx: GetStaticPropsContext) {
+				const result = await getStaticProps(ctx);
 				
 				if("redirect" in result) {
 						redirect(result.redirect.destination);
@@ -125,9 +229,8 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 			export default async function Component({ params }: PageProps) {
-				const {users} = await getData({
-					params, 
-				});
+				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+				const {users} = await getData(legacyCtx);
 
 				return users.map(user => <b>user</b>)
 			}
@@ -135,12 +238,12 @@ describe('next 13 remove-get-static-props', function () {
 			export const dynamic = "force-static";
 		`;
 
-		const fileInfo: FileInfo = {
-			path: 'index.js',
-			source: INPUT,
-		};
+		const actualOutput = jscodeshiftTransform(
+			jscodeshift.withParser('tsx'),
+			INPUT,
+			globalOptions,
+		);
 
-		const actualOutput = transform(fileInfo, buildApi('tsx'));
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),
@@ -160,7 +263,9 @@ describe('next 13 remove-get-static-props', function () {
 	      `;
 
 		const OUTPUT = `
-		import { GetStaticPropsContext } from "next";
+			import { buildLegacyCtx } from "/opt/project/hooks/buildLegacyCtx.tsx";
+			import { headers, cookies } from "next/headers";	
+			import { GetStaticPropsContext } from "next";
 		
 			type Params = {
 				[key: string]: string | string[] | undefined
@@ -181,7 +286,8 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 			export default async function Component({ params }: PageProps) {
-				const { allPosts: { edges } } = await getData({params});
+				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+				const { allPosts: { edges } } = await getData(legacyCtx);
 
 				return edges.map(edge => <b>edge</b>)
 			}
@@ -189,12 +295,11 @@ describe('next 13 remove-get-static-props', function () {
 			export const dynamic = "force-static";
 		`;
 
-		const fileInfo: FileInfo = {
-			path: 'index.js',
-			source: INPUT,
-		};
-
-		const actualOutput = transform(fileInfo, buildApi('tsx'));
+		const actualOutput = jscodeshiftTransform(
+			jscodeshift.withParser('tsx'),
+			INPUT,
+			globalOptions,
+		);
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),
@@ -216,6 +321,8 @@ describe('next 13 remove-get-static-props', function () {
 	      `;
 
 		const OUTPUT = `
+		import { buildLegacyCtx } from "/opt/project/hooks/buildLegacyCtx.tsx";
+		import { headers, cookies } from "next/headers";	
 		import { GetStaticPropsContext } from "next";
 			type Params = {
 				[key: string]: string | string[] | undefined
@@ -240,7 +347,8 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 			export default async function Component({ params }: PageProps) {
-				const {users, groups } = await getData({ params });
+				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+				const {users, groups } = await getData(legacyCtx);
 
 				return [...users, ...groups].map(obj => <b>{obj}</b>)
 			}
@@ -249,12 +357,11 @@ describe('next 13 remove-get-static-props', function () {
 			export const dynamic = "force-static";
 		`;
 
-		const fileInfo: FileInfo = {
-			path: 'index.js',
-			source: INPUT,
-		};
-
-		const actualOutput = transform(fileInfo, buildApi('tsx'));
+		const actualOutput = jscodeshiftTransform(
+			jscodeshift.withParser('tsx'),
+			INPUT,
+			globalOptions,
+		);
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
@@ -278,6 +385,8 @@ describe('next 13 remove-get-static-props', function () {
 	    `;
 
 		const OUTPUT = `
+		import { buildLegacyCtx } from "/opt/project/hooks/buildLegacyCtx.tsx";
+		import { headers, cookies } from "next/headers";	
 		import { GetStaticPropsContext } from "next";
 			type Params = {
 				[key: string]: string | string[] | undefined
@@ -298,7 +407,8 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 			async function SingleAppPage({ params }: PageProps) {
-				const props = await getData({ params });
+				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+				const props = await getData(legacyCtx);
 				return null;
 			}
 
@@ -306,12 +416,11 @@ describe('next 13 remove-get-static-props', function () {
 			export const dynamic = "force-static";
 		`;
 
-		const fileInfo: FileInfo = {
-			path: 'index.js',
-			source: INPUT,
-		};
-
-		const actualOutput = transform(fileInfo, buildApi('tsx'));
+		const actualOutput = jscodeshiftTransform(
+			jscodeshift.withParser('tsx'),
+			INPUT,
+			globalOptions,
+		);
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),
@@ -333,6 +442,8 @@ describe('next 13 remove-get-static-props', function () {
 	    `;
 
 		const OUTPUT = `
+		import { buildLegacyCtx } from "/opt/project/hooks/buildLegacyCtx.tsx";
+		import { headers, cookies } from "next/headers";	
 		import { GetStaticPropsContext } from "next";
 			type Params = {
 				[key: string]: string | string[] | undefined
@@ -351,7 +462,8 @@ describe('next 13 remove-get-static-props', function () {
 			}
 			
 			export async function SingleAppPage({ params }: PageProps) {
-				const props = await getData({ params });
+				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+				const props = await getData(legacyCtx);
 				return null;
 			}
 
@@ -359,12 +471,11 @@ describe('next 13 remove-get-static-props', function () {
 			export const dynamic = "force-static";
 		`;
 
-		const fileInfo: FileInfo = {
-			path: 'index.js',
-			source: INPUT,
-		};
-
-		const actualOutput = transform(fileInfo, buildApi('tsx'));
+		const actualOutput = jscodeshiftTransform(
+			jscodeshift.withParser('tsx'),
+			INPUT,
+			globalOptions,
+		);
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),
@@ -385,6 +496,8 @@ describe('next 13 remove-get-static-props', function () {
 	    `;
 
 		const OUTPUT = `
+		import { buildLegacyCtx } from "/opt/project/hooks/buildLegacyCtx.tsx";
+		import { headers, cookies } from "next/headers";	
 		import { GetStaticPropsContext } from "next";
 			type Params = {
 				[key: string]: string | string[] | undefined
@@ -403,7 +516,8 @@ describe('next 13 remove-get-static-props', function () {
 			}
 			
 			export const SingleAppPage = async ({ params }: PageProps) => {
-				const props = await getData({ params });
+				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+				const props = await getData(legacyCtx);
 				return null;
 			}
 
@@ -411,12 +525,11 @@ describe('next 13 remove-get-static-props', function () {
 			export const dynamic = "force-static";
 		`;
 
-		const fileInfo: FileInfo = {
-			path: 'index.js',
-			source: INPUT,
-		};
-
-		const actualOutput = transform(fileInfo, buildApi('tsx'));
+		const actualOutput = jscodeshiftTransform(
+			jscodeshift.withParser('tsx'),
+			INPUT,
+			globalOptions,
+		);
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),
@@ -439,6 +552,8 @@ describe('next 13 remove-get-static-props', function () {
 	    `;
 
 		const OUTPUT = `
+		import { buildLegacyCtx } from "/opt/project/hooks/buildLegacyCtx.tsx";
+		import { headers, cookies } from "next/headers";	
 		import { GetStaticPropsContext } from "next";
 			type Params = {
 				[key: string]: string | string[] | undefined
@@ -459,7 +574,8 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 			export const SingleAppPage = async ({ params }: PageProps) => {
-				await getData({ params });
+				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+				await getData(legacyCtx);
 				return null;
 			}
 			
@@ -467,12 +583,11 @@ describe('next 13 remove-get-static-props', function () {
 			export const dynamic = "force-static";
 		`;
 
-		const fileInfo: FileInfo = {
-			path: 'index.js',
-			source: INPUT,
-		};
-
-		const actualOutput = transform(fileInfo, buildApi('tsx'));
+		const actualOutput = jscodeshiftTransform(
+			jscodeshift.withParser('tsx'),
+			INPUT,
+			globalOptions,
+		);
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),
@@ -492,6 +607,8 @@ describe('next 13 remove-get-static-props', function () {
 	    `;
 
 		const OUTPUT = `
+		import { buildLegacyCtx } from "/opt/project/hooks/buildLegacyCtx.tsx";
+		import { headers, cookies } from "next/headers";	
 		import { GetStaticPropsContext } from "next";
 			type Params = {
 				[key: string]: string | string[] | undefined
@@ -512,7 +629,8 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 			const Home = async ({ params }: PageProps) => {
-				const { users } = await getData({ params });
+				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+				const { users } = await getData(legacyCtx);
 				return (<Component users={users} />)
 			};
 			
@@ -520,12 +638,11 @@ describe('next 13 remove-get-static-props', function () {
 			export const dynamic = "force-static";
 		`;
 
-		const fileInfo: FileInfo = {
-			path: 'index.js',
-			source: INPUT,
-		};
-
-		const actualOutput = transform(fileInfo, buildApi('tsx'));
+		const actualOutput = jscodeshiftTransform(
+			jscodeshift.withParser('tsx'),
+			INPUT,
+			globalOptions,
+		);
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),
@@ -545,6 +662,8 @@ describe('next 13 remove-get-static-props', function () {
 	    `;
 
 		const OUTPUT = `
+		import { buildLegacyCtx } from "/opt/project/hooks/buildLegacyCtx.tsx";
+		import { headers, cookies } from "next/headers";	
 		import { GetStaticPropsContext } from "next";
 			type Params = {
 				[key: string]: string | string[] | undefined
@@ -565,7 +684,8 @@ describe('next 13 remove-get-static-props', function () {
 			}
 			
 			const Home = async ({ params }: PageProps) => {
-				const { users } = await getData({ params });
+				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+				const { users } = await getData(legacyCtx);
 				return (<><Component users={users} /></>)
 			};
 			
@@ -573,12 +693,11 @@ describe('next 13 remove-get-static-props', function () {
 			export const dynamic = "force-static";
 		`;
 
-		const fileInfo: FileInfo = {
-			path: 'index.js',
-			source: INPUT,
-		};
-
-		const actualOutput = transform(fileInfo, buildApi('tsx'));
+		const actualOutput = jscodeshiftTransform(
+			jscodeshift.withParser('tsx'),
+			INPUT,
+			globalOptions,
+		);
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),
@@ -600,6 +719,8 @@ describe('next 13 remove-get-static-props', function () {
 	    `;
 
 		const OUTPUT = `
+		import { buildLegacyCtx } from "/opt/project/hooks/buildLegacyCtx.tsx";
+		import { headers, cookies } from "next/headers";	
 		import { GetStaticPropsContext } from "next";
 			type Params = {
 				[key: string]: string | string[] | undefined
@@ -620,7 +741,8 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 			const AppPage: AppPageType['default'] = async function AppPage({ params }: PageProps) {
-				const props = await getData({ params });
+				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+				const props = await getData(legacyCtx);
 				return null;
 			};
 			
@@ -628,12 +750,11 @@ describe('next 13 remove-get-static-props', function () {
 			export const dynamic = "force-static";
 		`;
 
-		const fileInfo: FileInfo = {
-			path: 'index.js',
-			source: INPUT,
-		};
-
-		const actualOutput = transform(fileInfo, buildApi('tsx'));
+		const actualOutput = jscodeshiftTransform(
+			jscodeshift.withParser('tsx'),
+			INPUT,
+			globalOptions,
+		);
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),
@@ -658,6 +779,8 @@ describe('next 13 remove-get-static-props', function () {
 	      `;
 
 		const OUTPUT = `
+		import { buildLegacyCtx } from "/opt/project/hooks/buildLegacyCtx.tsx";
+		import { headers, cookies } from "next/headers";	
 		import { GetStaticPropsContext } from "next";
 			type Params = {
 				[key: string]: string | string[] | undefined
@@ -681,7 +804,8 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 			export default async function Component({params}: PageProps) {
-				const { users, groups } = await getData({ params });
+				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+				const { users, groups } = await getData(legacyCtx);
 
 				return <C prop={(a) => {
 					return a;
@@ -692,12 +816,11 @@ describe('next 13 remove-get-static-props', function () {
 			export const dynamic = "force-static";
 		`;
 
-		const fileInfo: FileInfo = {
-			path: 'index.js',
-			source: INPUT,
-		};
-
-		const actualOutput = transform(fileInfo, buildApi('tsx'));
+		const actualOutput = jscodeshiftTransform(
+			jscodeshift.withParser('tsx'),
+			INPUT,
+			globalOptions,
+		);
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
@@ -724,6 +847,8 @@ describe('next 13 remove-get-static-props', function () {
 	      `;
 
 		const OUTPUT = `
+		import { buildLegacyCtx } from "/opt/project/hooks/buildLegacyCtx.tsx";
+		import { headers, cookies } from "next/headers";	
 		import { GetStaticPropsContext } from "next";
 			import x from "y";
 			
@@ -749,7 +874,8 @@ describe('next 13 remove-get-static-props', function () {
 			}
 			
 			export default async function Component({ params }: PageProps) {
-				const { users, groups } = await getData(params);
+				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+				const { users, groups } = await getData(legacyCtx);
 
 				return <C prop={(a) => {
 					return a;
@@ -760,12 +886,11 @@ describe('next 13 remove-get-static-props', function () {
 			export const dynamic = "force-static";
 		`;
 
-		const fileInfo: FileInfo = {
-			path: 'index.js',
-			source: INPUT,
-		};
-
-		const actualOutput = transform(fileInfo, buildApi('tsx'));
+		const actualOutput = jscodeshiftTransform(
+			jscodeshift.withParser('tsx'),
+			INPUT,
+			globalOptions,
+		);
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
@@ -792,6 +917,8 @@ describe('next 13 remove-get-static-props', function () {
 	      `;
 
 		const OUTPUT = `
+		import { buildLegacyCtx } from "/opt/project/hooks/buildLegacyCtx.tsx";
+		import { headers, cookies } from "next/headers";	
 		import { GetStaticPropsContext } from "next";
 			import x from "y";
 			
@@ -817,7 +944,8 @@ describe('next 13 remove-get-static-props', function () {
 			}
 			
 			export default async function Component({ params }: PageProps) {
-				const { users, groups } = await getData({ params });
+				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+				const { users, groups } = await getData(legacyCtx);
 
 				return <C prop={(a) => {
 					return a;
@@ -828,12 +956,11 @@ describe('next 13 remove-get-static-props', function () {
 			export const dynamic = "force-static";
 		`;
 
-		const fileInfo: FileInfo = {
-			path: 'index.js',
-			source: INPUT,
-		};
-
-		const actualOutput = transform(fileInfo, buildApi('tsx'));
+		const actualOutput = jscodeshiftTransform(
+			jscodeshift.withParser('tsx'),
+			INPUT,
+			globalOptions,
+		);
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
@@ -864,6 +991,8 @@ describe('next 13 remove-get-static-props', function () {
 	      `;
 
 		const OUTPUT = `
+		import { buildLegacyCtx } from "/opt/project/hooks/buildLegacyCtx.tsx";
+		import { headers, cookies } from "next/headers";	
 		import { GetStaticPropsContext } from "next";
 			import x from "y";
 			
@@ -898,7 +1027,8 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 			export default async function Component({ params }: PageProps) {
-				const { users, groups } = await getData({ params });
+				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+				const { users, groups } = await getData(legacyCtx);
 
 				return <C prop={(a) => {
 					return a;
@@ -909,12 +1039,11 @@ describe('next 13 remove-get-static-props', function () {
 			export const dynamic = "force-static";
 		`;
 
-		const fileInfo: FileInfo = {
-			path: 'index.js',
-			source: INPUT,
-		};
-
-		const actualOutput = transform(fileInfo, buildApi('tsx'));
+		const actualOutput = jscodeshiftTransform(
+			jscodeshift.withParser('tsx'),
+			INPUT,
+			globalOptions,
+		);
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT?.replace(/\W/gm, ''),
@@ -945,6 +1074,8 @@ describe('next 13 remove-get-static-props', function () {
 	      `;
 
 		const OUTPUT = `
+		import { buildLegacyCtx } from "/opt/project/hooks/buildLegacyCtx.tsx";
+		import { headers, cookies } from "next/headers";	
 		import { GetStaticPropsContext } from "next";
 			import x from "y";
 			
@@ -979,7 +1110,8 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 			export default async function Component({ params }: PageProps) {
-				const { users, groups } = await getData({ params });
+				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+				const { users, groups } = await getData(legacyCtx);
 
 				return <C prop={(a) => {
 					return a;
@@ -990,12 +1122,11 @@ describe('next 13 remove-get-static-props', function () {
 			export const dynamic = "force-static";
 		`;
 
-		const fileInfo: FileInfo = {
-			path: 'index.js',
-			source: INPUT,
-		};
-
-		const actualOutput = transform(fileInfo, buildApi('tsx'));
+		const actualOutput = jscodeshiftTransform(
+			jscodeshift.withParser('tsx'),
+			INPUT,
+			globalOptions,
+		);
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
@@ -1016,6 +1147,8 @@ describe('next 13 remove-get-static-props', function () {
 	      `;
 
 		const OUTPUT = `
+		import { buildLegacyCtx } from "/opt/project/hooks/buildLegacyCtx.tsx";
+		import { headers, cookies } from "next/headers";	
 		import { GetStaticPropsContext } from "next";
 			
 			type Params = {
@@ -1035,7 +1168,8 @@ describe('next 13 remove-get-static-props', function () {
 			}	
 			
 			export default async function Component({ params }: PageProps) {
-				await getData({ params });
+				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+				await getData(legacyCtx);
 
 				return null;
 			}
@@ -1044,12 +1178,11 @@ describe('next 13 remove-get-static-props', function () {
 			export const dynamic = "force-static";
 		`;
 
-		const fileInfo: FileInfo = {
-			path: 'index.js',
-			source: INPUT,
-		};
-
-		const actualOutput = transform(fileInfo, buildApi('tsx'));
+		const actualOutput = jscodeshiftTransform(
+			jscodeshift.withParser('tsx'),
+			INPUT,
+			globalOptions,
+		);
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
@@ -1078,6 +1211,8 @@ describe('next 13 remove-get-static-props', function () {
 		`;
 
 		const OUTPUT = `
+		import { buildLegacyCtx } from "/opt/project/hooks/buildLegacyCtx.tsx";
+		import { headers, cookies } from "next/headers";	
 		import { GetServerSidePropsContext } from "next";
 			type Params = {
 				[key: string]: string | string[] | undefined
@@ -1102,7 +1237,8 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 			export default async function Dashboard({ params }: PageProps) {
-				const {projects} = await getData({ params });
+				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+				const {projects} = await getData(legacyCtx);
 				return (
 					<ul>
 						{projects.map((project) => (
@@ -1113,12 +1249,11 @@ describe('next 13 remove-get-static-props', function () {
 			}
 		`;
 
-		const fileInfo: FileInfo = {
-			path: 'index.js',
-			source: INPUT,
-		};
-
-		const actualOutput = transform(fileInfo, buildApi('tsx'));
+		const actualOutput = jscodeshiftTransform(
+			jscodeshift.withParser('tsx'),
+			INPUT,
+			globalOptions,
+		);
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
@@ -1150,6 +1285,8 @@ describe('next 13 remove-get-static-props', function () {
 		`;
 
 		const OUTPUT = `
+		import { buildLegacyCtx } from "/opt/project/hooks/buildLegacyCtx.tsx";
+		import { headers, cookies } from "next/headers";	
 		import { GetStaticPropsContext } from "next";
 			import PostLayout from '@/components/post-layout';
 		
@@ -1187,7 +1324,8 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 			export default async function Post({ params }: PageProps) {
-				const {post} = await getData({params});
+				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+				const {post} = await getData(legacyCtx);
 
 				return <PostLayout post={post} />;
 			}
@@ -1196,12 +1334,11 @@ describe('next 13 remove-get-static-props', function () {
 			export const dynamic = "force-static";
 		`;
 
-		const fileInfo: FileInfo = {
-			path: 'index.js',
-			source: INPUT,
-		};
-
-		const actualOutput = transform(fileInfo, buildApi('tsx'));
+		const actualOutput = jscodeshiftTransform(
+			jscodeshift.withParser('tsx'),
+			INPUT,
+			globalOptions,
+		);
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),
@@ -1232,6 +1369,8 @@ describe('next 13 remove-get-static-props', function () {
 		`;
 
 		const OUTPUT = `
+		import { buildLegacyCtx } from "/opt/project/hooks/buildLegacyCtx.tsx";
+		import { headers, cookies } from "next/headers";	
 		import { GetStaticPropsContext } from "next";
 			import PostLayout from '@/components/post-layout';
 		
@@ -1269,7 +1408,8 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 			export default async function Post({ params }: PageProps) {
-				const {post} = await getData({params});
+				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+				const {post} = await getData(legacyCtx);
 
 				return <PostLayout post={post} />;
 			}
@@ -1278,12 +1418,11 @@ describe('next 13 remove-get-static-props', function () {
 			export const dynamic = "force-static";
 		`;
 
-		const fileInfo: FileInfo = {
-			path: 'index.js',
-			source: INPUT,
-		};
-
-		const actualOutput = transform(fileInfo, buildApi('tsx'));
+		const actualOutput = jscodeshiftTransform(
+			jscodeshift.withParser('tsx'),
+			INPUT,
+			globalOptions,
+		);
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),
@@ -1314,6 +1453,8 @@ describe('next 13 remove-get-static-props', function () {
 		`;
 
 		const OUTPUT = `
+		import { buildLegacyCtx } from "/opt/project/hooks/buildLegacyCtx.tsx";
+		import { headers, cookies } from "next/headers";	
 		import { GetStaticPropsContext } from "next";
 			import PostLayout from '@/components/post-layout';
 		
@@ -1351,7 +1492,8 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 			export default async function Post({ params }: PageProps) {
-				const {post} = await getData({params});
+				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+				const {post} = await getData(legacyCtx);
 
 				return <PostLayout post={post} />;
 			}
@@ -1360,12 +1502,11 @@ describe('next 13 remove-get-static-props', function () {
 			export const dynamic = "force-static";
 		`;
 
-		const fileInfo: FileInfo = {
-			path: 'index.js',
-			source: INPUT,
-		};
-
-		const actualOutput = transform(fileInfo, buildApi('tsx'));
+		const actualOutput = jscodeshiftTransform(
+			jscodeshift.withParser('tsx'),
+			INPUT,
+			globalOptions,
+		);
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),
@@ -1396,6 +1537,8 @@ describe('next 13 remove-get-static-props', function () {
 		`;
 
 		const OUTPUT = `
+		import { buildLegacyCtx } from "/opt/project/hooks/buildLegacyCtx.tsx";
+		import { headers, cookies } from "next/headers";	
 		import { GetStaticPropsContext } from "next";
 			import PostLayout from '@/components/post-layout';
 		
@@ -1433,7 +1576,8 @@ describe('next 13 remove-get-static-props', function () {
 			}
 
 			export default async function Post({ params }: PageProps) {
-				const {post} = await getData({params});
+				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+				const {post} = await getData(legacyCtx);
 
 				return <PostLayout post={post} />;
 			}
@@ -1442,12 +1586,11 @@ describe('next 13 remove-get-static-props', function () {
 			export const dynamic = "force-static";
 		`;
 
-		const fileInfo: FileInfo = {
-			path: 'index.js',
-			source: INPUT,
-		};
-
-		const actualOutput = transform(fileInfo, buildApi('tsx'));
+		const actualOutput = jscodeshiftTransform(
+			jscodeshift.withParser('tsx'),
+			INPUT,
+			globalOptions,
+		);
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
@@ -1467,6 +1610,8 @@ describe('next 13 remove-get-static-props', function () {
 	      `;
 
 		const OUTPUT = `
+		import { buildLegacyCtx } from "/opt/project/hooks/buildLegacyCtx.tsx";
+		import { headers, cookies } from "next/headers";	
 		import { notFound, redirect } from "next/navigation";
 		type Params = {
 			[key: string]: string | string[] | undefined
@@ -1480,8 +1625,8 @@ describe('next 13 remove-get-static-props', function () {
 				return fetchData();
 			}
 
-			async function getData({ params }: { params: Params }) {
-				const result = await getStaticProps({ params });
+			async function getData(ctx: GetStaticPropsContext) {
+				const result = await getStaticProps(ctx);
 				
 				if("redirect" in result) {
 						redirect(result.redirect.destination);
@@ -1495,9 +1640,8 @@ describe('next 13 remove-get-static-props', function () {
 		}
 
 			export default async function Component({ params }: PageProps) {
-				const {users} = await getData({
-					params, 
-				});
+				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+				const {users} = await getData(legacyCtx);
 
 				return users.map(user => <b>user</b>)
 			}
@@ -1505,12 +1649,11 @@ describe('next 13 remove-get-static-props', function () {
 			export const dynamic = "force-static";
 		`;
 
-		const fileInfo: FileInfo = {
-			path: 'index.js',
-			source: INPUT,
-		};
-
-		const actualOutput = transform(fileInfo, buildApi('tsx'));
+		const actualOutput = jscodeshiftTransform(
+			jscodeshift.withParser('tsx'),
+			INPUT,
+			globalOptions,
+		);
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),

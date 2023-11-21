@@ -1,16 +1,55 @@
 import {
-	API,
 	ASTNode,
 	ArrowFunctionExpression,
 	Collection,
 	File,
-	FileInfo,
 	FunctionDeclaration,
 	FunctionExpression,
 	Identifier,
 	JSCodeshift,
-	Transform,
+	Node,
 } from 'jscodeshift';
+import type { HandleData, HandleFile, Filemod } from '@intuita-inc/filemod';
+
+type Dependencies = Readonly<{
+	jscodeshift: JSCodeshift;
+}>;
+
+type State = {
+	step: RepomodStep;
+};
+
+type FileCommand = Awaited<ReturnType<HandleFile<Dependencies, State>>>[number];
+
+const noop = {
+	kind: 'noop',
+} as const;
+
+const ADD_BUILD_LEGACY_CTX_UTIL_CONTENT = `
+import { ReadonlyHeaders } from "next/dist/server/web/spec-extension/adapters/headers";
+import { ReadonlyRequestCookies } from "next/dist/server/web/spec-extension/adapters/request-cookies";
+import { headers, cookies } from "next/headers";
+
+// returns query object same as ctx.query but for app dir
+export const getQuery = (url: string, params: Record<string, string | string[]>) => {
+  if (!url.length) {
+    return params;
+  }
+
+  const { searchParams } = new URL(url);
+  const searchParamsObj = Object.fromEntries(searchParams.entries());
+
+  return { ...searchParamsObj, ...params };
+};
+
+export const buildLegacyContext = (headers: ReadonlyHeaders, cookies: ReadonlyRequestCookies, params: Record<string, string | string[]>) => {
+  return {
+    query: getQuery(headers.get('x-url') ?? '', params), 
+    params, 
+    req: { headers, cookies }
+  }
+}
+`;
 
 type Settings = Partial<Record<string, string | boolean | Collection<any>>>;
 
@@ -109,9 +148,13 @@ const getDataFunctionFactory = (
 	j: JSCodeshift,
 	decoratedFunctionName: string,
 ) => {
+	const isSSR = decoratedFunctionName === 'getServerSideProps';
+
 	return j(`
-	async function getData({ params }: { params: Params }) {
-		const result = await ${decoratedFunctionName}({ params });
+	async function getData(ctx: ${
+		isSSR ? 'GetServerSidePropsContext' : 'GetStaticPropsContext'
+	}) {
+		const result = await ${decoratedFunctionName}(ctx);
 		
 		if("redirect" in result) {
 			redirect(result.redirect.destination);	
@@ -125,6 +168,58 @@ const getDataFunctionFactory = (
 	}`)
 		.find(j.FunctionDeclaration)
 		.paths()[0]!;
+};
+
+const buildPageProps = (j: JSCodeshift) => {
+	return j.objectPattern.from({
+		properties: [
+			j.objectProperty.from({
+				key: j.identifier('params'),
+				value: j.identifier('params'),
+				shorthand: true,
+			}),
+		],
+		typeAnnotation: j.tsTypeAnnotation(
+			j.tsTypeReference(j.identifier('PageProps')),
+		),
+	});
+};
+
+const buildGetDataVariableDeclaration = (
+	j: JSCodeshift,
+	firstParam: Node | null,
+) => {
+	const callExpression = j.awaitExpression(
+		j.callExpression(j.identifier(`getData`), [j.identifier('legacyCtx')]),
+	);
+
+	const id = j.Identifier.check(firstParam)
+		? j.identifier(firstParam.name)
+		: j.ObjectPattern.check(firstParam)
+		? j.objectPattern.from({
+				...firstParam,
+				typeAnnotation: null,
+		  })
+		: null;
+
+	return id === null
+		? j.expressionStatement(callExpression)
+		: j.variableDeclaration('const', [
+				j.variableDeclarator(id, callExpression),
+		  ]);
+};
+
+const buildBuildLegacyCtxVariableDeclaration = (j: JSCodeshift) => {
+	return j.variableDeclaration('const', [
+		j.variableDeclarator(
+			j.identifier('legacyCtx'),
+			j.callExpression(j.identifier('buildLegacyCtx'), [
+				j.identifier('params'),
+				j.callExpression(j.identifier('headers'), []),
+				j.callExpression(j.identifier('cookies'), []),
+			]),
+		),
+	]);
 };
 
 const addGenerateStaticParamsFunctionDeclaration: ModFunction<File, 'write'> = (
@@ -309,79 +404,62 @@ const addGetDataFunctionInline: ModFunction<File, 'write'> = (
 			const { argument } = returnStatementPath.value;
 
 			if (j.ObjectExpression.check(argument)) {
-				j(argument)
-					.find(j.ObjectProperty)
-					.forEach((property) => {
-						if (
-							!j.ObjectExpression.check(property.value.value) ||
-							!j.Identifier.check(property.value.key)
-						) {
-							return;
-						}
+				argument.properties.forEach((property) => {
+					if (
+						(!j.Property.check(property) &&
+							!j.ObjectProperty.check(property)) ||
+						!j.ObjectExpression.check(property.value) ||
+						!j.Identifier.check(property.key)
+					) {
+						return;
+					}
 
-						const { key, value } = property.value;
+					const { key, value } = property;
 
-						if (key.name === 'props') {
-							returnStatementPath.value.argument = value;
-						}
+					if (key.name === 'props') {
+						returnStatementPath.value.argument = value;
+					}
 
-						if (key.name === 'redirect') {
-							j(value)
-								.find(j.ObjectProperty, {
-									key: {
-										type: 'Identifier',
-										name: 'destination',
-									},
-								})
-								.forEach((objectPropertyPath) => {
-									if (
-										!j.StringLiteral.check(
-											objectPropertyPath.value.value,
-										) &&
-										!j.Identifier.check(
-											objectPropertyPath.value.value,
-										)
-									) {
-										return;
-									}
+					if (key.name === 'redirect') {
+						j(value)
+							.find(j.ObjectProperty, {
+								key: {
+									type: 'Identifier',
+									name: 'destination',
+								},
+							})
+							.forEach((objectPropertyPath) => {
+								if (
+									!j.StringLiteral.check(
+										objectPropertyPath.value.value,
+									) &&
+									!j.Identifier.check(
+										objectPropertyPath.value.value,
+									)
+								) {
+									return;
+								}
 
-									returnStatementPath.value.argument =
-										j.callExpression(
-											j.identifier('redirect'),
-											[objectPropertyPath.value.value],
-										);
-								});
+								returnStatementPath.value.argument =
+									j.callExpression(j.identifier('redirect'), [
+										objectPropertyPath.value.value,
+									]);
+							});
 
-							usedRedirect = true;
-						}
+						usedRedirect = true;
+					}
 
-						if (key.name === 'notFound') {
-							returnStatementPath.value.argument =
-								j.callExpression(j.identifier('notFound'), []);
+					if (key.name === 'notFound') {
+						returnStatementPath.value.argument = j.callExpression(
+							j.identifier('notFound'),
+							[],
+						);
 
-							usedNotFound = true;
-						}
-					});
+						usedNotFound = true;
+					}
+				});
 			}
 		});
-
-	// const objPattern = j.objectPattern([
-	// 	j.property.from({
-	// 		kind: 'init',
-	// 		key: j.identifier('params'),
-	// 		value: j.identifier('params'),
-	// 		shorthand: true,
-	// 	}),
-	// ]);
-	// const objectTypeAnnotation = j.objectTypeAnnotation([
-	// 	j.objectTypeProperty(
-	// 		j.identifier('params'),
-	// 		j.genericTypeAnnotation(j.identifier('Params'), null),
-	// 		false,
-	// 	),
-	// ]);
-	// const typeAnnotation = j.typeAnnotation(objectTypeAnnotation);
-	// objPattern.typeAnnotation = typeAnnotation;
 
 	const contextTypeName =
 		settings.functionName === 'getStaticProps'
@@ -934,7 +1012,7 @@ export const findComponentFunctionDefinition: ModFunction<File, 'read'> = (
 	lazyModFunctions.push([
 		addGetDataVariableDeclaration,
 		j(pageComponentFunction),
-		settings,
+		{ ...settings, fileNode: root },
 	]);
 
 	return [false, lazyModFunctions];
@@ -943,76 +1021,66 @@ export const findComponentFunctionDefinition: ModFunction<File, 'read'> = (
 const addGetDataVariableDeclaration: ModFunction<
 	FunctionDeclaration | ArrowFunctionExpression,
 	'write'
-> = (j, root) => {
-	const getDataArgObjectExpression = j.objectExpression([
-		j.objectProperty.from({
-			key: j.identifier('params'),
-			value: j.identifier('params'),
-			shorthand: true,
-		}),
-	]);
-
-	let addedVariableDeclaration = false;
-
-	const componentPropsObjectPattern = j.objectPattern.from({
-		properties: [
-			j.objectProperty.from({
-				key: j.identifier('params'),
-				value: j.identifier('params'),
-				shorthand: true,
-			}),
-		],
-		typeAnnotation: j.tsTypeAnnotation(
-			j.tsTypeReference(j.identifier('PageProps')),
-		),
-	});
+> = (j, root, settings) => {
+	let getDataAdded = false;
+	const lazyModFunctions: LazyModFunction[] = [];
 
 	root.forEach((path) => {
-		const { body, params } = path.value;
+		const fn = path.value;
 
-		const firstParam = params[0] ?? null;
+		if (
+			!j.JSXElement.check(fn.body) &&
+			!j.JSXFragment.check(fn.body) &&
+			!j.BlockStatement.check(fn.body)
+		) {
+			return;
+		}
 
-		const callExpression = j.awaitExpression(
-			j.callExpression(j.identifier(`getData`), [
-				getDataArgObjectExpression,
-			]),
+		// if has implicit return, wrap in block
+		if (j.JSXElement.check(fn.body) || j.JSXFragment.check(fn.body)) {
+			fn.body = j.blockStatement.from({
+				body: [j.returnStatement(fn.body)],
+			});
+		}
+
+		const legacyCtxVariableDeclaration =
+			buildBuildLegacyCtxVariableDeclaration(j);
+		const getDataVariableDeclaration = buildGetDataVariableDeclaration(
+			j,
+			fn.params[0] ?? null,
 		);
 
-		const id = j.Identifier.check(firstParam)
-			? j.identifier(firstParam.name)
-			: j.ObjectPattern.check(firstParam)
-			? j.objectPattern.from({
-					...firstParam,
-					typeAnnotation: null,
-			  })
-			: null;
-
-		const variableDeclaration =
-			id === null
-				? j.expressionStatement(callExpression)
-				: j.variableDeclaration('const', [
-						j.variableDeclarator(id, callExpression),
-				  ]);
-
-		if (j.JSXElement.check(body) || j.JSXFragment.check(body)) {
-			path.value.body = j.blockStatement.from({
-				body: [variableDeclaration, j.returnStatement(body)],
-			});
-
-			addedVariableDeclaration = true;
-			path.value.async = true;
-			path.value.params = [componentPropsObjectPattern];
+		if (j.BlockStatement.check(fn.body)) {
+			fn.body.body.unshift(getDataVariableDeclaration);
+			fn.body.body.unshift(legacyCtxVariableDeclaration);
 		}
 
-		if (j.BlockStatement.check(body)) {
-			body.body.unshift(variableDeclaration);
-			addedVariableDeclaration = true;
-			path.value.async = true;
-			path.value.params = [componentPropsObjectPattern];
-		}
+		fn.async = true;
+		fn.params = [buildPageProps(j)];
+		getDataAdded = true;
 	});
 
-	return [addedVariableDeclaration, []];
+	if (
+		getDataAdded &&
+		settings.fileNode &&
+		typeof settings.fileNode === 'object'
+	) {
+		lazyModFunctions.push([
+			addImportStatement,
+			settings.fileNode,
+			{ specifierNames: 'headers,cookies', sourceName: 'next/headers' },
+		]);
+		lazyModFunctions.push([
+			addImportStatement,
+			settings.fileNode,
+			{
+				specifierNames: 'buildLegacyCtx',
+				sourceName: settings.buildLegacyCtxUtilAbsolutePath,
+			},
+		]);
+	}
+
+	return [getDataAdded, lazyModFunctions];
 };
 
 const getExportDefaultName = (
@@ -1030,15 +1098,14 @@ const getExportDefaultName = (
 	return declaration.declaration.name;
 };
 
-export default function transform(
-	file: FileInfo,
-	api: API,
+export function transform(
+	j: JSCodeshift,
+	source: string,
+	options: Record<string, string>,
 ): string | undefined {
-	const j = api.jscodeshift;
-
 	let dirtyFlag = false;
 
-	const root = j(file.source);
+	const root = j(source);
 
 	const hasGetStaticPathsFunction =
 		root.find(j.FunctionDeclaration, {
@@ -1049,6 +1116,7 @@ export default function transform(
 		}).length !== 0;
 
 	const settings = {
+		...options,
 		includeParams: hasGetStaticPathsFunction,
 	};
 
@@ -1166,4 +1234,114 @@ export default function transform(
 	return root.toSource();
 }
 
-transform satisfies Transform;
+const handleFile: HandleFile<Dependencies, State> = async (
+	_,
+	path,
+	options,
+	state,
+) => {
+	const { buildLegacyCtxUtilAbsolutePath } = options;
+	if (typeof buildLegacyCtxUtilAbsolutePath !== 'string') {
+		throw new Error(
+			`Expected buildLegacyCtxUtilAbsolutePath to be a string, got ${typeof buildLegacyCtxUtilAbsolutePath}`,
+		);
+	}
+
+	if (state === null) {
+		return [];
+	}
+
+	const commands: FileCommand[] = [];
+
+	if (state.step === RepomodStep.ADD_BUILD_LEGACY_CTX_UTIL) {
+		commands.push({
+			kind: 'upsertFile',
+			path: buildLegacyCtxUtilAbsolutePath,
+			options: {
+				...options,
+				fileContent: ADD_BUILD_LEGACY_CTX_UTIL_CONTENT,
+			},
+		});
+	}
+
+	commands.push({
+		kind: 'upsertFile',
+		path,
+		options,
+	});
+
+	return commands;
+};
+
+const handleData: HandleData<Dependencies, State> = async (
+	api,
+	path,
+	data,
+	options,
+	state,
+) => {
+	const { buildLegacyCtxUtilAbsolutePath } = options;
+
+	if (typeof buildLegacyCtxUtilAbsolutePath !== 'string') {
+		throw new Error(
+			`Expected buildLegacyCtxUtilAbsolutePath to be a string, got ${typeof buildLegacyCtxUtilAbsolutePath}`,
+		);
+	}
+
+	if (state === null) {
+		return noop;
+	}
+
+	if (
+		state.step === RepomodStep.ADD_BUILD_LEGACY_CTX_UTIL &&
+		typeof options.fileContent === 'string'
+	) {
+		state.step = RepomodStep.ADD_GET_SERVER_SIDE_DATA_HOOKS;
+		return {
+			kind: 'upsertData',
+			path,
+			data: options.fileContent,
+		};
+	}
+
+	if (state.step === RepomodStep.ADD_GET_SERVER_SIDE_DATA_HOOKS) {
+		const { jscodeshift } = api.getDependencies();
+
+		const rewrittenData = transform(jscodeshift, data, {
+			buildLegacyCtxUtilAbsolutePath,
+		});
+
+		if (rewrittenData === undefined) {
+			return noop;
+		}
+
+		return {
+			kind: 'upsertData',
+			path,
+			data: rewrittenData,
+		};
+	}
+
+	return noop;
+};
+
+const enum RepomodStep {
+	ADD_BUILD_LEGACY_CTX_UTIL = 'ADD_BUILD_LEGACY_CTX_UTIL',
+	ADD_GET_SERVER_SIDE_DATA_HOOKS = 'ADD_GET_SERVER_SIDE_DATA_HOOKS',
+}
+
+export const repomod: Filemod<Dependencies, State> = {
+	includePatterns: ['**/pages/**/*.{js,jsx,ts,tsx}'],
+	excludePatterns: ['**/node_modules/**', '**/pages/api/**'],
+	initializeState: async (_, previousState) => {
+		if (previousState === null) {
+			return {
+				step: RepomodStep.ADD_BUILD_LEGACY_CTX_UTIL,
+			};
+		}
+
+		return previousState;
+	},
+	handleFile,
+	handleData,
+};
