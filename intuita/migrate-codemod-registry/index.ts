@@ -150,7 +150,7 @@ const handleFile: HandleFile<Dependencies, State> = async (
 				api.currentWorkingDirectory,
 				'codemods',
 				...directoryName,
-				'.mocharc.yml',
+				'.mocharc.json',
 			);
 
 			commands.push({
@@ -233,6 +233,11 @@ const handleData: HandleData<Dependencies, State> = async (
 				engine === 'repomod-engine'
 			) {
 				devDependencies['@intuita-inc/filemod'] = '1.1.0';
+				// this might be required sometimes
+				devDependencies['memfs'] = '^4.6.0';
+				devDependencies['ts-morph'] = '^19.0.0';
+				devDependencies['jscodeshift'] = '^0.15.1';
+				devDependencies['@types/jscodeshift'] = '^0.11.10';
 			}
 
 			const main = engine !== 'piranha' ? './dist/index.cjs' : undefined;
@@ -242,7 +247,7 @@ const handleData: HandleData<Dependencies, State> = async (
 				engine !== 'piranha'
 					? {
 							'build:cjs':
-								'esbuild ./src/index.ts --bundle --platform=node --target=node16 --minify --format=cjs --legal-comments=inline --outfile=./dist/index.cjs',
+								'esbuild ./src/index.ts --bundle --packages=external --platform=node --target=node16 --minify --minify-whitespace --format=cjs --legal-comments=inline --outfile=./dist/index.cjs',
 							test: 'mocha',
 					  }
 					: undefined;
@@ -306,6 +311,35 @@ const handleData: HandleData<Dependencies, State> = async (
 			};
 		}
 
+		if (path.endsWith('.mocharc.json')) {
+			const data = JSON.stringify({
+				loader: ['ts-node/esm'],
+				'full-trace': true,
+				bail: true,
+				spec: './**/test.ts',
+				timeout: 5000,
+			});
+
+			return {
+				kind: 'upsertData',
+				path,
+				data,
+			};
+		}
+
+		if (path.endsWith('tsconfig.json')) {
+			const data = JSON.stringify({
+				extends: '@codemod-registry/tsconfig',
+				include: ['./*.ts'],
+			});
+
+			return {
+				kind: 'upsertData',
+				path,
+				data,
+			};
+		}
+
 		if (typeof options['data'] === 'string') {
 			return {
 				kind: 'upsertData',
@@ -323,11 +357,13 @@ const handleData: HandleData<Dependencies, State> = async (
 	) {
 		const workspaces = Array.from(state.workspaces).sort();
 		workspaces.unshift('builder');
+		workspaces.unshift('utilities');
 		workspaces.unshift('tsconfig');
 
 		const data = [
 			'packages:',
 			...workspaces.map((workspace) => `\t- './${workspace}'`),
+			'',
 		].join('\n');
 
 		return {
