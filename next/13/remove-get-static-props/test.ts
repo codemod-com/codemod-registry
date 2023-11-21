@@ -87,7 +87,7 @@ describe.only('new', function () {
 		};
 
 		export async function getServerSideProps(ctx: GetServerSidePropsContext) {
-			const users = await a();
+			const users = await promise;
 			return { props: { users } };
 		}
 

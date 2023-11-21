@@ -9,6 +9,7 @@ import {
 	FunctionExpression,
 	Identifier,
 	JSCodeshift,
+	Node,
 	Transform,
 } from 'jscodeshift';
 import type { HandleData, HandleFile, Filemod } from '@intuita-inc/filemod';
@@ -172,6 +173,63 @@ const getDataFunctionFactory = (
 		.find(j.FunctionDeclaration)
 		.paths()[0]!;
 };
+
+const buildPageProps = (j: JSCodeshift) => {
+	return j.objectPattern.from({
+		properties: [
+			j.objectProperty.from({
+				key: j.identifier('params'),
+				value: j.identifier('params'),
+				shorthand: true,
+			}),
+		],
+		typeAnnotation: j.tsTypeAnnotation(
+			j.tsTypeReference(j.identifier('PageProps')),
+		),
+	});
+}
+
+const buildGetDataVariableDeclaration = (j: JSCodeshift, firstParam: Node | null) => {
+
+	const callExpression =  j.awaitExpression(
+		j.callExpression(j.identifier(`getData`), [
+			j.identifier('legacyCtx'),
+		]),
+	);
+
+	const id = j.Identifier.check(firstParam)
+			? j.identifier(firstParam.name)
+			: j.ObjectPattern.check(firstParam)
+			? j.objectPattern.from({
+					...firstParam,
+					typeAnnotation: null,
+			  })
+			: null;
+
+	return id === null
+				? j.expressionStatement(callExpression)
+				: j.variableDeclaration('const', [
+						j.variableDeclarator(id, callExpression),
+				  ]);
+}
+
+
+const buildBuildLegacyCtxVariableDeclaration = (j: JSCodeshift) => {
+	return j.variableDeclaration('const', [
+		j.variableDeclarator(
+		  j.identifier('legacyCtx'),
+		  j.callExpression(
+			j.identifier('buildLegacyCtx'),
+			[
+			  j.identifier('params'),
+			  j.callExpression(j.identifier('headers'), []),
+			  j.callExpression(j.identifier('cookies'), [])
+			]
+		  )
+		)
+	  ]);
+	
+}
 
 const addGenerateStaticParamsFunctionDeclaration: ModFunction<File, 'write'> = (
 	j,
@@ -980,75 +1038,38 @@ const addGetDataVariableDeclaration: ModFunction<
 	FunctionDeclaration | ArrowFunctionExpression,
 	'write'
 > = (j, root) => {
-	const getDataArgObjectExpression = j.objectExpression([
-		j.objectProperty.from({
-			key: j.identifier('params'),
-			value: j.identifier('params'),
-			shorthand: true,
-		}),
-	]);
 
-	let addedVariableDeclaration = false;
-
-	const componentPropsObjectPattern = j.objectPattern.from({
-		properties: [
-			j.objectProperty.from({
-				key: j.identifier('params'),
-				value: j.identifier('params'),
-				shorthand: true,
-			}),
-		],
-		typeAnnotation: j.tsTypeAnnotation(
-			j.tsTypeReference(j.identifier('PageProps')),
-		),
-	});
+	let getDataAdded = false;
 
 	root.forEach((path) => {
-		const { body, params } = path.value;
+		const fn = path.value;
 
-		const firstParam = params[0] ?? null;
+		if(!j.JSXElement.check(fn.body) && !j.JSXFragment.check(fn.body) && !j.BlockStatement.check(fn.body)) {
+			return;
+		}
 
-		const callExpression = j.awaitExpression(
-			j.callExpression(j.identifier(`getData`), [
-				getDataArgObjectExpression,
-			]),
-		);
-
-		const id = j.Identifier.check(firstParam)
-			? j.identifier(firstParam.name)
-			: j.ObjectPattern.check(firstParam)
-			? j.objectPattern.from({
-					...firstParam,
-					typeAnnotation: null,
-			  })
-			: null;
-
-		const variableDeclaration =
-			id === null
-				? j.expressionStatement(callExpression)
-				: j.variableDeclaration('const', [
-						j.variableDeclarator(id, callExpression),
-				  ]);
-
-		if (j.JSXElement.check(body) || j.JSXFragment.check(body)) {
-			path.value.body = j.blockStatement.from({
-				body: [variableDeclaration, j.returnStatement(body)],
+		// if has implicit return, wrap in block 
+		if (j.JSXElement.check(fn.body) || j.JSXFragment.check(fn.body)) {
+			fn.body = j.blockStatement.from({
+				body: [j.returnStatement(fn.body)],
 			});
-
-			addedVariableDeclaration = true;
-			path.value.async = true;
-			path.value.params = [componentPropsObjectPattern];
 		}
 
-		if (j.BlockStatement.check(body)) {
-			body.body.unshift(variableDeclaration);
-			addedVariableDeclaration = true;
-			path.value.async = true;
-			path.value.params = [componentPropsObjectPattern];
+		const legacyCtxVariableDeclaration = buildBuildLegacyCtxVariableDeclaration(j);
+		const getDataVariableDeclaration = buildGetDataVariableDeclaration(j, fn.params[0] ?? null)
+
+		
+		if (j.BlockStatement.check(fn.body)) {
+			fn.body.body.unshift(getDataVariableDeclaration);
+			fn.body.body.unshift(legacyCtxVariableDeclaration);
 		}
+
+		fn.async = true;
+		fn.params = [buildPageProps(j)];
+		getDataAdded = true;
 	});
 
-	return [addedVariableDeclaration, []];
+	return [getDataAdded, []];
 };
 
 const getExportDefaultName = (
