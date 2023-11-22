@@ -86,8 +86,8 @@ searchParams: Params
 			return { users };
 		}
 			
-		export default async function Component({ params, searchParams }: PageProps) {
-			const legacyCtx = buildLegacyCtx(params, searchParams, headers(), cookies());
+		export default async function Component({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+			const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 			const { users } = await getData(legacyCtx);
 
 			return users.map(user => <b>user</b>)
@@ -164,8 +164,8 @@ searchParams: Params
 				return { users };
 		}
 
-			export default async function Component({ params, searchParams }: PageProps) {
-				const legacyCtx = buildLegacyCtx(params, searchParams, headers(), cookies());
+			export default async function Component({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const {users} = await getData(legacyCtx);
 
 				return users.map(user => <b>user</b>)
@@ -232,8 +232,8 @@ searchParams: Params
 				return "props" in result ? result.props : {};
 			}
 
-			export default async function Component({ params, searchParams }: PageProps) {
-				const legacyCtx = buildLegacyCtx(params, searchParams, headers(), cookies());
+			export default async function Component({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const {users} = await getData(legacyCtx);
 
 				return users.map(user => <b>user</b>)
@@ -290,8 +290,8 @@ searchParams: Params
 				return  { allPosts };
 			}
 
-			export default async function Component({ params, searchParams }: PageProps) {
-				const legacyCtx = buildLegacyCtx(params, searchParams, headers(), cookies());
+			export default async function Component({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const { allPosts: { edges } } = await getData(legacyCtx);
 
 				return edges.map(edge => <b>edge</b>)
@@ -352,8 +352,8 @@ searchParams: Params
 				return { users, groups };
 			}
 
-			export default async function Component({ params, searchParams }: PageProps) {
-				const legacyCtx = buildLegacyCtx(params, searchParams, headers(), cookies());
+			export default async function Component({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const {users, groups } = await getData(legacyCtx);
 
 				return [...users, ...groups].map(obj => <b>{obj}</b>)
@@ -413,8 +413,8 @@ searchParams: Params
 				return { users };
 			}
 
-			async function SingleAppPage({ params, searchParams }: PageProps) {
-				const legacyCtx = buildLegacyCtx(params, searchParams, headers(), cookies());
+			async function SingleAppPage({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const props = await getData(legacyCtx);
 				return null;
 			}
@@ -469,8 +469,8 @@ searchParams: Params
 				return { a } ;
 			}
 			
-			export async function SingleAppPage({ params, searchParams }: PageProps) {
-				const legacyCtx = buildLegacyCtx(params, searchParams, headers(), cookies());
+			export async function SingleAppPage({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const props = await getData(legacyCtx);
 				return null;
 			}
@@ -524,8 +524,8 @@ searchParams: Params
 				return { a } ;
 			}
 			
-			export const SingleAppPage = async ({ params, searchParams }: PageProps) => {
-				const legacyCtx = buildLegacyCtx(params, searchParams, headers(), cookies());
+			export const SingleAppPage = async ({ params: pageParams, searchParams: pageSearchParams }: PageProps) => {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const props = await getData(legacyCtx);
 				return null;
 			}
@@ -583,8 +583,8 @@ searchParams: Params
 				return { a } ;
 			}
 
-			export const SingleAppPage = async ({ params, searchParams }: PageProps) => {
-				const legacyCtx = buildLegacyCtx(params, searchParams, headers(), cookies());
+			export const SingleAppPage = async ({ params: pageParams, searchParams: pageSearchParams }: PageProps) => {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				await getData(legacyCtx);
 				return null;
 			}
@@ -639,8 +639,8 @@ searchParams: Params
 				return { users } ;
 			}
 
-			const Home = async ({ params, searchParams }: PageProps) => {
-				const legacyCtx = buildLegacyCtx(params, searchParams, headers(), cookies());
+			const Home = async ({ params: pageParams, searchParams: pageSearchParams }: PageProps) => {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const { users } = await getData(legacyCtx);
 				return (<Component users={users} />)
 			};
@@ -695,8 +695,8 @@ searchParams: Params
 				return { users } ;
 			}
 			
-			const Home = async ({ params, searchParams }: PageProps) => {
-				const legacyCtx = buildLegacyCtx(params, searchParams, headers(), cookies());
+			const Home = async ({ params: pageParams, searchParams: pageSearchParams }: PageProps) => {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const { users } = await getData(legacyCtx);
 				return (<><Component users={users} /></>)
 			};
@@ -753,8 +753,8 @@ searchParams: Params
 				return { users } ;
 			}
 
-			const AppPage: AppPageType['default'] = async function AppPage({ params, searchParams }: PageProps) {
-				const legacyCtx = buildLegacyCtx(params, searchParams, headers(), cookies());
+			const AppPage: AppPageType['default'] = async function AppPage({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const props = await getData(legacyCtx);
 				return null;
 			};
@@ -817,8 +817,8 @@ searchParams: Params
 				return { users, groups } ;
 			}
 
-			export default async function Component({params, searchParams}: PageProps) {
-				const legacyCtx = buildLegacyCtx(params, searchParams, headers(), cookies());
+			export default async function Component({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const { users, groups } = await getData(legacyCtx);
 
 				return <C prop={(a) => {
@@ -888,8 +888,8 @@ searchParams: Params
 				return { users, groups } ;
 			}
 			
-			export default async function Component({ params, searchParams }: PageProps) {
-				const legacyCtx = buildLegacyCtx(params, searchParams, headers(), cookies());
+			export default async function Component({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const { users, groups } = await getData(legacyCtx);
 
 				return <C prop={(a) => {
@@ -959,8 +959,8 @@ searchParams: Params
 				return { users, groups } ;
 			}
 			
-			export default async function Component({ params, searchParams }: PageProps) {
-				const legacyCtx = buildLegacyCtx(params, searchParams, headers(), cookies());
+			export default async function Component({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const { users, groups } = await getData(legacyCtx);
 
 				return <C prop={(a) => {
@@ -1043,8 +1043,8 @@ searchParams: Params
 				return { users, groups } ;
 			}
 
-			export default async function Component({ params, searchParams }: PageProps) {
-				const legacyCtx = buildLegacyCtx(params, searchParams, headers(), cookies());
+			export default async function Component({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const { users, groups } = await getData(legacyCtx);
 
 				return <C prop={(a) => {
@@ -1127,8 +1127,8 @@ searchParams: Params
 				return { users, groups } ;
 			}
 
-			export default async function Component({ params, searchParams }: PageProps) {
-				const legacyCtx = buildLegacyCtx(params, searchParams, headers(), cookies());
+			export default async function Component({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const { users, groups } = await getData(legacyCtx);
 
 				return <C prop={(a) => {
@@ -1186,8 +1186,8 @@ searchParams: Params
 				return {};
 			}	
 			
-			export default async function Component({ params, searchParams }: PageProps) {
-				const legacyCtx = buildLegacyCtx(params, searchParams, headers(), cookies());
+			export default async function Component({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				await getData(legacyCtx);
 
 				return null;
@@ -1256,8 +1256,8 @@ searchParams: Params
 				return { projects } ;
 			}
 
-			export default async function Dashboard({ params, searchParams }: PageProps) {
-				const legacyCtx = buildLegacyCtx(params, searchParams, headers(), cookies());
+			export default async function Dashboard({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const {projects} = await getData(legacyCtx);
 				return (
 					<ul>
@@ -1344,8 +1344,8 @@ searchParams: Params
 				return { post } ;
 			}
 
-			export default async function Post({ params, searchParams }: PageProps) {
-				const legacyCtx = buildLegacyCtx(params, searchParams, headers(), cookies());
+			export default async function Post({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const {post} = await getData(legacyCtx);
 
 				return <PostLayout post={post} />;
@@ -1429,8 +1429,8 @@ searchParams: Params
 				return { post } ;
 			}
 
-			export default async function Post({ params, searchParams }: PageProps) {
-				const legacyCtx = buildLegacyCtx(params, searchParams, headers(), cookies());
+			export default async function Post({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const {post} = await getData(legacyCtx);
 
 				return <PostLayout post={post} />;
@@ -1514,8 +1514,8 @@ searchParams: Params
 				return { post } ;
 			}
 
-			export default async function Post({ params, searchParams }: PageProps) {
-				const legacyCtx = buildLegacyCtx(params, searchParams, headers(), cookies());
+			export default async function Post({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const {post} = await getData(legacyCtx);
 
 				return <PostLayout post={post} />;
@@ -1599,8 +1599,8 @@ searchParams: Params
 				return { post } ;
 			}
 
-			export default async function Post({ params, searchParams }: PageProps) {
-				const legacyCtx = buildLegacyCtx(params, searchParams, headers(), cookies());
+			export default async function Post({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const {post} = await getData(legacyCtx);
 
 				return <PostLayout post={post} />;
@@ -1665,8 +1665,8 @@ searchParams: Params
 				return "props" in result ? result.props : {};
 		}
 
-			export default async function Component({ params, searchParams }: PageProps) {
-				const legacyCtx = buildLegacyCtx(params, searchParams, headers(), cookies());
+			export default async function Component({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const {users} = await getData(legacyCtx);
 
 				return users.map(user => <b>user</b>)

@@ -161,12 +161,13 @@ const buildPageProps = (j: JSCodeshift) => {
 		properties: [
 			j.objectProperty.from({
 				key: j.identifier('params'),
-				value: j.identifier('params'),
-				shorthand: true,
+				// renaming to avoid duplication of identifiers
+				value: j.identifier('pageParams'),
 			}),
 			j.objectProperty.from({
 				key: j.identifier('searchParams'),
-				value: j.identifier('searchParams'),
+				// renaming to avoid duplication of identifiers
+				value: j.identifier('pageSearchParams'),
 				shorthand: true,
 			}),
 		],
@@ -205,8 +206,8 @@ const buildBuildLegacyCtxVariableDeclaration = (j: JSCodeshift) => {
 		j.variableDeclarator(
 			j.identifier('legacyCtx'),
 			j.callExpression(j.identifier('buildLegacyCtx'), [
-				j.identifier('params'),
-				j.identifier('searchParams'),
+				j.identifier('pageParams'),
+				j.identifier('pageSearchParams'),
 				j.callExpression(j.identifier('headers'), []),
 				j.callExpression(j.identifier('cookies'), []),
 			]),
