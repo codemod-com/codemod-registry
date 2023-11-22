@@ -1,4 +1,4 @@
-/*
+/*! @license
 The MIT License (MIT)
 
 Copyright (c) 2023 Rajasegar Chandran

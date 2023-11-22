@@ -1,4 +1,4 @@
-/**
+/*! @license
  * This code is based on a public codemod, which is subject to the original license terms.
  * Original codemod: https://github.com/ember-codemods/ember-3x-codemods/blob/master/transforms/notify-property-change/index.js
  *
