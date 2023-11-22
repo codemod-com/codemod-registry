@@ -27,27 +27,14 @@ const noop = {
 const ADD_BUILD_LEGACY_CTX_UTIL_CONTENT = `
 import { ReadonlyHeaders } from "next/dist/server/web/spec-extension/adapters/headers";
 import { ReadonlyRequestCookies } from "next/dist/server/web/spec-extension/adapters/request-cookies";
-import { headers, cookies } from "next/headers";
 
-// returns query object same as ctx.query but for app dir
-export const getQuery = (url: string, params: Record<string, string | string[]>) => {
-  if (!url.length) {
-    return params;
+export const buildLegacyCtx = ( params: Record<string, string | string[]>, searchParams: Record<string, string | string[]>, headers: ReadonlyHeaders, cookies: ReadonlyRequestCookies,) => {
+	return {
+	  query: { ...searchParams, ...params },
+	  params, 
+	  req: { headers, cookies }
+	}
   }
-
-  const { searchParams } = new URL(url);
-  const searchParamsObj = Object.fromEntries(searchParams.entries());
-
-  return { ...searchParamsObj, ...params };
-};
-
-export const buildLegacyContext = (headers: ReadonlyHeaders, cookies: ReadonlyRequestCookies, params: Record<string, string | string[]>) => {
-  return {
-    query: getQuery(headers.get('x-url') ?? '', params), 
-    params, 
-    req: { headers, cookies }
-  }
-}
 `;
 
 type Settings = Partial<Record<string, string | boolean | Collection<any>>>;
@@ -177,6 +164,11 @@ const buildPageProps = (j: JSCodeshift) => {
 				value: j.identifier('params'),
 				shorthand: true,
 			}),
+			j.objectProperty.from({
+				key: j.identifier('searchParams'),
+				value: j.identifier('searchParams'),
+				shorthand: true,
+			}),
 		],
 		typeAnnotation: j.tsTypeAnnotation(
 			j.tsTypeReference(j.identifier('PageProps')),
@@ -214,6 +206,7 @@ const buildBuildLegacyCtxVariableDeclaration = (j: JSCodeshift) => {
 			j.identifier('legacyCtx'),
 			j.callExpression(j.identifier('buildLegacyCtx'), [
 				j.identifier('params'),
+				j.identifier('searchParams'),
 				j.callExpression(j.identifier('headers'), []),
 				j.callExpression(j.identifier('cookies'), []),
 			]),
@@ -242,7 +235,7 @@ const addGenerateStaticParamsFunctionDeclaration: ModFunction<File, 'write'> = (
 	return [true, []];
 };
 
-const addPageParamsTypeAlias: ModFunction<File, 'write'> = (j, root) => {
+const addPagePropsTypeAlias: ModFunction<File, 'write'> = (j, root) => {
 	const pageParamsType = j.tsTypeAliasDeclaration(
 		j.identifier('Params'),
 		j.tsTypeLiteral([
@@ -264,6 +257,10 @@ const addPageParamsTypeAlias: ModFunction<File, 'write'> = (j, root) => {
 		j.tsTypeLiteral([
 			j.tsPropertySignature(
 				j.identifier('params'),
+				j.tsTypeAnnotation(j.tsTypeReference(j.identifier('Params'))),
+			),
+			j.tsPropertySignature(
+				j.identifier('searchParams'),
 				j.tsTypeAnnotation(j.tsTypeReference(j.identifier('Params'))),
 			),
 		]),
@@ -368,7 +365,7 @@ const addGetDataFunctionAsWrapper: ModFunction<File, 'write'> = (
 					sourceName: 'next',
 				},
 			],
-			[addPageParamsTypeAlias, root, {}],
+			[addPagePropsTypeAlias, root, {}],
 		],
 	];
 };
@@ -553,7 +550,7 @@ const addGetDataFunctionInline: ModFunction<File, 'write'> = (
 		]);
 	}
 
-	lazyModFunctions.push([addPageParamsTypeAlias, root, {}]);
+	lazyModFunctions.push([addPagePropsTypeAlias, root, {}]);
 
 	return [true, lazyModFunctions];
 };
