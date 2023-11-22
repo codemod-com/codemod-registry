@@ -502,6 +502,23 @@ const getPageContent = (
 	usesLayout: boolean,
 	nestedPathWithoutExtension: string,
 ) => {
+	if (newPagePath.includes('embed/page.tsx')) {
+		return `
+import type { Params } from "next/dist/shared/lib/router/utils/route-matcher";
+import { getData } from "../page";
+
+type PageProps = Readonly<{
+	params: Params;
+}>;
+
+const Page = ({ params }: PageProps) => {
+	await getData(params, true);
+
+	return null;
+};
+	
+export default Page;`;
+	}
 	if (newPagePath.includes('(individual-page-wrapper')) {
 		return `
 import OldPage from "@pages/${nestedPathWithoutExtension}";
@@ -519,7 +536,7 @@ export const generateMetadata = async () => await _generateMetadata(() => "", ()
 
 type PageProps = Readonly<{
 	params: Params;
-	}>;
+}>;
 
 const Page = ({ params }: PageProps) => {
 	const h = headers();
