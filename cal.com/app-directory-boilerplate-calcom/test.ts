@@ -212,8 +212,8 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 					import { _generateMetadata } from "app/_utils";
 					import type { Params } from "next/dist/shared/lib/router/utils/route-matcher";
 					import PageWrapper from "@components/PageWrapperAppDir";
-					import { headers } from "next/headers";
-					
+					import { headers, cookies } from "next/headers";
+					import { buildLegacyCtx } from "@lib/buildLegacyCtx";
 
 					export const generateMetadata = async () => await _generateMetadata(() => "", () => "");
 					
@@ -221,13 +221,16 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 						params: Params;
 					}>;
 
-					const Page = ({ params }: PageProps) => {
+					const Page = async ({ params }: PageProps) => {
 						const h = headers();
 						const nonce = h.get("x-nonce") ?? undefined;
 						
+						const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+						const props = await getData(legacyCtx);
+
 						return (
 							<PageWrapper requiresLicense={false} nonce={nonce} themeBasis={null}>
-								<OldPage />
+								<OldPage {...props} />
 							</PageWrapper>
 						);
 					};
@@ -270,8 +273,8 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 					import { _generateMetadata } from "app/_utils";
 					import type { Params } from "next/dist/shared/lib/router/utils/route-matcher";
 					import PageWrapper from "@components/PageWrapperAppDir";
-					import { headers } from "next/headers";
-					
+					import { headers, cookies } from "next/headers";
+					import { buildLegacyCtx } from "@lib/buildLegacyCtx";
 
 					export const generateMetadata = async () => await _generateMetadata(() => "", () => "");
 					
@@ -279,13 +282,16 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 						params: Params;
 					}>;
 
-					const Page = ({ params }: PageProps) => {
+					const Page = async ({ params }: PageProps) => {
 						const h = headers();
 						const nonce = h.get("x-nonce") ?? undefined;
 						
+						const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+						const props = await getData(legacyCtx);
+
 						return (
 							<PageWrapper requiresLicense={false} nonce={nonce} themeBasis={null}>
-								<OldPage />
+								<OldPage {...props} />
 							</PageWrapper>
 						);
 					};
@@ -356,9 +362,10 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 			import {_generateMetadata} from "app/_utils";
 			import type {Params} from "next/dist/shared/lib/router/utils/route-matcher";
 			import PageWrapper from "@components/PageWrapperAppDir";
-			import {headers} from "next/headers";
+			import {headers, cookies} from "next/headers";
+			import { buildLegacyCtx } from "@lib/buildLegacyCtx";
 
-			import b from 'b';
+			import b from 'b'; 
 			import { a } from 'a';
 			const getServerSideProps = (ctx) => {
 				return a + b;
@@ -369,10 +376,15 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 
 			export const generateMetadata = async ()=> await _generateMetadata(()=>"",()=>"");
 			type PageProps=Readonly<{params:Params;}>;
-			const Page=({params}:PageProps)=>{
+			const Page = async ({params}:PageProps)=>{
 				const h=headers();
 				const nonce=h.get("x-nonce") ?? undefined;
-			return(<PageWrapper requiresLicense={false} nonce={nonce }themeBasis={null}><OldPage/></PageWrapper>);};
+
+				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+				const props = await getData(legacyCtx);
+				
+				return(<PageWrapper requiresLicense={false} nonce={nonce }themeBasis={null}><OldPage {...props}/></PageWrapper>);
+			};
 			export default Page;
 			export const dynamic="force-dynamic";
 			`.replace(/(?!\.)\s/gm, ''),
