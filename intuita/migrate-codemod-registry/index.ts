@@ -5,7 +5,7 @@ import {
 	HandleFinish,
 	InitializeState,
 } from '@intuita-inc/filemod';
-import { parse, sep } from 'node:path';
+import { parse, sep, format } from 'node:path';
 
 type Dependencies = Record<string, never>;
 type State = {
@@ -106,6 +106,14 @@ const handleFile: HandleFile<Dependencies, State> = async (
 			api.joinPaths('codemods', ...directoryName.slice(0, -1), '*'),
 		);
 
+		const indexTsPath = format({
+			root: parsedPath.dir,
+			dir: parsedPath.dir,
+			base: 'index.ts',
+		});
+
+		const indexTsDoesExists = api.exists(indexTsPath);
+
 		{
 			const packageJsonPath = api.joinPaths(
 				api.currentWorkingDirectory,
@@ -126,6 +134,7 @@ const handleFile: HandleFile<Dependencies, State> = async (
 					...options,
 					name,
 					engine,
+					extension: indexTsDoesExists ? 'ts' : 'js',
 				},
 			});
 		}
@@ -205,7 +214,12 @@ const handleData: HandleData<Dependencies, State> = async (
 					? options['engine']
 					: null;
 
-			if (name === null || engine === null) {
+			const extension =
+				typeof options['extension'] === 'string'
+					? options['extension']
+					: null;
+
+			if (name === null || engine === null || extension === null) {
 				throw new Error(
 					'Name and engine need to be defined for package.json',
 				);
@@ -215,6 +229,8 @@ const handleData: HandleData<Dependencies, State> = async (
 				engine !== 'piranha'
 					? {
 							'@codemod-registry/tsconfig': 'workspace:*',
+							'@codemod-registry/utilities': 'workspace:*',
+							'@codemod-registry/cjs-builder': 'workspace:*',
 							typescript: '^5.2.2',
 							esbuild: '0.19.5',
 							mocha: '^10.2.0',
@@ -246,8 +262,7 @@ const handleData: HandleData<Dependencies, State> = async (
 			const scripts =
 				engine !== 'piranha'
 					? {
-							'build:cjs':
-								'esbuild ./src/index.ts --bundle --packages=external --platform=node --target=node16 --minify --minify-whitespace --format=cjs --legal-comments=inline --outfile=./dist/index.cjs',
+							'build:cjs': `cjs-builder ./src/index.${extension}`,
 							test: 'mocha',
 					  }
 					: undefined;
@@ -331,7 +346,12 @@ const handleData: HandleData<Dependencies, State> = async (
 		if (path.endsWith('tsconfig.json')) {
 			const data = JSON.stringify({
 				extends: '@codemod-registry/tsconfig',
-				include: ['./*.ts'],
+				include: [
+					'./src/**/*.ts',
+					'./src/**/*.js',
+					'./test/**/*.ts',
+					'./test/**/*.js',
+				],
 			});
 
 			return {
@@ -360,6 +380,7 @@ const handleData: HandleData<Dependencies, State> = async (
 		workspaces.unshift('builder');
 		workspaces.unshift('utilities');
 		workspaces.unshift('tsconfig');
+		workspaces.unshift('cjs-builder');
 
 		const data = [
 			'packages:',
