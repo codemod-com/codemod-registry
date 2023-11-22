@@ -403,7 +403,7 @@ const getPageContent = (
 	usesLayout: boolean,
 	nestedPathWithoutExtension: string,
 ) => {
-	if (newPagePath.includes('embed/page.tsx')) {
+	if (newPagePath.endsWith('embed')) {
 		return `
 import type { Params } from "next/dist/shared/lib/router/utils/route-matcher";
 import { getData } from "../page";

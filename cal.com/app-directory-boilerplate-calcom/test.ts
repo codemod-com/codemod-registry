@@ -42,6 +42,7 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 	it('should build correct files', async function (this: Context) {
 		const externalFileCommands = await transform({
 			'/opt/project/pages/a/index.tsx': 'TODO content',
+			'/opt/project/pages/a/embed.tsx': 'TODO content',
 			'/opt/project/pages/a/b.tsx': `
 			import { getLayout } from './getLayout';
 			export default function B(props) {
@@ -67,7 +68,7 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 			`,
 		});
 
-		deepStrictEqual(externalFileCommands.length, 8);
+		deepStrictEqual(externalFileCommands.length, 10);
 
 		ok(
 			externalFileCommands.some(
@@ -83,6 +84,14 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 				(command) =>
 					command.kind === 'upsertFile' &&
 					command.path === '/opt/project/pages/a/index.tsx',
+			),
+		);
+
+		ok(
+			externalFileCommands.some(
+				(command) =>
+					command.kind === 'upsertFile' &&
+					command.path === '/opt/project/pages/a/embed.tsx',
 			),
 		);
 
@@ -135,6 +144,32 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 					command.kind === 'upsertFile' &&
 					command.path === '/opt/project/pages/a/d.tsx',
 			),
+		);
+
+		ok(
+			externalFileCommands.some((command) => {
+				return (
+					command.kind === 'upsertFile' &&
+					command.path ===
+						'/opt/project/app/future/(shared-page-wrapper)/(no-layout)/a/embed/page.tsx' &&
+					command.data.replace(/\W/gm, '') ===
+						`
+					import type { Params } from "next/dist/shared/lib/router/utils/route-matcher";
+					import { getData } from "../page";
+					
+					type PageProps = Readonly<{
+						params: Params;
+					}>;
+					
+					const Page = ({ params }: PageProps) => {
+						await getData(params, true);
+					
+						return null;
+					};
+						
+					export default Page;`.replace(/\W/gm, '')
+				);
+			}),
 		);
 
 		ok(
