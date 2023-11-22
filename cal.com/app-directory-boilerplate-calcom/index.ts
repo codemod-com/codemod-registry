@@ -1,14 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { join, posix } from 'node:path';
-import tsmorph, {
-	ArrowFunction,
-	FunctionDeclaration,
-	FunctionExpression,
-	Identifier,
-	Node,
-	SourceFile,
-	SyntaxKind,
-} from 'ts-morph';
+import { posix } from 'node:path';
+import tsmorph, { Identifier, Node, SourceFile, SyntaxKind } from 'ts-morph';
 import type { HandleData, HandleFile, Filemod } from '@intuita-inc/filemod';
 
 // eslint-disable-next-line @typescript-eslint/ban-types
@@ -268,71 +260,11 @@ const getServerSideDataHookWithDeps = (sourceFile: SourceFile) => {
 	return dataHooksWithDeps;
 };
 
-type PageComponent = ArrowFunction | FunctionExpression | FunctionDeclaration;
-
-const getPageComponent = (sourceFile: SourceFile): PageComponent | null => {
-	const defaultExportedFunctionDeclaration = sourceFile
-		.getFunctions()
-		.find((f) => f.isDefaultExport());
-
-	if (defaultExportedFunctionDeclaration !== undefined) {
-		return defaultExportedFunctionDeclaration;
-	}
-
-	const exportAssignment = sourceFile
-		.getStatements()
-		.find((s) => Node.isExportAssignment(s));
-
-	const declarations =
-		exportAssignment
-			?.getFirstDescendantByKind(SyntaxKind.Identifier)
-			?.getSymbol()
-			?.getDeclarations() ?? [];
-
-	let pageComponent: PageComponent | null = null;
-
-	declarations.forEach((d) => {
-		if (Node.isVariableDeclaration(d)) {
-			const initializer = d?.getInitializer();
-
-			if (
-				Node.isArrowFunction(initializer) ||
-				Node.isFunctionExpression(initializer)
-			) {
-				pageComponent = initializer;
-				return;
-			}
-		}
-
-		if (Node.isFunctionDeclaration(d)) {
-			pageComponent = d;
-		}
-	});
-
-	return pageComponent ?? null;
-};
-
 const getPositionAfterImports = (sourceFile: SourceFile): number => {
 	const lastImportDeclaration =
 		sourceFile.getLastChildByKind(SyntaxKind.ImportDeclaration) ?? null;
 
 	return (lastImportDeclaration?.getChildIndex() ?? 0) + 1;
-};
-
-const getPositionAfterComponent = (sourceFile: SourceFile): number => {
-	const component = getPageComponent(sourceFile);
-
-	if (component === null) {
-		return 0;
-	}
-
-	return (
-		(Node.isFunctionDeclaration(component)
-			? component.getChildIndex()
-			: component
-					.getFirstAncestorByKind(SyntaxKind.VariableStatement)
-					?.getChildIndex() ?? 0) + 1
-	);
 };
 
 const buildPageFileData = (
@@ -373,6 +305,7 @@ const buildPageFileData = (
 		// inserting server side data hooks along with its dependencies to the future page
 		const serverSideDataHooks =
 			getServerSideDataHookWithDeps(legacyPageSourceFile);
+
 		const positionAfterImports = getPositionAfterImports(sourceFile);
 
 		sourceFile.insertStatements(positionAfterImports, serverSideDataHooks);
@@ -525,7 +458,9 @@ import OldPage from "@pages/${nestedPathWithoutExtension}";
 import { _generateMetadata } from "app/_utils";
 import type { Params } from "next/dist/shared/lib/router/utils/route-matcher";
 import PageWrapper from "@components/PageWrapperAppDir";
-import { headers } from "next/headers";
+import { headers, cookies } from "next/headers";
+import { buildLegacyCtx } from "@lib/buildLegacyCtx";
+
 ${
 	usesLayout
 		? 'import { getLayout } from "@calcom/features/MainLayoutAppDir";'
@@ -538,15 +473,18 @@ type PageProps = Readonly<{
 	params: Params;
 }>;
 
-const Page = ({ params }: PageProps) => {
+const Page = async ({ params }: PageProps) => {
 	const h = headers();
 	const nonce = h.get("x-nonce") ?? undefined;
+	
+	const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+	const props = await getData(legacyCtx);
 	
 	return (
 		<PageWrapper ${
 			usesLayout ? 'getLayout={getLayout} ' : ''
-		}requiresLicense={false} nonce={nonce} themeBasis={null}>
-			<OldPage />
+		} requiresLicense={false} nonce={nonce} themeBasis={null}>
+			<OldPage {...props} />
 		</PageWrapper>
 	);
 };
