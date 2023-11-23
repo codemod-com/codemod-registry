@@ -2,6 +2,9 @@ build
 node_modules
 .vscode
 .DS_Store
-# temporary ignores
-codemods
-.pnpm-workspace.yml
+.pnp
+.pnp.js
+dist
+*.pem
+.turbo
+

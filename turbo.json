@@ -1,0 +1,25 @@
+{
+	"$schema": "https://turbo.build/schema.json",
+	"pipeline": {
+		"build:cjs": {
+			"dependsOn": ["^build:cjs"],
+			"outputMode": "full",
+			"inputs": ["./codemod/**/*.ts", "./codemod/**/*.js"],
+			"outputs": ["./codemods/**/dist/index.cjs"]
+		},
+		"build": {
+			"dependsOn": ["^build"],
+			"inputs": ["./codemods/**/dist/index.cjs"],
+			"outputs": ["./builder/dist/**/*.*"]
+		},
+		"build:homedir": {
+			"dependsOn": ["^build:homedir"],
+			"inputs": ["./codemods/**/dist/index.cjs"],
+			"outputs": ["./builder/dist/**/*.*"]
+		},
+		"test": {
+			"dependsOn": ["^test"],
+			"cache": false
+		}
+	}
+}

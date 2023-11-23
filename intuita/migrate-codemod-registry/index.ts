@@ -90,8 +90,8 @@ const handleFile: HandleFile<Dependencies, State> = async (
 		parsedPath.name === 'index'
 			? 'src'
 			: parsedPath.name === 'test' && directoryName.at(-1) !== 'test'
-			? 'test'
-			: '',
+			  ? 'test'
+			  : '',
 		parsedPath.base,
 	);
 
@@ -384,16 +384,16 @@ const handleData: HandleData<Dependencies, State> = async (
 							'export default function transform(file: FileInfo, api: API): string;',
 					  ].join('\n')
 					: engine === 'ts-morph'
-					? [
-							"import type { SourceFile } from 'ts-morph';",
-							'export function handleSourceFile(sourceFile: SourceFile): string | undefined;',
-					  ].join('\n')
-					: engine === 'repomod-engine'
-					? [
-							"import type { Filemod } from '@intuita-inc/filemod';",
-							'export const repomod: Filemod<{}, {}>;',
-					  ].join('\n')
-					: '';
+					  ? [
+								"import type { SourceFile } from 'ts-morph';",
+								'export function handleSourceFile(sourceFile: SourceFile): string | undefined;',
+					    ].join('\n')
+					  : engine === 'repomod-engine'
+					    ? [
+									"import type { Filemod } from '@intuita-inc/filemod';",
+									'export const repomod: Filemod<{}, {}>;',
+					      ].join('\n')
+					    : '';
 
 			return {
 				kind: 'upsertData',

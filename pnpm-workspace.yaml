@@ -1,0 +1,5 @@
+packages:
+    - './tsconfig'
+    - './builder'
+    - './utilities'
+    - './cjs-builder'
