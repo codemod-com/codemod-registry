@@ -255,4 +255,4 @@ const build = async () => {
 	}
 };
 
-await build();
+build();

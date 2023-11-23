@@ -1,0 +1,7 @@
+{
+	"extends": "@codemod-registry/tsconfig",
+	"include": ["./*.ts"],
+	"compilerOptions": {
+		"outDir": "./dist"
+	}
+}

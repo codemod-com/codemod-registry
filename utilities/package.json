@@ -1,0 +1,11 @@
+{
+	"name": "@codemod-registry/utilities",
+	"type": "module",
+	"devDependencies": {
+		"@codemod-registry/tsconfig": "workspace:*",
+		"@types/jscodeshift": "^0.11.10"
+	},
+	"dependencies": {
+		"jscodeshift": "^0.15.1"
+	}
+}
