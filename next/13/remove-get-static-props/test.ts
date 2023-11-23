@@ -71,8 +71,13 @@ describe('next 13 remove-get-static-props', function () {
 			[key: string]: string | string[] | undefined
 		};
 
+		type SearchParams = {
+			[key: string]: string | string[]
+		};
+
 		type PageProps = {
 				params: Params
+searchParams: SearchParams
 		};
 
 		export async function getServerSideProps(ctx) {
@@ -85,8 +90,8 @@ describe('next 13 remove-get-static-props', function () {
 			return { users };
 		}
 			
-		export default async function Component({ params }: PageProps) {
-			const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+		export default async function Component({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+			const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 			const { users } = await getData(legacyCtx);
 
 			return users.map(user => <b>user</b>)
@@ -144,8 +149,13 @@ describe('next 13 remove-get-static-props', function () {
 			[key: string]: string | string[] | undefined
 		};
 
+		type SearchParams = {
+			[key: string]: string | string[]
+		};
+
 		type PageProps = {
 				params: Params
+searchParams: SearchParams
 		};
 		
 			export async function getStaticProps() {
@@ -162,8 +172,8 @@ describe('next 13 remove-get-static-props', function () {
 				return { users };
 		}
 
-			export default async function Component({ params }: PageProps) {
-				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+			export default async function Component({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const {users} = await getData(legacyCtx);
 
 				return users.map(user => <b>user</b>)
@@ -205,8 +215,13 @@ describe('next 13 remove-get-static-props', function () {
 				[key: string]: string | string[] | undefined
 			};
 
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
+
 			type PageProps = {
 					params: Params
+searchParams: SearchParams
 			};
 
 			export async function getStaticProps(context: GetStaticPropsContext) {
@@ -229,8 +244,8 @@ describe('next 13 remove-get-static-props', function () {
 				return "props" in result ? result.props : {};
 			}
 
-			export default async function Component({ params }: PageProps) {
-				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+			export default async function Component({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const {users} = await getData(legacyCtx);
 
 				return users.map(user => <b>user</b>)
@@ -271,9 +286,14 @@ describe('next 13 remove-get-static-props', function () {
 			type Params = {
 				[key: string]: string | string[] | undefined
 			};
+
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
 	
 			type PageProps = {
 					params: Params
+searchParams: SearchParams
 			};
 			
 			export async function getStaticProps() {
@@ -286,8 +306,8 @@ describe('next 13 remove-get-static-props', function () {
 				return  { allPosts };
 			}
 
-			export default async function Component({ params }: PageProps) {
-				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+			export default async function Component({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const { allPosts: { edges } } = await getData(legacyCtx);
 
 				return edges.map(edge => <b>edge</b>)
@@ -329,8 +349,13 @@ describe('next 13 remove-get-static-props', function () {
 				[key: string]: string | string[] | undefined
 			};
 
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
+
 			type PageProps = {
 					params: Params
+searchParams: SearchParams
 			};
 
 			export async function getStaticProps() {
@@ -347,8 +372,8 @@ describe('next 13 remove-get-static-props', function () {
 				return { users, groups };
 			}
 
-			export default async function Component({ params }: PageProps) {
-				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+			export default async function Component({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const {users, groups } = await getData(legacyCtx);
 
 				return [...users, ...groups].map(obj => <b>{obj}</b>)
@@ -393,8 +418,13 @@ describe('next 13 remove-get-static-props', function () {
 				[key: string]: string | string[] | undefined
 			};
 
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
+
 			type PageProps = {
 					params: Params
+searchParams: SearchParams
 			};
 
 			export async function getStaticProps() {
@@ -407,8 +437,8 @@ describe('next 13 remove-get-static-props', function () {
 				return { users };
 			}
 
-			async function SingleAppPage({ params }: PageProps) {
-				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+			async function SingleAppPage({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const props = await getData(legacyCtx);
 				return null;
 			}
@@ -450,8 +480,13 @@ describe('next 13 remove-get-static-props', function () {
 				[key: string]: string | string[] | undefined
 			};
 
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
+
 			type PageProps = {
 				params: Params
+searchParams: SearchParams
 			};
 
 			export async function getStaticProps() {
@@ -462,8 +497,8 @@ describe('next 13 remove-get-static-props', function () {
 				return { a } ;
 			}
 			
-			export async function SingleAppPage({ params }: PageProps) {
-				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+			export async function SingleAppPage({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const props = await getData(legacyCtx);
 				return null;
 			}
@@ -503,9 +538,14 @@ describe('next 13 remove-get-static-props', function () {
 			type Params = {
 				[key: string]: string | string[] | undefined
 			};
+
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
 	
 			type PageProps = {
 					params: Params
+searchParams: SearchParams
 			};
 
 			export async function getStaticProps() {
@@ -516,8 +556,8 @@ describe('next 13 remove-get-static-props', function () {
 				return { a } ;
 			}
 			
-			export const SingleAppPage = async ({ params }: PageProps) => {
-				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+			export const SingleAppPage = async ({ params: pageParams, searchParams: pageSearchParams }: PageProps) => {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const props = await getData(legacyCtx);
 				return null;
 			}
@@ -560,8 +600,13 @@ describe('next 13 remove-get-static-props', function () {
 				[key: string]: string | string[] | undefined
 			};
 
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
+
 			type PageProps = {
 					params: Params
+searchParams: SearchParams
 			};
 
 			export async function getStaticProps() {
@@ -574,8 +619,8 @@ describe('next 13 remove-get-static-props', function () {
 				return { a } ;
 			}
 
-			export const SingleAppPage = async ({ params }: PageProps) => {
-				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+			export const SingleAppPage = async ({ params: pageParams, searchParams: pageSearchParams }: PageProps) => {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				await getData(legacyCtx);
 				return null;
 			}
@@ -615,8 +660,13 @@ describe('next 13 remove-get-static-props', function () {
 				[key: string]: string | string[] | undefined
 			};
 
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
+
 			type PageProps = {
 					params: Params
+searchParams: SearchParams
 			};
 		
 			export async function getStaticProps() {
@@ -629,8 +679,8 @@ describe('next 13 remove-get-static-props', function () {
 				return { users } ;
 			}
 
-			const Home = async ({ params }: PageProps) => {
-				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+			const Home = async ({ params: pageParams, searchParams: pageSearchParams }: PageProps) => {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const { users } = await getData(legacyCtx);
 				return (<Component users={users} />)
 			};
@@ -669,9 +719,14 @@ describe('next 13 remove-get-static-props', function () {
 			type Params = {
 				[key: string]: string | string[] | undefined
 			};
+
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
 	
 			type PageProps = {
 					params: Params
+searchParams: SearchParams
 			};
 
 			export async function getStaticProps() {
@@ -684,8 +739,8 @@ describe('next 13 remove-get-static-props', function () {
 				return { users } ;
 			}
 			
-			const Home = async ({ params }: PageProps) => {
-				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+			const Home = async ({ params: pageParams, searchParams: pageSearchParams }: PageProps) => {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const { users } = await getData(legacyCtx);
 				return (<><Component users={users} /></>)
 			};
@@ -726,9 +781,14 @@ describe('next 13 remove-get-static-props', function () {
 			type Params = {
 				[key: string]: string | string[] | undefined
 			};
+
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
 	
 			type PageProps = {
 					params: Params
+searchParams: SearchParams
 			};
 
 			export async function getStaticProps() {
@@ -741,8 +801,8 @@ describe('next 13 remove-get-static-props', function () {
 				return { users } ;
 			}
 
-			const AppPage: AppPageType['default'] = async function AppPage({ params }: PageProps) {
-				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+			const AppPage: AppPageType['default'] = async function AppPage({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const props = await getData(legacyCtx);
 				return null;
 			};
@@ -786,9 +846,14 @@ describe('next 13 remove-get-static-props', function () {
 			type Params = {
 				[key: string]: string | string[] | undefined
 			};
+
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
 	
 			type PageProps = {
 				params: Params
+searchParams: SearchParams
 			};
 
 			export async function getStaticProps() {
@@ -804,8 +869,8 @@ describe('next 13 remove-get-static-props', function () {
 				return { users, groups } ;
 			}
 
-			export default async function Component({params}: PageProps) {
-				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+			export default async function Component({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const { users, groups } = await getData(legacyCtx);
 
 				return <C prop={(a) => {
@@ -857,8 +922,13 @@ describe('next 13 remove-get-static-props', function () {
 				[key: string]: string | string[] | undefined
 			};
 
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
+
 			type PageProps = {
 				params: Params
+searchParams: SearchParams
 			};
 		
 			export async function getStaticProps() {
@@ -874,8 +944,8 @@ describe('next 13 remove-get-static-props', function () {
 				return { users, groups } ;
 			}
 			
-			export default async function Component({ params }: PageProps) {
-				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+			export default async function Component({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const { users, groups } = await getData(legacyCtx);
 
 				return <C prop={(a) => {
@@ -927,8 +997,13 @@ describe('next 13 remove-get-static-props', function () {
 				[key: string]: string | string[] | undefined
 			};
 
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
+
 			type PageProps = {
 					params: Params
+searchParams: SearchParams
 			};
 
 			export const getStaticProps = async () => {
@@ -944,8 +1019,8 @@ describe('next 13 remove-get-static-props', function () {
 				return { users, groups } ;
 			}
 			
-			export default async function Component({ params }: PageProps) {
-				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+			export default async function Component({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const { users, groups } = await getData(legacyCtx);
 
 				return <C prop={(a) => {
@@ -1001,8 +1076,13 @@ describe('next 13 remove-get-static-props', function () {
 				[key: string]: string | string[] | undefined
 			};
 
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
+
 			type PageProps = {
 				params: Params
+searchParams: SearchParams
 			};
 
 			export const getStaticProps =  async () => {
@@ -1027,8 +1107,8 @@ describe('next 13 remove-get-static-props', function () {
 				return { users, groups } ;
 			}
 
-			export default async function Component({ params }: PageProps) {
-				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+			export default async function Component({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const { users, groups } = await getData(legacyCtx);
 
 				return <C prop={(a) => {
@@ -1084,8 +1164,13 @@ describe('next 13 remove-get-static-props', function () {
 				[key: string]: string | string[] | undefined
 			};
 
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
+
 			type PageProps = {
 					params: Params
+searchParams: SearchParams
 			};
 		
 			export const getStaticProps = async () => {
@@ -1110,8 +1195,8 @@ describe('next 13 remove-get-static-props', function () {
 				return { users, groups } ;
 			}
 
-			export default async function Component({ params }: PageProps) {
-				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+			export default async function Component({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const { users, groups } = await getData(legacyCtx);
 
 				return <C prop={(a) => {
@@ -1156,8 +1241,13 @@ describe('next 13 remove-get-static-props', function () {
 				[key: string]: string | string[] | undefined
 			};
 
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
+
 			type PageProps = {
 					params: Params
+searchParams: SearchParams
 			};
 		
 			export const getStaticProps = async () => {
@@ -1168,8 +1258,8 @@ describe('next 13 remove-get-static-props', function () {
 				return {};
 			}	
 			
-			export default async function Component({ params }: PageProps) {
-				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+			export default async function Component({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				await getData(legacyCtx);
 
 				return null;
@@ -1218,9 +1308,14 @@ describe('next 13 remove-get-static-props', function () {
 			type Params = {
 				[key: string]: string | string[] | undefined
 			};
+
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
 	
 			type PageProps = {
 				params: Params
+searchParams: SearchParams
 			};
 		
 			export async function getServerSideProps() {
@@ -1237,8 +1332,8 @@ describe('next 13 remove-get-static-props', function () {
 				return { projects } ;
 			}
 
-			export default async function Dashboard({ params }: PageProps) {
-				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+			export default async function Dashboard({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const {projects} = await getData(legacyCtx);
 				return (
 					<ul>
@@ -1295,8 +1390,13 @@ describe('next 13 remove-get-static-props', function () {
 				[key: string]: string | string[] | undefined
 			};
 
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
+
 			type PageProps = {
 					params: Params
+searchParams: SearchParams
 			};
 		
 			export async function getStaticPaths() {
@@ -1324,8 +1424,8 @@ describe('next 13 remove-get-static-props', function () {
 				return { post } ;
 			}
 
-			export default async function Post({ params }: PageProps) {
-				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+			export default async function Post({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const {post} = await getData(legacyCtx);
 
 				return <PostLayout post={post} />;
@@ -1379,8 +1479,13 @@ describe('next 13 remove-get-static-props', function () {
 				[key: string]: string | string[] | undefined
 			};
 
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
+
 			type PageProps = {
 					params: Params
+searchParams: SearchParams
 			};
 			
 			export async function getStaticPaths() {
@@ -1408,8 +1513,8 @@ describe('next 13 remove-get-static-props', function () {
 				return { post } ;
 			}
 
-			export default async function Post({ params }: PageProps) {
-				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+			export default async function Post({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const {post} = await getData(legacyCtx);
 
 				return <PostLayout post={post} />;
@@ -1463,8 +1568,13 @@ describe('next 13 remove-get-static-props', function () {
 				[key: string]: string | string[] | undefined
 			};
 
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
+
 			type PageProps = {
 					params: Params
+searchParams: SearchParams
 			};
 
 			export async function getStaticPaths() {
@@ -1492,8 +1602,8 @@ describe('next 13 remove-get-static-props', function () {
 				return { post } ;
 			}
 
-			export default async function Post({ params }: PageProps) {
-				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+			export default async function Post({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const {post} = await getData(legacyCtx);
 
 				return <PostLayout post={post} />;
@@ -1547,8 +1657,13 @@ describe('next 13 remove-get-static-props', function () {
 				[key: string]: string | string[] | undefined
 			};
 
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
+
 			type PageProps = {
 					params: Params
+searchParams: SearchParams
 			};
 
 			export async function getStaticPaths() {
@@ -1576,8 +1691,8 @@ describe('next 13 remove-get-static-props', function () {
 				return { post } ;
 			}
 
-			export default async function Post({ params }: PageProps) {
-				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+			export default async function Post({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const {post} = await getData(legacyCtx);
 
 				return <PostLayout post={post} />;
@@ -1619,8 +1734,13 @@ describe('next 13 remove-get-static-props', function () {
 			[key: string]: string | string[] | undefined
 		};
 
+		type SearchParams = {
+			[key: string]: string | string[]
+		};
+
 		type PageProps = {
 				params: Params
+searchParams: SearchParams
 		};
 		
 			export async function getStaticProps() {
@@ -1641,8 +1761,8 @@ describe('next 13 remove-get-static-props', function () {
 				return "props" in result ? result.props : {};
 		}
 
-			export default async function Component({ params }: PageProps) {
-				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+			export default async function Component({ params: pageParams, searchParams: pageSearchParams }: PageProps) {
+				const legacyCtx = buildLegacyCtx(pageParams, pageSearchParams, headers(), cookies());
 				const {users} = await getData(legacyCtx);
 
 				return users.map(user => <b>user</b>)
