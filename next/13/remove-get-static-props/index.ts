@@ -188,11 +188,11 @@ const buildGetDataVariableDeclaration = (
 	const id = j.Identifier.check(firstParam)
 		? j.identifier(firstParam.name)
 		: j.ObjectPattern.check(firstParam)
-		? j.objectPattern.from({
-				...firstParam,
-				typeAnnotation: null,
-		  })
-		: null;
+		  ? j.objectPattern.from({
+					...firstParam,
+					typeAnnotation: null,
+		    })
+		  : null;
 
 	return id === null
 		? j.expressionStatement(callExpression)

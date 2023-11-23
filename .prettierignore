@@ -1,5 +1,6 @@
 node_modules
 pnpm-lock.yaml
 build
+dist
 .all-contributorsrc
 README.md
