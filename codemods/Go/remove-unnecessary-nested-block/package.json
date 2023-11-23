@@ -1,0 +1,8 @@
+{
+	"name": "@codemod-registry/go-remove-unnecessary-nested-block",
+	"files": [
+		"README.md",
+		"config.json"
+	],
+	"type": "module"
+}

@@ -1,0 +1,29 @@
+{
+	"name": "@codemod-registry/next-14-next-og-import",
+	"dependencies": {},
+	"devDependencies": {
+		"@codemod-registry/tsconfig": "workspace:*",
+		"@codemod-registry/utilities": "workspace:*",
+		"@codemod-registry/cjs-builder": "workspace:*",
+		"typescript": "^5.2.2",
+		"esbuild": "0.19.5",
+		"mocha": "^10.2.0",
+		"@types/mocha": "^10.0.4",
+		"ts-node": "^10.9.1",
+		"jscodeshift": "^0.15.1",
+		"@types/jscodeshift": "^0.11.10"
+	},
+	"main": "./dist/index.cjs",
+	"types": "/dist/index.d.ts",
+	"scripts": {
+		"build:cjs": "cjs-builder ./src/index.ts",
+		"test": "mocha"
+	},
+	"files": [
+		"README.md",
+		"config.json",
+		"./dist/index.cjs",
+		"./index.d.ts"
+	],
+	"type": "module"
+}
