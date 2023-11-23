@@ -491,12 +491,14 @@ const Page = async ({ params }: PageProps) => {
 	
 export default Page;`;
 	}
-	return `import Page from "@pages/${nestedPathWithoutExtension}";
-			import { _generateMetadata } from "app/_utils";
-			
-			export const generateMetadata = async () => await _generateMetadata(() => "", () => "");
-			
-			export default Page;`;
+
+	return `
+import Page from "@pages/${nestedPathWithoutExtension}";
+import { _generateMetadata } from "app/_utils";
+
+export const generateMetadata = async () => await _generateMetadata(() => "", () => "");
+
+export default Page;`;
 };
 
 const getNewPagePath = (
