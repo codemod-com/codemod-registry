@@ -1,0 +1,8 @@
+{
+	"name": "@codemod-registry/java-delete-unused-fields",
+	"files": [
+		"README.md",
+		"config.json"
+	],
+	"type": "module"
+}
