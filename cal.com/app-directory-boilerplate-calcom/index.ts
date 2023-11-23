@@ -30,6 +30,38 @@ type DataAPI = Parameters<HandleData<Dependencies, State>>[0];
 type FileCommand = Awaited<ReturnType<HandleFile<Dependencies, State>>>[number];
 type DataCommand = Awaited<ReturnType<HandleData<Dependencies, State>>>;
 
+const addUseClientStatement = (
+	oldPath: string,
+	oldData: string,
+): DataCommand => {
+	const project = new tsmorph.Project({
+		useInMemoryFileSystem: true,
+		skipFileDependencyResolution: true,
+		compilerOptions: {
+			allowJs: true,
+		},
+	});
+
+	const sourceFile = project.createSourceFile(oldPath ?? '', oldData);
+
+	const hasUseClient = sourceFile
+		.getDescendantsOfKind(SyntaxKind.StringLiteral)
+		.some((node) => {
+			const literal = node.getFullText();
+			return literal === 'use client';
+		});
+
+	if (!hasUseClient) {
+		sourceFile.insertStatements(0, `'use client';`);
+	}
+
+	return {
+		kind: 'upsertData',
+		path: oldPath,
+		data: sourceFile.getFullText(),
+	};
+};
+
 const ROUTE_SEGMENT_CONFIG_OPTIONS = [
 	'dynamic',
 	'dynamicParams',
@@ -618,6 +650,17 @@ const handleData: HandleData<Dependencies, State> = async (
 
 		if (filePurpose === FilePurpose.ROUTE_PAGE && options.oldPath) {
 			return buildPageFileData(api, path, options, filePurpose);
+		}
+
+		if (
+			filePurpose === FilePurpose.ORIGINAL_PAGE &&
+			options.oldPath &&
+			options.oldData
+		) {
+			return addUseClientStatement(
+				String(options.oldPath),
+				String(options.oldData),
+			);
 		}
 
 		return {
