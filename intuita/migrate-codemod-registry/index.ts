@@ -5,9 +5,12 @@ import {
 	HandleFinish,
 	InitializeState,
 } from '@intuita-inc/filemod';
+import type jscodeshift from 'jscodeshift';
 import { parse, sep, format } from 'node:path';
 
-type Dependencies = Record<string, never>;
+type Dependencies = {
+	jscodeshift: typeof jscodeshift;
+};
 type State = {
 	step: 'UPSERTING_CODEMODS' | 'UPSERTING_WORKSPACES';
 	workspaces: Set<string>;
@@ -47,6 +50,14 @@ const handleFile: HandleFile<Dependencies, State> = async (
 	const cwdDirectoryNames = parsedCwd.dir.split(sep);
 	const pathDirectoryNames = parsedPath.dir.split(sep);
 
+	if (
+		['cjs-builder', 'builder', 'utilities', 'tsconfig'].some((name) =>
+			pathDirectoryNames.includes(name),
+		)
+	) {
+		return [];
+	}
+
 	if (!['.ts', '.js', '.json', '.md', '.toml'].includes(parsedPath.ext)) {
 		return [];
 	}
@@ -62,7 +73,7 @@ const handleFile: HandleFile<Dependencies, State> = async (
 					kind: 'upsertFile',
 					path: api.joinPaths(
 						api.currentWorkingDirectory,
-						'.pnpm-workspace.yml',
+						'pnpm-workspace.yaml',
 					),
 					options,
 				},
@@ -107,12 +118,27 @@ const handleFile: HandleFile<Dependencies, State> = async (
 		);
 
 		const indexTsPath = format({
-			root: parsedPath.dir,
+			root: parsedPath.root,
 			dir: parsedPath.dir,
 			base: 'index.ts',
 		});
 
-		const indexTsDoesExists = api.exists(indexTsPath);
+		const testTsPath = format({
+			root: parsedPath.root,
+			dir: parsedPath.dir,
+			base: 'test.ts',
+		});
+
+		const embeddedTestTsPath = format({
+			root: parsedPath.root,
+			dir: parsedPath.dir + '/test',
+			base: 'test.ts',
+		});
+
+		const indexTsDoesExist = api.exists(indexTsPath);
+
+		const testTsDoesExist =
+			api.exists(testTsPath) || api.exists(embeddedTestTsPath);
 
 		{
 			const packageJsonPath = api.joinPaths(
@@ -134,12 +160,15 @@ const handleFile: HandleFile<Dependencies, State> = async (
 					...options,
 					name,
 					engine,
-					extension: indexTsDoesExists ? 'ts' : 'js',
+					extension: indexTsDoesExist ? 'ts' : 'js',
+					testTsDoesExist,
 				},
 			});
 		}
 
-		if (engine !== 'recipe') {
+		const jsEngineUsed = engine !== 'recipe' && engine !== 'piranha';
+
+		if (jsEngineUsed) {
 			const tsconfigJsonPath = api.joinPaths(
 				api.currentWorkingDirectory,
 				'codemods',
@@ -154,7 +183,7 @@ const handleFile: HandleFile<Dependencies, State> = async (
 			});
 		}
 
-		{
+		if (jsEngineUsed) {
 			const mocharcPath = api.joinPaths(
 				api.currentWorkingDirectory,
 				'codemods',
@@ -171,7 +200,7 @@ const handleFile: HandleFile<Dependencies, State> = async (
 			});
 		}
 
-		if (engine !== 'recipe' || engine !== 'piranha') {
+		if (jsEngineUsed) {
 			const indexDtsPath = api.joinPaths(
 				api.currentWorkingDirectory,
 				'codemods',
@@ -194,7 +223,7 @@ const handleFile: HandleFile<Dependencies, State> = async (
 };
 
 const handleData: HandleData<Dependencies, State> = async (
-	_,
+	api,
 	path,
 	__,
 	options,
@@ -219,14 +248,24 @@ const handleData: HandleData<Dependencies, State> = async (
 					? options['extension']
 					: null;
 
+			const testTsDoesExist =
+				typeof options['testTsDoesExist'] === 'boolean'
+					? options['testTsDoesExist']
+					: false;
+
 			if (name === null || engine === null || extension === null) {
 				throw new Error(
 					'Name and engine need to be defined for package.json',
 				);
 			}
 
+			const jsEngineUsed = engine !== 'recipe' && engine !== 'piranha';
+
+			const dependencies: Record<string, string> | undefined =
+				jsEngineUsed ? {} : undefined;
+
 			const devDependencies: Record<string, string> | undefined =
-				engine !== 'piranha'
+				jsEngineUsed
 					? {
 							'@codemod-registry/tsconfig': 'workspace:*',
 							'@codemod-registry/utilities': 'workspace:*',
@@ -252,29 +291,65 @@ const handleData: HandleData<Dependencies, State> = async (
 				// this might be required sometimes
 				devDependencies['memfs'] = '^4.6.0';
 				devDependencies['ts-morph'] = '^19.0.0';
-				devDependencies['jscodeshift'] = '^0.15.1';
+				devDependencies['jscodeshift'] = !path.includes(
+					'remove-get-static-props',
+				)
+					? '^0.15.1'
+					: '0.14.0';
 				devDependencies['@types/jscodeshift'] = '^0.11.10';
 			}
 
-			const main = engine !== 'piranha' ? './dist/index.cjs' : undefined;
-			const types = engine !== 'piranha' ? '/dist/index.d.ts' : undefined;
+			if (dependencies && path.includes('ember/5/no-implicit-this')) {
+				dependencies['ember-codemods-telemetry-helpers'] = '^3.0.0';
+				dependencies['ember-template-recast'] = '^6.1.4';
+				dependencies['debug'] = '^4.3.4';
+			}
 
-			const scripts =
-				engine !== 'piranha'
-					? {
-							'build:cjs': `cjs-builder ./src/index.${extension}`,
-							test: 'mocha',
-					  }
-					: undefined;
+			if (
+				dependencies &&
+				path.includes('next/13/move-css-in-js-styles')
+			) {
+				dependencies['sinon'] = '^15.0.1';
+			}
+
+			if (
+				dependencies &&
+				(path.includes('app-directory-boilerplate') ||
+					path.includes('replace-next-head'))
+			) {
+				dependencies['mdast-util-from-markdown'] = '^2.0.0';
+				dependencies['mdast-util-to-markdown'] = '^2.1.0';
+				dependencies['micromark-extension-mdxjs'] = '^2.0.0';
+				dependencies['mdast-util-mdx'] = '^3.0.0';
+				dependencies['unist-util-visit'] = '^5.0.0';
+			}
+
+			if (dependencies && path.includes('replace-next-head')) {
+				dependencies['unist-util-filter'] = '^5.0.1';
+			}
+
+			const main = jsEngineUsed ? './dist/index.cjs' : undefined;
+			const types = jsEngineUsed ? '/dist/index.d.ts' : undefined;
+
+			const scripts: Record<string, string> | undefined = jsEngineUsed
+				? {
+						'build:cjs': `cjs-builder ./src/index.${extension}`,
+				  }
+				: undefined;
+
+			if (scripts !== undefined && testTsDoesExist) {
+				scripts['test'] = 'mocha';
+			}
 
 			const files: string[] = ['README.md', 'config.json'];
 
-			if (engine !== 'piranha') {
+			if (jsEngineUsed) {
 				files.push('./dist/index.cjs', './index.d.ts');
 			}
 
 			const data = JSON.stringify({
 				name,
+				dependencies,
 				devDependencies,
 				main,
 				types,
@@ -331,6 +406,7 @@ const handleData: HandleData<Dependencies, State> = async (
 			const data = JSON.stringify({
 				loader: ['ts-node/esm'],
 				'full-trace': true,
+				failZero: false,
 				bail: true,
 				spec: './**/test.ts',
 				timeout: 5000,
@@ -361,6 +437,51 @@ const handleData: HandleData<Dependencies, State> = async (
 			};
 		}
 
+		if (path.endsWith('test.ts')) {
+			const data =
+				typeof options['data'] === 'string' ? options['data'] : null;
+
+			if (data === null) {
+				throw new Error('Data must be present for test.ts files');
+			}
+
+			const { jscodeshift: j } = api.getDependencies();
+
+			const root = j.withParser('tsx')(data);
+
+			// adapted from codemod.studio AI
+			let dirtyFlag = false;
+
+			root.find(j.ImportDeclaration).forEach((path) => {
+				if (path.node.type === 'ImportDeclaration') {
+					if (path.node.source.value === './index.js') {
+						path.node.source.value = '../src/index.js';
+						dirtyFlag = true;
+					}
+
+					if (path.node.source.value === '../index.js') {
+						path.node.source.value = '../src/index.js';
+						dirtyFlag = true;
+					}
+
+					if (
+						path.node.source.value
+							?.toString()
+							.endsWith('../utilities.js')
+					) {
+						path.node.source.value = '@codemod-registry/utilities';
+						dirtyFlag = true;
+					}
+				}
+			});
+
+			return {
+				kind: 'upsertData',
+				path,
+				data: dirtyFlag ? root.toSource() : data,
+			};
+		}
+
 		if (typeof options['data'] === 'string') {
 			return {
 				kind: 'upsertData',
@@ -374,7 +495,7 @@ const handleData: HandleData<Dependencies, State> = async (
 
 	if (
 		state.step === 'UPSERTING_WORKSPACES' &&
-		path.endsWith('.pnpm-workspace.yml')
+		path.endsWith('pnpm-workspace.yaml')
 	) {
 		const workspaces = Array.from(state.workspaces).sort();
 		workspaces.unshift('builder');
@@ -384,7 +505,7 @@ const handleData: HandleData<Dependencies, State> = async (
 
 		const data = [
 			'packages:',
-			...workspaces.map((workspace) => `\t- './${workspace}'`),
+			...workspaces.map((workspace) => `  - './${workspace}'`),
 			'',
 		].join('\n');
 
@@ -409,7 +530,7 @@ const handleFinish: HandleFinish<State> = async (_, state) => {
 };
 
 export const repomod: Filemod<Dependencies, State> = {
-	includePatterns: ['**/*.{js,ts,json,md,toml}'],
+	includePatterns: ['**/**/*.{js,ts,json,md,toml}'],
 	excludePatterns: ['**/node_modules/**', '**/build/**', '**/codemods/**'],
 	initializeState,
 	handleFile,
