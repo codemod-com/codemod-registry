@@ -28,7 +28,7 @@ const ADD_BUILD_LEGACY_CTX_UTIL_CONTENT = `
 import { ReadonlyHeaders } from "next/dist/server/web/spec-extension/adapters/headers";
 import { ReadonlyRequestCookies } from "next/dist/server/web/spec-extension/adapters/request-cookies";
 
-export const buildLegacyCtx = ( params: Record<string, string | string[]>, searchParams: Record<string, string | string[]>, headers: ReadonlyHeaders, cookies: ReadonlyRequestCookies,) => {
+export const buildLegacyCtx = ( params: Record<string, string | string[] | undefined>, searchParams: Record<string, string | string[]>, headers: ReadonlyHeaders, cookies: ReadonlyRequestCookies,) => {
 	return {
 	  query: { ...searchParams, ...params },
 	  params, 
@@ -237,7 +237,7 @@ const addGenerateStaticParamsFunctionDeclaration: ModFunction<File, 'write'> = (
 };
 
 const addPagePropsTypeAlias: ModFunction<File, 'write'> = (j, root) => {
-	const pageParamsType = j.tsTypeAliasDeclaration(
+	const paramsType = j.tsTypeAliasDeclaration(
 		j.identifier('Params'),
 		j.tsTypeLiteral([
 			j.tsIndexSignature(
@@ -253,6 +253,21 @@ const addPagePropsTypeAlias: ModFunction<File, 'write'> = (j, root) => {
 		]),
 	);
 
+	const searchParamsType = j.tsTypeAliasDeclaration(
+		j.identifier('SearchParams'),
+		j.tsTypeLiteral([
+			j.tsIndexSignature(
+				[j.identifier('key: string')],
+				j.tsTypeAnnotation(
+					j.tsUnionType([
+						j.tsStringKeyword(),
+						j.tsArrayType(j.tsStringKeyword()),
+					]),
+				),
+			),
+		]),
+	);
+
 	const pagePropsType = j.tsTypeAliasDeclaration(
 		j.identifier('PageProps'),
 		j.tsTypeLiteral([
@@ -262,7 +277,9 @@ const addPagePropsTypeAlias: ModFunction<File, 'write'> = (j, root) => {
 			),
 			j.tsPropertySignature(
 				j.identifier('searchParams'),
-				j.tsTypeAnnotation(j.tsTypeReference(j.identifier('Params'))),
+				j.tsTypeAnnotation(
+					j.tsTypeReference(j.identifier('SearchParams')),
+				),
 			),
 		]),
 	);
@@ -271,7 +288,7 @@ const addPagePropsTypeAlias: ModFunction<File, 'write'> = (j, root) => {
 		program.value.body.splice(
 			getFirstIndexAfterImports(j, root),
 			0,
-			...[pageParamsType, pagePropsType],
+			...[paramsType, searchParamsType, pagePropsType],
 		);
 	});
 

@@ -71,9 +71,13 @@ describe('next 13 remove-get-static-props', function () {
 			[key: string]: string | string[] | undefined
 		};
 
+		type SearchParams = {
+			[key: string]: string | string[]
+		};
+
 		type PageProps = {
 				params: Params
-searchParams: Params
+searchParams: SearchParams
 		};
 
 		export async function getServerSideProps(ctx) {
@@ -145,9 +149,13 @@ searchParams: Params
 			[key: string]: string | string[] | undefined
 		};
 
+		type SearchParams = {
+			[key: string]: string | string[]
+		};
+
 		type PageProps = {
 				params: Params
-searchParams: Params
+searchParams: SearchParams
 		};
 		
 			export async function getStaticProps() {
@@ -207,9 +215,13 @@ searchParams: Params
 				[key: string]: string | string[] | undefined
 			};
 
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
+
 			type PageProps = {
 					params: Params
-searchParams: Params
+searchParams: SearchParams
 			};
 
 			export async function getStaticProps(context: GetStaticPropsContext) {
@@ -274,10 +286,14 @@ searchParams: Params
 			type Params = {
 				[key: string]: string | string[] | undefined
 			};
+
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
 	
 			type PageProps = {
 					params: Params
-searchParams: Params
+searchParams: SearchParams
 			};
 			
 			export async function getStaticProps() {
@@ -333,9 +349,13 @@ searchParams: Params
 				[key: string]: string | string[] | undefined
 			};
 
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
+
 			type PageProps = {
 					params: Params
-searchParams: Params
+searchParams: SearchParams
 			};
 
 			export async function getStaticProps() {
@@ -398,9 +418,13 @@ searchParams: Params
 				[key: string]: string | string[] | undefined
 			};
 
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
+
 			type PageProps = {
 					params: Params
-searchParams: Params
+searchParams: SearchParams
 			};
 
 			export async function getStaticProps() {
@@ -456,9 +480,13 @@ searchParams: Params
 				[key: string]: string | string[] | undefined
 			};
 
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
+
 			type PageProps = {
 				params: Params
-searchParams: Params
+searchParams: SearchParams
 			};
 
 			export async function getStaticProps() {
@@ -510,10 +538,14 @@ searchParams: Params
 			type Params = {
 				[key: string]: string | string[] | undefined
 			};
+
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
 	
 			type PageProps = {
 					params: Params
-searchParams: Params
+searchParams: SearchParams
 			};
 
 			export async function getStaticProps() {
@@ -568,9 +600,13 @@ searchParams: Params
 				[key: string]: string | string[] | undefined
 			};
 
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
+
 			type PageProps = {
 					params: Params
-searchParams: Params
+searchParams: SearchParams
 			};
 
 			export async function getStaticProps() {
@@ -624,9 +660,13 @@ searchParams: Params
 				[key: string]: string | string[] | undefined
 			};
 
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
+
 			type PageProps = {
 					params: Params
-searchParams: Params
+searchParams: SearchParams
 			};
 		
 			export async function getStaticProps() {
@@ -679,10 +719,14 @@ searchParams: Params
 			type Params = {
 				[key: string]: string | string[] | undefined
 			};
+
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
 	
 			type PageProps = {
 					params: Params
-searchParams: Params
+searchParams: SearchParams
 			};
 
 			export async function getStaticProps() {
@@ -737,10 +781,14 @@ searchParams: Params
 			type Params = {
 				[key: string]: string | string[] | undefined
 			};
+
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
 	
 			type PageProps = {
 					params: Params
-searchParams: Params
+searchParams: SearchParams
 			};
 
 			export async function getStaticProps() {
@@ -798,10 +846,14 @@ searchParams: Params
 			type Params = {
 				[key: string]: string | string[] | undefined
 			};
+
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
 	
 			type PageProps = {
 				params: Params
-searchParams: Params
+searchParams: SearchParams
 			};
 
 			export async function getStaticProps() {
@@ -870,9 +922,13 @@ searchParams: Params
 				[key: string]: string | string[] | undefined
 			};
 
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
+
 			type PageProps = {
 				params: Params
-searchParams: Params
+searchParams: SearchParams
 			};
 		
 			export async function getStaticProps() {
@@ -941,9 +997,13 @@ searchParams: Params
 				[key: string]: string | string[] | undefined
 			};
 
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
+
 			type PageProps = {
 					params: Params
-searchParams: Params
+searchParams: SearchParams
 			};
 
 			export const getStaticProps = async () => {
@@ -1016,9 +1076,13 @@ searchParams: Params
 				[key: string]: string | string[] | undefined
 			};
 
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
+
 			type PageProps = {
 				params: Params
-searchParams: Params
+searchParams: SearchParams
 			};
 
 			export const getStaticProps =  async () => {
@@ -1100,9 +1164,13 @@ searchParams: Params
 				[key: string]: string | string[] | undefined
 			};
 
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
+
 			type PageProps = {
 					params: Params
-searchParams: Params
+searchParams: SearchParams
 			};
 		
 			export const getStaticProps = async () => {
@@ -1173,9 +1241,13 @@ searchParams: Params
 				[key: string]: string | string[] | undefined
 			};
 
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
+
 			type PageProps = {
 					params: Params
-searchParams: Params
+searchParams: SearchParams
 			};
 		
 			export const getStaticProps = async () => {
@@ -1236,10 +1308,14 @@ searchParams: Params
 			type Params = {
 				[key: string]: string | string[] | undefined
 			};
+
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
 	
 			type PageProps = {
 				params: Params
-searchParams: Params
+searchParams: SearchParams
 			};
 		
 			export async function getServerSideProps() {
@@ -1314,9 +1390,13 @@ searchParams: Params
 				[key: string]: string | string[] | undefined
 			};
 
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
+
 			type PageProps = {
 					params: Params
-searchParams: Params
+searchParams: SearchParams
 			};
 		
 			export async function getStaticPaths() {
@@ -1399,9 +1479,13 @@ searchParams: Params
 				[key: string]: string | string[] | undefined
 			};
 
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
+
 			type PageProps = {
 					params: Params
-searchParams: Params
+searchParams: SearchParams
 			};
 			
 			export async function getStaticPaths() {
@@ -1484,9 +1568,13 @@ searchParams: Params
 				[key: string]: string | string[] | undefined
 			};
 
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
+
 			type PageProps = {
 					params: Params
-searchParams: Params
+searchParams: SearchParams
 			};
 
 			export async function getStaticPaths() {
@@ -1569,9 +1657,13 @@ searchParams: Params
 				[key: string]: string | string[] | undefined
 			};
 
+			type SearchParams = {
+				[key: string]: string | string[]
+			};
+
 			type PageProps = {
 					params: Params
-searchParams: Params
+searchParams: SearchParams
 			};
 
 			export async function getStaticPaths() {
@@ -1642,9 +1734,13 @@ searchParams: Params
 			[key: string]: string | string[] | undefined
 		};
 
+		type SearchParams = {
+			[key: string]: string | string[]
+		};
+
 		type PageProps = {
 				params: Params
-searchParams: Params
+searchParams: SearchParams
 		};
 		
 			export async function getStaticProps() {
