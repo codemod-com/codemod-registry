@@ -47,7 +47,7 @@ const addUseClientStatement = (
 	const hasUseClient = sourceFile
 		.getDescendantsOfKind(SyntaxKind.StringLiteral)
 		.some((node) => {
-			const literal = node.getFullText();
+			const literal = node.getLiteralText();
 			return literal === 'use client';
 		});
 

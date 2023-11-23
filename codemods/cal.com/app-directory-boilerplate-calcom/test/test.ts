@@ -425,4 +425,35 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 			`.replace(/(?!\.)\s/gm, ''),
 		);
 	});
+
+	it('should not insert "use client" directive twice', async function (this: Context) {
+		const [, upsertLegacyPage] = await transform({
+			'/opt/project/pages/a/index.tsx': `
+			'use client'
+			import C from 'C';
+
+			export default function P() {
+				return <C />;
+			}
+
+			`,
+		});
+
+		deepStrictEqual(upsertLegacyPage?.kind, 'upsertFile');
+		deepStrictEqual(
+			upsertLegacyPage?.path,
+			'/opt/project/pages/a/index.tsx',
+		);
+
+		deepStrictEqual(
+			upsertLegacyPage?.data.replace(/(?!\.)\s/gm, ''),
+			`'use client'
+			import C from 'C';
+
+			export default function P() {
+				return <C />;
+			}
+			`.replace(/(?!\.)\s/gm, ''),
+		);
+	});
 });
