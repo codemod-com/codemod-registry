@@ -9,7 +9,8 @@
 		"build:cjs": "turbo run build:cjs --no-daemon",
 		"lint:eslint": "eslint --fix .",
 		"lint:prettier": "prettier --write .",
-		"test": "turbo run test --no-daemon"
+		"test": "turbo run test --no-daemon",
+		"test:ci": "turbo run test --no-daemon --concurrency=1"
 	},
 	"devDependencies": {
 		"@types/node": "20.9.0",
