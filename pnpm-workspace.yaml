@@ -3,6 +3,7 @@ packages:
     - './tsconfig'
     - './utilities'
     - './builder'
+    - './creator'
     - './codemods/*'
     - './codemods/Feature Flags/*'
     - './codemods/Go/*'
