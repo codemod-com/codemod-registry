@@ -1,0 +1,1 @@
+{"extends":"@codemod-registry/tsconfig","include":["./src/**/*.ts","./src/**/*.js","./test/**/*.ts","./test/**/*.js"]}
