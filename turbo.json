@@ -17,6 +17,10 @@
 			"inputs": ["./codemods/**/dist/index.cjs"],
 			"outputs": ["./builder/dist/**/*.*"]
 		},
+		"create": {
+			"dependsOn": ["^create"],
+			"cache": false
+		},
 		"test": {
 			"dependsOn": ["^test"],
 			"cache": false
