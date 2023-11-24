@@ -108,7 +108,6 @@ const main = async () => {
 		await writeFile(join(codemodDirectoryPath, './config.json'), data);
 	}
 
-	// TODO use js-yaml to update pnpm-workspace.yaml
 	{
 		const pnpmWorkspaceYamlPath = join(cwd, '../pnpm-workspace.yaml');
 		const buffer = await readFile(pnpmWorkspaceYamlPath);
