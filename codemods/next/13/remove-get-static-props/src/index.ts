@@ -40,7 +40,7 @@ export const getQuery = (url: string, params: Record<string, string | string[]>)
   return { ...searchParamsObj, ...params };
 };
 
-export const buildLegacyContext = (headers: ReadonlyHeaders, cookies: ReadonlyRequestCookies, params: Record<string, string | string[]>) => {
+export const buildLegacyCtx = (headers: ReadonlyHeaders, cookies: ReadonlyRequestCookies, params: Record<string, string | string[]>) => {
   return {
     query: getQuery(headers.get('x-url') ?? '', params), 
     params, 
