@@ -25,9 +25,8 @@ const noop = {
 } as const;
 
 const ADD_BUILD_LEGACY_CTX_UTIL_CONTENT = `
-import { ReadonlyHeaders } from "next/dist/server/web/spec-extension/adapters/headers";
-import { ReadonlyRequestCookies } from "next/dist/server/web/spec-extension/adapters/request-cookies";
-import { headers, cookies } from "next/headers";
+import { type ReadonlyHeaders } from "next/dist/server/web/spec-extension/adapters/headers";
+import { type ReadonlyRequestCookies } from "next/dist/server/web/spec-extension/adapters/request-cookies";
 
 // returns query object same as ctx.query but for app dir
 export const getQuery = (url: string, params: Record<string, string | string[]>) => {
@@ -195,11 +194,11 @@ const buildGetDataVariableDeclaration = (
 	const id = j.Identifier.check(firstParam)
 		? j.identifier(firstParam.name)
 		: j.ObjectPattern.check(firstParam)
-		  ? j.objectPattern.from({
-					...firstParam,
-					typeAnnotation: null,
-		    })
-		  : null;
+		? j.objectPattern.from({
+				...firstParam,
+				typeAnnotation: null,
+		  })
+		: null;
 
 	return id === null
 		? j.expressionStatement(callExpression)
