@@ -52,8 +52,8 @@ function isImportReference(path, importSource, importName) {
 			specifier.type === 'ImportDefaultSpecifier'
 				? 'default'
 				: specifier.type === 'ImportSpecifier'
-				  ? specifier.imported.name
-				  : null;
+				? specifier.imported.name
+				: null;
 
 		if (
 			bindingImportedName === importName &&
