@@ -7,7 +7,7 @@
 # Codemod Registry
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-9-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-10-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 Codemod Registry is an open-source, single-stop repository for codemods and code automation recipes. Codemod Registry brings an ever-growing variety of helpful codemods all in one place.
@@ -68,6 +68,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/kevtran2"><img src="https://avatars.githubusercontent.com/u/44513934?v=4?s=100" width="100px;" alt="kevtran2"/><br /><sub><b>kevtran2</b></sub></a><br /><a href="https://github.com/intuita-inc/codemod-registry/commits?author=kevtran2" title="Documentation">📖</a> <a href="https://github.com/intuita-inc/codemod-registry/commits?author=kevtran2" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://georgewl.dev"><img src="https://avatars.githubusercontent.com/u/5931248?v=4?s=100" width="100px;" alt="George W Langham"/><br /><sub><b>George W Langham</b></sub></a><br /><a href="https://github.com/intuita-inc/codemod-registry/issues?q=author%3AGeorgeWL" title="Bug reports">🐛</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/AnielloFalcone"><img src="https://avatars.githubusercontent.com/u/16816912?v=4?s=100" width="100px;" alt="Aniello Falcone"/><br /><sub><b>Aniello Falcone</b></sub></a><br /><a href="https://github.com/intuita-inc/codemod-registry/issues?q=author%3AAnielloFalcone" title="Bug reports">🐛</a></td>
     </tr>
   </tbody>
 </table>
