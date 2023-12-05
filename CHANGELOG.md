@@ -20,3 +20,5 @@ This page lists highlights, releases, bug fixes, and progress for Intuita Codemo
 -   🦗 Chore: Add 'type' to import statements when importing types in `remove-get-static-props` codemod ([#495](https://github.com/intuita-inc/codemod-registry/pull/495))
 -   🦗 Bug fix: Rename a function from `buildLegacyContext` to `buildLegacyCtx` in `remove-get-static-props` codemod ([#497](https://github.com/intuita-inc/codemod-registry/pull/497))
 -   🦗 Bug fix: Fix the order of arguments for `buildLegacyCtx` function in `remove-get-static-props` codemod ([#501](https://github.com/intuita-inc/codemod-registry/pull/501))
+-   🦗 Bug fix: Remove dependency on `x-url` header in generic `remove-get-static-props` codemod ([#483](https://github.com/intuita-inc/codemod-registry/pull/483))
+-   🦗 Bug fix: Make `getData` function an ArrowFunction in generic `remove-get-static-props` codemod ([#473](https://github.com/intuita-inc/codemod-registry/pull/474))
