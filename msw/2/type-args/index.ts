@@ -342,9 +342,8 @@ export function handleSourceFile(sourceFile: SourceFile): string | undefined {
 						// sourceFile.insertText(callerEndPos, `<any, ${castedToType}>`);
 
 						// using new Map would be nicer, but it's harder to iterate over, so whatever
-						toInsertManually[
-							callerEndPos
-						] = `<any, ${castedToType}>`;
+						toInsertManually[callerEndPos] =
+							`<any, ${castedToType}>`;
 					}
 				});
 			}
