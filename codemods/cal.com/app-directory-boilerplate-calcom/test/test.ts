@@ -260,7 +260,7 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 						const h = headers();
 						const nonce = h.get("x-nonce") ?? undefined;
 						
-						const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+						const legacyCtx = buildLegacyCtx(headers(), cookies(), params);
 						const props = await getData(legacyCtx);
 
 						return (
@@ -321,7 +321,7 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 						const h = headers();
 						const nonce = h.get("x-nonce") ?? undefined;
 						
-						const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+						const legacyCtx = buildLegacyCtx(headers(), cookies(), params);
 						const props = await getData(legacyCtx);
 
 						return (
@@ -415,7 +415,7 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 				const h=headers();
 				const nonce=h.get("x-nonce") ?? undefined;
 
-				const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+				const legacyCtx = buildLegacyCtx(headers(), cookies(), params);
 				const props = await getData(legacyCtx);
 				
 				return(<PageWrapper requiresLicense={false} nonce={nonce }themeBasis={null}><OldPage {...props}/></PageWrapper>);

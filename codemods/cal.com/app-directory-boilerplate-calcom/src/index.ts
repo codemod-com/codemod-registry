@@ -477,7 +477,7 @@ const Page = async ({ params }: PageProps) => {
 	const h = headers();
 	const nonce = h.get("x-nonce") ?? undefined;
 	
-	const legacyCtx = buildLegacyCtx(params, headers(), cookies());
+	const legacyCtx = buildLegacyCtx(headers(), cookies(), params);
 	const props = await getData(legacyCtx);
 	
 	return (
