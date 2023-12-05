@@ -33,7 +33,7 @@ export const buildTestTestTsData = (argv: ArgvSchema): string | null => {
 		return '';
 	}
 
-	if (argv.engine === 'repomod-engine') {
+	if (argv.engine === 'filemod') {
 		return '';
 	}
 

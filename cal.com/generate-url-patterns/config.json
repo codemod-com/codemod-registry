@@ -1,6 +1,6 @@
 {
 	"schemaVersion": "1.0.0",
-	"engine": "repomod-engine",
+	"engine": "filemod",
 	"arguments": [
 		{
 			"name": "turboPath",

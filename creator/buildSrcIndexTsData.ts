@@ -20,7 +20,7 @@ export const buildSrcIndexTsData = (argv: ArgvSchema): string | null => {
 		return '';
 	}
 
-	if (argv.engine === 'repomod-engine') {
+	if (argv.engine === 'filemod') {
 		return '';
 	}
 

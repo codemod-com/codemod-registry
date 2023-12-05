@@ -6,7 +6,7 @@ const argvSchema = S.struct({
 		S.literal('piranha'),
 		S.literal('jscodeshift'),
 		S.literal('ts-morph'),
-		S.literal('repomod-engine'),
+		S.literal('filemod'),
 		S.literal('recipe'),
 	),
 });
