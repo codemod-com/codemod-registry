@@ -28,25 +28,13 @@ const ADD_BUILD_LEGACY_CTX_UTIL_CONTENT = `
 import { type ReadonlyHeaders } from "next/dist/server/web/spec-extension/adapters/headers";
 import { type ReadonlyRequestCookies } from "next/dist/server/web/spec-extension/adapters/request-cookies";
 
-// returns query object same as ctx.query but for app dir
-export const getQuery = (url: string, params: Record<string, string | string[]>) => {
-  if (!url.length) {
-    return params;
+export const buildLegacyCtx = (headers: ReadonlyHeaders, cookies: ReadonlyRequestCookies, params: Record<string, string | string[] | undefined>, searchParams: Record<string, string | string[]>) => {
+	return {
+	  query: { ...searchParams, ...params },
+	  params, 
+	  req: { headers, cookies }
+	}
   }
-
-  const { searchParams } = new URL(url);
-  const searchParamsObj = Object.fromEntries(searchParams.entries());
-
-  return { ...searchParamsObj, ...params };
-};
-
-export const buildLegacyCtx = (headers: ReadonlyHeaders, cookies: ReadonlyRequestCookies, params: Record<string, string | string[]>) => {
-  return {
-    query: getQuery(headers.get('x-url') ?? '', params), 
-    params, 
-    req: { headers, cookies }
-  }
-}
 `;
 
 type Settings = Partial<Record<string, string | boolean | Collection<any>>>;
@@ -173,7 +161,13 @@ const buildPageProps = (j: JSCodeshift) => {
 		properties: [
 			j.objectProperty.from({
 				key: j.identifier('params'),
-				value: j.identifier('params'),
+				// renaming to avoid duplication of identifiers
+				value: j.identifier('pageParams'),
+			}),
+			j.objectProperty.from({
+				key: j.identifier('searchParams'),
+				// renaming to avoid duplication of identifiers
+				value: j.identifier('pageSearchParams'),
 				shorthand: true,
 			}),
 		],
@@ -194,11 +188,11 @@ const buildGetDataVariableDeclaration = (
 	const id = j.Identifier.check(firstParam)
 		? j.identifier(firstParam.name)
 		: j.ObjectPattern.check(firstParam)
-		? j.objectPattern.from({
-				...firstParam,
-				typeAnnotation: null,
-		  })
-		: null;
+		  ? j.objectPattern.from({
+					...firstParam,
+					typeAnnotation: null,
+		    })
+		  : null;
 
 	return id === null
 		? j.expressionStatement(callExpression)
@@ -212,9 +206,10 @@ const buildBuildLegacyCtxVariableDeclaration = (j: JSCodeshift) => {
 		j.variableDeclarator(
 			j.identifier('legacyCtx'),
 			j.callExpression(j.identifier('buildLegacyCtx'), [
-				j.identifier('params'),
 				j.callExpression(j.identifier('headers'), []),
 				j.callExpression(j.identifier('cookies'), []),
+				j.identifier('pageParams'),
+				j.identifier('pageSearchParams'),
 			]),
 		),
 	]);
