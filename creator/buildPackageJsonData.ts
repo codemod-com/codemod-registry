@@ -26,7 +26,7 @@ export const buildPackageJsonData = (argv: ArgvSchema): string => {
 
 	if (
 		devDependencies !== undefined &&
-		(argv.engine === 'jscodeshift' || argv.engine === 'repomod-engine')
+		(argv.engine === 'jscodeshift' || argv.engine === 'filemod')
 	) {
 		devDependencies['jscodeshift'] = '^0.15.1';
 		devDependencies['@types/jscodeshift'] = '^0.11.10';
@@ -34,12 +34,12 @@ export const buildPackageJsonData = (argv: ArgvSchema): string => {
 
 	if (
 		devDependencies !== undefined &&
-		(argv.engine === 'ts-morph' || argv.engine === 'repomod-engine')
+		(argv.engine === 'ts-morph' || argv.engine === 'filemod')
 	) {
 		devDependencies['ts-morph'] = '^19.0.0';
 	}
 
-	if (devDependencies !== undefined && argv.engine === 'repomod-engine') {
+	if (devDependencies !== undefined && argv.engine === 'filemod') {
 		devDependencies['@intuita-inc/filemod'] = '1.1.0';
 		devDependencies['memfs'] = '^4.6.0';
 	}

@@ -90,8 +90,8 @@ const handleFile: HandleFile<Dependencies, State> = async (
 		parsedPath.name === 'index'
 			? 'src'
 			: parsedPath.name === 'test' && directoryName.at(-1) !== 'test'
-			? 'test'
-			: '',
+			  ? 'test'
+			  : '',
 		parsedPath.base,
 	);
 
@@ -283,10 +283,7 @@ const handleData: HandleData<Dependencies, State> = async (
 				devDependencies['@types/jscodeshift'] = '^0.11.10';
 			} else if (devDependencies !== undefined && engine === 'ts-morph') {
 				devDependencies['ts-morph'] = '^19.0.0';
-			} else if (
-				devDependencies !== undefined &&
-				engine === 'repomod-engine'
-			) {
+			} else if (devDependencies !== undefined && engine === 'filemod') {
 				devDependencies['@intuita-inc/filemod'] = '1.1.0';
 				// this might be required sometimes
 				devDependencies['memfs'] = '^4.6.0';
@@ -384,16 +381,16 @@ const handleData: HandleData<Dependencies, State> = async (
 							'export default function transform(file: FileInfo, api: API): string;',
 					  ].join('\n')
 					: engine === 'ts-morph'
-					? [
-							"import type { SourceFile } from 'ts-morph';",
-							'export function handleSourceFile(sourceFile: SourceFile): string | undefined;',
-					  ].join('\n')
-					: engine === 'repomod-engine'
-					? [
-							"import type { Filemod } from '@intuita-inc/filemod';",
-							'export const repomod: Filemod<{}, {}>;',
-					  ].join('\n')
-					: '';
+					  ? [
+								"import type { SourceFile } from 'ts-morph';",
+								'export function handleSourceFile(sourceFile: SourceFile): string | undefined;',
+					    ].join('\n')
+					  : engine === 'filemod'
+					    ? [
+									"import type { Filemod } from '@intuita-inc/filemod';",
+									'export const repomod: Filemod<{}, {}>;',
+					      ].join('\n')
+					    : '';
 
 			return {
 				kind: 'upsertData',

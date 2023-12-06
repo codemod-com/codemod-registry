@@ -86,7 +86,7 @@ const codemodConfigSchema = S.union(
 	}),
 	S.struct({
 		schemaVersion: S.literal('1.0.0'),
-		engine: S.literal('repomod-engine'),
+		engine: S.literal('filemod'),
 		arguments: optionalArgumentsSchema,
 	}),
 	S.struct({
@@ -178,7 +178,7 @@ const build = async () => {
 		if (
 			config.engine === 'jscodeshift' ||
 			config.engine === 'ts-morph' ||
-			config.engine === 'repomod-engine'
+			config.engine === 'filemod'
 		) {
 			try {
 				const indexPath = join(

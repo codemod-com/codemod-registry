@@ -15,7 +15,7 @@ export const buildIndexDtsData = (argv: ArgvSchema): string | null => {
 		].join('\n');
 	}
 
-	if (argv.engine === 'repomod-engine') {
+	if (argv.engine === 'filemod') {
 		return [
 			"import type { Filemod } from '@intuita-inc/filemod';",
 			'export const repomod: Filemod<{}, {}>;',
