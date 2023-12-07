@@ -11,6 +11,16 @@
 			"name": "middlewarePath",
 			"kind": "string",
 			"required": true
+		},
+		{
+			"name": "abTestMiddlewarePath",
+			"kind": "string",
+			"required": true
+		},
+		{
+			"name": "generateAsPageGroup",
+			"kind": "boolean",
+			"required": false
 		}
 	]
 }

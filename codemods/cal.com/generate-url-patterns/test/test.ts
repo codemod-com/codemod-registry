@@ -14,7 +14,9 @@ const transform = async (
 	json: DirectoryJSON,
 	options: {
 		turboPath: string;
+		abTestMiddlewarePath: string;
 		middlewarePath: string;
+		generateAsPageGroup?: boolean;
 	},
 ) => {
 	const volume = Volume.fromJSON(json);
@@ -60,14 +62,25 @@ const removeWhitespaces = (
 
 describe('generate-url-patterns', function () {
 	it('should build correct files', async function (this: Context) {
-		const [turboJsonCommand, middlewareTsCommand] = await transform(
+		const [
+			turboJsonCommand,
+			middlewareTsCommand,
+			abTestMiddlewareTsCommand,
+		] = await transform(
 			{
 				'/opt/project/turbo.json': JSON.stringify({
 					globalEnv: ['OTHER_ENVVAR'],
 				}),
-				'/opt/project/middleware.ts': `
+				'/opt/project/abTestMiddleware.ts': `
 					import { type X } from 'y';
 					const other = true;
+				`,
+				'/opt/project/middleware.ts': `
+					export const config = {
+						matcher: [
+							"otherPath", 
+						]
+					}
 				`,
 				'/opt/project/app/future/noSegment/page.tsx': '',
 				'/opt/project/app/future/dynamicSegment/[a]/page.tsx': '',
@@ -79,6 +92,7 @@ describe('generate-url-patterns', function () {
 			},
 			{
 				turboPath: '/opt/project/turbo.json',
+				abTestMiddlewarePath: '/opt/project/abTestMiddleware.ts',
 				middlewarePath: '/opt/project/middleware.ts',
 			},
 		);
@@ -101,10 +115,10 @@ describe('generate-url-patterns', function () {
 		});
 
 		deepStrictEqual(
-			removeWhitespaces(middlewareTsCommand!),
+			removeWhitespaces(abTestMiddlewareTsCommand!),
 			removeWhitespaces({
 				kind: 'upsertFile',
-				path: '/opt/project/middleware.ts',
+				path: '/opt/project/abTestMiddleware.ts',
 				data: `import { type X } from 'y';
 				const other = true;
 
@@ -130,6 +144,88 @@ describe('generate-url-patterns', function () {
 					pathname
 				}), enabled]);
 `,
+			}),
+		);
+
+		deepStrictEqual(
+			removeWhitespaces(middlewareTsCommand!),
+			removeWhitespaces({
+				kind: 'upsertFile',
+				path: '/opt/project/middleware.ts',
+				data: `
+				export const config = {
+					matcher: [
+						"otherPath", 
+						"/noSegment",
+						"/future/noSegment/",
+
+						"/dynamicSegment/:a",
+						"/future/dynamicSegment/:a/",
+
+						"/catchAllDynamicSegments/:d+",
+						"/future/catchAllDynamicSegments/:d+/",
+
+						"/dynamicSegment/:b/:c",
+						"/future/dynamicSegment/:b/:c/",
+
+						"/optionalCatchAllDynamicSegments/:element*/f", 
+						"/future/optionalCatchAllDynamicSegments/:element*/f/"
+					]
+				}
+			`,
+			}),
+		);
+	});
+
+	it('should support generateAsPageGroup option', async function (this: Context) {
+		const [turboJsonCommand, abTestMiddlewareTsCommand] = await transform(
+			{
+				'/opt/project/turbo.json': JSON.stringify({
+					globalEnv: ['OTHER_ENVVAR'],
+				}),
+				'/opt/project/abTestMiddleware.ts': `
+					import { type X } from 'y';
+					const other = true;
+				`,
+				'/opt/project/app/future/top-level/page.tsx': '',
+				'/opt/project/app/future/top-level/a/page.tsx': '',
+				'/opt/project/app/future/top-level/b/page.tsx': '',
+				'/opt/project/app/future/top-level/a/b/page.tsx': '',
+			},
+			{
+				turboPath: '/opt/project/turbo.json',
+				abTestMiddlewarePath: '/opt/project/abTestMiddleware.ts',
+				middlewarePath: '/opt/project/middleware.ts',
+				generateAsPageGroup: true,
+			},
+		);
+
+		const data = JSON.stringify({
+			globalEnv: ['APP_ROUTER_TOP_LEVEL_ENABLED', 'OTHER_ENVVAR'],
+		});
+
+		deepStrictEqual(removeWhitespaces(turboJsonCommand!), {
+			kind: 'upsertFile',
+			path: '/opt/project/turbo.json',
+			data,
+		});
+
+		deepStrictEqual(
+			removeWhitespaces(abTestMiddlewareTsCommand!),
+			removeWhitespaces({
+				kind: 'upsertFile',
+				path: '/opt/project/abTestMiddleware.ts',
+				data: `import { type X } from 'y';
+				const other = true;
+
+				const ROUTES: [URLPattern, boolean][] = [
+					[
+						"/top-level/:path*",
+						Boolean(process.env.APP_ROUTER_TOP_LEVEL_ENABLED)
+					] as const
+				].map(([pathname, enabled]) => [new URLPattern({
+					pathname
+				}), enabled]);`,
 			}),
 		);
 	});

@@ -11,16 +11,13 @@ import type { TSAsExpressionKind } from 'ast-types/gen/kinds.js';
 
 type Dependencies = { jscodeshift: JSCodeshift };
 
-type Entry = Readonly<{
-	pathname: string;
-	envVar: string;
-}>;
-
 type State = {
 	step: 'READING' | 'UPSERTING';
 	turboPath: string;
+	abTestMiddlewarePath: string;
 	middlewarePath: string;
-	entries: Set<Entry>;
+	urlPatternEnvVarMap: Map<string, string>;
+	generateAsPageGroup: boolean;
 };
 
 const initializeState: InitializeState<State> = async (
@@ -34,10 +31,21 @@ const initializeState: InitializeState<State> = async (
 		};
 	}
 
-	const { turboPath, middlewarePath } = options;
+	const {
+		turboPath,
+		abTestMiddlewarePath,
+		middlewarePath,
+		generateAsPageGroup,
+	} = options;
 
 	if (typeof turboPath !== 'string') {
 		throw new Error('The turbo.json absolute path has not been defined');
+	}
+
+	if (typeof abTestMiddlewarePath !== 'string') {
+		throw new Error(
+			'The abTestMiddleware absolute path has not been defined',
+		);
 	}
 
 	if (typeof middlewarePath !== 'string') {
@@ -47,8 +55,10 @@ const initializeState: InitializeState<State> = async (
 	return {
 		step: 'READING',
 		turboPath,
+		abTestMiddlewarePath,
 		middlewarePath,
-		entries: new Set(),
+		urlPatternEnvVarMap: new Map(),
+		generateAsPageGroup: Boolean(generateAsPageGroup),
 	};
 };
 
@@ -73,6 +83,21 @@ const getRegexGroups = (part: string) => {
 	return regExpExecArray?.groups ?? {};
 };
 
+const buildEnvVarNameFromPathParts = (pathParts: string[]) => {
+	const partialEnvVar = pathParts
+		.map((part) => {
+			const { cpart, dspart, cadspart, ocadspart } = getRegexGroups(part);
+
+			const somePart = cpart ?? dspart ?? cadspart ?? ocadspart ?? null;
+
+			return somePart?.replace(/-/g, '_').toUpperCase() ?? null;
+		})
+		.filter(isNeitherNullNorUndefined)
+		.join('_');
+
+	return ['APP_ROUTER', partialEnvVar, 'ENABLED'].join('_');
+};
+
 const handleFile: HandleFile<Dependencies, State> = async (
 	_,
 	path,
@@ -94,6 +119,17 @@ const handleFile: HandleFile<Dependencies, State> = async (
 		const parts = directoryNames
 			.slice(directoryNames.lastIndexOf('app') + 1)
 			.filter((part) => part !== 'future');
+
+		if (state.generateAsPageGroup) {
+			const [topLevelPageName] = parts;
+
+			state.urlPatternEnvVarMap.set(
+				`/${topLevelPageName}/:path*`,
+				buildEnvVarNameFromPathParts([topLevelPageName]),
+			);
+
+			return [];
+		}
 
 		if (parts.length === 0) {
 			return [];
@@ -126,30 +162,20 @@ const handleFile: HandleFile<Dependencies, State> = async (
 			.map((part) => `/${part}`)
 			.join('');
 
-		const partialEnvVar = parts
-			.map((part) => {
-				const { cpart, dspart, cadspart, ocadspart } =
-					getRegexGroups(part);
+		const envVar = buildEnvVarNameFromPathParts(parts);
 
-				const somePart =
-					cpart ?? dspart ?? cadspart ?? ocadspart ?? null;
-
-				return somePart?.replace(/-/g, '_').toUpperCase() ?? null;
-			})
-			.filter(isNeitherNullNorUndefined)
-			.join('_');
-
-		const envVar = ['APP_ROUTER', partialEnvVar, 'ENABLED'].join('_');
-
-		state.entries.add({
-			pathname,
-			envVar,
-		});
+		state.urlPatternEnvVarMap.set(pathname, envVar);
 
 		return [];
 	}
 
-	if (path === state.turboPath || path === state.middlewarePath) {
+	if (
+		[
+			state.turboPath,
+			state.middlewarePath,
+			state.abTestMiddlewarePath,
+		].includes(path)
+	) {
 		return [
 			{
 				kind: 'upsertFile',
@@ -178,7 +204,7 @@ const handleData: HandleData<Dependencies, State> = async (
 
 		const globalEnv = new Set<string>(json.globalEnv);
 
-		for (const { envVar } of state.entries) {
+		for (const envVar of state.urlPatternEnvVarMap.values()) {
 			globalEnv.add(envVar);
 		}
 
@@ -194,12 +220,66 @@ const handleData: HandleData<Dependencies, State> = async (
 		};
 	}
 
+	// adds page paths to the matcher
 	if (path === state.middlewarePath) {
+		const { jscodeshift } = api.getDependencies();
+		const j = jscodeshift.withParser('tsx');
+		const root = j(data);
+
+		root.find(j.VariableDeclaration).forEach((path) => {
+			if (path.node.declarations[0].type !== 'VariableDeclarator') {
+				return;
+			}
+
+			const declarator = path.node.declarations[0];
+
+			if (
+				!j.Identifier.check(declarator.id) ||
+				declarator.id.name !== 'config'
+			) {
+				return;
+			}
+
+			if (!j.ObjectExpression.check(declarator.init)) {
+				return;
+			}
+
+			const matcherProperty = declarator.init.properties.find(
+				(prop) =>
+					j.ObjectProperty.check(prop) &&
+					j.Identifier.check(prop.key) &&
+					prop.key.name === 'matcher',
+			);
+
+			if (
+				matcherProperty === null ||
+				!j.ObjectProperty.check(matcherProperty) ||
+				!j.ArrayExpression.check(matcherProperty.value)
+			) {
+				return;
+			}
+
+			const urlPatterns = state.urlPatternEnvVarMap.keys();
+			const literals = [...urlPatterns].flatMap((urlPattern) => [
+				j.literal(urlPattern),
+				j.literal(`/future${urlPattern}/`),
+			]);
+
+			matcherProperty.value.elements.push(...literals);
+		});
+
+		return { kind: 'upsertData', path, data: root.toSource() };
+	}
+
+	if (path === state.abTestMiddlewarePath) {
 		const { jscodeshift } = api.getDependencies();
 		const { VariableDeclarator, Program } = jscodeshift;
 		const root = jscodeshift.withParser('tsx')(data);
 
-		const buildElement = (entry: Entry): TSAsExpressionKind => {
+		const buildElement = (
+			pathname: string,
+			envVar: string,
+		): TSAsExpressionKind => {
 			return {
 				type: 'TSAsExpression',
 				expression: {
@@ -207,7 +287,7 @@ const handleData: HandleData<Dependencies, State> = async (
 					elements: [
 						{
 							type: 'StringLiteral',
-							value: entry.pathname,
+							value: pathname,
 						},
 						{
 							type: 'CallExpression',
@@ -231,7 +311,7 @@ const handleData: HandleData<Dependencies, State> = async (
 									},
 									property: {
 										type: 'Identifier',
-										name: entry.envVar,
+										name: envVar,
 									},
 								},
 							],
@@ -248,9 +328,9 @@ const handleData: HandleData<Dependencies, State> = async (
 			};
 		};
 
-		const elements = Array.from(state.entries)
-			.sort((a, b) => a.pathname.localeCompare(b.pathname))
-			.map((entry) => buildElement(entry));
+		const elements = Array.from(state.urlPatternEnvVarMap)
+			.sort((a, b) => a[0].localeCompare(b[0]))
+			.map((entry) => buildElement(...entry));
 
 		const variableDeclarator = jscodeshift.variableDeclarator(
 			{
