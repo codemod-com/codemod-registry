@@ -19,8 +19,5 @@ export default function transform(
 	replaceListeners(root, j);
 	replaceProcessWithWorkers(root, j);
 
-	// console.log(root.toSource());
-
-	return undefined;
-	// return root.toSource();
+	return root.toSource();
 }

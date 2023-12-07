@@ -4,8 +4,8 @@
 	"author": "Intuita",
 	"packageManager": "pnpm@8.9.0",
 	"scripts": {
-		"build": "turbo run build --no-daemon",
-		"build:homedir": "turbo run build:homedir --no-daemon",
+		"build": "turbo run build:cjs && pnpm build --filter @codemod-registry/builder",
+		"build:homedir": "turbo run build:cjs && pnpm build:homedir --filter @codemod-registry/builder",
 		"build:cjs": "turbo run build:cjs --no-daemon",
 		"create": "turbo run create",
 		"lint:eslint": "eslint --fix .",

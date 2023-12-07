@@ -22,8 +22,6 @@ export const replaceQueueOpts: ModifyFunction = (root, j) => {
 	queueExpression
 		.find(j.Identifier, (id) => id.name === 'createClient')
 		.forEach((id) => {
-			console.log(id.value.name);
-			console.log(id.parentPath);
 			if (typeof (id.parentPath as any).replace === 'function') {
 				(id.parentPath as any).replace(
 					'connection: { host: , port:  }',

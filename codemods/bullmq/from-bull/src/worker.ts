@@ -55,11 +55,14 @@ export const replaceProcessWithWorkers: ModifyFunction = (root, j) => {
 			const workerDeclaration = j.variableDeclaration('const', [
 				j.variableDeclarator(
 					j.identifier('worker'),
-					j.newExpression(j.identifier('Worker'), [callBody]),
+					j.newExpression(j.identifier('Worker'), [
+						j.stringLiteral('unknown-name'),
+						callBody,
+					]),
 				),
 			]);
 
-			console.log(path.replace(workerDeclaration));
+			path.replace(workerDeclaration);
 		});
 	}
 };
