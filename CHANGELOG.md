@@ -35,17 +35,17 @@ _Release date: December 1, 2023_
 
 ### **Highlights**
 
-- 🔲 Some item
-- 🐍 Another item
+-   🔲 Some item
+-   🐍 Another item
 
 **Notable Changes**
 
-- ⌛ Some time saving highlight ([#1234](https://github.com), [#1234](https://github.com)).
-- 🏃 Some performance improvement ([#1234](https://github.com), [#1234](https://github.com)).
-- 🛁 Some code cleanup ([#1234](https://github.com), [#1234](https://github.com)).
-- 💅 Some visual improvement ([#1234](https://github.com), [#1234](https://github.com)).
+-   ⌛ Some time saving highlight ([#1234](https://github.com), [#1234](https://github.com)).
+-   🏃 Some performance improvement ([#1234](https://github.com), [#1234](https://github.com)).
+-   🛁 Some code cleanup ([#1234](https://github.com), [#1234](https://github.com)).
+-   💅 Some visual improvement ([#1234](https://github.com), [#1234](https://github.com)).
 
 **Bug fixes & other changes**
 
-- 🦗 Bug fix: Description of bug fix ([#1234](https://github.com/)). Thanks, [Community Member](https://github.com)!
-- 🦎 Bug fix: Description of another bug fix ([#1234](https://github.com/), [#1234](https://github.com/), [#1234](https://github.com/)). Thanks, [Community Member](https://github.com)!
+-   🦗 Bug fix: Description of bug fix ([#1234](https://github.com/)). Thanks, [Community Member](https://github.com)!
+-   🦎 Bug fix: Description of another bug fix ([#1234](https://github.com/), [#1234](https://github.com/), [#1234](https://github.com/)). Thanks, [Community Member](https://github.com)!

@@ -2,7 +2,7 @@
 
 ## Description
 
-This codemod generates a boilerplate code for ab tests using next js middlewares. Middleware controls the redirects from legacy to future page. redirect probability and targeted pages can be controlled by env variables. 
+This codemod generates boilerplate code for A/B tests using the Next.js middlewares. The middleware controls the redirects from the legacy to the future pages. You can control the redirection probability and targeted pages using environment variables.
 
 ## Applicability Criteria
 
