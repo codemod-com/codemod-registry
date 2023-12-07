@@ -4,18 +4,8 @@
 		"build:cjs": {
 			"dependsOn": ["^build:cjs"],
 			"outputMode": "full",
-			"inputs": ["./codemod/**/*.ts", "./codemod/**/*.js"],
-			"outputs": ["./codemods/**/dist/index.cjs"]
-		},
-		"build": {
-			"dependsOn": ["^build"],
-			"inputs": ["./codemods/**/dist/index.cjs"],
-			"outputs": ["./builder/dist/**/*.*"]
-		},
-		"build:homedir": {
-			"dependsOn": ["^build:homedir"],
-			"inputs": ["./codemods/**/dist/index.cjs"],
-			"outputs": ["./builder/dist/**/*.*"]
+			"inputs": ["./src/**/*.ts", "./src/**/*.js"],
+			"outputs": ["./dist/index.cjs"]
 		},
 		"create": {
 			"dependsOn": ["^create"],
