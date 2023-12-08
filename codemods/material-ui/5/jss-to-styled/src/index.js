@@ -466,13 +466,11 @@ export default function transformer(file, api, options) {
 							classes: j.objectExpression(
 								objectExpression.properties.map((prop) => {
 									if (!componentClassesCount[prop.key.name]) {
-										componentClassesCount[
-											prop.key.name
-										] = 1;
+										componentClassesCount[prop.key.name] =
+											1;
 									} else {
-										componentClassesCount[
-											prop.key.name
-										] += 1;
+										componentClassesCount[prop.key.name] +=
+											1;
 									}
 									const resolvedKey =
 										componentClassesCount[prop.key.name] ===

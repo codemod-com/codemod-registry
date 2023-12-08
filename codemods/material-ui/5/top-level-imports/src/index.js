@@ -59,7 +59,7 @@ export default function transformer(fileInfo, api, options) {
 	} catch (error) {
 		throw error;
 	}
-	
+
 	const whitelist = getJSExports(loader);
 	const printOptions = options.printOptions || {
 		quote: 'single',

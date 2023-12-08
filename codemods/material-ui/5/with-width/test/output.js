@@ -1,12 +1,14 @@
 import Button from '@material-ui/core/Button';
 
 // FIXME checkout https://mui.com/components/use-media-query/#migrating-from-withwidth
-const withMuiWidth = () => (WrappedComponent) => (props) =>
-	<WrappedComponent {...props} width="xs" />;
+const withMuiWidth = () => (WrappedComponent) => (props) => (
+	<WrappedComponent {...props} width="xs" />
+);
 
 // FIXME checkout https://mui.com/components/use-media-query/#migrating-from-withwidth
-const withWidth = () => (WrappedComponent) => (props) =>
-	<WrappedComponent {...props} width="xs" />;
+const withWidth = () => (WrappedComponent) => (props) => (
+	<WrappedComponent {...props} width="xs" />
+);
 
 const A = withWidth()((props) => {
 	return <div>{props.width}</div>;

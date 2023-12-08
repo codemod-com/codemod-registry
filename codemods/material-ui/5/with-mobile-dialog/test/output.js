@@ -1,12 +1,14 @@
 import Button from '@material-ui/core/Button';
 
 // FIXME checkout https://mui.com/components/use-media-query/#using-material-uis-breakpoint-helpers
-const withMuiMobileDialog = () => (WrappedComponent) => (props) =>
-	<WrappedComponent {...props} width="lg" fullScreen={false} />;
+const withMuiMobileDialog = () => (WrappedComponent) => (props) => (
+	<WrappedComponent {...props} width="lg" fullScreen={false} />
+);
 
 // FIXME checkout https://mui.com/components/use-media-query/#using-material-uis-breakpoint-helpers
-const withMobileDialog = () => (WrappedComponent) => (props) =>
-	<WrappedComponent {...props} width="lg" fullScreen={false} />;
+const withMobileDialog = () => (WrappedComponent) => (props) => (
+	<WrappedComponent {...props} width="lg" fullScreen={false} />
+);
 
 const A = withMobileDialog()((props) => {
 	return <div>{props.width}</div>;
