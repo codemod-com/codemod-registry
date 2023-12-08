@@ -26,3 +26,4 @@ packages:
     - './codemods/react/*'
     - './codemods/redwoodjs/core/4/*'
     - './codemods/bullmq/*'
+    - ./codemods/antd/5/*
