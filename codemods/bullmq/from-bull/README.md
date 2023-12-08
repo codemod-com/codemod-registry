@@ -2,9 +2,9 @@
 
 ## Description
 
-This codemod makes basic necessary changes to migrate from bull to bullmq. There is one change that you will absolutely have to make by yourself which is creating queue names for the queues that your application has. Then, these names will have to be used for the created workers in the files where you previously used `.process()`.
-Same goes for Worker object queue names. They cannot be inferred from the queue name automatically, since we have no runtime way of checking against the file that queue is being imported in, and it might be instantiated using arbitrary factories, which would make the lookup chain too complex.
-Another manual change that has to be done is manual connection object correction as it can't be correctly inferred from all the possible options of assigning it. The syntax errors will be left intentionally. See examples below for better understanding.
+This codemod provides straightforward changes to migrate from bull to bullmq.
+You have to manually create queue names for the existing queues in your application.
+You need to apply these names for the created workers in the files which previously used .process().
 
 ## Example
 
@@ -110,7 +110,7 @@ const worker = new Worker("unknown-name", async function (job) {
 
 ## Applicability Criteria
 
-Application running bull queue jobs.
+Application running `bull` queue jobs.
 
 ## Other Metadata
 
@@ -128,7 +128,8 @@ v1.0.0
 
 ### Estimated Time Saving
 
-Largely depends on the codebase size. Usually, up to 5 minutes per queue with one single job. Another 5 minutes for changing the way jobs are being started in bullmq.
+Up to 5 minutes per queue with one single job.
+Another 5 minutes for changing the job startup in bullmq.
 
 ### Owner
 
