@@ -1,3 +1,4 @@
+import type { ASTPath } from 'jscodeshift';
 import { getBullImportDeclaration } from './get-import-declaration.js';
 import type { ModifyFunction } from './types.js';
 
@@ -22,9 +23,12 @@ export const replaceQueueOpts: ModifyFunction = (root, j) => {
 	queueExpression
 		.find(j.Identifier, (id) => id.name === 'createClient')
 		.forEach((id) => {
-			if (typeof (id.parentPath as any).replace === 'function') {
-				(id.parentPath as any).replace(
-					'connection: { host: , port:  }',
+			// any path
+			const parentPath = id.parentPath as ASTPath;
+
+			if (typeof parentPath.replace === 'function') {
+				parentPath.replace(
+					j.stringLiteral('connection: { host: , port:  }'),
 				);
 			}
 		});

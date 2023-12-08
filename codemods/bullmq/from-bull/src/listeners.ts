@@ -1,4 +1,3 @@
-import type { VariableDeclarator } from 'jscodeshift';
 import { getBullImportSpecifiers } from './get-import-declaration.js';
 import type { ModifyFunction } from './types.js';
 
@@ -11,9 +10,9 @@ export const replaceListeners: ModifyFunction = (root, j) => {
 
 	// Replace listeners
 	root.find(j.VariableDeclaration, (vd) => {
-		const declarator = vd.declarations.at(0) as VariableDeclarator;
+		const declarator = vd.declarations.at(0);
 
-		if (declarator.type !== 'VariableDeclarator') {
+		if (!j.VariableDeclarator.check(declarator)) {
 			return false;
 		}
 

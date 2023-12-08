@@ -33,11 +33,10 @@ export const replaceProcessWithWorkers: ModifyFunction = (root, j) => {
 				me.property.type === 'Identifier' &&
 				me.property.name === 'process',
 		).forEach((me) => {
-			if (me.parentPath.value.type !== 'CallExpression') {
+			const path = me.parentPath as ASTPath<CallExpression>;
+			if (!j.CallExpression.check(path.value)) {
 				return;
 			}
-
-			const path = me.parentPath as ASTPath<CallExpression>;
 
 			const callBody = path.value.arguments.at(0) ?? null;
 			if (!callBody) {

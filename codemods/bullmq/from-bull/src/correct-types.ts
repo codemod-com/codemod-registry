@@ -1,4 +1,3 @@
-import type { Identifier, TSTypeReference } from 'jscodeshift';
 import { getBullImportSpecifiers } from './get-import-declaration.js';
 import type { ModifyFunction } from './types.js';
 
@@ -17,23 +16,29 @@ export const replaceTypeReferences: ModifyFunction = (root, j) => {
 	root.find(j.TSQualifiedName).forEach((path) => {
 		const { left, right } = path.value;
 
-		if ((left as Identifier).name === 'Queue') {
-			const newTypeName = typeMapper[(right as Identifier).name];
-			bullImportSpecifiers.push({
-				type: 'ImportSpecifier',
-				imported: {
-					type: 'Identifier',
-					name: newTypeName,
-				},
-			});
+		if (
+			!j.Identifier.check(left) ||
+			!j.Identifier.check(right) ||
+			left.name !== 'Queue'
+		) {
+			return;
+		}
 
-			const { parentPath } = path;
-			if (parentPath.value.type === 'TSTypeReference') {
-				(parentPath.value as TSTypeReference).typeName = {
-					type: 'Identifier',
-					name: newTypeName,
-				};
-			}
+		const newTypeName = typeMapper[right.name];
+		bullImportSpecifiers.push({
+			type: 'ImportSpecifier',
+			imported: {
+				type: 'Identifier',
+				name: newTypeName,
+			},
+		});
+
+		const { parentPath } = path;
+		if (j.TSTypeReference.check(parentPath.value)) {
+			parentPath.value.typeName = {
+				type: 'Identifier',
+				name: newTypeName,
+			};
 		}
 	});
 };

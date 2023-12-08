@@ -1,8 +1,8 @@
 import type core from 'jscodeshift';
 import type { Collection } from 'jscodeshift';
 
-export const getBullImportDeclaration = (
-	root: Collection<any>,
+export const getBullImportDeclaration = <T>(
+	root: Collection<T>,
 	j: core.JSCodeshift,
 ) => {
 	const bullImportDeclaration = root
@@ -18,8 +18,8 @@ export const getBullImportDeclaration = (
 	return bullImportDeclaration ?? null;
 };
 
-export const getBullImportSpecifiers = (
-	root: Collection<any>,
+export const getBullImportSpecifiers = <T>(
+	root: Collection<T>,
 	j: core.JSCodeshift,
 ) => {
 	const declaration = getBullImportDeclaration(root, j);
