@@ -20,7 +20,7 @@ Run this codemod to upgrade your codebase from using jest to vitest.
 
 ## Applicability Criteria
 
-Codebase using jest
+Codebase using `jest`
 
 ## Other Metadata
 
@@ -30,7 +30,7 @@ v1.0.0
 
 ### Change Mode
 
-**Autonomous**: Changes can safely be pushed and merged without further human involvement.
+**Assistive**: The automation partially completes changes. Human involvement is needed to make changes ready to be pushed and merged.
 
 ### **Codemod Engine**
 
@@ -42,6 +42,6 @@ v1.0.0
 
 ### Owner
 
-[Intuita](https://github.com/intuita-inc)
+[trivikr](https://github.com/trivikr)
 
 ### Links for more info
