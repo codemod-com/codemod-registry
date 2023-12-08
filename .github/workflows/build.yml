@@ -18,8 +18,6 @@ jobs:
             - name: Install dependencies
               run: pnpm install
             - name: Build the CJS files
-              run: pnpm build:cjs
-            - name: Build the S3 files
               run: pnpm build
             - name: Upload to S3
               uses: jakejarvis/s3-sync-action@master
