@@ -1,17 +1,35 @@
-import type {
-	ArrowFunctionExpression,
-	FunctionExpression,
-	Identifier,
-	MemberExpression,
-	ObjectProperty,
-} from 'jscodeshift';
-import { dirname, join, resolve } from 'path';
-import { ModifyFunctionWithPath } from './types.js';
+/*! @license
+MIT License
 
-export const updateDefaultExportMocks: ModifyFunctionWithPath = (
-	root,
-	j,
-	filePath,
+Copyright (c) 2023 Trivikram Kamat
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
+import type core from 'jscodeshift';
+import type { Collection } from 'jscodeshift';
+import { dirname, join, resolve } from 'path';
+
+export const updateDefaultExportMocks = <T>(
+	root: Collection<T>,
+	j: core.JSCodeshift,
+	filePath: string,
 ) => {
 	root.find(j.CallExpression, {
 		callee: {
@@ -20,12 +38,17 @@ export const updateDefaultExportMocks: ModifyFunctionWithPath = (
 			property: { type: 'Identifier' },
 		},
 	})
-		.filter((path) =>
-			['mock', 'setMock'].includes(
-				((path.value.callee as MemberExpression).property as Identifier)
-					.name,
-			),
-		)
+		.filter((path) => {
+			const { callee } = path.value;
+			if (
+				!j.MemberExpression.check(callee) ||
+				!j.Identifier.check(callee.property)
+			) {
+				return false;
+			}
+
+			return ['mock', 'setMock'].includes(callee.property.name);
+		})
 		.forEach((path) => {
 			const { arguments: args } = path.value;
 
@@ -56,20 +79,30 @@ export const updateDefaultExportMocks: ModifyFunctionWithPath = (
 			// eslint-disable-next-line @typescript-eslint/no-var-requires
 			const module = require(modulePath);
 
-			if (typeof module === 'object') return;
+			if (typeof module === 'object') {
+				return;
+			}
 
 			if (mock.type === 'ArrowFunctionExpression') {
 				const mockBody = mock.body;
 				if (
 					mockBody.type === 'ObjectExpression' &&
 					mockBody.properties
-						.map(
-							(p) =>
-								((p as ObjectProperty).key as Identifier).name,
-						)
+						.map((p) => {
+							if (
+								!j.ObjectProperty.check(p) ||
+								!j.Identifier.check(p.key)
+							) {
+								return;
+							}
+
+							return p.key.name;
+						})
+						.filter(Boolean)
 						.includes('default')
-				)
+				) {
 					return;
+				}
 
 				if (mockBody.type !== 'BlockStatement') {
 					mock.body = j.objectExpression([
@@ -79,36 +112,50 @@ export const updateDefaultExportMocks: ModifyFunctionWithPath = (
 				}
 			}
 
-			const mockBody = (
-				mock as FunctionExpression | ArrowFunctionExpression
-			).body;
-			if (mockBody.type === 'BlockStatement') {
-				const returnStatement = mockBody.body[mockBody.body.length - 1];
-				if (returnStatement.type === 'ReturnStatement') {
-					const returnArgument = returnStatement.argument;
-					if (returnArgument) {
-						if (
-							returnArgument.type === 'ObjectExpression' &&
-							returnArgument.properties
-								.map(
-									(p) =>
-										(
-											(p as ObjectProperty)
-												.key as Identifier
-										).name,
-								)
-								.includes('default')
-						) {
-							return;
-						}
-						returnStatement.argument = j.objectExpression([
-							j.property(
-								'init',
-								j.identifier('default'),
-								returnArgument,
-							),
-						]);
+			if (
+				!j.FunctionExpression.check(mock) &&
+				!j.ArrowFunctionExpression.check(mock)
+			) {
+				return;
+			}
+
+			const mockBody = mock.body;
+
+			if (!j.BlockStatement.check(mockBody)) {
+				return;
+			}
+
+			const returnStatement = mockBody.body[mockBody.body.length - 1];
+			if (returnStatement.type === 'ReturnStatement') {
+				const returnArgument = returnStatement.argument;
+
+				if (returnArgument) {
+					if (
+						returnArgument.type === 'ObjectExpression' &&
+						returnArgument.properties
+							.map((p) => {
+								if (
+									!j.ObjectProperty.check(p) ||
+									!j.Identifier.check(p.key)
+								) {
+									return;
+								}
+
+								return p.key.name;
+							})
+							.filter(Boolean)
+							.includes('default')
+					) {
+						return;
 					}
+
+					returnStatement.argument = j.objectExpression([
+						j.property(
+							'init',
+							j.identifier('default'),
+							returnArgument,
+						),
+					]);
 				}
 			}
 		});

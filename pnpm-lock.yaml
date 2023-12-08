@@ -3943,6 +3943,39 @@ importers:
         specifier: ^5.2.2
         version: 5.2.2
 
+  codemods/vitest/from-jest:
+    devDependencies:
+      '@codemod-registry/cjs-builder':
+        specifier: workspace:*
+        version: link:../../../cjs-builder
+      '@codemod-registry/tsconfig':
+        specifier: workspace:*
+        version: link:../../../tsconfig
+      '@codemod-registry/utilities':
+        specifier: workspace:*
+        version: link:../../../utilities
+      '@types/jscodeshift':
+        specifier: ^0.11.10
+        version: 0.11.10
+      '@types/mocha':
+        specifier: ^10.0.4
+        version: 10.0.6
+      esbuild:
+        specifier: 0.19.5
+        version: 0.19.5
+      jscodeshift:
+        specifier: ^0.15.1
+        version: 0.15.1
+      mocha:
+        specifier: ^10.2.0
+        version: 10.2.0
+      ts-node:
+        specifier: ^10.9.1
+        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+      typescript:
+        specifier: ^5.2.2
+        version: 5.2.2
+
   creator:
     dependencies:
       '@effect/schema':
