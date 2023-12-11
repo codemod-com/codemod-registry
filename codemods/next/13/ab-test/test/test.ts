@@ -52,7 +52,7 @@ const removeWhitespaces = (
 	};
 };
 
-describe('ab-test-boilerplate', function () {
+describe('ab-test', function () {
 	it('should build correct files', async function (this: Context) {
 		const [middlewareTsCommand, abTestMiddlewareTsCommand] =
 			await transform({
