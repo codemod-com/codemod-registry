@@ -23,6 +23,8 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 The source code has been taken from https://raw.githubusercontent.com/ant-design/codemod-v5/main/transforms/v5-remove-style-import.js
+
+Changes: migrate imports from cjs to esm
 */
 
 import { printOptions } from '@codemod-registry/codemods/antd/5/utils/config';
