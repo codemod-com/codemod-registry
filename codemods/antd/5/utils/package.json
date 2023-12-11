@@ -1,0 +1,5 @@
+{
+	"name": "@codemod-registry/codemods/antd/5/utils",
+	"type": "module",
+	"exports": "./index.js"
+}
