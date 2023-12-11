@@ -4,19 +4,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
 // list of packages that should be bundled to the codemod (e.g codemod internal utils)
-const BUNDLE_DEPENDENCIES = ['@codemod-registry/codemods/antd/5/utils'];
-
-const getExternal = (packageJSON: any) => {
-	const externalDependencies = [
-		...Object.keys(packageJSON.dependencies ?? {}),
-		...Object.keys(packageJSON.devDependencies ?? {}),
-		...Object.keys(packageJSON.peerDependencies ?? {}),
-	];
-
-	return externalDependencies.filter(
-		(depenedency) => !BUNDLE_DEPENDENCIES.includes(depenedency),
-	);
-};
+const EXTERNAL_DEPENDENCIES = ['jscodeshift', 'ts-morph'];
 
 export const buildCjs = async () => {
 	const relativeInputFilePath = process.argv.at(2);
@@ -29,11 +17,6 @@ export const buildCjs = async () => {
 
 	const relativeOutputFilePath = './dist/index.cjs';
 	const absoluteOutputFilePath = join(process.cwd(), relativeOutputFilePath);
-
-	const { default: packageJSON } = await import(
-		join(process.cwd(), 'package.json'),
-		{ assert: { type: 'json' } }
-	);
 
 	let licenseBuffer: string;
 
@@ -48,8 +31,7 @@ export const buildCjs = async () => {
 	const options: Parameters<typeof esbuild.build>[0] = {
 		entryPoints: [relativeInputFilePath],
 		bundle: true,
-		// packages: 'external',
-		external: getExternal(packageJSON),
+		external: EXTERNAL_DEPENDENCIES,
 		platform: 'node',
 		minify: true,
 		minifyWhitespace: true,
