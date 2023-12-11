@@ -28,7 +28,9 @@ export const replaceQueueOpts: ModifyFunction = (root, j) => {
 
 			if (typeof parentPath.replace === 'function') {
 				parentPath.replace(
-					j.stringLiteral('connection: { host: , port:  }'),
+					j.stringLiteral(
+						'connection: { host: redis.host, port: redis.port }',
+					),
 				);
 			}
 		});

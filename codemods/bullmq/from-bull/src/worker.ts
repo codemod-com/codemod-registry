@@ -14,14 +14,19 @@ export const replaceProcessWithWorkers: ModifyFunction = (root, j) => {
 		(declaration) => {
 			const declarationSource =
 				declaration.source.value?.toString() ?? null;
-			if (!declarationSource) {
+
+			const { specifiers: imported } = declaration;
+			if (!declarationSource || !imported) {
 				return false;
 			}
 
 			// Dumb way to identify proper files to make changes for worker, but at least that makes the circle smaller.
 			return (
 				declarationSource.includes('bull') ||
-				declarationSource.includes('queue')
+				declarationSource.includes('queue') ||
+				imported.some(
+					(i) => i.local?.name.toLowerCase().includes('queue'),
+				)
 			);
 		},
 	);
@@ -57,6 +62,9 @@ export const replaceProcessWithWorkers: ModifyFunction = (root, j) => {
 					j.newExpression(j.identifier('Worker'), [
 						j.stringLiteral('unknown-name'),
 						callBody,
+						j.stringLiteral(
+							'{ connection: { host: redis.host, port: redis.port } }',
+						),
 					]),
 				),
 			]);
