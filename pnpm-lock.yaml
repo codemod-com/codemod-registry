@@ -2219,7 +2219,7 @@ importers:
         specifier: ^5.2.2
         version: 5.2.2
 
-  codemods/next/13/ab-test-boilerplate:
+  codemods/next/13/ab-test:
     devDependencies:
       '@codemod-registry/cjs-builder':
         specifier: workspace:*

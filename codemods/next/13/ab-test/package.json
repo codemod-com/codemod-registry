@@ -1,5 +1,5 @@
 {
-	"name": "@codemod-registry/ab-test-boilerplate",
+	"name": "@codemod-registry/next-13-ab-test",
 	"dependencies": {},
 	"devDependencies": {
 		"@codemod-registry/tsconfig": "workspace:*",
