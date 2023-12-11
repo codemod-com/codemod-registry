@@ -18,6 +18,11 @@ export const buildCjs = async () => {
 	const relativeOutputFilePath = './dist/index.cjs';
 	const absoluteOutputFilePath = join(process.cwd(), relativeOutputFilePath);
 
+	const { default: packageJSON } = await import(
+		join(process.cwd(), 'package.json'),
+		{ assert: { type: 'json' } }
+	);
+
 	let licenseBuffer: string;
 
 	try {
@@ -31,7 +36,12 @@ export const buildCjs = async () => {
 	const options: Parameters<typeof esbuild.build>[0] = {
 		entryPoints: [relativeInputFilePath],
 		bundle: true,
+<<<<<<< HEAD
 		external: EXTERNAL_DEPENDENCIES,
+=======
+		// packages: 'external',
+		external: getExternal(packageJSON),
+>>>>>>> 8e88027 (feat/migrate-antd5-remove-style-import-codemo)
 		platform: 'node',
 		minify: true,
 		minifyWhitespace: true,
