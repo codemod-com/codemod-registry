@@ -1,5 +1,4 @@
 import type { FileInfo, API } from 'jscodeshift';
-
 export default function transform(
 	file: FileInfo,
 	api: API,
@@ -16,22 +15,27 @@ export default function transform(
 	});
 
 	// Create vitest import declaration
+	const importedMembers = [
+		j.importSpecifier(j.identifier('describe')),
+		j.importSpecifier(j.identifier('it')),
+	];
+
+	if (chaiImport.length) {
+		chaiImport.forEach((path) => {
+			path.node.specifiers.forEach((specifier) => {
+				if (j.ImportSpecifier.check(specifier)) {
+					importedMembers.push(specifier);
+				}
+			});
+			path.replace();
+		});
+	}
 	const vitestImport = j.importDeclaration(
-		[
-			j.importSpecifier(j.identifier('describe')),
-			j.importSpecifier(j.identifier('it')),
-			j.importSpecifier(j.identifier('expect')),
-		],
+		importedMembers,
 		j.literal('vitest'),
 	);
 
-	// If chai import is found, replace it with 'vitest'
-	if (chaiImport.length) {
-		chaiImport.replaceWith(vitestImport);
-	} else {
-		// If chai import is not found, add 'vitest' import at the top of the file
-		root.get().node.program.body.unshift(vitestImport);
-	}
+	root.get().node.program.body.unshift(vitestImport);
 
 	return root.toSource();
 }
