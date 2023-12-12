@@ -32,37 +32,30 @@ import path from 'path';
 import uniq from 'lodash/uniq';
 
 const markerPath = path.join(
-  process.env.NODE_ENV === 'local' ? process.cwd() : require('os').tmpdir(),
-  './antd5-codemod-marker.log',
+	process.env.NODE_ENV === 'local' ? process.cwd() : require('os').tmpdir(),
+	'./antd5-codemod-marker.log',
 );
 
 const newline = '\n';
 
 function ensureFile() {
-  return fs.openSync(markerPath, 'w');
+	return fs.openSync(markerPath, 'w');
 }
 
 async function cleanup() {
-  return await fs.promises.unlink(markerPath);
+	return await fs.promises.unlink(markerPath);
 }
 
 function markDependency(depName) {
-  ensureFile();
-  return fs.appendFileSync(
-    markerPath,
-    depName + newline,
-    'utf8'
-  );
+	ensureFile();
+	return fs.appendFileSync(markerPath, depName + newline, 'utf8');
 }
 
 async function getDependencies() {
-  ensureFile();
-  const content = await fs.promises.readFile(markerPath, 'utf8');
-  await cleanup();
-  return uniq((content || '').split(newline));
+	ensureFile();
+	const content = await fs.promises.readFile(markerPath, 'utf8');
+	await cleanup();
+	return uniq((content || '').split(newline));
 }
 
-export {
-  markDependency,
-  getDependencies,
-};
+export { markDependency, getDependencies };
