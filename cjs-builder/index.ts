@@ -3,6 +3,9 @@ import esbuild from 'esbuild';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
+// list of packages that should be bundled to the codemod (e.g codemod internal utils)
+const EXTERNAL_DEPENDENCIES = ['jscodeshift', 'ts-morph'];
+
 export const buildCjs = async () => {
 	const relativeInputFilePath = process.argv.at(2);
 
@@ -28,7 +31,7 @@ export const buildCjs = async () => {
 	const options: Parameters<typeof esbuild.build>[0] = {
 		entryPoints: [relativeInputFilePath],
 		bundle: true,
-		packages: 'external',
+		external: EXTERNAL_DEPENDENCIES,
 		platform: 'node',
 		minify: true,
 		minifyWhitespace: true,

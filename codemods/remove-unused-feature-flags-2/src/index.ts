@@ -1,4 +1,4 @@
-import { Filemod } from '@intuita-inc/filemod';
+import type { Filemod } from '@intuita-inc/filemod';
 import jscodeshift from 'jscodeshift';
 
 type Dependencies = {
