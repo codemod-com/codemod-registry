@@ -1,4 +1,4 @@
-# Migrate from mocha to vitest
+# Migrate Tests from Mocha to Vitest
 
 ## Description
 

@@ -1524,7 +1524,7 @@ importers:
         specifier: ^5.2.2
         version: 5.2.2
 
-  codemods/mocha/vitest/config-files:
+  codemods/mocha/vitest/migrate-configuration:
     dependencies:
       valibot:
         specifier: ^0.24.1
@@ -1567,7 +1567,7 @@ importers:
         specifier: ^5.2.2
         version: 5.2.2
 
-  codemods/mocha/vitest/migrate:
+  codemods/mocha/vitest/migrate-tests:
     devDependencies:
       '@codemod-registry/cjs-builder':
         specifier: workspace:*

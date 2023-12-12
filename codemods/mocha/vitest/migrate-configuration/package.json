@@ -1,5 +1,5 @@
 {
-	"name": "@codemod-registry/mocha-config",
+	"name": "@codemod-registry/mocha-vitest-migrate-configuration",
 	"dependencies": {
 		"valibot": "^0.24.1"
 	},

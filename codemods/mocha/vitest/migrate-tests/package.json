@@ -1,5 +1,5 @@
 {
-	"name": "@codemod-registry/mocha-vitest",
+	"name": "@codemod-registry/mocha-vitest-migrate-tests",
 	"dependencies": {},
 	"devDependencies": {
 		"@codemod-registry/tsconfig": "workspace:*",
