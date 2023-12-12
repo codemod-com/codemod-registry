@@ -25,6 +25,6 @@ packages:
     - './codemods/react-router/6/*'
     - './codemods/react/*'
     - './codemods/redwoodjs/core/4/*'
-    - './codemods/bullmq/*'
-    - './codemods/vitest/*'
+    - './codemods/bull/*'
+    - './codemods/jest/*'
     - './codemods/antd/5/*'

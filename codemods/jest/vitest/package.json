@@ -1,5 +1,5 @@
 {
-	"name": "@codemod-registry/vitest-from-jest",
+	"name": "@codemod-registry/jest-vitest",
 	"dependencies": {},
 	"devDependencies": {
 		"@codemod-registry/tsconfig": "workspace:*",
