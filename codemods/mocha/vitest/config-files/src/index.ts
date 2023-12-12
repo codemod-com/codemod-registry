@@ -1,4 +1,26 @@
 import type { Filemod } from '@intuita-inc/filemod';
+import {
+	string,
+	record,
+	object,
+	optional,
+	type Input,
+	parse,
+	array,
+} from 'valibot';
+
+const packageJsonSchema = object({
+	name: optional(string()),
+	dependencies: optional(record(string())),
+	devDependencies: optional(record(string())),
+	scripts: optional(record(string())),
+	mocha: optional(record(string())),
+});
+
+const tsconfigSchema = object({
+	include: optional(array(string())),
+	compilerOptions: optional(object({ types: optional(array(string())) })),
+});
 
 export const repomod: Filemod<Record<string, never>, Record<string, never>> = {
 	includePatterns: [
@@ -12,49 +34,59 @@ export const repomod: Filemod<Record<string, never>, Record<string, never>> = {
 			return [{ kind: 'upsertFile', path, options }];
 		}
 
-		// mocharc
-		return [{ kind: 'deleteFile', path }];
+		if (path.includes('mocha')) {
+			return [{ kind: 'deleteFile', path }];
+		}
+
+		return [];
 	},
 	handleData: async (_, path, data) => {
 		if (path.endsWith('package.json')) {
-			const json = JSON.parse(data);
+			let packageJson: Input<typeof packageJsonSchema>;
+			try {
+				const json = JSON.parse(data);
+				packageJson = parse(packageJsonSchema, json);
+			} catch (err) {
+				return { kind: 'noop' };
+			}
+
 			// Remove possible "mocha" key and its value
-			if (json.mocha) {
-				delete json.mocha;
+			if (packageJson.mocha) {
+				delete packageJson.mocha;
 			}
 
 			// Remove mocha from dependencies & devDependencies, add vitest devDep
-			if (json.dependencies) {
-				Object.keys(json.dependencies).forEach((dep) => {
-					delete json.dependencies[dep];
+			if (packageJson.dependencies) {
+				Object.keys(packageJson.dependencies).forEach((dep) => {
+					delete packageJson.dependencies![dep];
 				});
 			}
-			if (json.devDependencies) {
-				Object.keys(json.devDependencies).forEach((dep) => {
-					delete json.devDependencies[dep];
+			if (packageJson.devDependencies) {
+				Object.keys(packageJson.devDependencies).forEach((dep) => {
+					delete packageJson.devDependencies![dep];
 				});
 			}
-			json.devDependencies = {
-				...json.devDependencies,
+			packageJson.devDependencies = {
+				...packageJson.devDependencies,
 				vitest: '^1.0.1',
 				'@vitest/coverage-v8': '^1.0.1',
 			};
 
 			// Remove commands using mocha
-			if (json.scripts) {
-				Object.entries(json.scripts as Record<string, string>).forEach(
-					([name, script]) => {
-						if (script.includes('mocha')) {
-							delete json.scripts[name];
-						}
-					},
-				);
+			if (packageJson.scripts) {
+				Object.entries(
+					packageJson.scripts as Record<string, string>,
+				).forEach(([name, script]) => {
+					if (script.includes('mocha')) {
+						delete packageJson.scripts![name];
+					}
+				});
 			}
 
 			// Add vitest commands
-			if (json.scripts) {
-				json.scripts = {
-					...json.scripts,
+			if (packageJson.scripts) {
+				packageJson.scripts = {
+					...packageJson.scripts,
 					test: 'vitest run',
 					coverage: 'vitest run --coverage',
 				};
@@ -63,30 +95,47 @@ export const repomod: Filemod<Record<string, never>, Record<string, never>> = {
 			return {
 				kind: 'upsertData',
 				path,
-				data: JSON.stringify(json, null, 2),
+				data: JSON.stringify(packageJson, null, 2),
 			};
 		}
 
 		if (path.endsWith('tsconfig.json')) {
-			// Remove possible `types: ['mocha']`
-			const json = JSON.parse(data);
+			let tsconfigJson: Input<typeof tsconfigSchema>;
+			try {
+				const json = JSON.parse(data);
+				tsconfigJson = parse(tsconfigSchema, json);
+			} catch (err) {
+				return { kind: 'noop' };
+			}
 
-			if (json.compilerOptions?.types) {
-				const newTypes = json.compilerOptions.types.filter(
+			// Remove possible `types: ['mocha']`
+			if (tsconfigJson.compilerOptions?.types) {
+				const newTypes = tsconfigJson.compilerOptions.types.filter(
 					(type: string) => type !== 'mocha',
 				);
 
 				if (newTypes.length) {
-					json.compilerOptions.types = newTypes;
+					tsconfigJson.compilerOptions.types = newTypes;
 				} else {
-					delete json.compilerOptions.types;
+					delete tsconfigJson.compilerOptions.types;
+				}
+			}
+			if (tsconfigJson.include) {
+				const newIncludes = tsconfigJson.include.filter(
+					(type: string) => type !== 'mocha',
+				);
+
+				if (newIncludes.length) {
+					tsconfigJson.include = newIncludes;
+				} else {
+					delete tsconfigJson.include;
 				}
 			}
 
 			return {
 				kind: 'upsertData',
 				path,
-				data: JSON.stringify(json, null, 2),
+				data: JSON.stringify(tsconfigJson, null, 2),
 			};
 		}
 
