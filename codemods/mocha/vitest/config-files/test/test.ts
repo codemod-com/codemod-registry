@@ -136,8 +136,8 @@ describe('mocha config-files', function () {
                 "name": "package-name",
                 "dependencies": {},
                 "devDependencies": {
-                  vitest: '^1.0.1',
-                  "@vitest/coverage-v8": '^1.0.1'
+                  "vitest": "^1.0.1",
+                  "@vitest/coverage-v8": "^1.0.1"
                 },
                 "main": "./dist/index.cjs",
                 "types": "/dist/index.d.ts",
