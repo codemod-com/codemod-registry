@@ -24,15 +24,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 The source code has been taken from https://github.com/ant-design/codemod-v5/blob/main/transforms/utils/marker.js
 
-Changes to the original file: changed imports to esm 
+Changes to the original file: 
+1. changed imports to esm 
+2. removed getDependencies
 */
 
 import fs from 'fs';
 import path from 'path';
-import uniq from 'lodash/uniq';
+import os from 'os';
 
 const markerPath = path.join(
-	process.env.NODE_ENV === 'local' ? process.cwd() : require('os').tmpdir(),
+	process.env.NODE_ENV === 'local' ? process.cwd() : os.tmpdir(),
 	'./antd5-codemod-marker.log',
 );
 
@@ -42,20 +44,9 @@ function ensureFile() {
 	return fs.openSync(markerPath, 'w');
 }
 
-async function cleanup() {
-	return await fs.promises.unlink(markerPath);
-}
-
 function markDependency(depName) {
 	ensureFile();
 	return fs.appendFileSync(markerPath, depName + newline, 'utf8');
 }
 
-async function getDependencies() {
-	ensureFile();
-	const content = await fs.promises.readFile(markerPath, 'utf8');
-	await cleanup();
-	return uniq((content || '').split(newline));
-}
-
-export { markDependency, getDependencies };
+export { markDependency };

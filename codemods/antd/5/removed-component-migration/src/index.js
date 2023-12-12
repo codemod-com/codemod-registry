@@ -23,7 +23,9 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 The source code has been taken from https://github.com/ant-design/codemod-v5/blob/main/transforms/v5-removed-component-migration.js
-Changes to the original file: changed imports to esm 
+Changes to the original file: 
+1. changed imports to esm 
+2. commented out markDependency
 */
 
 import {
@@ -33,7 +35,7 @@ import {
 } from '@codemod-registry/codemods/antd/5/utils';
 
 import { printOptions } from '@codemod-registry/codemods/antd/5/utils/config';
-import { markDependency } from '@codemod-registry/codemods/antd/5/utils/marker';
+// import { markDependency } from '@codemod-registry/codemods/antd/5/utils/marker';
 
 const removedComponentConfig = {
 	Comment: {
@@ -118,7 +120,7 @@ const transform = (file, api, options) => {
 						localName: localComponentName,
 						before: antdPkgName,
 					});
-					markDependency(importConfig.importSource);
+					// markDependency(importConfig.importSource);
 				}
 			});
 
