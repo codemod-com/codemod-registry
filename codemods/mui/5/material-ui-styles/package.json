@@ -1,5 +1,5 @@
 {
-	"name": "@codemod-registry/mui-5-",
+	"name": "@codemod-registry/mui-5-material-ui-styles",
 	"dependencies": {},
 	"devDependencies": {
 		"@codemod-registry/tsconfig": "workspace:*",
@@ -18,7 +18,6 @@
 		"build:cjs": "cjs-builder ./src/index.ts"
 	},
 	"files": [
-		"README.md",
 		"config.json",
 		"./dist/index.cjs",
 		"./index.d.ts"

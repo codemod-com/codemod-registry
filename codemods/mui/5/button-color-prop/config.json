@@ -1,0 +1,7 @@
+{
+	"schemaVersion": "1.0.0",
+	"name": "mui/5/button-color-prop",
+	"engine": "jscodeshift",
+	"extensions": ["js*", "ts*"],
+	"dependencyVersionLowerThan": ["@material-ui/core", "5.0.0"]
+}
