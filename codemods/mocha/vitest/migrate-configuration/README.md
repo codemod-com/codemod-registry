@@ -1,4 +1,4 @@
-# Configuration tweak for mocha-vitest migration
+# Migrate Configuration from Mocha to Vitest
 
 ## Description
 
