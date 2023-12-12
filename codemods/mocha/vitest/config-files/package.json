@@ -1,0 +1,33 @@
+{
+	"name": "@codemod-registry/mocha-config",
+	"dependencies": {
+		"valibot": "^0.24.1"
+	},
+	"devDependencies": {
+		"@codemod-registry/cjs-builder": "workspace:*",
+		"@codemod-registry/tsconfig": "workspace:*",
+		"@codemod-registry/utilities": "workspace:*",
+		"@intuita-inc/filemod": "1.1.0",
+		"@types/jscodeshift": "^0.11.10",
+		"@types/mocha": "^10.0.4",
+		"esbuild": "0.19.5",
+		"jscodeshift": "^0.15.1",
+		"memfs": "^4.6.0",
+		"mocha": "^10.2.0",
+		"ts-node": "^10.9.1",
+		"typescript": "^5.2.2"
+	},
+	"main": "./dist/index.cjs",
+	"types": "/dist/index.d.ts",
+	"scripts": {
+		"build:cjs": "cjs-builder ./src/index.ts",
+		"test": "mocha"
+	},
+	"files": [
+		"README.md",
+		"config.json",
+		"./dist/index.cjs",
+		"./index.d.ts"
+	],
+	"type": "module"
+}
