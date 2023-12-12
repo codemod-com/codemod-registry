@@ -6,13 +6,13 @@ export default function transform(
 	const j = api.jscodeshift;
 	const root = j(file.source);
 
-	// Find the import declaration for 'chai'
-	const chaiImport = root.find(j.ImportDeclaration, {
-		source: {
-			type: 'Literal',
-			value: 'chai',
-		},
+	const describeIdentifiers = root.find(j.Identifier, {
+		name: 'describe',
 	});
+
+	if (describeIdentifiers.length === 0) {
+		return undefined;
+	}
 
 	// Create vitest import declaration
 	const importedMembers = [
@@ -20,22 +20,27 @@ export default function transform(
 		j.importSpecifier(j.identifier('it')),
 	];
 
-	if (chaiImport.length) {
-		chaiImport.forEach((path) => {
-			path.node.specifiers.forEach((specifier) => {
-				if (j.ImportSpecifier.check(specifier)) {
-					importedMembers.push(specifier);
-				}
-			});
-			path.replace();
-		});
-	}
-	const vitestImport = j.importDeclaration(
-		importedMembers,
-		j.literal('vitest'),
-	);
+	// Find the import declaration for 'chai'
+	const chaiImportDeclarations = root.find(j.ImportDeclaration, {
+		source: {
+			type: 'StringLiteral',
+			value: 'chai',
+		},
+	});
 
-	root.get().node.program.body.unshift(vitestImport);
+	chaiImportDeclarations.forEach((path) => {
+		path.node.specifiers?.forEach((specifier) => {
+			if (j.ImportSpecifier.check(specifier)) {
+				importedMembers.push(specifier);
+			}
+		});
+	});
+
+	chaiImportDeclarations.remove();
+
+	root.get().node.program.body.unshift(
+		j.importDeclaration(importedMembers, j.literal('vitest')),
+	);
 
 	return root.toSource();
 }
