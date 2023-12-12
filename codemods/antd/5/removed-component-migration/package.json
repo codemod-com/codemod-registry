@@ -1,5 +1,5 @@
 {
-	"name": "@codemod-registry/antd-5-v5-remove-style-import",
+	"name": "@codemod-registry/antd-5-v5-removed-component-migration",
 	"dependencies": {
 		"@codemod-registry/codemods/antd/5/utils": "workspace:*"
 	},
