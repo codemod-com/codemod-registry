@@ -1,5 +1,5 @@
 {
-	"name": "@codemod-registry/bullmq-from-bull",
+	"name": "@codemod-registry/bull-bullmq",
 	"dependencies": {},
 	"devDependencies": {
 		"@codemod-registry/tsconfig": "workspace:*",
