@@ -132,29 +132,29 @@ describe('mocha config-files', function () {
 					command.path === packageJsonPath &&
 					command.data.replace(/\W/gm, '') ===
 						`
-		          {
-		            "name": "package-name",
-		            "dependencies": {},
-		            "devDependencies": {
+              {
+                "name": "package-name",
+                "dependencies": {},
+                "devDependencies": {
                   vitest: '^1.0.1',
                   "@vitest/coverage-v8": '^1.0.1'
                 },
-		            "main": "./dist/index.cjs",
-		            "types": "/dist/index.d.ts",
-		            "scripts": {
-		              "build:cjs": "cjs-builder ./src/index.ts",
+                "main": "./dist/index.cjs",
+                "types": "/dist/index.d.ts",
+                "scripts": {
+                  "build:cjs": "cjs-builder ./src/index.ts",
                   "test": "vitest run",
                   "coverage": "vitest run --coverage"
-		            },
-		            "files": [
-		              "README.md",
-		              "config.json",
-		              "./dist/index.cjs",
-		              "./index.d.ts"
-		            ],
-		            "type": "module"
-		          }
-		        `.replace(/\W/gm, ''),
+                },
+                "files": [
+                  "README.md",
+                  "config.json",
+                  "./dist/index.cjs",
+                  "./index.d.ts"
+                ],
+                "type": "module"
+              }
+            `.replace(/\W/gm, ''),
 			),
 		);
 
@@ -165,16 +165,16 @@ describe('mocha config-files', function () {
 					command.path === tsconfigPath &&
 					command.data.replace(/\W/gm, '') ===
 						`
-				        {
-				          "compilerOptions": {},
-				          "include": [
-				            "./src/**/*.ts",
-				            "./src/**/*.js",
-				            "./test/**/*.ts",
-				            "./test/**/*.js"
-				          ]
-				        }
-				      `.replace(/\W/gm, ''),
+              {
+                "compilerOptions": {},
+                "include": [
+                  "./src/**/*.ts",
+                  "./src/**/*.js",
+                  "./test/**/*.ts",
+                  "./test/**/*.js"
+                ]
+              }
+            `.replace(/\W/gm, ''),
 			),
 		);
 	});

@@ -1,12 +1,12 @@
 import type { Filemod } from '@intuita-inc/filemod';
 import {
-	string,
-	record,
+	array,
+	is,
 	object,
 	optional,
+	record,
+	string,
 	type Input,
-	parse,
-	array,
 } from 'valibot';
 
 const packageJsonSchema = object({
@@ -18,8 +18,8 @@ const packageJsonSchema = object({
 });
 
 const tsconfigSchema = object({
-	include: optional(array(string())),
 	compilerOptions: optional(object({ types: optional(array(string())) })),
+	include: optional(array(string())),
 });
 
 export const repomod: Filemod<Record<string, never>, Record<string, never>> = {
@@ -45,7 +45,10 @@ export const repomod: Filemod<Record<string, never>, Record<string, never>> = {
 			let packageJson: Input<typeof packageJsonSchema>;
 			try {
 				const json = JSON.parse(data);
-				packageJson = parse(packageJsonSchema, json);
+				if (!is(packageJsonSchema, json)) {
+					return { kind: 'noop' };
+				}
+				packageJson = json;
 			} catch (err) {
 				return { kind: 'noop' };
 			}
@@ -74,13 +77,13 @@ export const repomod: Filemod<Record<string, never>, Record<string, never>> = {
 
 			// Remove commands using mocha
 			if (packageJson.scripts) {
-				Object.entries(
-					packageJson.scripts as Record<string, string>,
-				).forEach(([name, script]) => {
-					if (script.includes('mocha')) {
-						delete packageJson.scripts![name];
-					}
-				});
+				Object.entries(packageJson.scripts).forEach(
+					([name, script]) => {
+						if (script.includes('mocha')) {
+							delete packageJson.scripts![name];
+						}
+					},
+				);
 			}
 
 			// Add vitest commands
@@ -103,7 +106,10 @@ export const repomod: Filemod<Record<string, never>, Record<string, never>> = {
 			let tsconfigJson: Input<typeof tsconfigSchema>;
 			try {
 				const json = JSON.parse(data);
-				tsconfigJson = parse(tsconfigSchema, json);
+				if (!is(tsconfigSchema, json)) {
+					return { kind: 'noop' };
+				}
+				tsconfigJson = json;
 			} catch (err) {
 				return { kind: 'noop' };
 			}
@@ -111,7 +117,7 @@ export const repomod: Filemod<Record<string, never>, Record<string, never>> = {
 			// Remove possible `types: ['mocha']`
 			if (tsconfigJson.compilerOptions?.types) {
 				const newTypes = tsconfigJson.compilerOptions.types.filter(
-					(type: string) => type !== 'mocha',
+					(type) => type !== 'mocha',
 				);
 
 				if (newTypes.length) {
@@ -122,7 +128,7 @@ export const repomod: Filemod<Record<string, never>, Record<string, never>> = {
 			}
 			if (tsconfigJson.include) {
 				const newIncludes = tsconfigJson.include.filter(
-					(type: string) => type !== 'mocha',
+					(type) => type !== 'mocha',
 				);
 
 				if (newIncludes.length) {
