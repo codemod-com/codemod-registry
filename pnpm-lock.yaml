@@ -1600,6 +1600,8 @@ importers:
         specifier: ^5.2.2
         version: 5.2.2
 
+  codemods/mocha/vitest/recipe: {}
+
   codemods/msw/2/callback-signature:
     devDependencies:
       '@codemod-registry/cjs-builder':
