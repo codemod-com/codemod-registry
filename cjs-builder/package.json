@@ -6,7 +6,7 @@
 		"cjs-builder": "./dist/index.js"
 	},
 	"scripts": {
-		"build": "esbuild ./index.ts --bundle --platform=node --target=node16 --format=esm --outfile=./dist/index.js --external:esbuild",
+		"build": "tsc",
 		"postinstall": "tsc"
 	},
 	"devDependencies": {
