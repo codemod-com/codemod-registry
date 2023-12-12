@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import transform from '..';
 import assert from 'node:assert/strict';
 
-describe('@material-ui/core v5 fade-rename-alpha', function () {
+describe('@mui v5 fade-rename-alpha', function () {
 	it('test migration', async function () {
 		const input = await readFile(join(__dirname, 'input.js'), {
 			encoding: 'utf8',

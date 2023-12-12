@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import transform from '..';
 import assert from 'node:assert/strict';
 
-describe('@material-ui/core v5 styled-engine-provider', function () {
+describe('@mui v5 styled-engine-provider', function () {
 	const buildApi = (parser: string): API => ({
 		j: jscodeshift.withParser(parser),
 		jscodeshift: jscodeshift.withParser(parser),

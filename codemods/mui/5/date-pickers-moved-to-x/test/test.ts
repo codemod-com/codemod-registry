@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import transform from '..';
 import assert from 'node:assert/strict';
 
-describe('@material-ui/core v5 date-pickers-moved-to-x', function () {
+describe('@mui v5 date-pickers-moved-to-x', function () {
 	const buildApi = (parser: string): API => ({
 		j: jscodeshift.withParser(parser),
 		jscodeshift: jscodeshift.withParser(parser),

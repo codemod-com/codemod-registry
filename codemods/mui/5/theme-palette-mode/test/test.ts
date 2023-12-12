@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import transform from '..';
 import assert from 'node:assert/strict';
 
-describe('@material-ui/core v5 theme-palette-mode', function () {
+describe('@mui v5 theme-palette-mode', function () {
 	it('test migration', async function () {
 		const input = await readFile(join(__dirname, 'input.js'), {
 			encoding: 'utf8',

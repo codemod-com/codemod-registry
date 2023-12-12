@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import transform from '..';
 import assert from 'node:assert/strict';
 
-describe('@material-ui/core v5 top-level-imports', function () {
+describe('@mui v5 top-level-imports', function () {
 	it('test migration', async function () {
 		const input = await readFile(join(__dirname, 'input.js'), {
 			encoding: 'utf8',
