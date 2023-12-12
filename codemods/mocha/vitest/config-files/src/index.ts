@@ -61,12 +61,16 @@ export const repomod: Filemod<Record<string, never>, Record<string, never>> = {
 			// Remove mocha from dependencies & devDependencies, add vitest devDep
 			if (packageJson.dependencies) {
 				Object.keys(packageJson.dependencies).forEach((dep) => {
-					delete packageJson.dependencies![dep];
+					if (dep.includes('mocha')) {
+						delete packageJson.dependencies![dep];
+					}
 				});
 			}
 			if (packageJson.devDependencies) {
 				Object.keys(packageJson.devDependencies).forEach((dep) => {
-					delete packageJson.devDependencies![dep];
+					if (dep.includes('mocha')) {
+						delete packageJson.devDependencies![dep];
+					}
 				});
 			}
 			packageJson.devDependencies = {
