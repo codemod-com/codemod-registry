@@ -1,4 +1,9 @@
 import type { FileInfo, API } from 'jscodeshift';
+
+const isNeitherNullNorUndefined = <T>(
+	t: NonNullable<T> | null | undefined,
+): t is NonNullable<T> => t !== null && t !== undefined;
+
 export default function transform(
 	file: FileInfo,
 	api: API,
@@ -6,14 +11,19 @@ export default function transform(
 	const j = api.jscodeshift;
 	const root = j(file.source);
 
-	// Import `test` from 'vitest' package
-	root.find(j.ImportDeclaration).insertAfter(
-		j.importDeclaration(
-			[j.importSpecifier(j.identifier('test'))],
-			j.literal('vitest'),
-		),
-	);
+	const describeCallExpressions = root.find(j.CallExpression, {
+		callee: {
+			type: 'Identifier',
+			name: 'describe',
+		},
+	});
+
+	if (describeCallExpressions.length === 0) {
+		return undefined;
+	}
+
 	const transformedExpressions = j.arrayExpression([]);
+
 	// Find the describe function call
 	root.find(j.CallExpression, {
 		callee: {
@@ -80,9 +90,19 @@ export default function transform(
 		path.replace();
 	});
 
-	const transformedExpressionStatements = transformedExpressions.elements.map(
-		(element) => j.expressionStatement(element),
-	);
+	const transformedExpressionStatements = transformedExpressions.elements
+		.map((element) => {
+			if (
+				element === null ||
+				j.SpreadElement.check(element) ||
+				j.RestElement.check(element)
+			) {
+				return null;
+			}
+
+			return j.expressionStatement(element);
+		})
+		.filter(isNeitherNullNorUndefined);
 
 	root.find(j.Program).forEach((programPath) => {
 		// Iterate over elements of transformedExpressions manually and push each into the body
@@ -90,6 +110,14 @@ export default function transform(
 			programPath.node.body.push(statement);
 		});
 	});
+
+	// Import `test` from 'vitest' package
+	root.find(j.ImportDeclaration).insertAfter(
+		j.importDeclaration(
+			[j.importSpecifier(j.identifier('test'))],
+			j.literal('vitest'),
+		),
+	);
 
 	return root.toSource();
 }
