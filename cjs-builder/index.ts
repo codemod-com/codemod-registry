@@ -18,11 +18,6 @@ export const buildCjs = async () => {
 	const relativeOutputFilePath = './dist/index.cjs';
 	const absoluteOutputFilePath = join(process.cwd(), relativeOutputFilePath);
 
-	const { default: packageJSON } = await import(
-		join(process.cwd(), 'package.json'),
-		{ assert: { type: 'json' } }
-	);
-
 	let licenseBuffer: string;
 
 	try {
