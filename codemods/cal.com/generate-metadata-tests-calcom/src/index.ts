@@ -1,4 +1,4 @@
-import { Filemod, HandleData, HandleFile } from '@intuita-inc/filemod';
+import type { Filemod, HandleData, HandleFile } from '@intuita-inc/filemod';
 import { posix } from 'node:path';
 
 export const buildData = (appPath: string) => `
