@@ -1,5 +1,5 @@
 {
-	"name": "@codemod-registry/mui-5-",
+	"name": "@codemod-registry/msw-2-callback-signature",
 	"dependencies": {},
 	"devDependencies": {
 		"@codemod-registry/tsconfig": "workspace:*",
