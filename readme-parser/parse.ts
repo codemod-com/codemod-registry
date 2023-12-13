@@ -19,6 +19,16 @@ const getHeaderText = (heading: Heading): string | null => {
 	return null;
 };
 
+const getText = (data: string, rootContexts: RootContent[]): string =>
+	rootContexts
+		.map((rootContext) => {
+			const start = rootContext.position?.start.offset ?? 0;
+			const end = rootContext.position?.end.offset ?? 0;
+
+			return data.substring(start, end);
+		})
+		.join('\n');
+
 export const parse = async (data: string) => {
 	const { children } = fromMarkdown(data);
 
@@ -35,18 +45,20 @@ export const parse = async (data: string) => {
 	);
 
 	const name = Effect.runSync(nameEffect);
-	const description = Effect.runSync(descriptionEffect);
+	const descriptionPresent =
+		Effect.runSync(descriptionEffect) === 'Description';
 
 	const index = children
 		.slice(2)
 		.findIndex((rootContent) => getHeading(2)(rootContent));
 
-	const y = children.slice(2, 2 + index);
+	const description = getText(data, children.slice(2, 2 + index));
 
-	console.log(y);
+	console.log(description);
 
 	return {
 		name,
+		descriptionPresent,
 		description,
 	};
 };
