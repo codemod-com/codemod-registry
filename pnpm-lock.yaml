@@ -17,6 +17,9 @@ importers:
       '@typescript-eslint/parser':
         specifier: ^6.2.0
         version: 6.2.0(eslint@8.45.0)(typescript@5.2.2)
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       eslint:
         specifier: ^8.45.0
         version: 8.45.0
@@ -47,6 +50,9 @@ importers:
       typescript:
         specifier: 5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.9.0)
 
   builder:
     dependencies:
@@ -99,24 +105,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/Go/remove-unnecessary-nested-block: {}
 
@@ -256,24 +262,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/cal.com/app-directory-boilerplate-calcom:
     dependencies:
@@ -308,9 +314,9 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
@@ -320,9 +326,6 @@ importers:
       memfs:
         specifier: ^4.6.0
         version: 4.6.0(quill-delta@5.1.0)(rxjs@7.8.1)(tslib@2.6.0)
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-morph:
         specifier: ^19.0.0
         version: 19.0.0
@@ -332,6 +335,9 @@ importers:
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/cal.com/generate-metadata-tests-calcom:
     devDependencies:
@@ -350,9 +356,9 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
@@ -362,9 +368,6 @@ importers:
       memfs:
         specifier: ^4.6.0
         version: 4.6.0(quill-delta@5.1.0)(rxjs@7.8.1)(tslib@2.6.0)
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-morph:
         specifier: ^19.0.0
         version: 19.0.0
@@ -374,6 +377,9 @@ importers:
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/cal.com/generate-url-patterns:
     devDependencies:
@@ -392,9 +398,9 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
@@ -404,9 +410,6 @@ importers:
       memfs:
         specifier: ^4.6.0
         version: 4.6.0(quill-delta@5.1.0)(rxjs@7.8.1)(tslib@2.6.0)
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-morph:
         specifier: ^19.0.0
         version: 19.0.0
@@ -416,6 +419,9 @@ importers:
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/ember/5/app-controller-router-props:
     devDependencies:
@@ -431,24 +437,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/ember/5/array-wrapper:
     devDependencies:
@@ -464,24 +470,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/ember/5/convert-module-for-to-setup-test:
     devDependencies:
@@ -497,24 +503,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/ember/5/cp-property:
     devDependencies:
@@ -530,24 +536,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/ember/5/cp-property-map:
     devDependencies:
@@ -563,24 +569,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/ember/5/cp-volatile:
     devDependencies:
@@ -596,24 +602,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/ember/5/deprecate-merge:
     devDependencies:
@@ -629,24 +635,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/ember/5/deprecate-router-events:
     devDependencies:
@@ -662,24 +668,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/ember/5/ember-jquery-legacy:
     devDependencies:
@@ -695,24 +701,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/ember/5/es5-getter-ember-codemod:
     devDependencies:
@@ -728,24 +734,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/ember/5/fpe-computed:
     devDependencies:
@@ -761,24 +767,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/ember/5/fpe-observes:
     devDependencies:
@@ -794,24 +800,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/ember/5/fpe-on:
     devDependencies:
@@ -827,24 +833,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/ember/5/jquery-apis:
     devDependencies:
@@ -860,24 +866,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/ember/5/jquery-event:
     devDependencies:
@@ -893,24 +899,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/ember/5/notify-property-change:
     devDependencies:
@@ -926,24 +932,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/ember/5/object-new-constructor:
     devDependencies:
@@ -959,24 +965,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/i18n:
     devDependencies:
@@ -995,9 +1001,9 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
@@ -1007,9 +1013,6 @@ importers:
       memfs:
         specifier: ^4.6.0
         version: 4.6.0(quill-delta@5.1.0)(rxjs@7.8.1)(tslib@2.6.0)
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-morph:
         specifier: ^19.0.0
         version: 19.0.0
@@ -1019,6 +1022,9 @@ importers:
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/immutable/0/add-deprecation-comment:
     devDependencies:
@@ -1034,24 +1040,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/immutable/0/nest-from-js:
     devDependencies:
@@ -1067,24 +1073,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/immutable/0/remove-from-js:
     devDependencies:
@@ -1100,24 +1106,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/immutable/0/remove-import:
     devDependencies:
@@ -1133,24 +1139,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/immutable/0/remove-to-js:
     devDependencies:
@@ -1166,24 +1172,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/immutable/0/replace-get:
     devDependencies:
@@ -1199,24 +1205,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/immutable/0/replace-get-in:
     devDependencies:
@@ -1232,24 +1238,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/immutable/0/replace-merge:
     devDependencies:
@@ -1265,24 +1271,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/immutable/0/replace-set:
     devDependencies:
@@ -1298,24 +1304,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/immutable/0/replace-set-in:
     devDependencies:
@@ -1331,24 +1337,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/immutable/4/isterable-to-iscollection:
     devDependencies:
@@ -1364,24 +1370,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/immutable/4/map-to-array:
     devDependencies:
@@ -1397,24 +1403,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/immutable/4/rename-to-seq:
     devDependencies:
@@ -1430,24 +1436,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/intuita/migrate-codemod-registry:
     devDependencies:
@@ -1466,9 +1472,9 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
@@ -1478,9 +1484,6 @@ importers:
       memfs:
         specifier: ^4.6.0
         version: 4.6.0(quill-delta@5.1.0)(rxjs@7.8.1)(tslib@2.6.0)
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-morph:
         specifier: ^19.0.0
         version: 19.0.0
@@ -1490,6 +1493,9 @@ importers:
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/jest/vitest:
     devDependencies:
@@ -1505,24 +1511,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/mocha/vitest/migrate-configuration:
     dependencies:
@@ -1545,9 +1551,9 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
@@ -1557,15 +1563,15 @@ importers:
       memfs:
         specifier: ^4.6.0
         version: 4.6.0(quill-delta@5.1.0)(rxjs@7.8.1)(tslib@2.6.0)
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/mocha/vitest/migrate-tests:
     devDependencies:
@@ -1581,24 +1587,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/mocha/vitest/recipe: {}
 
@@ -1613,15 +1619,12 @@ importers:
       '@codemod-registry/utilities':
         specifier: workspace:*
         version: link:../../../../utilities
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-morph:
         specifier: ^19.0.0
         version: 19.0.0
@@ -1631,6 +1634,9 @@ importers:
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/msw/2/ctx-fetch:
     devDependencies:
@@ -1643,15 +1649,12 @@ importers:
       '@codemod-registry/utilities':
         specifier: workspace:*
         version: link:../../../../utilities
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-morph:
         specifier: ^19.0.0
         version: 19.0.0
@@ -1661,6 +1664,9 @@ importers:
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/msw/2/imports:
     devDependencies:
@@ -1673,15 +1679,12 @@ importers:
       '@codemod-registry/utilities':
         specifier: workspace:*
         version: link:../../../../utilities
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-morph:
         specifier: ^19.0.0
         version: 19.0.0
@@ -1691,6 +1694,9 @@ importers:
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/msw/2/lifecycle-events-signature:
     devDependencies:
@@ -1703,15 +1709,12 @@ importers:
       '@codemod-registry/utilities':
         specifier: workspace:*
         version: link:../../../../utilities
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-morph:
         specifier: ^19.0.0
         version: 19.0.0
@@ -1721,6 +1724,9 @@ importers:
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/msw/2/print-handler:
     devDependencies:
@@ -1733,15 +1739,12 @@ importers:
       '@codemod-registry/utilities':
         specifier: workspace:*
         version: link:../../../../utilities
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-morph:
         specifier: ^19.0.0
         version: 19.0.0
@@ -1751,6 +1754,9 @@ importers:
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/msw/2/req-passthrough:
     devDependencies:
@@ -1763,15 +1769,12 @@ importers:
       '@codemod-registry/utilities':
         specifier: workspace:*
         version: link:../../../../utilities
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-morph:
         specifier: ^19.0.0
         version: 19.0.0
@@ -1781,6 +1784,9 @@ importers:
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/msw/2/request-changes:
     devDependencies:
@@ -1793,15 +1799,12 @@ importers:
       '@codemod-registry/utilities':
         specifier: workspace:*
         version: link:../../../../utilities
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-morph:
         specifier: ^19.0.0
         version: 19.0.0
@@ -1811,6 +1814,9 @@ importers:
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/msw/2/response-usages:
     devDependencies:
@@ -1823,15 +1829,12 @@ importers:
       '@codemod-registry/utilities':
         specifier: workspace:*
         version: link:../../../../utilities
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-morph:
         specifier: ^19.0.0
         version: 19.0.0
@@ -1841,6 +1844,9 @@ importers:
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/msw/2/type-args:
     devDependencies:
@@ -1853,15 +1859,12 @@ importers:
       '@codemod-registry/utilities':
         specifier: workspace:*
         version: link:../../../../utilities
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-morph:
         specifier: ^19.0.0
         version: 19.0.0
@@ -1871,6 +1874,9 @@ importers:
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/msw/2/upgrade-recipe: {}
 
@@ -1888,24 +1894,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/netlify-sdk/0.8.1/addBuildEventHandler:
     devDependencies:
@@ -1921,24 +1927,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/netlify-sdk/0.8.1/disableBuildEventHandlers:
     devDependencies:
@@ -1954,24 +1960,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/netlify-sdk/0.8.1/enableBuildEventHandlers:
     devDependencies:
@@ -1987,24 +1993,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/netlify-sdk/0.8.1/exportZod:
     devDependencies:
@@ -2020,24 +2026,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/netlify-sdk/0.8.4/addApiHandler:
     devDependencies:
@@ -2053,24 +2059,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/netlify-sdk/0.8.5/createEnvironmentVariable:
     devDependencies:
@@ -2086,24 +2092,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/netlify-sdk/0.8.5/createOrUpdateVariable:
     devDependencies:
@@ -2119,24 +2125,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/netlify-sdk/0.8.5/createOrUpdateVariables:
     devDependencies:
@@ -2152,24 +2158,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/netlify-sdk/0.8.5/deleteEnvironmentVariable:
     devDependencies:
@@ -2185,24 +2191,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/netlify-sdk/0.8.5/deleteEnvironmentVariables:
     devDependencies:
@@ -2218,24 +2224,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/netlify-sdk/0.8.5/getEnvironmentVariables:
     devDependencies:
@@ -2251,24 +2257,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/netlify-sdk/0.8.5/netlify-sdk-0.8.5-recipe: {}
 
@@ -2286,24 +2292,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/netlify-sdk/0.8.5/updateEnvironmentVariable:
     devDependencies:
@@ -2319,24 +2325,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/next-i18next/copy-keys:
     devDependencies:
@@ -2355,9 +2361,9 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
@@ -2367,9 +2373,6 @@ importers:
       memfs:
         specifier: ^4.6.0
         version: 4.6.0(quill-delta@5.1.0)(rxjs@7.8.1)(tslib@2.6.0)
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-morph:
         specifier: ^19.0.0
         version: 19.0.0
@@ -2379,6 +2382,9 @@ importers:
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/next/13/ab-test:
     devDependencies:
@@ -2397,9 +2403,9 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
@@ -2409,9 +2415,6 @@ importers:
       memfs:
         specifier: ^4.6.0
         version: 4.6.0(quill-delta@5.1.0)(rxjs@7.8.1)(tslib@2.6.0)
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-morph:
         specifier: ^19.0.0
         version: 19.0.0
@@ -2421,6 +2424,9 @@ importers:
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/next/13/app-directory-boilerplate:
     dependencies:
@@ -2455,9 +2461,9 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
@@ -2467,9 +2473,6 @@ importers:
       memfs:
         specifier: ^4.6.0
         version: 4.6.0(quill-delta@5.1.0)(rxjs@7.8.1)(tslib@2.6.0)
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-morph:
         specifier: ^19.0.0
         version: 19.0.0
@@ -2479,6 +2482,9 @@ importers:
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/next/13/app-router-recipe: {}
 
@@ -2496,24 +2502,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/next/13/comment-deletable-files:
     devDependencies:
@@ -2529,24 +2535,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/next/13/move-css-in-js-styles:
     dependencies:
@@ -2566,24 +2572,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/next/13/new-image-experimental:
     devDependencies:
@@ -2599,24 +2605,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/next/13/new-link:
     devDependencies:
@@ -2632,24 +2638,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/next/13/next-image-to-legacy-image:
     devDependencies:
@@ -2665,24 +2671,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/next/13/remove-get-static-props:
     devDependencies:
@@ -2701,9 +2707,9 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
@@ -2713,9 +2719,6 @@ importers:
       memfs:
         specifier: ^4.6.0
         version: 4.6.0(quill-delta@5.1.0)(rxjs@7.8.1)(tslib@2.6.0)
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-morph:
         specifier: ^19.0.0
         version: 19.0.0
@@ -2725,6 +2728,9 @@ importers:
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/next/13/remove-next-export:
     devDependencies:
@@ -2743,9 +2749,9 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
@@ -2755,9 +2761,6 @@ importers:
       memfs:
         specifier: ^4.6.0
         version: 4.6.0(quill-delta@5.1.0)(rxjs@7.8.1)(tslib@2.6.0)
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-morph:
         specifier: ^19.0.0
         version: 19.0.0
@@ -2767,6 +2770,9 @@ importers:
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/next/13/replace-api-routes:
     devDependencies:
@@ -2785,9 +2791,9 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
@@ -2797,9 +2803,6 @@ importers:
       memfs:
         specifier: ^4.6.0
         version: 4.6.0(quill-delta@5.1.0)(rxjs@7.8.1)(tslib@2.6.0)
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-morph:
         specifier: ^19.0.0
         version: 19.0.0
@@ -2809,6 +2812,9 @@ importers:
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/next/13/replace-next-head:
     dependencies:
@@ -2846,9 +2852,9 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
@@ -2858,9 +2864,6 @@ importers:
       memfs:
         specifier: ^4.6.0
         version: 4.6.0(quill-delta@5.1.0)(rxjs@7.8.1)(tslib@2.6.0)
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-morph:
         specifier: ^19.0.0
         version: 19.0.0
@@ -2870,6 +2873,9 @@ importers:
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/next/13/replace-next-router:
     devDependencies:
@@ -2882,15 +2888,12 @@ importers:
       '@codemod-registry/utilities':
         specifier: workspace:*
         version: link:../../../../utilities
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-morph:
         specifier: ^19.0.0
         version: 19.0.0
@@ -2900,6 +2903,9 @@ importers:
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/next/13/replace-use-search-params:
     devDependencies:
@@ -2918,9 +2924,9 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
@@ -2930,9 +2936,6 @@ importers:
       memfs:
         specifier: ^4.6.0
         version: 4.6.0(quill-delta@5.1.0)(rxjs@7.8.1)(tslib@2.6.0)
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-morph:
         specifier: ^19.0.0
         version: 19.0.0
@@ -2942,6 +2945,9 @@ importers:
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/next/13/upsert-use-client-directive:
     devDependencies:
@@ -2954,15 +2960,12 @@ importers:
       '@codemod-registry/utilities':
         specifier: workspace:*
         version: link:../../../../utilities
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-morph:
         specifier: ^19.0.0
         version: 19.0.0
@@ -2972,6 +2975,9 @@ importers:
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/next/14/metadata-to-viewport-export:
     devDependencies:
@@ -2987,24 +2993,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/next/14/next-og-import:
     devDependencies:
@@ -3020,24 +3026,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/react-redux/0/add-state-type:
     devDependencies:
@@ -3053,24 +3059,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/react-router/4/add-exact-prop:
     devDependencies:
@@ -3086,24 +3092,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/react-router/4/create-hash-history:
     devDependencies:
@@ -3119,24 +3125,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/react-router/4/hash-router:
     devDependencies:
@@ -3152,24 +3158,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/react-router/4/index-route:
     devDependencies:
@@ -3185,24 +3191,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/react-router/4/remove-with-props:
     devDependencies:
@@ -3218,24 +3224,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/react-router/4/rename-imports:
     devDependencies:
@@ -3251,24 +3257,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/react-router/4/wrap-with-switch:
     devDependencies:
@@ -3284,24 +3290,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/react-router/6/compat-route:
     devDependencies:
@@ -3317,24 +3323,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/react-router/6/compat-router:
     devDependencies:
@@ -3350,24 +3356,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/react-router/6/link-to-props:
     devDependencies:
@@ -3383,24 +3389,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/react-router/6/match-path-arguments:
     devDependencies:
@@ -3416,24 +3422,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/react-router/6/navlink-exact-end:
     devDependencies:
@@ -3449,24 +3455,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/react-router/6/redirect-to-navigate:
     devDependencies:
@@ -3482,24 +3488,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/react-router/6/remove-active-classname:
     devDependencies:
@@ -3515,24 +3521,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/react-router/6/remove-active-style:
     devDependencies:
@@ -3548,24 +3554,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/react-router/6/remove-compat-router:
     devDependencies:
@@ -3581,24 +3587,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/react-router/6/remove-go-hooks:
     devDependencies:
@@ -3614,24 +3620,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/react-router/6/remove-redirect-inside-switch:
     devDependencies:
@@ -3647,24 +3653,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/react-router/6/rename-compat-imports:
     devDependencies:
@@ -3680,24 +3686,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/react-router/6/static-router-imports:
     devDependencies:
@@ -3713,24 +3719,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/react-router/6/use-location:
     devDependencies:
@@ -3746,24 +3752,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/react-router/6/use-navigate:
     devDependencies:
@@ -3779,24 +3785,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/react-router/6/use-params:
     devDependencies:
@@ -3812,24 +3818,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/react-router/6/use-route-match:
     devDependencies:
@@ -3845,24 +3851,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/react/prop-types-typescript:
     devDependencies:
@@ -3878,24 +3884,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/react/replace-react-fc-typescript:
     devDependencies:
@@ -3911,24 +3917,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/redwoodjs/core/4/auth-decoder:
     devDependencies:
@@ -3944,24 +3950,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/redwoodjs/core/4/redwood-apollo-provider:
     devDependencies:
@@ -3977,24 +3983,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/redwoodjs/core/4/router-use-auth:
     devDependencies:
@@ -4010,24 +4016,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/redwoodjs/core/4/use-armor:
     devDependencies:
@@ -4043,24 +4049,24 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
       jscodeshift:
         specifier: ^0.15.1
         version: 0.15.1
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   codemods/remove-unused-feature-flags-2:
     devDependencies:
@@ -4079,9 +4085,9 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
-      '@types/mocha':
-        specifier: ^10.0.4
-        version: 10.0.6
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
@@ -4091,9 +4097,6 @@ importers:
       memfs:
         specifier: ^4.6.0
         version: 4.6.0(quill-delta@5.1.0)(rxjs@7.8.1)(tslib@2.6.0)
-      mocha:
-        specifier: ^10.2.0
-        version: 10.2.0
       ts-morph:
         specifier: ^19.0.0
         version: 19.0.0
@@ -4103,6 +4106,9 @@ importers:
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.0)
 
   creator:
     dependencies:
@@ -4190,7 +4196,7 @@ packages:
       '@babel/traverse': 7.23.4
       '@babel/types': 7.23.4
       convert-source-map: 2.0.0
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4
       gensync: 1.0.0-beta.2
       json5: 2.2.3
       semver: 6.3.1
@@ -4266,7 +4272,7 @@ packages:
       '@babel/core': 7.23.3
       '@babel/helper-compilation-targets': 7.22.15
       '@babel/helper-plugin-utils': 7.22.5
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4
       lodash.debounce: 4.0.8
       resolve: 1.22.8
     transitivePeerDependencies:
@@ -5404,7 +5410,7 @@ packages:
       '@babel/helper-split-export-declaration': 7.22.6
       '@babel/parser': 7.23.4
       '@babel/types': 7.23.4
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4
       globals: 11.12.0
     transitivePeerDependencies:
       - supports-color
@@ -5416,6 +5422,10 @@ packages:
       '@babel/helper-string-parser': 7.23.4
       '@babel/helper-validator-identifier': 7.22.20
       to-fast-properties: 2.0.0
+
+  /@bcoe/v8-coverage@0.2.3:
+    resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
+    dev: true
 
   /@cspotcode/source-map-support@0.8.1:
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
@@ -5860,7 +5870,7 @@ packages:
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dependencies:
       ajv: 6.12.6
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4
       espree: 9.6.1
       globals: 13.20.0
       ignore: 5.2.4
@@ -5882,7 +5892,7 @@ packages:
     engines: {node: '>=10.10.0'}
     dependencies:
       '@humanwhocodes/object-schema': 1.2.1
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4
       minimatch: 3.1.2
     transitivePeerDependencies:
       - supports-color
@@ -5913,6 +5923,18 @@ packages:
       strip-ansi-cjs: /strip-ansi@6.0.1
       wrap-ansi: 8.1.0
       wrap-ansi-cjs: /wrap-ansi@7.0.0
+
+  /@istanbuljs/schema@0.1.3:
+    resolution: {integrity: sha512-ZXRY4jNvVgSVQ8DL3LTcakaAtXwTVUxE81hslsyD2AtoXW/wVob10HkOJ1X/pAlcI7D+2YoZKg5do8G/w6RYgA==}
+    engines: {node: '>=8'}
+    dev: true
+
+  /@jest/schemas@29.6.3:
+    resolution: {integrity: sha512-mo5j5X+jIZmJQveBKeS/clAueipV7KgiX1vMgCxam1RNYiqE1w62n0/tJJnHtjW8ZHcQco5gY85jA3mi0L+nSA==}
+    engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
+    dependencies:
+      '@sinclair/typebox': 0.27.8
+    dev: true
 
   /@jridgewell/gen-mapping@0.3.3:
     resolution: {integrity: sha512-HLhSWOLRi875zjjMG/r+Nv0oCW8umGb0BgEhyX3dDX3egwZtB8PqLnjz3yedt8R5StBrzcg4aBpnh8UA9D1BoQ==}
@@ -5983,6 +6005,114 @@ packages:
       open: 9.1.0
       picocolors: 1.0.0
       tslib: 2.6.0
+    dev: true
+
+  /@rollup/rollup-android-arm-eabi@4.9.0:
+    resolution: {integrity: sha512-+1ge/xmaJpm1KVBuIH38Z94zj9fBD+hp+/5WLaHgyY8XLq1ibxk/zj6dTXaqM2cAbYKq8jYlhHd6k05If1W5xA==}
+    cpu: [arm]
+    os: [android]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@rollup/rollup-android-arm64@4.9.0:
+    resolution: {integrity: sha512-im6hUEyQ7ZfoZdNvtwgEJvBWZYauC9KVKq1w58LG2Zfz6zMd8gRrbN+xCVoqA2hv/v6fm9lp5LFGJ3za8EQH3A==}
+    cpu: [arm64]
+    os: [android]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@rollup/rollup-darwin-arm64@4.9.0:
+    resolution: {integrity: sha512-u7aTMskN6Dmg1lCT0QJ+tINRt+ntUrvVkhbPfFz4bCwRZvjItx2nJtwJnJRlKMMaQCHRjrNqHRDYvE4mBm3DlQ==}
+    cpu: [arm64]
+    os: [darwin]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@rollup/rollup-darwin-x64@4.9.0:
+    resolution: {integrity: sha512-8FvEl3w2ExmpcOmX5RJD0yqXcVSOqAJJUJ29Lca29Ik+3zPS1yFimr2fr5JSZ4Z5gt8/d7WqycpgkX9nocijSw==}
+    cpu: [x64]
+    os: [darwin]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@rollup/rollup-linux-arm-gnueabihf@4.9.0:
+    resolution: {integrity: sha512-lHoKYaRwd4gge+IpqJHCY+8Vc3hhdJfU6ukFnnrJasEBUvVlydP8PuwndbWfGkdgSvZhHfSEw6urrlBj0TSSfg==}
+    cpu: [arm]
+    os: [linux]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@rollup/rollup-linux-arm64-gnu@4.9.0:
+    resolution: {integrity: sha512-JbEPfhndYeWHfOSeh4DOFvNXrj7ls9S/2omijVsao+LBPTPayT1uKcK3dHW3MwDJ7KO11t9m2cVTqXnTKpeaiw==}
+    cpu: [arm64]
+    os: [linux]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@rollup/rollup-linux-arm64-musl@4.9.0:
+    resolution: {integrity: sha512-ahqcSXLlcV2XUBM3/f/C6cRoh7NxYA/W7Yzuv4bDU1YscTFw7ay4LmD7l6OS8EMhTNvcrWGkEettL1Bhjf+B+w==}
+    cpu: [arm64]
+    os: [linux]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@rollup/rollup-linux-riscv64-gnu@4.9.0:
+    resolution: {integrity: sha512-uwvOYNtLw8gVtrExKhdFsYHA/kotURUmZYlinH2VcQxNCQJeJXnkmWgw2hI9Xgzhgu7J9QvWiq9TtTVwWMDa+w==}
+    cpu: [riscv64]
+    os: [linux]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@rollup/rollup-linux-x64-gnu@4.9.0:
+    resolution: {integrity: sha512-m6pkSwcZZD2LCFHZX/zW2aLIISyzWLU3hrLLzQKMI12+OLEzgruTovAxY5sCZJkipklaZqPy/2bEEBNjp+Y7xg==}
+    cpu: [x64]
+    os: [linux]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@rollup/rollup-linux-x64-musl@4.9.0:
+    resolution: {integrity: sha512-VFAC1RDRSbU3iOF98X42KaVicAfKf0m0OvIu8dbnqhTe26Kh6Ym9JrDulz7Hbk7/9zGc41JkV02g+p3BivOdAg==}
+    cpu: [x64]
+    os: [linux]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@rollup/rollup-win32-arm64-msvc@4.9.0:
+    resolution: {integrity: sha512-9jPgMvTKXARz4inw6jezMLA2ihDBvgIU9Ml01hjdVpOcMKyxFBJrn83KVQINnbeqDv0+HdO1c09hgZ8N0s820Q==}
+    cpu: [arm64]
+    os: [win32]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@rollup/rollup-win32-ia32-msvc@4.9.0:
+    resolution: {integrity: sha512-WE4pT2kTXQN2bAv40Uog0AsV7/s9nT9HBWXAou8+++MBCnY51QS02KYtm6dQxxosKi1VIz/wZIrTQO5UP2EW+Q==}
+    cpu: [ia32]
+    os: [win32]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@rollup/rollup-win32-x64-msvc@4.9.0:
+    resolution: {integrity: sha512-aPP5Q5AqNGuT0tnuEkK/g4mnt3ZhheiXrDIiSVIHN9mcN21OyXDVbEMqmXPE7e2OplNLDkcvV+ZoGJa2ZImFgw==}
+    cpu: [x64]
+    os: [win32]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@sinclair/typebox@0.27.8:
+    resolution: {integrity: sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==}
     dev: true
 
   /@sinonjs/commons@2.0.0:
@@ -6068,6 +6198,10 @@ packages:
       '@types/unist': 3.0.2
     dev: false
 
+  /@types/istanbul-lib-coverage@2.0.6:
+    resolution: {integrity: sha512-2QF/t/auWm0lsy8XtKVPG19v3sSOQlJe/YHZgfjb/KBBHOGSV+J2q/S671rcq9uTBrLAXmZpqJiaQbMT+zNU1w==}
+    dev: true
+
   /@types/js-yaml@4.0.9:
     resolution: {integrity: sha512-k4MGaQl5TGo/iipqb2UDG2UwjXziSWkh0uysQelTlJpX1qGlpUZYm8PnO4DxG1qBomtJUdYJ6qR6xdIah10JLg==}
     dev: true
@@ -6088,10 +6222,6 @@ packages:
     dependencies:
       '@types/unist': 3.0.2
     dev: false
-
-  /@types/mocha@10.0.6:
-    resolution: {integrity: sha512-dJvrYWxP/UcXm36Qn36fxhUKu8A/xMRXVT2cliFF1Z7UA9liG5Psj3ezNSZw+5puH2czDXRLcXQxf8JbJt0ejg==}
-    dev: true
 
   /@types/ms@0.7.34:
     resolution: {integrity: sha512-nG96G3Wp6acyAgJqGasjODb+acrI7KltPiRxzHPXnP3NgI28bpQDRv53olbqGXbfcgF5aiiHmO3xpwEpS5Ld9g==}
@@ -6161,7 +6291,7 @@ packages:
       '@typescript-eslint/type-utils': 6.2.0(eslint@8.45.0)(typescript@5.2.2)
       '@typescript-eslint/utils': 6.2.0(eslint@8.45.0)(typescript@5.2.2)
       '@typescript-eslint/visitor-keys': 6.2.0
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4
       eslint: 8.45.0
       graphemer: 1.4.0
       ignore: 5.2.4
@@ -6188,7 +6318,7 @@ packages:
       '@typescript-eslint/types': 6.2.0
       '@typescript-eslint/typescript-estree': 6.2.0(typescript@5.2.2)
       '@typescript-eslint/visitor-keys': 6.2.0
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4
       eslint: 8.45.0
       typescript: 5.2.2
     transitivePeerDependencies:
@@ -6215,7 +6345,7 @@ packages:
     dependencies:
       '@typescript-eslint/typescript-estree': 6.2.0(typescript@5.2.2)
       '@typescript-eslint/utils': 6.2.0(eslint@8.45.0)(typescript@5.2.2)
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4
       eslint: 8.45.0
       ts-api-utils: 1.0.1(typescript@5.2.2)
       typescript: 5.2.2
@@ -6239,7 +6369,7 @@ packages:
     dependencies:
       '@typescript-eslint/types': 6.2.0
       '@typescript-eslint/visitor-keys': 6.2.0
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4
       globby: 11.1.0
       is-glob: 4.0.3
       semver: 7.5.4
@@ -6276,6 +6406,67 @@ packages:
       eslint-visitor-keys: 3.4.1
     dev: true
 
+  /@vitest/coverage-v8@1.0.4(vitest@1.0.4):
+    resolution: {integrity: sha512-xD6Yuql6RW0Ir/JJIs6rVrmnG2/KOWJF+IRX1oJQk5wGKGxbtdrYPbl+WTUn/4ICCQ2G20zbE1e8/nPNyAG5Vg==}
+    peerDependencies:
+      vitest: ^1.0.0
+    dependencies:
+      '@ampproject/remapping': 2.2.1
+      '@bcoe/v8-coverage': 0.2.3
+      debug: 4.3.4
+      istanbul-lib-coverage: 3.2.2
+      istanbul-lib-report: 3.0.1
+      istanbul-lib-source-maps: 4.0.1
+      istanbul-reports: 3.1.6
+      magic-string: 0.30.5
+      magicast: 0.3.2
+      picocolors: 1.0.0
+      std-env: 3.6.0
+      test-exclude: 6.0.0
+      v8-to-istanbul: 9.2.0
+      vitest: 1.0.4(@types/node@20.9.0)
+    transitivePeerDependencies:
+      - supports-color
+    dev: true
+
+  /@vitest/expect@1.0.4:
+    resolution: {integrity: sha512-/NRN9N88qjg3dkhmFcCBwhn/Ie4h064pY3iv7WLRsDJW7dXnEgeoa8W9zy7gIPluhz6CkgqiB3HmpIXgmEY5dQ==}
+    dependencies:
+      '@vitest/spy': 1.0.4
+      '@vitest/utils': 1.0.4
+      chai: 4.3.10
+    dev: true
+
+  /@vitest/runner@1.0.4:
+    resolution: {integrity: sha512-rhOQ9FZTEkV41JWXozFM8YgOqaG9zA7QXbhg5gy6mFOVqh4PcupirIJ+wN7QjeJt8S8nJRYuZH1OjJjsbxAXTQ==}
+    dependencies:
+      '@vitest/utils': 1.0.4
+      p-limit: 5.0.0
+      pathe: 1.1.1
+    dev: true
+
+  /@vitest/snapshot@1.0.4:
+    resolution: {integrity: sha512-vkfXUrNyNRA/Gzsp2lpyJxh94vU2OHT1amoD6WuvUAA12n32xeVZQ0KjjQIf8F6u7bcq2A2k969fMVxEsxeKYA==}
+    dependencies:
+      magic-string: 0.30.5
+      pathe: 1.1.1
+      pretty-format: 29.7.0
+    dev: true
+
+  /@vitest/spy@1.0.4:
+    resolution: {integrity: sha512-9ojTFRL1AJVh0hvfzAQpm0QS6xIS+1HFIw94kl/1ucTfGCaj1LV/iuJU4Y6cdR03EzPDygxTHwE1JOm+5RCcvA==}
+    dependencies:
+      tinyspy: 2.2.0
+    dev: true
+
+  /@vitest/utils@1.0.4:
+    resolution: {integrity: sha512-gsswWDXxtt0QvtK/y/LWukN7sGMYmnCcv1qv05CsY6cU/Y1zpGX1QuvLs+GO1inczpE6Owixeel3ShkjhYtGfA==}
+    dependencies:
+      diff-sequences: 29.6.3
+      loupe: 2.3.7
+      pretty-format: 29.7.0
+    dev: true
+
   /acorn-jsx@5.3.2(acorn@8.10.0):
     resolution: {integrity: sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==}
     peerDependencies:
@@ -6285,6 +6476,11 @@ packages:
 
   /acorn-walk@8.2.0:
     resolution: {integrity: sha512-k+iyHEuPgSw6SbuDpGQM+06HQUa04DZ3o+F6CSzXMvvI5KMvnaEqXe+YVe555R9nn6GPt404fos4wcgpw12SDA==}
+    engines: {node: '>=0.4.0'}
+    dev: true
+
+  /acorn-walk@8.3.1:
+    resolution: {integrity: sha512-TgUZgYvqZprrl7YldZNoa9OciCAyZR+Ejm9eXzKCmjsF5IKp/wgQ7Z/ZpjpGTIUPwrHQIcYeI8qDh4PsEwxMbw==}
     engines: {node: '>=0.4.0'}
     dev: true
 
@@ -6300,11 +6496,6 @@ packages:
       fast-json-stable-stringify: 2.1.0
       json-schema-traverse: 0.4.1
       uri-js: 4.4.1
-    dev: true
-
-  /ansi-colors@4.1.1:
-    resolution: {integrity: sha512-JoX0apGbHaUJBNl6yF+p6JAFYZ666/hhCGKN5t9QFjbJQKUU/g8MNbFDbvfrgKXvI1QpZplPOnwIo99lX/AAmA==}
-    engines: {node: '>=6'}
     dev: true
 
   /ansi-escapes@5.0.0:
@@ -6334,17 +6525,14 @@ packages:
     dependencies:
       color-convert: 2.0.1
 
+  /ansi-styles@5.2.0:
+    resolution: {integrity: sha512-Cxwpt2SfTzTtXcfOlzGEee8O+c+MmUgGrNiBcXnuWxuFJHe6a5Hz7qwhwe5OgaSYI0IJvkLqWX1ASG+cJOkEiA==}
+    engines: {node: '>=10'}
+    dev: true
+
   /ansi-styles@6.2.1:
     resolution: {integrity: sha512-bN798gFfQX+viw3R7yrGWRqnrN2oRkEkUjjl4JNn4E8GxxbjtG3FbrEIIY3l8/hrwUwIeCZvi4QuOTP4MErVug==}
     engines: {node: '>=12'}
-
-  /anymatch@3.1.3:
-    resolution: {integrity: sha512-KMReFUr0B4t+D+OBkjR3KYqvocp2XaSzO55UcB6mgQMd3KbcE+mWTyvVV7D/zsdEbNnV6acZUutkiHQXvTr1Rw==}
-    engines: {node: '>= 8'}
-    dependencies:
-      normalize-path: 3.0.0
-      picomatch: 2.3.1
-    dev: true
 
   /arg@4.1.3:
     resolution: {integrity: sha512-58S9QDqG0Xx27YwPSt9fJxivjYl432YCwfDMfZ+71RAqUrZef7LrKQZ3LHLOwCS4FLNBplP533Zx895SeOCHvA==}
@@ -6431,6 +6619,10 @@ packages:
       object.assign: 4.1.4
       util: 0.12.5
 
+  /assertion-error@1.1.0:
+    resolution: {integrity: sha512-jgsaNduz+ndvGyFt3uSuWqvy4lCnIJiovtouQN5JZHOKCS2QuhEdbcQHFhVksz2N2U9hXJo8odG7ETyWlEeuDw==}
+    dev: true
+
   /ast-types@0.14.2:
     resolution: {integrity: sha512-O0yuUDnZeQDL+ncNGlJ78BiO4jnYI3bvMsD5prT0/nsgijG/LpNBIr63gTjVTNsiGkgQhiyCShTgxt8oXOrklA==}
     engines: {node: '>=4'}
@@ -6506,11 +6698,6 @@ packages:
     engines: {node: '>=0.6'}
     dev: true
 
-  /binary-extensions@2.2.0:
-    resolution: {integrity: sha512-jDctJ/IVQbZoJykoeHbhXpOlNBqGNcwXJKJog42E5HDPUwQTSdjCHdihjj0DlnheQ7blbT6dHOafNAiS8ooQKA==}
-    engines: {node: '>=8'}
-    dev: true
-
   /bplist-parser@0.2.0:
     resolution: {integrity: sha512-z0M+byMThzQmD9NILRniCUXYsYpjwnlO8N5uCFaCqIOpqRsJCrQL9NK3JsD67CN5a08nF5oIL2bD6loTdHOuKw==}
     engines: {node: '>= 5.10.0'}
@@ -6535,10 +6722,6 @@ packages:
     dependencies:
       fill-range: 7.0.1
 
-  /browser-stdout@1.3.1:
-    resolution: {integrity: sha512-qhAVI1+Av2X7qelOfAIYwXONood6XlZE/fXaBSmW/T5SzLAmCgzi+eiWE7fUvbHaeNBQH13UftjpXxsfLkMpgw==}
-    dev: true
-
   /browserslist@4.22.1:
     resolution: {integrity: sha512-FEVc202+2iuClEhZhrWy6ZiAcRLvNMyYcxZ8raemul1DYVOVdFsbqckWLdsixQZCpJlwe77Z3UTalE7jsjnKfQ==}
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
@@ -6559,6 +6742,11 @@ packages:
       run-applescript: 5.0.0
     dev: true
 
+  /cac@6.7.14:
+    resolution: {integrity: sha512-b6Ilus+c3RrdDk+JhLKUAQfzzgLEPy6wcXqS7f/xe1EETvsDP6GORG7SFuOs6cID5YkqchW/LXZbX5bc8j7ZcQ==}
+    engines: {node: '>=8'}
+    dev: true
+
   /call-bind@1.0.2:
     resolution: {integrity: sha512-7O+FbCihrB5WGbFYesctwmTKae6rOiIzmz1icreWJ+0aA7LJfuqhEso2T9ncpcFtzMQtzXf2QGGueWJGTYsqrA==}
     dependencies:
@@ -6570,17 +6758,25 @@ packages:
     engines: {node: '>=6'}
     dev: true
 
-  /camelcase@6.3.0:
-    resolution: {integrity: sha512-Gmy6FhYlCY7uOElZUSbxo2UCDH8owEk996gkbrpsgGtrJLM3J7jGxl9Ic7Qwwj4ivOE5AWZWRMecDdF7hqGjFA==}
-    engines: {node: '>=10'}
-    dev: true
-
   /caniuse-lite@1.0.30001563:
     resolution: {integrity: sha512-na2WUmOxnwIZtwnFI2CZ/3er0wdNzU7hN+cPYz/z2ajHThnkWjNBOpEPP4n+4r2WPM847JaMotaJE3bnfzjyKw==}
 
   /ccount@2.0.1:
     resolution: {integrity: sha512-eyrF0jiFpY+3drT6383f1qhkbGsLSifNAjA61IUjZjmLCWjItY6LB9ft9YhoDgwfmclB2zhu51Lc7+95b8NRAg==}
     dev: false
+
+  /chai@4.3.10:
+    resolution: {integrity: sha512-0UXG04VuVbruMUYbJ6JctvH0YnC/4q3/AkT18q4NaITo91CUm0liMS9VqzT9vZhVQ/1eqPanMWjBM+Juhfb/9g==}
+    engines: {node: '>=4'}
+    dependencies:
+      assertion-error: 1.1.0
+      check-error: 1.0.3
+      deep-eql: 4.1.3
+      get-func-name: 2.0.2
+      loupe: 2.3.7
+      pathval: 1.1.1
+      type-detect: 4.0.8
+    dev: true
 
   /chalk@2.4.2:
     resolution: {integrity: sha512-Mti+f9lpJNcwF4tWV8/OrTTtF1gZi+f8FqlyAdouralcFWFQWF2+NgCHShjkCb+IFBLq9buZwE1xckQU4peSuQ==}
@@ -6618,19 +6814,10 @@ packages:
     resolution: {integrity: sha512-iBZ4F4wRbyORVsu0jPV7gXkOsGYjGHPmAyv+HiHG8gi5PtC9KI2j1+v8/tlibRvjoWX027ypmG/n0HtO5t7unw==}
     dev: false
 
-  /chokidar@3.5.3:
-    resolution: {integrity: sha512-Dr3sfKRP6oTcjf2JmUmFJfeVMvXBdegxB0iVQ5eb2V10uFJUCAS8OByZdVAyVb8xXNz3GjjTgj9kLWsZTqE6kw==}
-    engines: {node: '>= 8.10.0'}
+  /check-error@1.0.3:
+    resolution: {integrity: sha512-iKEoDYaRmd1mxM90a2OEfWhjsjPpYPuQ+lMYsoxB126+t8fw7ySEO48nmDg5COTjxDI65/Y2OWpeEHk3ZOe8zg==}
     dependencies:
-      anymatch: 3.1.3
-      braces: 3.0.2
-      glob-parent: 5.1.2
-      is-binary-path: 2.1.0
-      is-glob: 4.0.3
-      normalize-path: 3.0.0
-      readdirp: 3.6.0
-    optionalDependencies:
-      fsevents: 2.3.3
+      get-func-name: 2.0.2
     dev: true
 
   /chownr@2.0.0:
@@ -6651,14 +6838,6 @@ packages:
     dependencies:
       slice-ansi: 5.0.0
       string-width: 5.1.2
-    dev: true
-
-  /cliui@7.0.4:
-    resolution: {integrity: sha512-OcRE68cOsVMXp1Yvonl/fzkQOyjLSu/8bhPDfQt0e0/Eb283TKP20Fs2MqoPsr9SwA595rRCA+QMzYc9nBP+JQ==}
-    dependencies:
-      string-width: 4.2.3
-      strip-ansi: 6.0.1
-      wrap-ansi: 7.0.0
     dev: true
 
   /cliui@8.0.1:
@@ -6735,7 +6914,7 @@ packages:
       shebang-command: 2.0.0
       which: 2.0.2
 
-  /debug@4.3.4(supports-color@8.1.1):
+  /debug@4.3.4:
     resolution: {integrity: sha512-PRWFHuSU3eDtQJPvnNY7Jcket1j0t5OuOsFzPPzsekD52Zl8qUfFIPEiswXqIvHWGVHOgX+7G/vCNNhehwxfkQ==}
     engines: {node: '>=6.0'}
     peerDependencies:
@@ -6745,18 +6924,19 @@ packages:
         optional: true
     dependencies:
       ms: 2.1.2
-      supports-color: 8.1.1
-
-  /decamelize@4.0.0:
-    resolution: {integrity: sha512-9iE1PgSik9HeIIw2JO94IidnE3eBoQrFJ3w7sFuzSX4DpmZ3v5sZpUiV5Swcf6mQEF+Y0ru8Neo+p+nyh2J+hQ==}
-    engines: {node: '>=10'}
-    dev: true
 
   /decode-named-character-reference@1.0.2:
     resolution: {integrity: sha512-O8x12RzrUF8xyVcY0KJowWsmaJxQbmy0/EtnNtHRpsOcT7dFk5W598coHqBVpmWo1oQQfsCqfCmkZN5DJrZVdg==}
     dependencies:
       character-entities: 2.0.2
     dev: false
+
+  /deep-eql@4.1.3:
+    resolution: {integrity: sha512-WaEtAOpRA1MQ0eohqZjpGD8zdI0Ovsm8mmFhaDN8dvDZzyoUMcYDnf5Y6iu7HTXxf8JDS23qWa4a+hKCDyOPzw==}
+    engines: {node: '>=6'}
+    dependencies:
+      type-detect: 4.0.8
+    dev: true
 
   /deep-is@0.1.4:
     resolution: {integrity: sha512-oIPzksmTg4/MriiaYGO+okXDT7ztn/w3Eptv/+gSIdMdKsJo0u4CfYNFJPy+4SKMuCqGw2wxnA+URMg3t8a/bQ==}
@@ -6803,13 +6983,13 @@ packages:
       dequal: 2.0.3
     dev: false
 
-  /diff@4.0.2:
-    resolution: {integrity: sha512-58lmxKSA4BNyLz+HHMUzlOEpg09FV+ev6ZMe3vJihgdxzgcwZ8VoEEPmALCZG9LmqfVoNMMKpttIYTVG6uDY7A==}
-    engines: {node: '>=0.3.1'}
+  /diff-sequences@29.6.3:
+    resolution: {integrity: sha512-EjePK1srD3P08o2j4f0ExnylqRs5B9tJjcp9t1krH2qRi8CCdsYfwe9JgSLurFBWwq4uOlipzfk5fHNvwFKr8Q==}
+    engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
     dev: true
 
-  /diff@5.0.0:
-    resolution: {integrity: sha512-/VTCrvm5Z0JGty/BWHljh+BAiw3IK+2j87NGMu8Nwc/f48WoDAC395uomO9ZD117ZOBaHmkX1oyLvkVM/aIT3w==}
+  /diff@4.0.2:
+    resolution: {integrity: sha512-58lmxKSA4BNyLz+HHMUzlOEpg09FV+ev6ZMe3vJihgdxzgcwZ8VoEEPmALCZG9LmqfVoNMMKpttIYTVG6uDY7A==}
     engines: {node: '>=0.3.1'}
     dev: true
 
@@ -7088,7 +7268,7 @@ packages:
       ajv: 6.12.6
       chalk: 4.1.2
       cross-spawn: 7.0.3
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4
       doctrine: 3.0.0
       escape-string-regexp: 4.0.0
       eslint-scope: 7.2.1
@@ -7300,11 +7480,6 @@ packages:
       rimraf: 3.0.2
     dev: true
 
-  /flat@5.0.2:
-    resolution: {integrity: sha512-b6suED+5/3rTpUBdG1gupIl8MPFCAMA0QXwmljLhvCUKcUvdE4gWky9zpuGCcXHOsz4J9wPGNWq6OKpmIzz3hQ==}
-    hasBin: true
-    dev: true
-
   /flatted@3.2.7:
     resolution: {integrity: sha512-5nqDSxl8nn5BSNxyR3n4I6eDmbolI6WT+QqR547RwxQapgjQBmtktdP+HTBb/a/zLsbzERTONyUB5pefh5TtjQ==}
     dev: true
@@ -7371,6 +7546,11 @@ packages:
   /get-caller-file@2.0.5:
     resolution: {integrity: sha512-DyFP3BM/3YHTQOCUL/w0OZHR0lpKeGrxotcHWcqNEdnltqFwXVfhEBQ94eIo34AfQpo0rGki4cyIiftY06h2Fg==}
     engines: {node: 6.* || 8.* || >= 10.*}
+    dev: false
+
+  /get-func-name@2.0.2:
+    resolution: {integrity: sha512-8vXOvuE167CtIc3OyItco7N/dpRtBbYOsPsXCz7X/PMnlGjYjSGuZJgM1Y7mmew7BKf9BqvLX2tnOVy1BBUsxQ==}
+    dev: true
 
   /get-intrinsic@1.2.1:
     resolution: {integrity: sha512-2DcsyfABl+gVHEfCOaTrWgyt+tb6MSEGmKq+kI5HwLbIYgjgmMcV8KQ41uaKz1xxUcn9tJtgFbQUEVcEbd0FYw==}
@@ -7422,17 +7602,6 @@ packages:
       minimatch: 9.0.3
       minipass: 6.0.2
       path-scurry: 1.10.1
-
-  /glob@7.2.0:
-    resolution: {integrity: sha512-lmLf6gtyrPq8tTjSmrO94wBeQbFR3HbLHbuyD69wuyQkImp2hWqMGB47OX65FBkPffO641IP9jWa1z4ivqG26Q==}
-    dependencies:
-      fs.realpath: 1.0.0
-      inflight: 1.0.6
-      inherits: 2.0.4
-      minimatch: 3.1.2
-      once: 1.4.0
-      path-is-absolute: 1.0.1
-    dev: true
 
   /glob@7.2.3:
     resolution: {integrity: sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q==}
@@ -7530,9 +7699,8 @@ packages:
       function-bind: 1.1.2
     dev: true
 
-  /he@1.2.0:
-    resolution: {integrity: sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==}
-    hasBin: true
+  /html-escaper@2.0.2:
+    resolution: {integrity: sha512-H2iMtd0I4Mt5eYiapRdIDjp+XzelXQ0tFE4JS7YFwFevXXMmOp9myNrUvCg0D6ws8iqkRPBfKHgbwig1SmlLfg==}
     dev: true
 
   /human-signals@2.1.0:
@@ -7626,13 +7794,6 @@ packages:
     resolution: {integrity: sha512-zB9CruMamjym81i2JZ3UMn54PKGsQzsJeo6xvN3HJJ4CAsQNB6iRutp2To77OfCNuoxspsIhzaPoO1zyCEhFOg==}
     dependencies:
       has-bigints: 1.0.2
-    dev: true
-
-  /is-binary-path@2.1.0:
-    resolution: {integrity: sha512-ZMERYes6pDydyuGidse7OsHxtbI7WVeUEozgR/g7rd0xUimYNlvZRE/K2MgZTjWy725IfelLeVcEM97mmtRGXw==}
-    engines: {node: '>=8'}
-    dependencies:
-      binary-extensions: 2.2.0
     dev: true
 
   /is-boolean-object@1.1.2:
@@ -7749,11 +7910,6 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
-  /is-plain-obj@2.1.0:
-    resolution: {integrity: sha512-YWnfyRwxL/+SsrWYfOpUtz5b3YD+nyfkHvjbcanzk8zgyO4ASD67uVMRt8k5bM4lLMDnXfriRhOpemw+NfT1eA==}
-    engines: {node: '>=8'}
-    dev: true
-
   /is-plain-object@2.0.4:
     resolution: {integrity: sha512-h5PpgXkWitc38BBMYawTYMWJHFZJVnBquFE57xFpjB8pJFiF6gZ+bU+WyI/yqXiFR5mdLsgYNaPe8uao6Uv9Og==}
     engines: {node: '>=0.10.0'}
@@ -7804,11 +7960,6 @@ packages:
     dependencies:
       which-typed-array: 1.1.11
 
-  /is-unicode-supported@0.1.0:
-    resolution: {integrity: sha512-knxG2q4UC3u8stRGyAVJCOdxFmv5DZiRcdlIaAQXAbSfJya+OhopNotLQrstBhququ4ZpuKbDc/8S6mgXgPFPw==}
-    engines: {node: '>=10'}
-    dev: true
-
   /is-weakref@1.0.2:
     resolution: {integrity: sha512-qctsuLZmIQ0+vSSMfoVvyFe2+GSEvnmZ2ezTup1SBse9+twCCeial6EEi3Nc2KFcf6+qz2FBPnjXsk8xhKSaPQ==}
     dependencies:
@@ -7836,6 +7987,39 @@ packages:
   /isobject@3.0.1:
     resolution: {integrity: sha512-WhB9zCku7EGTj/HQQRz5aUQEUeoQZH2bWcltRErOpymJ4boYE6wL9Tbr23krRPSZ+C5zqNSrSw+Cc7sZZ4b7vg==}
     engines: {node: '>=0.10.0'}
+
+  /istanbul-lib-coverage@3.2.2:
+    resolution: {integrity: sha512-O8dpsF+r0WV/8MNRKfnmrtCWhuKjxrq2w+jpzBL5UZKTi2LeVWnWOmWRxFlesJONmc+wLAGvKQZEOanko0LFTg==}
+    engines: {node: '>=8'}
+    dev: true
+
+  /istanbul-lib-report@3.0.1:
+    resolution: {integrity: sha512-GCfE1mtsHGOELCU8e/Z7YWzpmybrx/+dSTfLrvY8qRmaY6zXTKWn6WQIjaAFw069icm6GVMNkgu0NzI4iPZUNw==}
+    engines: {node: '>=10'}
+    dependencies:
+      istanbul-lib-coverage: 3.2.2
+      make-dir: 4.0.0
+      supports-color: 7.2.0
+    dev: true
+
+  /istanbul-lib-source-maps@4.0.1:
+    resolution: {integrity: sha512-n3s8EwkdFIJCG3BPKBYvskgXGoy88ARzvegkitk60NxRdwltLOTaH7CUiMRXvwYorl0Q712iEjcWB+fK/MrWVw==}
+    engines: {node: '>=10'}
+    dependencies:
+      debug: 4.3.4
+      istanbul-lib-coverage: 3.2.2
+      source-map: 0.6.1
+    transitivePeerDependencies:
+      - supports-color
+    dev: true
+
+  /istanbul-reports@3.1.6:
+    resolution: {integrity: sha512-TLgnMkKg3iTDsQ9PbPTdpfAK2DzjF9mqUG7RMgcQl8oFjad8ob4laGxv5XV5U9MAfx8D6tSJiUyuAwzLicaxlg==}
+    engines: {node: '>=8'}
+    dependencies:
+      html-escaper: 2.0.2
+      istanbul-lib-report: 3.0.1
+    dev: true
 
   /jackspeak@2.3.6:
     resolution: {integrity: sha512-N3yCS/NegsOBokc8GAdM8UcmfsKiSS8cipheD/nivzr700H+nsMOxJjQnvwOcRYVuFkdH0wGUvW2WbXGmrZGbQ==}
@@ -7955,6 +8139,10 @@ packages:
     engines: {node: '>=6'}
     hasBin: true
 
+  /jsonc-parser@3.2.0:
+    resolution: {integrity: sha512-gfFQZrcTc8CnKXp6Y4/CBT3fTc0OVuDofpre4aEeEpSBPV5X5v4+Vmx+8snU7RLPrNHPKSgLxGo9YuQzz20o+w==}
+    dev: true
+
   /jsx-ast-utils@3.3.4:
     resolution: {integrity: sha512-fX2TVdCViod6HwKEtSWGHs57oFhVfCMwieb9PuRDgjDPh5XeqJiHFFFJCHxU5cnTc3Bu/GRL+kPiFmw8XWOfKw==}
     engines: {node: '>=4.0'}
@@ -7993,7 +8181,7 @@ packages:
     dependencies:
       chalk: 5.3.0
       commander: 11.1.0
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4
       execa: 8.0.1
       lilconfig: 2.1.0
       listr2: 7.0.2
@@ -8015,6 +8203,14 @@ packages:
       log-update: 5.0.1
       rfdc: 1.3.0
       wrap-ansi: 8.1.0
+    dev: true
+
+  /local-pkg@0.5.0:
+    resolution: {integrity: sha512-ok6z3qlYyCDS4ZEU27HaU6x/xZa9Whf8jD4ptH5UZTQYZVYeb9bnZ3ojVhiJNLiXK1Hfc0GNbLXcmZ5plLDDBg==}
+    engines: {node: '>=14'}
+    dependencies:
+      mlly: 1.4.2
+      pkg-types: 1.0.3
     dev: true
 
   /locate-path@3.0.0:
@@ -8051,14 +8247,6 @@ packages:
     resolution: {integrity: sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==}
     dev: true
 
-  /log-symbols@4.1.0:
-    resolution: {integrity: sha512-8XPvpAA8uyhfteu8pIvQxpJZ7SYYdpUivZpGy6sFsBuKRY/7rQGavedeB8aK+Zkyq6upMFVL/9AW6vOYzfRyLg==}
-    engines: {node: '>=10'}
-    dependencies:
-      chalk: 4.1.2
-      is-unicode-supported: 0.1.0
-    dev: true
-
   /log-update@5.0.1:
     resolution: {integrity: sha512-5UtUDQ/6edw4ofyljDNcOVJQ4c7OjDro4h3y8e1GQL5iYElYclVHJ3zeWchylvMaKnDbDilC8irOVyexnA/Slw==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
@@ -8081,6 +8269,12 @@ packages:
       js-tokens: 4.0.0
     dev: true
 
+  /loupe@2.3.7:
+    resolution: {integrity: sha512-zSMINGVYkdpYSOBmLi0D1Uo7JU9nVdQKrHxC8eYlV+9YKK9WePqAlL7lSlorG/U2Fw1w0hTBmaa/jrQ3UbPHtA==}
+    dependencies:
+      get-func-name: 2.0.2
+    dev: true
+
   /lru-cache@10.0.0:
     resolution: {integrity: sha512-svTf/fzsKHffP42sujkO/Rjs37BCIsQVRCeNYIm9WN8rgT7ffoUnRtZCqU+6BqcSBdv8gwJeTz8knJpgACeQMw==}
     engines: {node: 14 || >=16.14}
@@ -8097,12 +8291,34 @@ packages:
       yallist: 4.0.0
     dev: true
 
+  /magic-string@0.30.5:
+    resolution: {integrity: sha512-7xlpfBaQaP/T6Vh8MO/EqXSW5En6INHEvEXQiuff7Gku0PWjU3uf6w/j9o7O+SpB5fOAkrI5HeoNgwjEO0pFsA==}
+    engines: {node: '>=12'}
+    dependencies:
+      '@jridgewell/sourcemap-codec': 1.4.15
+    dev: true
+
+  /magicast@0.3.2:
+    resolution: {integrity: sha512-Fjwkl6a0syt9TFN0JSYpOybxiMCkYNEeOTnOTNRbjphirLakznZXAqrXgj/7GG3D1dvETONNwrBfinvAbpunDg==}
+    dependencies:
+      '@babel/parser': 7.23.4
+      '@babel/types': 7.23.4
+      source-map-js: 1.0.2
+    dev: true
+
   /make-dir@2.1.0:
     resolution: {integrity: sha512-LS9X+dc8KLxXCb8dni79fLIIUA5VyZoyjSMCwTluaXA0o27cCK0bhXkpgw+sTXVpPy/lSO57ilRixqk0vDmtRA==}
     engines: {node: '>=6'}
     dependencies:
       pify: 4.0.1
       semver: 5.7.2
+
+  /make-dir@4.0.0:
+    resolution: {integrity: sha512-hXdUTZYIVOt1Ex//jAQi+wTZZpUpwBj/0QsOzqegb3rGMMeJiSEu5xLHnYfBrRV4RH2+OCSOO95Is/7x1WJ4bw==}
+    engines: {node: '>=10'}
+    dependencies:
+      semver: 7.5.4
+    dev: true
 
   /make-error@1.3.6:
     resolution: {integrity: sha512-s8UhlNe7vPKomQhC1qFelMokr/Sc3AgNbso3n74mVPA5LTZwkB9NlXf4XPamLxJE8h0gh73rM94xvwRT2CVInw==}
@@ -8476,7 +8692,7 @@ packages:
     resolution: {integrity: sha512-o/sd0nMof8kYff+TqcDx3VSrgBTcZpSvYcAHIfHhv5VAuNmisCxjhx6YmxS8PFEpb9z5WKWKPdzf0jM23ro3RQ==}
     dependencies:
       '@types/debug': 4.1.12
-      debug: 4.3.4(supports-color@8.1.1)
+      debug: 4.3.4
       decode-named-character-reference: 1.0.2
       devlop: 1.1.0
       micromark-core-commonmark: 2.0.0
@@ -8517,13 +8733,6 @@ packages:
     resolution: {integrity: sha512-J7p63hRiAjw1NDEww1W7i37+ByIrOWO5XQQAzZ3VOcL0PNybwpfmV/N05zFAzwQ9USyEcX6t3UO+K5aqBQOIHw==}
     dependencies:
       brace-expansion: 1.1.11
-
-  /minimatch@5.0.1:
-    resolution: {integrity: sha512-nLDxIFRyhDblz3qMuq+SoRZED4+miJ/G+tdDrjkkkRnjAsBexeGpgjLEQ0blJy7rHhR2b93rhQY4SvyWu9v03g==}
-    engines: {node: '>=10'}
-    dependencies:
-      brace-expansion: 2.0.1
-    dev: true
 
   /minimatch@7.4.6:
     resolution: {integrity: sha512-sBz8G/YjVniEz6lKPNpKxXwazJe4c19fEfV2GDMX6AjFz+MX9uDWIZW8XreVhkFW3fkIdTv/gxWr/Kks5FFAVw==}
@@ -8579,43 +8788,20 @@ packages:
     hasBin: true
     dev: true
 
-  /mocha@10.2.0:
-    resolution: {integrity: sha512-IDY7fl/BecMwFHzoqF2sg/SHHANeBoMMXFlS9r0OXKDssYE1M5O43wUY/9BVPeIvfH2zmEbBfseqN9gBQZzXkg==}
-    engines: {node: '>= 14.0.0'}
-    hasBin: true
+  /mlly@1.4.2:
+    resolution: {integrity: sha512-i/Ykufi2t1EZ6NaPLdfnZk2AX8cs0d+mTzVKuPfqPKPatxLApaBoxJQ9x1/uckXtrS/U5oisPMDkNs0yQTaBRg==}
     dependencies:
-      ansi-colors: 4.1.1
-      browser-stdout: 1.3.1
-      chokidar: 3.5.3
-      debug: 4.3.4(supports-color@8.1.1)
-      diff: 5.0.0
-      escape-string-regexp: 4.0.0
-      find-up: 5.0.0
-      glob: 7.2.0
-      he: 1.2.0
-      js-yaml: 4.1.0
-      log-symbols: 4.1.0
-      minimatch: 5.0.1
-      ms: 2.1.3
-      nanoid: 3.3.3
-      serialize-javascript: 6.0.0
-      strip-json-comments: 3.1.1
-      supports-color: 8.1.1
-      workerpool: 6.2.1
-      yargs: 16.2.0
-      yargs-parser: 20.2.4
-      yargs-unparser: 2.0.0
+      acorn: 8.10.0
+      pathe: 1.1.1
+      pkg-types: 1.0.3
+      ufo: 1.3.2
     dev: true
 
   /ms@2.1.2:
     resolution: {integrity: sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==}
 
-  /ms@2.1.3:
-    resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
-    dev: true
-
-  /nanoid@3.3.3:
-    resolution: {integrity: sha512-p1sjXuopFs0xg+fPASzQ28agW1oHD7xDsd9Xkf3T15H3c/cifrFHVwrh74PdoklAPi+i7MdRsE47vm2r6JoB+w==}
+  /nanoid@3.3.7:
+    resolution: {integrity: sha512-eSRppjcPIatRIMC1U6UngP8XFcz8MQWGQdt1MTBQ7NaAmvXDfvNxbvWV3x2y6CdEUciCSsDHDQZbhYaB8QEo2g==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
     dev: true
@@ -8649,11 +8835,6 @@ packages:
 
   /node-releases@2.0.13:
     resolution: {integrity: sha512-uYr7J37ae/ORWdZeQ1xxMJe3NtdmqMC/JZK+geofDrkLUApKRHPd18/TxtBOJ4A0/+uUIliorNrfYV6s1b02eQ==}
-
-  /normalize-path@3.0.0:
-    resolution: {integrity: sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==}
-    engines: {node: '>=0.10.0'}
-    dev: true
 
   /npm-run-path@4.0.1:
     resolution: {integrity: sha512-S48WzZW777zhNIrn7gxOlISNAqi9ZC/uQFnRdbeIHhZhCA6UqpkOT8T1G7BvfdgP4Er8gF4sUbaS0i7QvIfCWw==}
@@ -8786,6 +8967,13 @@ packages:
       yocto-queue: 0.1.0
     dev: true
 
+  /p-limit@5.0.0:
+    resolution: {integrity: sha512-/Eaoq+QyLSiXQ4lyYV23f14mZRQcXnxfHrN0vCai+ak9G0pp9iEQukIIZq5NccEvwRB8PUnZT0KsOoDCINS1qQ==}
+    engines: {node: '>=18'}
+    dependencies:
+      yocto-queue: 1.0.0
+    dev: true
+
   /p-locate@3.0.0:
     resolution: {integrity: sha512-x+12w/To+4GFfgJhBEpiDcLozRJGegY+Ei7/z0tSLkMmxGZNybVMSfWj9aJn8Z5Fc7dBUNJOOVgPv2H7IwulSQ==}
     engines: {node: '>=6'}
@@ -8871,6 +9059,14 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
+  /pathe@1.1.1:
+    resolution: {integrity: sha512-d+RQGp0MAYTIaDBIMmOfMwz3E+LOZnxx1HZd5R18mmCZY0QBlK0LDZfPc8FW8Ed2DlvsuE6PRjroDY+wg4+j/Q==}
+    dev: true
+
+  /pathval@1.1.1:
+    resolution: {integrity: sha512-Dp6zGqpTdETdR63lehJYPeIOqpiNBNtc7BpWSLrOje7UaIsE5aY92r/AunQA7rsXvet3lrJ3JnZX29UPTKXyKQ==}
+    dev: true
+
   /picocolors@1.0.0:
     resolution: {integrity: sha512-1fygroTLlHu66zi26VoTDv8yRgm0Fccecssto+MhsZ0D/DGW2sm8E8AjW7NU5VVTRt5GxbeZ5qBuJr+HyLYkjQ==}
 
@@ -8898,6 +9094,23 @@ packages:
     dependencies:
       find-up: 3.0.0
 
+  /pkg-types@1.0.3:
+    resolution: {integrity: sha512-nN7pYi0AQqJnoLPC9eHFQ8AcyaixBUOwvqc5TDnIKCMEE6I0y8P7OKA7fPexsXGCGxQDl/cmrLAp26LhcwxZ4A==}
+    dependencies:
+      jsonc-parser: 3.2.0
+      mlly: 1.4.2
+      pathe: 1.1.1
+    dev: true
+
+  /postcss@8.4.32:
+    resolution: {integrity: sha512-D/kj5JNu6oo2EIy+XL/26JEDTlIbB8hw85G8StOE6L74RQAVVP5rej6wxCNqyMbR4RkPfqvezVbPw81Ngd6Kcw==}
+    engines: {node: ^10 || ^12 || >=14}
+    dependencies:
+      nanoid: 3.3.7
+      picocolors: 1.0.0
+      source-map-js: 1.0.2
+    dev: true
+
   /prelude-ls@1.2.1:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
     engines: {node: '>= 0.8.0'}
@@ -8914,6 +9127,15 @@ packages:
     resolution: {integrity: sha512-TQLvXjq5IAibjh8EpBIkNKxO749UEWABoiIZehEPiY4GNpVdhaFKqSTu+QrlU6D2dPAfubRmtJTi4K4YkQ5eXw==}
     engines: {node: '>=14'}
     hasBin: true
+    dev: true
+
+  /pretty-format@29.7.0:
+    resolution: {integrity: sha512-Pdlw/oPxN+aXdmM9R00JVC9WVFoCLTKJvDVLgmJ+qAffBMxsV85l/Lu7sNx4zSzPyoL2euImuEwHhOXdEgNFZQ==}
+    engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
+    dependencies:
+      '@jest/schemas': 29.6.3
+      ansi-styles: 5.2.0
+      react-is: 18.2.0
     dev: true
 
   /prop-types@15.8.1:
@@ -8946,21 +9168,12 @@ packages:
       lodash.isequal: 4.5.0
     dev: true
 
-  /randombytes@2.1.0:
-    resolution: {integrity: sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ==}
-    dependencies:
-      safe-buffer: 5.2.1
-    dev: true
-
   /react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
     dev: true
 
-  /readdirp@3.6.0:
-    resolution: {integrity: sha512-hOS089on8RduqdbhvQ5Z37A0ESjsqz6qnRcffsMU3495FuTdqSm+7bhJ29JvIOsBDEEnan5DPu9t3To9VRlMzA==}
-    engines: {node: '>=8.10.0'}
-    dependencies:
-      picomatch: 2.3.1
+  /react-is@18.2.0:
+    resolution: {integrity: sha512-xWGDIW6x921xtzPkhiULtthJHoJvBbF3q26fzloPCK0hsvxtPVelvftw3zjbHWSkR2km9Z+4uxbDDK/6Zw9B8w==}
     dev: true
 
   /recast@0.20.5:
@@ -9045,6 +9258,7 @@ packages:
   /require-directory@2.1.1:
     resolution: {integrity: sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q==}
     engines: {node: '>=0.10.0'}
+    dev: false
 
   /resolve-from@4.0.0:
     resolution: {integrity: sha512-pb/MYmXstAkysRFx8piNI1tGFNQIFA3vkE3Gq4EuA1dF6gHp/+vgZqsCGJapvy8N3Q+4o7FwvquPJcnZ7RYy4g==}
@@ -9099,6 +9313,27 @@ packages:
       glob: 7.2.3
     dev: true
 
+  /rollup@4.9.0:
+    resolution: {integrity: sha512-bUHW/9N21z64gw8s6tP4c88P382Bq/L5uZDowHlHx6s/QWpjJXivIAbEw6LZthgSvlEizZBfLC4OAvWe7aoF7A==}
+    engines: {node: '>=18.0.0', npm: '>=8.0.0'}
+    hasBin: true
+    optionalDependencies:
+      '@rollup/rollup-android-arm-eabi': 4.9.0
+      '@rollup/rollup-android-arm64': 4.9.0
+      '@rollup/rollup-darwin-arm64': 4.9.0
+      '@rollup/rollup-darwin-x64': 4.9.0
+      '@rollup/rollup-linux-arm-gnueabihf': 4.9.0
+      '@rollup/rollup-linux-arm64-gnu': 4.9.0
+      '@rollup/rollup-linux-arm64-musl': 4.9.0
+      '@rollup/rollup-linux-riscv64-gnu': 4.9.0
+      '@rollup/rollup-linux-x64-gnu': 4.9.0
+      '@rollup/rollup-linux-x64-musl': 4.9.0
+      '@rollup/rollup-win32-arm64-msvc': 4.9.0
+      '@rollup/rollup-win32-ia32-msvc': 4.9.0
+      '@rollup/rollup-win32-x64-msvc': 4.9.0
+      fsevents: 2.3.3
+    dev: true
+
   /run-applescript@5.0.0:
     resolution: {integrity: sha512-XcT5rBksx1QdIhlFOCtgZkB99ZEouFZ1E2Kc2LHqNW13U3/74YGdkQRmThTwxy4QIyookibDKYZOPqX//6BlAg==}
     engines: {node: '>=12'}
@@ -9128,10 +9363,6 @@ packages:
       isarray: 2.0.5
     dev: true
 
-  /safe-buffer@5.2.1:
-    resolution: {integrity: sha512-rp3So07KcdmmKbGvgaNxQSJr7bGVSVk5S9Eq1F+ppbRo70+YeaDxkw5Dd8NPN+GD6bjnYm2VuPuCXmpuYvmCXQ==}
-    dev: true
-
   /safe-regex-test@1.0.0:
     resolution: {integrity: sha512-JBUUzyOgEwXQY1NuPtvcj/qcBDbDmEvWufhlnXZIm75DEHp+afM1r1ujJpJsV/gSM4t59tpDyPi1sd6ZaPFfsA==}
     dependencies:
@@ -9156,12 +9387,6 @@ packages:
       lru-cache: 6.0.0
     dev: true
 
-  /serialize-javascript@6.0.0:
-    resolution: {integrity: sha512-Qr3TosvguFt8ePWqsvRfrKyQXIiW+nGbYpy8XK24NQHE83caxWt+mIymTT19DGFbNWNLfEwsrkSmN64lVWB9ag==}
-    dependencies:
-      randombytes: 2.1.0
-    dev: true
-
   /shallow-clone@3.0.1:
     resolution: {integrity: sha512-/6KqX+GVUdqPuPPd2LxDDxzX6CAbjJehAAOKlNpqqUpAqPM6HeL8f+o3a+JsyGjn2lv0WY8UsTgUJjU9Ok55NA==}
     engines: {node: '>=8'}
@@ -9184,6 +9409,10 @@ packages:
       call-bind: 1.0.2
       get-intrinsic: 1.2.1
       object-inspect: 1.12.3
+    dev: true
+
+  /siginfo@2.0.0:
+    resolution: {integrity: sha512-ybx0WO1/8bSBLEWXZvEd7gMW3Sn3JFlW3TvX1nREbDLRNQNaeNN8WK0meBwPdAaOI7TtRRRJn/Es1zhrrCHu7g==}
     dev: true
 
   /signal-exit@3.0.7:
@@ -9223,6 +9452,11 @@ packages:
       is-fullwidth-code-point: 4.0.0
     dev: true
 
+  /source-map-js@1.0.2:
+    resolution: {integrity: sha512-R0XvVJ9WusLiqTCEiGCmICCMplcCkIwwR11mOSD9CR5u+IXYdiseeEuXCVAjS54zqwkLcPNnmU4OeJ6tUrWhDw==}
+    engines: {node: '>=0.10.0'}
+    dev: true
+
   /source-map-support@0.5.21:
     resolution: {integrity: sha512-uBHU3L3czsIyYXKX88fdrGovxdSCoTGDRZ6SYXtSRxLZUzHg5P/66Ht6uoUlHu9EZod+inXhKo3qQgwXUT/y1w==}
     dependencies:
@@ -9232,6 +9466,14 @@ packages:
   /source-map@0.6.1:
     resolution: {integrity: sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==}
     engines: {node: '>=0.10.0'}
+
+  /stackback@0.0.2:
+    resolution: {integrity: sha512-1XMJE5fQo1jGH6Y/7ebnwPOBEkIEnT4QF32d5R1+VXdXveM0IBMJt8zfaxX1P3QhVwrYe+576+jkANtSS2mBbw==}
+    dev: true
+
+  /std-env@3.6.0:
+    resolution: {integrity: sha512-aFZ19IgVmhdB2uX599ve2kE6BIE3YMnQ6Gp6BURhW/oIzpXGKr878TQfAQZn1+i0Flcc/UKUy1gOlcfaUBCryg==}
+    dev: true
 
   /string-argv@0.3.2:
     resolution: {integrity: sha512-aqD2Q0144Z+/RqG52NeHEkZauTAUWJO8c6yTftGJKO3Tja5tUgIfmIl6kExvhtxSDP7fXB6DvzkfMpCd/F3G+Q==}
@@ -9326,6 +9568,12 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
+  /strip-literal@1.3.0:
+    resolution: {integrity: sha512-PugKzOsyXpArk0yWmUwqOZecSO0GH0bPoctLcqNDH9J04pVW3lflYE0ujElBGTloevcxF5MofAOZ7C5l2b+wLg==}
+    dependencies:
+      acorn: 8.10.0
+    dev: true
+
   /supports-color@5.5.0:
     resolution: {integrity: sha512-QjVjwdXIt408MIiAqCX4oUKsgU2EqAGzs2Ppkm4aQYbjm+ZEWEcW4SfFNTr4uMNZma0ey4f5lgLrkB0aX0QMow==}
     engines: {node: '>=4'}
@@ -9335,12 +9583,6 @@ packages:
   /supports-color@7.2.0:
     resolution: {integrity: sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==}
     engines: {node: '>=8'}
-    dependencies:
-      has-flag: 4.0.0
-
-  /supports-color@8.1.1:
-    resolution: {integrity: sha512-MpUEN2OodtUzxvKQl72cUF7RQ5EiHsGvSsVG0ia9c5RbWGL2CI4C7EpPS8UTBIplnlzZiNuV56w+FuNxy3ty2Q==}
-    engines: {node: '>=10'}
     dependencies:
       has-flag: 4.0.0
 
@@ -9375,6 +9617,15 @@ packages:
     dependencies:
       rimraf: 2.6.3
 
+  /test-exclude@6.0.0:
+    resolution: {integrity: sha512-cAGWPIyOHU6zlmg88jwm7VRyXnMN7iV68OGAbYDk/Mh/xC/pzVPlQtY6ngoIH/5/tciuhGfvESU8GrHrcxD56w==}
+    engines: {node: '>=8'}
+    dependencies:
+      '@istanbuljs/schema': 0.1.3
+      glob: 7.2.3
+      minimatch: 3.1.2
+    dev: true
+
   /text-table@0.2.0:
     resolution: {integrity: sha512-N+8UisAXDGk8PFXP4HAzVR9nbfmVJ3zYLAWiTIoqC5v5isinhr+r5uaO8+7r3BMfuNIufIsA7RdpVgacC2cSpw==}
     dev: true
@@ -9386,6 +9637,20 @@ packages:
       tslib: ^2
     dependencies:
       tslib: 2.6.0
+    dev: true
+
+  /tinybench@2.5.1:
+    resolution: {integrity: sha512-65NKvSuAVDP/n4CqH+a9w2kTlLReS9vhsAP06MWx+/89nMinJyB2icyl58RIcqCmIggpojIGeuJGhjU1aGMBSg==}
+    dev: true
+
+  /tinypool@0.8.1:
+    resolution: {integrity: sha512-zBTCK0cCgRROxvs9c0CGK838sPkeokNGdQVUUwHAbynHFlmyJYj825f/oRs528HaIJ97lo0pLIlDUzwN+IorWg==}
+    engines: {node: '>=14.0.0'}
+    dev: true
+
+  /tinyspy@2.2.0:
+    resolution: {integrity: sha512-d2eda04AN/cPOR89F7Xv5bK/jrQEhmcLFe6HFldoeO9AJtps+fqEnh486vnT/8y4bw38pSyxDcTCAq+Ks2aJTg==}
+    engines: {node: '>=14.0.0'}
     dev: true
 
   /titleize@3.0.0:
@@ -9554,7 +9819,6 @@ packages:
   /type-detect@4.0.8:
     resolution: {integrity: sha512-0fr/mIH1dlO+x7TlcMy+bIDqKPsw/70tVyeHW787goQjhmqaZe10uwLujubK9q9Lg6Fiho1KUKDYz0Z7k7g5/g==}
     engines: {node: '>=4'}
-    dev: false
 
   /type-fest@0.20.2:
     resolution: {integrity: sha512-Ne+eE4r0/iWnpAxD852z3A+N0Bt5RN//NjJwRd2VFHEmrywxf5vsZlh4R6lixl6B+wz/8d+maTSAkN1FIkI3LQ==}
@@ -9608,6 +9872,10 @@ packages:
     resolution: {integrity: sha512-mI4WrpHsbCIcwT9cF4FZvr80QUeKvsUsUvKDoR+X/7XHQH98xYD8YHZg7ANtz2GtZt/CBq2QJ0thkGJMHfqc1w==}
     engines: {node: '>=14.17'}
     hasBin: true
+    dev: true
+
+  /ufo@1.3.2:
+    resolution: {integrity: sha512-o+ORpgGwaYQXgqGDwd+hkS4PuZ3QnmqMMxRuajK/a38L6fTpcE5GPIfrf+L/KemFzfUpeUQc1rRS1iDBozvnFA==}
     dev: true
 
   /unbox-primitive@1.0.2:
@@ -9728,6 +9996,15 @@ packages:
     resolution: {integrity: sha512-wa7YjyUGfNZngI/vtK0UHAN+lgDCxBPCylVXGp0zu59Fz5aiGtNXaq3DhIov063MorB+VfufLh3JlF2KdTK3xg==}
     dev: true
 
+  /v8-to-istanbul@9.2.0:
+    resolution: {integrity: sha512-/EH/sDgxU2eGxajKdwLCDmQ4FWq+kpi3uCmBGpw1xJtnAxEjlD8j8PEiGWpCIMIs3ciNAgH0d3TTJiUkYzyZjA==}
+    engines: {node: '>=10.12.0'}
+    dependencies:
+      '@jridgewell/trace-mapping': 0.3.20
+      '@types/istanbul-lib-coverage': 2.0.6
+      convert-source-map: 2.0.0
+    dev: true
+
   /valibot@0.24.1:
     resolution: {integrity: sha512-Toclbuy20XsECZiueh2dkQ63he2AGaBIj/FJRDAFti2kueFldm9bjJzSYvPaL5CE1HXDMRhq7olak8at7xCz5A==}
     dev: false
@@ -9738,6 +10015,234 @@ packages:
       '@types/unist': 3.0.2
       unist-util-stringify-position: 4.0.0
     dev: false
+
+  /vite-node@1.0.4(@types/node@20.10.0):
+    resolution: {integrity: sha512-9xQQtHdsz5Qn8hqbV7UKqkm8YkJhzT/zr41Dmt5N7AlD8hJXw/Z7y0QiD5I8lnTthV9Rvcvi0QW7PI0Fq83ZPg==}
+    engines: {node: ^18.0.0 || >=20.0.0}
+    hasBin: true
+    dependencies:
+      cac: 6.7.14
+      debug: 4.3.4
+      pathe: 1.1.1
+      picocolors: 1.0.0
+      vite: 5.0.8(@types/node@20.10.0)
+    transitivePeerDependencies:
+      - '@types/node'
+      - less
+      - lightningcss
+      - sass
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+    dev: true
+
+  /vite-node@1.0.4(@types/node@20.9.0):
+    resolution: {integrity: sha512-9xQQtHdsz5Qn8hqbV7UKqkm8YkJhzT/zr41Dmt5N7AlD8hJXw/Z7y0QiD5I8lnTthV9Rvcvi0QW7PI0Fq83ZPg==}
+    engines: {node: ^18.0.0 || >=20.0.0}
+    hasBin: true
+    dependencies:
+      cac: 6.7.14
+      debug: 4.3.4
+      pathe: 1.1.1
+      picocolors: 1.0.0
+      vite: 5.0.8(@types/node@20.9.0)
+    transitivePeerDependencies:
+      - '@types/node'
+      - less
+      - lightningcss
+      - sass
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+    dev: true
+
+  /vite@5.0.8(@types/node@20.10.0):
+    resolution: {integrity: sha512-jYMALd8aeqR3yS9xlHd0OzQJndS9fH5ylVgWdB+pxTwxLKdO1pgC5Dlb398BUxpfaBxa4M9oT7j1g503Gaj5IQ==}
+    engines: {node: ^18.0.0 || >=20.0.0}
+    hasBin: true
+    peerDependencies:
+      '@types/node': ^18.0.0 || >=20.0.0
+      less: '*'
+      lightningcss: ^1.21.0
+      sass: '*'
+      stylus: '*'
+      sugarss: '*'
+      terser: ^5.4.0
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+      less:
+        optional: true
+      lightningcss:
+        optional: true
+      sass:
+        optional: true
+      stylus:
+        optional: true
+      sugarss:
+        optional: true
+      terser:
+        optional: true
+    dependencies:
+      '@types/node': 20.10.0
+      esbuild: 0.19.7
+      postcss: 8.4.32
+      rollup: 4.9.0
+    optionalDependencies:
+      fsevents: 2.3.3
+    dev: true
+
+  /vite@5.0.8(@types/node@20.9.0):
+    resolution: {integrity: sha512-jYMALd8aeqR3yS9xlHd0OzQJndS9fH5ylVgWdB+pxTwxLKdO1pgC5Dlb398BUxpfaBxa4M9oT7j1g503Gaj5IQ==}
+    engines: {node: ^18.0.0 || >=20.0.0}
+    hasBin: true
+    peerDependencies:
+      '@types/node': ^18.0.0 || >=20.0.0
+      less: '*'
+      lightningcss: ^1.21.0
+      sass: '*'
+      stylus: '*'
+      sugarss: '*'
+      terser: ^5.4.0
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+      less:
+        optional: true
+      lightningcss:
+        optional: true
+      sass:
+        optional: true
+      stylus:
+        optional: true
+      sugarss:
+        optional: true
+      terser:
+        optional: true
+    dependencies:
+      '@types/node': 20.9.0
+      esbuild: 0.19.7
+      postcss: 8.4.32
+      rollup: 4.9.0
+    optionalDependencies:
+      fsevents: 2.3.3
+    dev: true
+
+  /vitest@1.0.4(@types/node@20.10.0):
+    resolution: {integrity: sha512-s1GQHp/UOeWEo4+aXDOeFBJwFzL6mjycbQwwKWX2QcYfh/7tIerS59hWQ20mxzupTJluA2SdwiBuWwQHH67ckg==}
+    engines: {node: ^18.0.0 || >=20.0.0}
+    hasBin: true
+    peerDependencies:
+      '@edge-runtime/vm': '*'
+      '@types/node': ^18.0.0 || >=20.0.0
+      '@vitest/browser': ^1.0.0
+      '@vitest/ui': ^1.0.0
+      happy-dom: '*'
+      jsdom: '*'
+    peerDependenciesMeta:
+      '@edge-runtime/vm':
+        optional: true
+      '@types/node':
+        optional: true
+      '@vitest/browser':
+        optional: true
+      '@vitest/ui':
+        optional: true
+      happy-dom:
+        optional: true
+      jsdom:
+        optional: true
+    dependencies:
+      '@types/node': 20.10.0
+      '@vitest/expect': 1.0.4
+      '@vitest/runner': 1.0.4
+      '@vitest/snapshot': 1.0.4
+      '@vitest/spy': 1.0.4
+      '@vitest/utils': 1.0.4
+      acorn-walk: 8.3.1
+      cac: 6.7.14
+      chai: 4.3.10
+      debug: 4.3.4
+      execa: 8.0.1
+      local-pkg: 0.5.0
+      magic-string: 0.30.5
+      pathe: 1.1.1
+      picocolors: 1.0.0
+      std-env: 3.6.0
+      strip-literal: 1.3.0
+      tinybench: 2.5.1
+      tinypool: 0.8.1
+      vite: 5.0.8(@types/node@20.10.0)
+      vite-node: 1.0.4(@types/node@20.10.0)
+      why-is-node-running: 2.2.2
+    transitivePeerDependencies:
+      - less
+      - lightningcss
+      - sass
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+    dev: true
+
+  /vitest@1.0.4(@types/node@20.9.0):
+    resolution: {integrity: sha512-s1GQHp/UOeWEo4+aXDOeFBJwFzL6mjycbQwwKWX2QcYfh/7tIerS59hWQ20mxzupTJluA2SdwiBuWwQHH67ckg==}
+    engines: {node: ^18.0.0 || >=20.0.0}
+    hasBin: true
+    peerDependencies:
+      '@edge-runtime/vm': '*'
+      '@types/node': ^18.0.0 || >=20.0.0
+      '@vitest/browser': ^1.0.0
+      '@vitest/ui': ^1.0.0
+      happy-dom: '*'
+      jsdom: '*'
+    peerDependenciesMeta:
+      '@edge-runtime/vm':
+        optional: true
+      '@types/node':
+        optional: true
+      '@vitest/browser':
+        optional: true
+      '@vitest/ui':
+        optional: true
+      happy-dom:
+        optional: true
+      jsdom:
+        optional: true
+    dependencies:
+      '@types/node': 20.9.0
+      '@vitest/expect': 1.0.4
+      '@vitest/runner': 1.0.4
+      '@vitest/snapshot': 1.0.4
+      '@vitest/spy': 1.0.4
+      '@vitest/utils': 1.0.4
+      acorn-walk: 8.3.1
+      cac: 6.7.14
+      chai: 4.3.10
+      debug: 4.3.4
+      execa: 8.0.1
+      local-pkg: 0.5.0
+      magic-string: 0.30.5
+      pathe: 1.1.1
+      picocolors: 1.0.0
+      std-env: 3.6.0
+      strip-literal: 1.3.0
+      tinybench: 2.5.1
+      tinypool: 0.8.1
+      vite: 5.0.8(@types/node@20.9.0)
+      vite-node: 1.0.4(@types/node@20.9.0)
+      why-is-node-running: 2.2.2
+    transitivePeerDependencies:
+      - less
+      - lightningcss
+      - sass
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+    dev: true
 
   /which-boxed-primitive@1.0.2:
     resolution: {integrity: sha512-bwZdv0AKLpplFY2KZRX6TvyuN7ojjr7lwkg6ml0roIy9YeuSr7JS372qlNW18UQYzgYK9ziGcerWqZOmEn9VNg==}
@@ -9766,8 +10271,13 @@ packages:
     dependencies:
       isexe: 2.0.0
 
-  /workerpool@6.2.1:
-    resolution: {integrity: sha512-ILEIE97kDZvF9Wb9f6h5aXK4swSlKGUcOEGiIYb2OOu/IrDU9iwj0fD//SsA6E5ibwJxpEvhullJY4Sl4GcpAw==}
+  /why-is-node-running@2.2.2:
+    resolution: {integrity: sha512-6tSwToZxTOcotxHeA+qGCq1mVzKR3CwcJGmVcY+QE8SHy6TnpFnh8PAvPNHYr7EcuVeG0QSMxtYCuO1ta/G/oA==}
+    engines: {node: '>=8'}
+    hasBin: true
+    dependencies:
+      siginfo: 2.0.0
+      stackback: 0.0.2
     dev: true
 
   /wrap-ansi@7.0.0:
@@ -9799,6 +10309,7 @@ packages:
   /y18n@5.0.8:
     resolution: {integrity: sha512-0pfFzegeDWJHJIAmTLRP2DwHjdF5s7jo9tuztdQxAhINCdvS+3nGINqPd00AphqJR/0LhANUS6/+7SCb98YOfA==}
     engines: {node: '>=10'}
+    dev: false
 
   /yallist@3.1.1:
     resolution: {integrity: sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g==}
@@ -9811,38 +10322,10 @@ packages:
     engines: {node: '>= 14'}
     dev: true
 
-  /yargs-parser@20.2.4:
-    resolution: {integrity: sha512-WOkpgNhPTlE73h4VFAFsOnomJVaovO8VqLDzy5saChRBFQFBoMYirowyW+Q9HB4HFF4Z7VZTiG3iSzJJA29yRA==}
-    engines: {node: '>=10'}
-    dev: true
-
   /yargs-parser@21.1.1:
     resolution: {integrity: sha512-tVpsJW7DdjecAiFpbIB1e3qxIQsE6NoPc5/eTdrbbIC4h0LVsWhnoa3g+m2HclBIujHzsxZ4VJVA+GUuc2/LBw==}
     engines: {node: '>=12'}
     dev: false
-
-  /yargs-unparser@2.0.0:
-    resolution: {integrity: sha512-7pRTIA9Qc1caZ0bZ6RYRGbHJthJWuakf+WmHK0rVeLkNrrGhfoabBNdue6kdINI6r4if7ocq9aD/n7xwKOdzOA==}
-    engines: {node: '>=10'}
-    dependencies:
-      camelcase: 6.3.0
-      decamelize: 4.0.0
-      flat: 5.0.2
-      is-plain-obj: 2.1.0
-    dev: true
-
-  /yargs@16.2.0:
-    resolution: {integrity: sha512-D1mvvtDG0L5ft/jGWkLpG1+m0eQxOfaBvTNELraWj22wSVUMWxZUvYgJYcKh6jGGIkJFhH4IZPQhR4TKpc8mBw==}
-    engines: {node: '>=10'}
-    dependencies:
-      cliui: 7.0.4
-      escalade: 3.1.1
-      get-caller-file: 2.0.5
-      require-directory: 2.1.1
-      string-width: 4.2.3
-      y18n: 5.0.8
-      yargs-parser: 20.2.4
-    dev: true
 
   /yargs@17.7.2:
     resolution: {integrity: sha512-7dSzzRQ++CKnNI/krKnYRV7JKKPUXMEh61soaHKg9mrWEhzFWhFnxPxGl+69cD1Ou63C13NUPCnmIcrvqCuM6w==}
@@ -9865,6 +10348,11 @@ packages:
   /yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
+    dev: true
+
+  /yocto-queue@1.0.0:
+    resolution: {integrity: sha512-9bnSc/HEW2uRy67wc+T8UwauLuPJVn28jb+GtJY16iiKWyvmYJRXVT4UamsAEGQfPohgr2q4Tq0sQbQlxTfi1g==}
+    engines: {node: '>=12.20'}
     dev: true
 
   /zwitch@2.0.4:
