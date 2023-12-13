@@ -95,7 +95,7 @@ describe('mocha/vitest test', function () {
 		);
 	});
 
-	it('should keep the preciding comments', function () {
+	it('should keep the preceding comments', function () {
 		const INPUT = `
         // preceding comments
         import { expect } from 'chai';
@@ -109,7 +109,7 @@ describe('mocha/vitest test', function () {
 
 		const OUTPUT = `
       // preceding comments
-        import { describe, it, expect } from 'vitest';
+        import { expect, describe, it } from 'vitest';
 
         describe('Test Suite 1', () => {
           it('addition', () => {
@@ -124,8 +124,6 @@ describe('mocha/vitest test', function () {
 		};
 
 		const actualOutput = transform(fileInfo, buildApi('tsx'));
-
-		console.log(actualOutput);
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),
