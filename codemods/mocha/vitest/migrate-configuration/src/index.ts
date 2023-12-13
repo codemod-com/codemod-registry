@@ -63,44 +63,57 @@ export const repomod: Filemod<Record<string, never>, Record<string, never>> = {
 				delete packageJson.mocha;
 			}
 
-			// Remove mocha from dependencies & devDependencies, add vitest devDep
-			if (packageJson.dependencies) {
+			let mochaDepExists = false;
+			// Remove mocha and other mocha-compatibles from dependencies & devDependencies, add vitest devDep
+			if (packageJson.dependencies?.mocha) {
 				Object.keys(packageJson.dependencies).forEach((dep) => {
 					if (dep.includes('mocha')) {
 						delete packageJson.dependencies![dep];
 					}
 				});
+
+				mochaDepExists = true;
 			}
-			if (packageJson.devDependencies) {
+
+			if (packageJson.devDependencies?.mocha) {
 				Object.keys(packageJson.devDependencies).forEach((dep) => {
 					if (dep.includes('mocha')) {
 						delete packageJson.devDependencies![dep];
 					}
 				});
+
+				mochaDepExists = true;
 			}
-			packageJson.devDependencies = {
-				...packageJson.devDependencies,
-				vitest: '^1.0.1',
-				'@vitest/coverage-v8': '^1.0.1',
-			};
+
+			let mochaScriptExists = false;
 
 			// Remove commands using mocha
 			if (packageJson.scripts) {
 				Object.entries(packageJson.scripts).forEach(
 					([name, script]) => {
 						if (script.includes('mocha')) {
+							mochaScriptExists = true;
 							delete packageJson.scripts![name];
 						}
 					},
 				);
+
+				// Add vitest commands if current package.json contained any mocha ones
+				if (mochaScriptExists) {
+					packageJson.scripts = {
+						...packageJson.scripts,
+						test: 'vitest run',
+						'test:watch': 'vitest watch',
+						coverage: 'vitest run --coverage',
+					};
+				}
 			}
 
-			// Add vitest commands
-			if (packageJson.scripts) {
-				packageJson.scripts = {
-					...packageJson.scripts,
-					test: 'vitest run',
-					coverage: 'vitest run --coverage',
+			if (mochaDepExists || mochaScriptExists) {
+				packageJson.devDependencies = {
+					...packageJson.devDependencies,
+					vitest: '^1.0.1',
+					'@vitest/coverage-v8': '^1.0.1',
 				};
 			}
 

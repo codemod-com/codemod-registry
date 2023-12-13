@@ -1,3 +1,4 @@
+import { describe, it } from 'vitest';
 import { FileInfo } from 'jscodeshift';
 import assert from 'node:assert';
 import transform from '../src/index.js';
@@ -22,7 +23,7 @@ describe('mocha/vitest test', function () {
         `;
 
 		const OUTPUT = `
-        import { describe, it, expect } from 'vitest';
+        import { expect, describe, it } from 'vitest';
 
         describe('Test Suite 1', () => {
           it('addition', () => {
@@ -94,7 +95,7 @@ describe('mocha/vitest test', function () {
 		);
 	});
 
-	it('should keep the preciding comments', function () {
+	it('should keep the preceding comments', function () {
 		const INPUT = `
         // preceding comments
         import { expect } from 'chai';
@@ -108,7 +109,7 @@ describe('mocha/vitest test', function () {
 
 		const OUTPUT = `
       // preceding comments
-        import { describe, it, expect } from 'vitest';
+        import { expect, describe, it } from 'vitest';
 
         describe('Test Suite 1', () => {
           it('addition', () => {
@@ -124,7 +125,104 @@ describe('mocha/vitest test', function () {
 
 		const actualOutput = transform(fileInfo, buildApi('tsx'));
 
-		console.log(actualOutput);
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+
+	it('when beforeEach or afterAll are used', function () {
+		const INPUT = `
+        describe('Test Suite 1', () => {
+          beforeEach(() => {
+            doAThing();
+          });
+
+          it('addition', () => {
+            assert(1 + 1 == 2);
+          });
+
+          it('subtraction', () => {
+            assert(1 - 1 == 0);
+          });
+
+          afterAll(() => {
+            doAThing();
+          });
+        });
+        `;
+
+		const OUTPUT = `
+        import { afterAll, beforeEach, describe, it } from 'vitest';
+
+        describe('Test Suite 1', () => {
+          beforeEach(() => {
+            doAThing();
+          });
+
+          it('addition', () => {
+            assert(1 + 1 == 2);
+          });
+
+          it('subtraction', () => {
+            assert(1 - 1 == 0);
+          });
+
+          afterAll(() => {
+            doAThing();
+          });
+        });
+        `;
+
+		const fileInfo: FileInfo = {
+			path: 'index.ts',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, buildApi('tsx'));
+
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
+
+	// Also removes this: Context entirely, but
+	it('when there are imports from mocha', function () {
+		const INPUT = `
+        import type { Context } from 'mocha';
+
+        describe('Test Suite 1', () => {
+          it('addition', function (this: Context) {
+            assert(1 + 1 == 2);
+          });
+
+          it('subtraction', (otherThing: Context) => {
+            assert(1 - 1 == 0);
+          });
+        });
+        `;
+
+		const OUTPUT = `
+        import { describe, it } from 'vitest';
+
+        describe('Test Suite 1', () => {
+          it('addition', function () {
+            assert(1 + 1 == 2);
+          });
+
+          it('subtraction', (otherThing) => {
+            assert(1 - 1 == 0);
+          });
+        });
+        `;
+
+		const fileInfo: FileInfo = {
+			path: 'index.ts',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, buildApi('tsx'));
 
 		assert.deepEqual(
 			actualOutput?.replace(/\W/gm, ''),

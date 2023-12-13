@@ -154,6 +154,7 @@ describe('mocha config-files', function () {
                 "scripts": {
                   "build:cjs": "cjs-builder ./src/index.ts",
                   "test": "vitest run",
+                  "test:watch": "vitest watch",
                   "coverage": "vitest run --coverage"
                 },
                 "files": [
