@@ -85,18 +85,10 @@ export const repomod: Filemod<Record<string, never>, Record<string, never>> = {
 				mochaDepExists = true;
 			}
 
-			if (mochaDepExists) {
-				packageJson.devDependencies = {
-					...packageJson.devDependencies,
-					vitest: '^1.0.1',
-					'@vitest/coverage-v8': '^1.0.1',
-				};
-			}
+			let mochaScriptExists = false;
 
 			// Remove commands using mocha
 			if (packageJson.scripts) {
-				let mochaScriptExists = false;
-
 				Object.entries(packageJson.scripts).forEach(
 					([name, script]) => {
 						if (script.includes('mocha')) {
@@ -115,6 +107,14 @@ export const repomod: Filemod<Record<string, never>, Record<string, never>> = {
 						coverage: 'vitest run --coverage',
 					};
 				}
+			}
+
+			if (mochaDepExists || mochaScriptExists) {
+				packageJson.devDependencies = {
+					...packageJson.devDependencies,
+					vitest: '^1.0.1',
+					'@vitest/coverage-v8': '^1.0.1',
+				};
 			}
 
 			return {
