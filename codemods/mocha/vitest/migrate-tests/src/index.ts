@@ -84,11 +84,14 @@ export default function transform(
 		root.find(j.Identifier, { name: spec }).forEach((identifier) => {
 			j(identifier).remove();
 		});
-		root.find(j.TypeAnnotation, { typeAnnotation: { name: spec } }).forEach(
-			(annotation) => {
-				j(annotation).remove();
+
+		root.find(j.TSTypeAnnotation, {
+			typeAnnotation: {
+				typeName: { type: 'Identifier', name: 'Context' },
 			},
-		);
+		}).forEach((annotation) => {
+			j(annotation).remove();
+		});
 	});
 
 	return root.toSource();
