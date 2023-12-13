@@ -58,49 +58,56 @@ export const repomod: Filemod<Record<string, never>, Record<string, never>> = {
 				return { kind: 'noop' };
 			}
 
-			// If package does not use mocha, skip
+			// Remove possible "mocha" key and its value
 			if (!packageJson.mocha) {
-				return { kind: 'noop' };
+				delete packageJson.mocha;
 			}
 
-			delete packageJson.mocha;
-
-			// Remove mocha from dependencies & devDependencies, add vitest devDep
-			if (packageJson.dependencies) {
+			let mochaDepExists = false;
+			// Remove mocha and other mocha-compatibles from dependencies & devDependencies, add vitest devDep
+			if (packageJson.dependencies?.mocha) {
 				Object.keys(packageJson.dependencies).forEach((dep) => {
 					if (dep.includes('mocha')) {
 						delete packageJson.dependencies![dep];
 					}
 				});
+
+				mochaDepExists = true;
 			}
-			if (packageJson.devDependencies) {
+
+			if (packageJson.devDependencies?.mocha) {
 				Object.keys(packageJson.devDependencies).forEach((dep) => {
 					if (dep.includes('mocha')) {
 						delete packageJson.devDependencies![dep];
 					}
 				});
+
+				mochaDepExists = true;
 			}
-			packageJson.devDependencies = {
-				...packageJson.devDependencies,
-				vitest: '^1.0.1',
-				'@vitest/coverage-v8': '^1.0.1',
-			};
+
+			if (mochaDepExists) {
+				packageJson.devDependencies = {
+					...packageJson.devDependencies,
+					vitest: '^1.0.1',
+					'@vitest/coverage-v8': '^1.0.1',
+				};
+			}
 
 			// Remove commands using mocha
 			if (packageJson.scripts) {
-				let replaced = true;
+				let mochaScriptExists = false;
 
 				Object.entries(packageJson.scripts).forEach(
 					([name, script]) => {
 						if (script.includes('mocha')) {
-							replaced = true;
+							mochaScriptExists = true;
 							delete packageJson.scripts![name];
 						}
 					},
 				);
 
 				// Add vitest commands if current package.json contained any mocha ones
-				if (replaced) {
+				if (mochaScriptExists) {
 					packageJson.scripts = {
 						...packageJson.scripts,
 						test: 'vitest run',
