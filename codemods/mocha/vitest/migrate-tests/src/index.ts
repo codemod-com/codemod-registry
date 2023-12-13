@@ -70,18 +70,15 @@ export default function transform(
 	const mochaImport = root.find(j.ImportDeclaration, {
 		source: { type: 'StringLiteral', value: 'mocha' },
 	});
-	if (mochaImport) {
-		mochaImport.forEach((declaration) => {
-			declaration.node.specifiers?.forEach((specifier) => {
-				if (
-					j.ImportSpecifier.check(specifier) &&
-					specifier.local?.name
-				) {
-					toRemove.push(specifier.local.name);
-				}
-			});
+
+	mochaImport.forEach((declaration) => {
+		declaration.node.specifiers?.forEach((specifier) => {
+			if (j.ImportSpecifier.check(specifier) && specifier.local?.name) {
+				toRemove.push(specifier.local.name);
+			}
 		});
-	}
+		j(declaration).remove();
+	});
 
 	toRemove.forEach((spec) => {
 		root.find(j.Identifier, { name: spec }).forEach((identifier) => {
