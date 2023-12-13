@@ -93,4 +93,42 @@ describe('mocha/vitest test', function () {
 			OUTPUT.replace(/\W/gm, ''),
 		);
 	});
+
+	it('should keep the preciding comments', function () {
+		const INPUT = `
+        // preceding comments
+        import { expect } from 'chai';
+
+        describe('Test Suite 1', () => {
+          it('addition', () => {
+            expect(1 + 1).to.equal(2);
+          });
+        });
+        `;
+
+		const OUTPUT = `
+      // preceding comments
+        import { describe, it, expect } from 'vitest';
+
+        describe('Test Suite 1', () => {
+          it('addition', () => {
+            expect(1 + 1).to.equal(2);
+          });
+        });
+        `;
+
+		const fileInfo: FileInfo = {
+			path: 'index.ts',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, buildApi('tsx'));
+
+		console.log(actualOutput);
+
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
 });
