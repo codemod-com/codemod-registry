@@ -4,10 +4,10 @@ import {
 	buildApi,
 	executeFilemod,
 } from '@intuita-inc/filemod';
+import { describe, it } from 'vitest';
 import jscodeshift from 'jscodeshift';
 import { DirectoryJSON, Volume, createFsFromVolume } from 'memfs';
 import { repomod } from '../src/index.js';
-import { Context } from 'mocha';
 import assert, { deepStrictEqual } from 'node:assert';
 import { transform as jscodeshiftTransform } from '../src/index.js';
 
@@ -42,7 +42,7 @@ const transform = async (json: DirectoryJSON) => {
 };
 
 describe('next 13 remove-get-static-props', function () {
-	it('should build correct file', async function (this: Context) {
+	it('should build correct file', async function () {
 		const A_CONTENT = `
 		export async function getServerSideProps(ctx) {
 			const users = await promise;

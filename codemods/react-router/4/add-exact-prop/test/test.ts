@@ -1,16 +1,16 @@
 import type { FileInfo } from 'jscodeshift';
+import { describe, it } from 'vitest';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import transform from '../src/index.js';
 import assert from 'node:assert/strict';
-import { Context } from 'mocha';
 import { buildApi } from '@codemod-registry/utilities';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 describe('react-router v4 add-exact-prop', function () {
-	it('should add exact prop', async function (this: Context) {
+	it('should add exact prop', async function () {
 		const input = await readFile(join(__dirname, 'input.js'), {
 			encoding: 'utf8',
 		});

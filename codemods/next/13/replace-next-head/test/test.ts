@@ -1,5 +1,5 @@
-import { Context } from 'mocha';
 import { DirectoryJSON, Volume, createFsFromVolume } from 'memfs';
+import { beforeEach, describe, it } from 'vitest';
 import {
 	FileSystemManager,
 	UnifiedFileSystem,
@@ -76,7 +76,7 @@ describe('next 13 replace-next-head', function () {
 		subTreeCacheContainer.set(() => new Map());
 	});
 
-	it('should support mdx files', async function (this: Context) {
+	it('should support mdx files', async function () {
 		const A_CONTENT = `
 import Meta from '../../components/a.tsx'
 
@@ -145,7 +145,7 @@ Checkout my React component:
 		);
 	});
 
-	it('should find and merge metadata in Page child components', async function (this: Context) {
+	it('should find and merge metadata in Page child components', async function () {
 		const A_CONTENT = `
 		import Meta from '../../components/a.tsx';
 		export default function Page() {
@@ -203,7 +203,7 @@ Checkout my React component:
 		);
 	});
 
-	it('should respect tsconfig.json paths', async function (this: Context) {
+	it('should respect tsconfig.json paths', async function () {
 		const A_CONTENT = `
 		import Meta from '#/components/a.tsx';
 		export default function Page() {
@@ -255,7 +255,7 @@ Checkout my React component:
 		);
 	});
 
-	it('should respect tsconfig.json paths: should support tsconfig with comments', async function (this: Context) {
+	it('should respect tsconfig.json paths: should support tsconfig with comments', async function () {
 		const A_CONTENT = `
 		import Meta from '#/components/a.tsx';
 		export default function Page() {
@@ -308,7 +308,7 @@ Checkout my React component:
 		);
 	});
 
-	it('should move definitions of identifiers used in meta tag expr to the Page file', async function (this: Context) {
+	it('should move definitions of identifiers used in meta tag expr to the Page file', async function () {
 		const A_CONTENT = `
 		import Meta from '../../components/a.tsx';
 		export default function Page() {
@@ -361,7 +361,7 @@ Checkout my React component:
 		);
 	});
 
-	it('should move definitions of identifiers used in meta tag expr to the Page file: recursive dependencies', async function (this: Context) {
+	it('should move definitions of identifiers used in meta tag expr to the Page file: recursive dependencies', async function () {
 		const A_CONTENT = `
 		import Meta from '../../components/a.tsx';
 		export default function Page() {
@@ -414,7 +414,7 @@ Checkout my React component:
 		);
 	});
 
-	it('should move identifier definitions that are ImportDeclarations: should update the moduleSpecifier when moved ', async function (this: Context) {
+	it('should move identifier definitions that are ImportDeclarations: should update the moduleSpecifier when moved ', async function () {
 		const A_CONTENT = `
 			import Meta from '../../components/a.tsx';
 			export default function Page() {
@@ -462,7 +462,7 @@ Checkout my React component:
 		);
 	});
 
-	it('should move identifier definitions that are ImportDeclarations: should not copy dependencies multiple times ', async function (this: Context) {
+	it('should move identifier definitions that are ImportDeclarations: should not copy dependencies multiple times ', async function () {
 		const A_CONTENT = `
 		import Head from 'next/head';
 		import A from 'lib';
@@ -513,7 +513,7 @@ Checkout my React component:
 		);
 	});
 
-	it('should move identifier definitions that are ImportDeclarations: should not update moduleSpecifier if moving a library ', async function (this: Context) {
+	it('should move identifier definitions that are ImportDeclarations: should not update moduleSpecifier if moving a library ', async function () {
 		const A_CONTENT = `
 			import Meta from '../../components/a.tsx';
 			
@@ -562,7 +562,7 @@ Checkout my React component:
 		);
 	});
 
-	it('should find definitions of identifiers within function  params', async function (this: Context) {
+	it('should find definitions of identifiers within function  params', async function () {
 		const A_CONTENT = `
 		import Meta from '../../components/a.tsx';
 		const title="title";
@@ -632,7 +632,7 @@ Checkout my React component:
 		);
 	});
 
-	it('should create variable declaration when prop value is jsxExpression', async function (this: Context) {
+	it('should create variable declaration when prop value is jsxExpression', async function () {
 		const A_CONTENT = `
 		import Meta from '../../components/a.tsx';
 		
@@ -697,7 +697,7 @@ Checkout my React component:
 		);
 	});
 
-	it('should create generateMetadata function if Page props referenced in child metadata', async function (this: Context) {
+	it('should create generateMetadata function if Page props referenced in child metadata', async function () {
 		const A_CONTENT = `
 		import Meta from '../../components/a.tsx';
 		
@@ -771,7 +771,7 @@ Checkout my React component:
 		);
 	});
 
-	it('should create generateMetadata function if Page props referenced in child metadata: props on Page', async function (this: Context) {
+	it('should create generateMetadata function if Page props referenced in child metadata: props on Page', async function () {
 		const A_CONTENT = `
 		import Head from 'next/head';
 		import { E } from '../../constants';
@@ -863,7 +863,7 @@ export async function generateMetadata(
 		);
 	});
 
-	it('should create generateMetadata function if Page props referenced in child metadata: when props are not destructured', async function (this: Context) {
+	it('should create generateMetadata function if Page props referenced in child metadata: when props are not destructured', async function () {
 		const A_CONTENT = `
 		import Meta from '../../components/a.tsx';
 		
@@ -927,7 +927,7 @@ export async function generateMetadata(
 		);
 	});
 
-	it('should create generateMetadata function if Page props referenced in child metadata: nested functions', async function (this: Context) {
+	it('should create generateMetadata function if Page props referenced in child metadata: nested functions', async function () {
 		const A_CONTENT = `
 		import Meta from '../../components/a.tsx';
 		
@@ -993,7 +993,7 @@ export async function generateMetadata(
 		);
 	});
 
-	it('should create generateMetadata function if Page props referenced in child metadata: should copy dependencies inside generate metadata function', async function (this: Context) {
+	it('should create generateMetadata function if Page props referenced in child metadata: should copy dependencies inside generate metadata function', async function () {
 		const A_CONTENT = `
 		import Meta from '../../components/a.tsx';
 		
@@ -1052,7 +1052,7 @@ export async function generateMetadata(
 		);
 	});
 
-	it('should copy the clause import, not the variable definition', async function (this: Context) {
+	it('should copy the clause import, not the variable definition', async function () {
 		const INDEX_DATA = `
 			import Head from 'next/head';
 			import { A } from '../lib/a';
@@ -1103,7 +1103,7 @@ export async function generateMetadata(
 		);
 	});
 
-	it('should copy the default import, not the variable definition', async function (this: Context) {
+	it('should copy the default import, not the variable definition', async function () {
 		const INDEX_DATA = `
 			import Head from 'next/head';
 			import A from '../lib/a';
@@ -1154,7 +1154,7 @@ export async function generateMetadata(
 		);
 	});
 
-	it('should insert generateMetadata function if metadata tags depend on component props', async function (this: Context) {
+	it('should insert generateMetadata function if metadata tags depend on component props', async function () {
 		const INDEX_DATA = `
 		import Head from 'next/head';
 
@@ -1206,7 +1206,7 @@ export async function generateMetadata(
 		);
 	});
 
-	it('should not remove JSX comments', async function (this: Context) {
+	it('should not remove JSX comments', async function () {
 		const INDEX_DATA = `
 		import Head from 'next/head';
 	  export default function Page() {
@@ -1252,7 +1252,7 @@ export async function generateMetadata(
 		);
 	});
 
-	it('should replace meta tags content: support link, meta and title tags', async function (this: Context) {
+	it('should replace meta tags content: support link, meta and title tags', async function () {
 		const INDEX_DATA = `
 		import Head from 'next/head';
 		
@@ -1310,7 +1310,7 @@ export async function generateMetadata(
 		);
 	});
 
-	it('should replace meta tags content: support conditionally rendered meta tags (binaryExpression)', async function (this: Context) {
+	it('should replace meta tags content: support conditionally rendered meta tags (binaryExpression)', async function () {
 		const INDEX_DATA = `
 		import Head from 'next/head';
 		
@@ -1362,7 +1362,7 @@ export async function generateMetadata(
 		);
 	});
 
-	it('should replace meta tags content: support conditionally rendered meta tags (ternaryExpression)', async function (this: Context) {
+	it('should replace meta tags content: support conditionally rendered meta tags (ternaryExpression)', async function () {
 		const INDEX_DATA = `
 		import Head from 'next/head';
 		
@@ -1414,7 +1414,7 @@ export async function generateMetadata(
 		);
 	});
 
-	it('should replace meta tag content: tag content can be a JSXText', async function (this: Context) {
+	it('should replace meta tag content: tag content can be a JSXText', async function () {
 		const INDEX_DATA = `
 		import Head from 'next/head';
 	  export default function Page() {
@@ -1458,7 +1458,7 @@ export async function generateMetadata(
 		);
 	});
 
-	it('should replace meta tag content: tag content can be a jsxExpression', async function (this: Context) {
+	it('should replace meta tag content: tag content can be a jsxExpression', async function () {
 		const INDEX_DATA = `
 		import { Metadata } from "next";
 	  import Head from 'next/head';
@@ -1499,7 +1499,7 @@ export async function generateMetadata(
 		);
 	});
 
-	it('should replace meta tag content: self closing tag jsx expression', async function (this: Context) {
+	it('should replace meta tag content: self closing tag jsx expression', async function () {
 		const INDEX_DATA = `
 		import { Metadata } from "next";
 	  import Head from 'next/head';
@@ -1541,7 +1541,7 @@ export async function generateMetadata(
 		);
 	});
 
-	it('should replace meta tag content: tag content can be a StringLiteral', async function (this: Context) {
+	it('should replace meta tag content: tag content can be a StringLiteral', async function () {
 		const INDEX_DATA = `
 		import Head from 'next/head';
 	  export default function Page() {
@@ -1585,7 +1585,7 @@ export async function generateMetadata(
 	 * Alternates
 	 */
 
-	it('should support alternates meta tags', async function (this: Context) {
+	it('should support alternates meta tags', async function () {
 		const INDEX_DATA = `
 		import Head from 'next/head';
 	  export default function Page() {
@@ -1670,7 +1670,7 @@ export async function generateMetadata(
 	 * Icons
 	 */
 
-	it('should support icons meta tags', async function (this: Context) {
+	it('should support icons meta tags', async function () {
 		const INDEX_DATA = `
 		import Head from 'next/head';
 	  export default function Page() {
@@ -1777,7 +1777,7 @@ export async function generateMetadata(
 		);
 	});
 
-	it('should support verification meta tags', async function (this: Context) {
+	it('should support verification meta tags', async function () {
 		const INDEX_DATA = `
 	  import Head from 'next/head';
 	  export default function Page() {
@@ -1830,7 +1830,7 @@ export async function generateMetadata(
 		);
 	});
 
-	it('should support openGraph meta tags: website', async function (this: Context) {
+	it('should support openGraph meta tags: website', async function () {
 		const INDEX_DATA = `
 		import Head from 'next/head';
 	  export default function Page() {
@@ -1952,7 +1952,7 @@ export async function generateMetadata(
 		);
 	});
 
-	it('should support openGraph meta tags: article', async function (this: Context) {
+	it('should support openGraph meta tags: article', async function () {
 		const INDEX_DATA = `
 		import Head from 'next/head';
 	  export default function Page() {
@@ -2021,7 +2021,7 @@ export async function generateMetadata(
 		);
 	});
 
-	it('should support openGraph meta tags: twitter', async function (this: Context) {
+	it('should support openGraph meta tags: twitter', async function () {
 		const INDEX_DATA = `
 		import Head from 'next/head';
 	  export default function Page() {
@@ -2079,7 +2079,7 @@ export async function generateMetadata(
 		);
 	});
 
-	it('should support other meta tags', async function (this: Context) {
+	it('should support other meta tags', async function () {
 		const INDEX_DATA = `
 		import Head from 'next/head';
 	  export default function Page() {
@@ -2125,7 +2125,7 @@ export async function generateMetadata(
 		);
 	});
 
-	it('should support basic meta tags', async function (this: Context) {
+	it('should support basic meta tags', async function () {
 		const INDEX_DATA = `
 		import Head from 'next/head';
 	

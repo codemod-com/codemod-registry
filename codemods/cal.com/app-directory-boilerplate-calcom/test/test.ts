@@ -1,5 +1,5 @@
-import { Context } from 'mocha';
 import { deepStrictEqual, ok } from 'node:assert';
+import { describe, it } from 'vitest';
 import { DirectoryJSON, Volume, createFsFromVolume } from 'memfs';
 import {
 	FileSystemManager,
@@ -39,7 +39,7 @@ const transform = async (json: DirectoryJSON) => {
 };
 
 describe('cal.com app-directory-boilerplate-calcom', function () {
-	it('should build correct files', async function (this: Context) {
+	it('should build correct files', async function () {
 		const externalFileCommands = await transform({
 			'/opt/project/pages/a/index.tsx': 'TODO content',
 			'/opt/project/pages/a/embed.tsx': 'TODO content',
@@ -154,20 +154,20 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 						'/opt/project/app/future/(shared-page-wrapper)/(no-layout)/a/embed/page.tsx' &&
 					command.data.replace(/\W/gm, '') ===
 						`
-                import type { Params } from "next/dist/shared/lib/router/utils/route-matcher";
-                import { getData } from "../page";
+            import type { Params } from "next/dist/shared/lib/router/utils/route-matcher";
+            import { getData } from "../page";
+            
+            type PageProps = Readonly<{
+                params: Params;
+            }>;
+            
+            const Page = ({ params }: PageProps) => {
+                await getData(params, true);
+            
+                return null;
+            };
                 
-                type PageProps = Readonly<{
-                    params: Params;
-                }>;
-                
-                const Page = ({ params }: PageProps) => {
-                    await getData(params, true);
-                
-                    return null;
-                };
-                    
-                export default Page;`.replace(/\W/gm, '')
+            export default Page;`.replace(/\W/gm, '')
 				);
 			}),
 		);
@@ -180,12 +180,12 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 						'/opt/project/app/future/(shared-page-wrapper)/(no-layout)/a/page.tsx' &&
 					command.data.replace(/\W/gm, '') ===
 						`
-                    import Page from "@pages/a/index";
-                    import { _generateMetadata } from "app/_utils";
+                import Page from "@pages/a/index";
+                import { _generateMetadata } from "app/_utils";
 
-                    export const generateMetadata = async () => await _generateMetadata(() => "", () => "");
-                    export default Page;
-                `.replace(/\W/gm, '')
+                export const generateMetadata = async () => await _generateMetadata(() => "", () => "");
+                export default Page;
+            `.replace(/\W/gm, '')
 				);
 			}),
 		);
@@ -197,9 +197,9 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 					command.path === '/opt/project/pages/a/index.tsx' &&
 					command.data.replace(/\W/gm, '') ===
 						`
-                    'use client';
-                    TODO content
-                    `.replace(/\W/gm, '')
+                'use client';
+                TODO content
+                `.replace(/\W/gm, '')
 				);
 			}),
 		);
@@ -212,12 +212,12 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 						'/opt/project/app/future/(shared-page-wrapper)/(layout)/a/b/page.tsx' &&
 					command.data.replace(/\W/gm, '') ===
 						`
-                    import Page from "@pages/a/b";
-                    import { _generateMetadata } from "app/_utils";
-                    
-                    export const generateMetadata = async () => await _generateMetadata(() => "", () => "");
-                    export default Page;
-                `.replace(/\W/gm, '')
+                import Page from "@pages/a/b";
+                import { _generateMetadata } from "app/_utils";
+                
+                export const generateMetadata = async () => await _generateMetadata(() => "", () => "");
+                export default Page;
+            `.replace(/\W/gm, '')
 				);
 			}),
 		);
@@ -229,13 +229,13 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 					command.path === '/opt/project/pages/a/b.tsx' &&
 					command.data.replace(/\W/gm, '') ===
 						`
-                    'use client';
-                    import { getLayout } from './getLayout';
-                    export default function B(props) {
-                        return <Component />;
-                    }
-                    B.getLayout = getLayout;
-                    `.replace(/\W/gm, '')
+                'use client';
+                import { getLayout } from './getLayout';
+                export default function B(props) {
+                    return <Component />;
+                }
+                B.getLayout = getLayout;
+                `.replace(/\W/gm, '')
 				);
 			}),
 		);
@@ -289,14 +289,14 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 					command.path === '/opt/project/pages/a/[b]/c.tsx' &&
 					command.data.replace(/\W/gm, '') ===
 						`
-                    'use client';
-                    export const getServerSideProps = (ctx) => {
-                        return null;
-                    }
-                    export default function C(props) {
-                        return <Component />;
-                    }
-                    `.replace(/\W/gm, '')
+                'use client';
+                export const getServerSideProps = (ctx) => {
+                    return null;
+                }
+                export default function C(props) {
+                    return <Component />;
+                }
+                `.replace(/\W/gm, '')
 				);
 			}),
 		);
@@ -349,20 +349,20 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 					command.path === '/opt/project/pages/a/d.tsx' &&
 					command.data.replace(/\W/gm, '') ===
 						`
-                    'use client';
-                    export const getStaticProps = (ctx) => {
-                        return null;
-                    }
-                    export default function C(props) {
-                        return <Component />;
-                    }
-                    `.replace(/\W/gm, '')
+                'use client';
+                export const getStaticProps = (ctx) => {
+                    return null;
+                }
+                export default function C(props) {
+                    return <Component />;
+                }
+                `.replace(/\W/gm, '')
 				);
 			}),
 		);
 	});
 
-	it('should insert router segment config and server-side data hooks to the future page', async function (this: Context) {
+	it('should insert router segment config and server-side data hooks to the future page', async function () {
 		const [upsertPageCommand] = await transform({
 			'/opt/project/pages/a/index.tsx': `
 			import C from 'C';
@@ -426,7 +426,7 @@ describe('cal.com app-directory-boilerplate-calcom', function () {
 		);
 	});
 
-	it('should not insert "use client" directive twice', async function (this: Context) {
+	it('should not insert "use client" directive twice', async function () {
 		const [, upsertLegacyPage] = await transform({
 			'/opt/project/pages/a/index.tsx': `
 			'use client'

@@ -4,10 +4,10 @@ import {
 	buildApi,
 	executeFilemod,
 } from '@intuita-inc/filemod';
+import { describe, it } from 'vitest';
 import jscodeshift from 'jscodeshift';
 import { DirectoryJSON, Volume, createFsFromVolume } from 'memfs';
 import { repomod } from '../src/index.js';
-import { Context } from 'mocha';
 import { deepStrictEqual } from 'node:assert';
 
 const transform = async (json: DirectoryJSON) => {
@@ -62,7 +62,7 @@ const directoryJSON: DirectoryJSON = {
 };
 
 describe('remove unused feature flags 2', function () {
-	it('should build correct files', async function (this: Context) {
+	it('should build correct files', async function () {
 		const externalFileCommands = await transform(directoryJSON);
 
 		deepStrictEqual(externalFileCommands.length, 1);

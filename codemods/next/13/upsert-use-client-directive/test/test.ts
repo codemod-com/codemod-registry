@@ -1,6 +1,6 @@
 import { Project } from 'ts-morph';
+import { describe, it } from 'vitest';
 import { handleSourceFile } from '../src/index.js';
-import { Context } from 'mocha';
 import { deepStrictEqual } from 'node:assert';
 
 export const transform = (
@@ -33,7 +33,7 @@ export const transform = (
 };
 
 describe('next 13 upsert-client-directive', function () {
-	it('should not rewrite the file', function (this: Context) {
+	it('should not rewrite the file', function () {
 		const beforeText = `
             'use client';
 
@@ -46,7 +46,7 @@ describe('next 13 upsert-client-directive', function () {
 		deepStrictEqual(actual, undefined);
 	});
 
-	it("should upsert the 'use client' directive when React hooks are used", function (this: Context) {
+	it("should upsert the 'use client' directive when React hooks are used", function () {
 		const beforeText = `
             import { useState } from 'react';
 
@@ -72,7 +72,7 @@ describe('next 13 upsert-client-directive', function () {
 		deepStrictEqual(actual, expected);
 	});
 
-	it("should not upsert the 'use client' directive when fetch is used", function (this: Context) {
+	it("should not upsert the 'use client' directive when fetch is used", function () {
 		const beforeText = `
             export default async function Page() {
                 return fetch('http://example.com);
@@ -83,7 +83,7 @@ describe('next 13 upsert-client-directive', function () {
 		deepStrictEqual(actual, undefined);
 	});
 
-	it("should not upsert the 'use client' directive when fetch is used", function (this: Context) {
+	it("should not upsert the 'use client' directive when fetch is used", function () {
 		const beforeText = `
             export default async function Page() {
                 return fetch('http://example.com);
@@ -94,7 +94,7 @@ describe('next 13 upsert-client-directive', function () {
 		deepStrictEqual(actual, undefined);
 	});
 
-	it("should upsert the 'use client' directive when an event handler is used", function (this: Context) {
+	it("should upsert the 'use client' directive when an event handler is used", function () {
 		const beforeText = `
             export default async function Page() {
                 return <div onClick={null}>

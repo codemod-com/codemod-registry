@@ -1,4 +1,5 @@
 import type { API, FileInfo } from 'jscodeshift';
+import { describe, it } from 'vitest';
 import jscodeshift from 'jscodeshift';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';

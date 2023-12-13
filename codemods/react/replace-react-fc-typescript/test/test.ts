@@ -22,6 +22,7 @@ Changes to the original file: changed tests structure
 */
 
 import assert from 'node:assert';
+import { describe, it } from 'vitest';
 import transform from '../src/index.js';
 import { buildApi } from '@codemod-registry/utilities';
 

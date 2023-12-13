@@ -1,5 +1,5 @@
-import { Context } from 'mocha';
 import { DirectoryJSON, Volume, createFsFromVolume } from 'memfs';
+import { describe, it } from 'vitest';
 import {
 	FileSystemManager,
 	UnifiedFileSystem,
@@ -42,7 +42,7 @@ const transform = async (json: DirectoryJSON) => {
 };
 
 describe('next 13 replace-API-routes', function () {
-	it('should transform API router handler: functionDeclaration', async function (this: Context) {
+	it('should transform API router handler: functionDeclaration', async function () {
 		const A_CONTENT = `
 		export default function handler() {
 			if(req.method === 'GET') {
@@ -75,7 +75,7 @@ describe('next 13 replace-API-routes', function () {
 		);
 	});
 
-	it('should transform API router handler: arrow function', async function (this: Context) {
+	it('should transform API router handler: arrow function', async function () {
 		const A_CONTENT = `
 			const handler = () => {
 				if(req.method === 'GET') {
@@ -110,7 +110,7 @@ describe('next 13 replace-API-routes', function () {
 		);
 	});
 
-	it('should split single handler to method handlers: should support all HTTP methods ', async function (this: Context) {
+	it('should split single handler to method handlers: should support all HTTP methods ', async function () {
 		const A_CONTENT = `
 		export default function handler() {
 			if(req.method === 'GET') {
@@ -192,7 +192,7 @@ describe('next 13 replace-API-routes', function () {
 		'should split single handler to method handlers: should support nested binary expressions and external refs',
 	);
 
-	it('should rewrite response callExpressions: support chained call expressions', async function (this: Context) {
+	it('should rewrite response callExpressions: support chained call expressions', async function () {
 		const A_CONTENT = `
 		export default function handler(req, res) {
 			if(req.method === 'GET') {
@@ -262,7 +262,7 @@ describe('next 13 replace-API-routes', function () {
 	 */
 	it('should rewrite response callExpressions: support appendHeader');
 
-	it('should rewrite response callExpressions: support nested scopes', async function (this: Context) {
+	it('should rewrite response callExpressions: support nested scopes', async function () {
 		const A_CONTENT = `
 			export default function handler(req, res) {
 				if(req.method === 'GET') {
@@ -320,7 +320,7 @@ describe('next 13 replace-API-routes', function () {
 		);
 	});
 
-	it('should rewrite response callExpressions: support json, send, end methods', async function (this: Context) {
+	it('should rewrite response callExpressions: support json, send, end methods', async function () {
 		const A_CONTENT = `
 			export default function handler(req, res) {
 				if(req.method === 'GET') {

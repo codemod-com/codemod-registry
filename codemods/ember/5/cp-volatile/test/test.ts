@@ -1,4 +1,5 @@
 import { FileInfo } from 'jscodeshift';
+import { describe, it } from 'vitest';
 import assert from 'node:assert';
 import transform from '../src/index.js';
 import { buildApi } from '@codemod-registry/utilities';
@@ -8,7 +9,7 @@ describe('ember 5 cp-volatile', function () {
 		const INPUT = `
         const Person = EmberObject.extend({
             fullName: computed(function() {
-              return \`${this.firstName} ${this.lastName}\`;
+              return \`\${this.firstName} \${this.lastName}\`;
             }).volatile()
           });
 		`;
@@ -16,7 +17,7 @@ describe('ember 5 cp-volatile', function () {
 		const OUTPUT = `
         const Person = EmberObject.extend({
             get fullName() {
-              return \`${this.firstName} ${this.lastName}\`;
+              return \`\${this.firstName} \${this.lastName}\`;
             }
           });
         `;

@@ -1,11 +1,11 @@
 import { FileInfo } from 'jscodeshift';
-import { Context } from 'mocha';
+import { describe, it } from 'vitest';
 import assert from 'node:assert';
 import transform from '../src/index.js';
 import { buildApi } from '@codemod-registry/utilities';
 
 describe('next 13 comment-deletable-files', function () {
-	it('should not add a comment if a file basename does not start with _app / _document / _error', async function (this: Context) {
+	it('should not add a comment if a file basename does not start with _app / _document / _error', async function () {
 		const INPUT = `
 			import { useRouter } from 'next/router';
 
@@ -28,7 +28,7 @@ describe('next 13 comment-deletable-files', function () {
 		assert.deepEqual(actualOutput, undefined);
 	});
 
-	it('should add a comment if a file basename starts with _app', async function (this: Context) {
+	it('should add a comment if a file basename starts with _app', async function () {
 		const INPUT = `
 			import { useRouter } from 'next/router';
 

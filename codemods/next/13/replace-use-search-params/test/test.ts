@@ -4,10 +4,10 @@ import {
 	buildApi,
 	executeFilemod,
 } from '@intuita-inc/filemod';
+import { describe, it } from 'vitest';
 import jscodeshift from 'jscodeshift';
 import { DirectoryJSON, Volume, createFsFromVolume } from 'memfs';
 import { repomod } from '../src/index.js';
-import { Context } from 'mocha';
 import { deepStrictEqual } from 'node:assert';
 
 type Options = Readonly<{
@@ -57,7 +57,7 @@ const transform = async (json: DirectoryJSON, options: Options) => {
 };
 
 describe('next 13 replace-replace-use-search-params', function () {
-	it('should replace useSearchParams with useCompatSearchParams', async function (this: Context) {
+	it('should replace useSearchParams with useCompatSearchParams', async function () {
 		const A_CONTENT = `
 			import { useSearchParams, useParams } from 'next/navigation';
 
@@ -104,7 +104,7 @@ describe('next 13 replace-replace-use-search-params', function () {
 		);
 	});
 
-	it('should replace useSearchParams with useCompatSearchParams but not create the hook file', async function (this: Context) {
+	it('should replace useSearchParams with useCompatSearchParams but not create the hook file', async function () {
 		const A_CONTENT = `
 			import { useSearchParams, useParams } from 'next/navigation';
 
@@ -147,7 +147,7 @@ describe('next 13 replace-replace-use-search-params', function () {
 		);
 	});
 
-	it('should remove next/navigation import if no specifiers left after useSearchParams specifier removal', async function (this: Context) {
+	it('should remove next/navigation import if no specifiers left after useSearchParams specifier removal', async function () {
 		const A_CONTENT = `
 			import { useSearchParams } from 'next/navigation';
 
@@ -187,7 +187,7 @@ describe('next 13 replace-replace-use-search-params', function () {
 		);
 	});
 
-	it('should replace useSearchParams with useCompatSearchParams without creating the hook file', async function (this: Context) {
+	it('should replace useSearchParams with useCompatSearchParams without creating the hook file', async function () {
 		const A_CONTENT = `
 			import { useSearchParams, useParams } from 'next/navigation';
 

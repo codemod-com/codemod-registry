@@ -1,5 +1,5 @@
-import { Context } from 'mocha';
 import { deepStrictEqual, ok } from 'node:assert';
+import { describe, it } from 'vitest';
 import { DirectoryJSON, Volume, createFsFromVolume } from 'memfs';
 import {
 	FileSystemManager,
@@ -89,7 +89,7 @@ const transform = async (json: DirectoryJSON) => {
 };
 
 describe('next 13 app-directory-boilerplate', function () {
-	it('should build correct files', async function (this: Context) {
+	it('should build correct files', async function () {
 		const externalFileCommands = await transform({
 			'/opt/project/pages/index.jsx': INDEX_CONTENT,
 			'/opt/project/pages/_app.jsx': '',
@@ -169,13 +169,13 @@ describe('next 13 app-directory-boilerplate', function () {
 					command.path === '/opt/project/app/components.tsx' &&
 					command.data.replace(/\W/gm, '') ===
 						`
-                'use client';
-                // This file has been sourced from: /opt/project/pages/index.jsx
-                
-                export default function Index({}) {
-                    return null;
-                }
-            ;`.replace(/\W/gm, '')
+            'use client';
+            // This file has been sourced from: /opt/project/pages/index.jsx
+            
+            export default function Index({}) {
+                return null;
+            }
+        ;`.replace(/\W/gm, '')
 				);
 			}),
 		);
@@ -187,15 +187,15 @@ describe('next 13 app-directory-boilerplate', function () {
 					command.path === '/opt/project/app/[a]/c/page.tsx' &&
 					command.data.replace(/\W/gm, '') ===
 						`
-                    // This file has been sourced from: /opt/project/pages/[a]/c.tsx
-                    import Components from "./components";
-                    // TODO reimplement getServerSideProps with custom logic
-                    const getServerSideProps = () => {
-                    };
-                    export default async function Page(props: any) {
-                        return <Components {...props}/>;
-                    }
-                `.replace(/\W/gm, '')
+                // This file has been sourced from: /opt/project/pages/[a]/c.tsx
+                import Components from "./components";
+                // TODO reimplement getServerSideProps with custom logic
+                const getServerSideProps = () => {
+                };
+                export default async function Page(props: any) {
+                    return <Components {...props}/>;
+                }
+            `.replace(/\W/gm, '')
 				);
 			}),
 		);
@@ -208,15 +208,15 @@ describe('next 13 app-directory-boilerplate', function () {
 						'/opt/project/app/[a]/[b]/components.tsx' &&
 					command.data.replace(/\W/gm, '') ===
 						`
-                    'use client';
-                    // This file has been sourced from: /opt/project/pages/[a]/[b].tsx
-                    `.replace(/\W/gm, '')
+                'use client';
+                // This file has been sourced from: /opt/project/pages/[a]/[b].tsx
+                `.replace(/\W/gm, '')
 				);
 			}),
 		);
 	});
 
-	it('migrated page should keep only data-fetching hooks and wrapped client component', async function (this: Context) {
+	it('migrated page should keep only data-fetching hooks and wrapped client component', async function () {
 		const INDEX_CONTENT = `'
 		const Index = () => '';
 		
@@ -240,19 +240,19 @@ describe('next 13 app-directory-boilerplate', function () {
 					command.path === '/opt/project/app/page.tsx' &&
 					command.data.replace(/\W/gm, '') ===
 						`
-                // This file has been sourced from: /opt/project/pages/index.jsx
-                import Components from "./components";
+            // This file has been sourced from: /opt/project/pages/index.jsx
+            import Components from "./components";
 
-                export default async function Page(props: any) {
-                    return <Components {...props}/>;
-                }
-            ;`.replace(/\W/gm, '')
+            export default async function Page(props: any) {
+                return <Components {...props}/>;
+            }
+        ;`.replace(/\W/gm, '')
 				);
 			}),
 		);
 	});
 
-	it('should build root layout file with default content when _document does not exist, should not create client component', async function (this: Context) {
+	it('should build root layout file with default content when _document does not exist, should not create client component', async function () {
 		const INDEX_CONTENT = `'
 		const Index = () => '';
 		
@@ -277,7 +277,7 @@ describe('next 13 app-directory-boilerplate', function () {
 		);
 	});
 
-	it('should build neither error files nor not-found files if no such previous files were found', async function (this: Context) {
+	it('should build neither error files nor not-found files if no such previous files were found', async function () {
 		const externalFileCommands = await transform({
 			'/opt/project/pages/index.jsx': '',
 			'/opt/project/pages/_app.jsx': '',
@@ -311,7 +311,7 @@ describe('next 13 app-directory-boilerplate', function () {
 		);
 	});
 
-	it('should build correct MDX files', async function (this: Context) {
+	it('should build correct MDX files', async function () {
 		const externalFileCommands = await transform({
 			'/opt/project/pages/index.jsx': INDEX_CONTENT,
 			'/opt/project/pages/_app.jsx': '',
@@ -329,16 +329,16 @@ describe('next 13 app-directory-boilerplate', function () {
 					command.path === '/opt/project/app/[a]/c/page.mdx' &&
 					command.data.replace(/\W/gm, '') ===
 						`
-                    // This file has been sourced from: /opt/project/pages/[a]/c.mdx
-                    import Components from "./components";
+                // This file has been sourced from: /opt/project/pages/[a]/c.mdx
+                import Components from "./components";
 
-                    // TODO reimplement getServerSideProps with custom logic
-                    const getServerSideProps = () => {};
+                // TODO reimplement getServerSideProps with custom logic
+                const getServerSideProps = () => {};
 
-                    export default async function Page(props: any) {
-                        return <Components>{ ...props } />;
-                    }
-                `.replace(/\W/gm, '')
+                export default async function Page(props: any) {
+                    return <Components>{ ...props } />;
+                }
+            `.replace(/\W/gm, '')
 				);
 			}),
 		);
@@ -350,26 +350,26 @@ describe('next 13 app-directory-boilerplate', function () {
 					command.path === '/opt/project/app/[a]/[b]/page.mdx' &&
 					command.data.replace(/\W/gm, '') ===
 						`
-                    // This file has been sourced from: /opt/project/pages/[a]/[b].mdx
-                    import Components from "./components";
-                    export default async function Page(props: any) {
-                        return <Components>{ ...props } />
-                    }
-                    
-                    import Components from "./components";
+                // This file has been sourced from: /opt/project/pages/[a]/[b].mdx
+                import Components from "./components";
+                export default async function Page(props: any) {
+                    return <Components>{ ...props } />
+                }
+                
+                import Components from "./components";
 
-                    const getStaticPaths = () => {};
+                const getStaticPaths = () => {};
 
-                    export default async function Page(props: any) {
-                        return <Components>{ ...props } />;
-                    }
-                `.replace(/\W/gm, '')
+                export default async function Page(props: any) {
+                    return <Components>{ ...props } />;
+                }
+            `.replace(/\W/gm, '')
 				);
 			}),
 		);
 	});
 
-	it('should remove the Head tag', async function (this: Context) {
+	it('should remove the Head tag', async function () {
 		const content = `
 		import Head from 'next/head';
 
@@ -408,7 +408,7 @@ describe('next 13 app-directory-boilerplate', function () {
 		);
 	});
 
-	it('should remove the Head tag when surrounded with ()', async function (this: Context) {
+	it('should remove the Head tag when surrounded with ()', async function () {
 		const content = `
 		import Head from "next/head";
 
@@ -446,7 +446,7 @@ describe('next 13 app-directory-boilerplate', function () {
 		);
 	});
 
-	it('should move the CSS import statement from _app to layout', async function (this: Context) {
+	it('should move the CSS import statement from _app to layout', async function () {
 		const _app = `
 		import { AppProps } from 'next/app'
 		import '../styles/index.css'
@@ -534,7 +534,7 @@ describe('next 13 app-directory-boilerplate', function () {
 		);
 	});
 
-	it('should replace next/document tags with html tags in layout file', async function (this: Context) {
+	it('should replace next/document tags with html tags in layout file', async function () {
 		const index = `
 			export default async function Index() {
 				return null;
@@ -636,7 +636,7 @@ describe('next 13 app-directory-boilerplate', function () {
 		);
 	});
 
-	it('should create a new client side file', async function (this: Context) {
+	it('should create a new client side file', async function () {
 		const index = `
 			import ErrorPage from 'next/error';
 
@@ -679,7 +679,7 @@ describe('next 13 app-directory-boilerplate', function () {
 		);
 	});
 
-	it('should create a new client side file for a non-index page', async function (this: Context) {
+	it('should create a new client side file for a non-index page', async function () {
 		const index = `
 			import ErrorPage from 'next/error';
 
@@ -719,7 +719,7 @@ describe('next 13 app-directory-boilerplate', function () {
 		);
 	});
 
-	it('should remove export keyword from old data fetching methods', async function (this: Context) {
+	it('should remove export keyword from old data fetching methods', async function () {
 		const index = `
 			export async function getStaticProps() {};
 			
