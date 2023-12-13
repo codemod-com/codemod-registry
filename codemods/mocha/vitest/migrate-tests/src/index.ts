@@ -81,16 +81,25 @@ export default function transform(
 	});
 
 	toRemove.forEach((spec) => {
-		root.find(j.Identifier, { name: spec }).forEach((identifier) => {
-			j(identifier).remove();
-		});
-
 		root.find(j.TSTypeAnnotation, {
 			typeAnnotation: {
-				typeName: { type: 'Identifier', name: 'Context' },
+				typeName: { type: 'Identifier', name: spec },
 			},
 		}).forEach((annotation) => {
-			j(annotation).remove();
+			const { value: typedIdentifier } = annotation.parent;
+			if (j.Identifier.check(typedIdentifier)) {
+				if (typedIdentifier.name !== 'this') {
+					return j(annotation.parentPath).replaceWith(
+						typedIdentifier.name,
+					);
+				}
+
+				j(annotation.parentPath).remove();
+			}
+		});
+
+		root.find(j.Identifier, { name: spec }).forEach((identifier) => {
+			j(identifier).remove();
 		});
 	});
 
