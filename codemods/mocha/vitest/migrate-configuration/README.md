@@ -136,7 +136,7 @@ v1.0.0
 
 ### Estimated Time Saving
 
-5 minutes per file
+5+ minutes per file
 
 ### Owner
 
