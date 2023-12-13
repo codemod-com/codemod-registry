@@ -59,7 +59,7 @@ export const repomod: Filemod<Record<string, never>, Record<string, never>> = {
 			}
 
 			// Remove possible "mocha" key and its value
-			if (!packageJson.mocha) {
+			if (packageJson.mocha) {
 				delete packageJson.mocha;
 			}
 
