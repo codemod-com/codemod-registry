@@ -48,14 +48,15 @@ export const parse = async (data: string) => {
 	const descriptionPresent =
 		Effect.runSync(descriptionPresentEffect) === 'Description';
 
-	const index = children
-		.slice(2)
-		.findIndex((rootContent) => getHeading(2)(rootContent));
+	const exampleHeaderIndex =
+		children
+			.slice(2)
+			.findIndex((rootContent) => getHeading(2)(rootContent)) + 2;
 
-	const description = getText(data, children.slice(2, 2 + index));
+	const description = getText(data, children.slice(2, exampleHeaderIndex));
 
 	const examplePresentEffect = pipe(
-		Effect.fromNullable(children[2 + index]),
+		Effect.fromNullable(children[exampleHeaderIndex]),
 		Effect.flatMap((h) => Effect.fromNullable(getHeading(2)(h))),
 		Effect.flatMap((h) => Effect.fromNullable(getHeaderText(h))),
 	);

@@ -16,6 +16,17 @@ List:
 - c
 
 ## Example
+
+### Before
+
+First sentence of the before block.
+Second sentence of the before block.
+Third sentence of the before block.
+
+### After
+First sentence of the after block.
+Second sentence of the after block.
+Third sentence of the after block.
 `;
 
 describe('parse', function () {
