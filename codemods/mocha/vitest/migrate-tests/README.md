@@ -32,7 +32,7 @@ describe('Test Suite 1', () => {
 
 ## Applicability Criteria
 
-Codebase using `mocha`
+`mocha` >= 9.0.0
 
 ## Other Metadata
 
