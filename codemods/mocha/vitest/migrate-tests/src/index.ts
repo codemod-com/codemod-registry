@@ -146,10 +146,6 @@ export default function transform(
 			.filter(Boolean);
 	}
 
-	if (namesToImport.size > 0) {
-		root.get().node.program.body.unshift();
-	}
-
 	const program = root.find(j.Program).nodes()[0];
 
 	if (!program) {
@@ -160,17 +156,19 @@ export default function transform(
 		(value) => value.type === 'ImportDeclaration',
 	);
 
-	program.body.splice(
-		index + 1,
-		0,
-		j.importDeclaration.from({
-			comments,
-			source: j.literal('vitest'),
-			specifiers: Array.from(namesToImport).map((name) =>
-				j.importSpecifier(j.identifier(name)),
-			),
-		}),
-	);
+	if (namesToImport.size > 0) {
+		program.body.splice(
+			index + 1,
+			0,
+			j.importDeclaration.from({
+				comments,
+				source: j.literal('vitest'),
+				specifiers: Array.from(namesToImport).map((name) =>
+					j.importSpecifier(j.identifier(name)),
+				),
+			}),
+		);
+	}
 
 	return root.toSource();
 }
