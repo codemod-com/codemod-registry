@@ -1,4 +1,5 @@
-import type { FileInfo, API } from 'jscodeshift';
+import type { FileInfo, API, ImportDeclaration } from 'jscodeshift';
+
 export default function transform(
 	file: FileInfo,
 	api: API,
@@ -28,7 +29,13 @@ export default function transform(
 		},
 	});
 
+	const comments: NonNullable<ImportDeclaration['comments']> = [];
+
 	chaiImportDeclarations.forEach((path) => {
+		path.node.comments?.forEach((commentKind) => {
+			comments.push(commentKind);
+		});
+
 		path.node.specifiers?.forEach((specifier) => {
 			if (j.ImportSpecifier.check(specifier)) {
 				importedMembers.push(specifier);
@@ -38,8 +45,24 @@ export default function transform(
 
 	chaiImportDeclarations.remove();
 
-	root.get().node.program.body.unshift(
-		j.importDeclaration(importedMembers, j.literal('vitest')),
+	const program = root.find(j.Program).nodes()[0];
+
+	if (!program) {
+		return undefined;
+	}
+
+	const index = program.body.findIndex(
+		(value) => value.type === 'ImportDeclaration',
+	);
+
+	program.body.splice(
+		index + 1,
+		0,
+		j.importDeclaration.from({
+			comments,
+			source: j.literal('vitest'),
+			specifiers: importedMembers,
+		}),
 	);
 
 	return root.toSource();
