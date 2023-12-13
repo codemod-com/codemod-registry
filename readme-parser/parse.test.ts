@@ -10,6 +10,11 @@ First sentence of description.
 Second sentence of description.
 Third sentence of description.
 
+List:
+- a
+- b
+- c
+
 ## Example
 `;
 
