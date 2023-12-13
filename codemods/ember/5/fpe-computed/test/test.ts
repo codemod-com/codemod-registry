@@ -1,4 +1,5 @@
 import { FileInfo } from 'jscodeshift';
+import { describe, it } from 'vitest';
 import assert from 'node:assert';
 import transform from '../src/index.js';
 import { buildApi } from '@codemod-registry/utilities';
@@ -17,7 +18,7 @@ describe('ember 5 fpe-computed', function () {
         },
 
         fullName: function() {
-            return \`${this.firstName} ${this.lastName}\`;
+            return \`\${this.firstName} \${this.lastName}\`;
         }.property('firstName', 'lastName')
         });
 
@@ -42,7 +43,7 @@ describe('ember 5 fpe-computed', function () {
         },
 
         fullName: computed('firstName', 'lastName', function() {
-            return \`${this.firstName} ${this.lastName}\`;
+            return \`\${this.firstName} \${this.lastName}\`;
         })
         });
 

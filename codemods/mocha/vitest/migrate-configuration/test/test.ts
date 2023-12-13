@@ -4,8 +4,8 @@ import {
 	buildApi,
 	executeFilemod,
 } from '@intuita-inc/filemod';
+import { describe, it } from 'vitest';
 import { DirectoryJSON, Volume, createFsFromVolume } from 'memfs';
-import { Context } from 'mocha';
 import { deepEqual, equal, ok } from 'node:assert';
 import { repomod } from '../src/index.js';
 
@@ -95,7 +95,7 @@ describe('mocha config-files', function () {
     node_modules
   `;
 
-	it('should contain correct file commands', async function (this: Context) {
+	it('should contain correct file commands', async function () {
 		const externalFileCommands = await transform({
 			[packageJsonPath]: packageJsonConfig,
 			[tsconfigPath]: tsconfigContent,
@@ -126,7 +126,7 @@ describe('mocha config-files', function () {
 		);
 	});
 
-	it('should correctly modify package and tsconfig jsons', async function (this: Context) {
+	it('should correctly modify package and tsconfig jsons', async function () {
 		const externalFileCommands = await transform({
 			[packageJsonPath]: packageJsonConfig,
 			[tsconfigPath]: tsconfigContent,
@@ -190,7 +190,7 @@ describe('mocha config-files', function () {
 		);
 	});
 
-	it('should correctly transform the .gitignore file', async function (this: Context) {
+	it('should correctly transform the .gitignore file', async function () {
 		const externalFileCommands = await transform({
 			[gitIgnorePath]: gitIgnoreContent,
 		});

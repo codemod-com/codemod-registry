@@ -1,5 +1,5 @@
-import { Context } from 'mocha';
 import { deepStrictEqual } from 'node:assert';
+import { describe, it } from 'vitest';
 import { DirectoryJSON, Volume, createFsFromVolume } from 'memfs';
 import {
 	FileSystemManager,
@@ -61,7 +61,7 @@ const removeWhitespaces = (
 };
 
 describe('generate-url-patterns', function () {
-	it('should build correct files', async function (this: Context) {
+	it('should build correct files', async function () {
 		const [
 			turboJsonCommand,
 			middlewareTsCommand,
@@ -177,7 +177,7 @@ describe('generate-url-patterns', function () {
 		);
 	});
 
-	it('should support generateAsPageGroup option', async function (this: Context) {
+	it('should support generateAsPageGroup option', async function () {
 		const [turboJsonCommand, abTestMiddlewareTsCommand] = await transform(
 			{
 				'/opt/project/turbo.json': JSON.stringify({

@@ -1,7 +1,7 @@
 import type { FileInfo } from 'jscodeshift';
+import { describe, it } from 'vitest';
 import transform from '../src/index.js';
 import assert from 'node:assert/strict';
-import { Context } from 'mocha';
 import sinon from 'sinon';
 import { buildApi } from '@codemod-registry/utilities';
 
@@ -34,7 +34,7 @@ const STYLE_FILE =
 	'\n         p {\n          color: red;\n         }\n        ';
 
 describe('next 13 move-css-in-js-styles', function () {
-	it('should remove the style component, add an import and a class name', async function (this: Context) {
+	it('should remove the style component, add an import and a class name', async function () {
 		const fileInfo: FileInfo = {
 			path: '/opt/repository/pages/index.js',
 			source: INPUT,

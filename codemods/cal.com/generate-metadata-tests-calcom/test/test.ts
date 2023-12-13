@@ -1,5 +1,5 @@
-import { Context } from 'mocha';
 import { deepStrictEqual } from 'node:assert';
+import { describe, it } from 'vitest';
 import { DirectoryJSON, Volume, createFsFromVolume } from 'memfs';
 import {
 	FileSystemManager,
@@ -49,7 +49,7 @@ const removeWhitespaces = (
 };
 
 describe('generate-metadata-tests', function () {
-	it('should build correct files', async function (this: Context) {
+	it('should build correct files', async function () {
 		const [command] = await transform({
 			'/opt/project/pages/a/index.tsx': '',
 		});
@@ -63,7 +63,7 @@ describe('generate-metadata-tests', function () {
 		});
 	});
 
-	it('should build correct files', async function (this: Context) {
+	it('should build correct files', async function () {
 		const [command] = await transform({
 			'/opt/project/pages/a/[b].tsx': '',
 		});
@@ -77,7 +77,7 @@ describe('generate-metadata-tests', function () {
 		});
 	});
 
-	it('should build correct files', async function (this: Context) {
+	it('should build correct files', async function () {
 		const [command] = await transform({
 			'/opt/project/pages/a/[b]/c.tsx': '',
 		});

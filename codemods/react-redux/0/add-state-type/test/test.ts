@@ -1,4 +1,5 @@
 import { FileInfo } from 'jscodeshift';
+import { describe, it } from 'vitest';
 import assert from 'node:assert';
 import transform from '../src/index.js';
 import { buildApi } from '@codemod-registry/utilities';

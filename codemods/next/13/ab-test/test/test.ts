@@ -1,5 +1,5 @@
-import { Context } from 'mocha';
 import { deepStrictEqual } from 'node:assert';
+import { describe, it } from 'vitest';
 import { DirectoryJSON, Volume, createFsFromVolume } from 'memfs';
 import {
 	FileSystemManager,
@@ -53,7 +53,7 @@ const removeWhitespaces = (
 };
 
 describe('ab-test', function () {
-	it('should build correct files', async function (this: Context) {
+	it('should build correct files', async function () {
 		const [middlewareTsCommand, abTestMiddlewareTsCommand] =
 			await transform({
 				'/opt/project/middleware.ts': `

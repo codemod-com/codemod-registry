@@ -27,6 +27,7 @@ Changes to the original input and output variables that were incorporated from h
 */
 
 import transform from '../src/index.js';
+import { describe, it } from 'vitest';
 import { FileInfo } from 'jscodeshift';
 import assert from 'node:assert';
 import { buildApi } from '@codemod-registry/utilities';

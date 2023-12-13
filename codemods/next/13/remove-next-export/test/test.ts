@@ -4,10 +4,10 @@ import {
 	buildApi,
 	executeFilemod,
 } from '@intuita-inc/filemod';
+import { describe, it } from 'vitest';
 import { Volume, createFsFromVolume } from 'memfs';
 import tsmorph from 'ts-morph';
 import { repomod } from '../src/index.js';
-import { Context } from 'mocha';
 import { deepStrictEqual } from 'node:assert';
 
 const PACKAGE_JSON = JSON.stringify({
@@ -76,7 +76,7 @@ const transform = async () => {
 };
 
 describe('next 13 remove-next-export', function () {
-	it('should build correct files', async function (this: Context) {
+	it('should build correct files', async function () {
 		const externalFileCommands = await transform();
 
 		deepStrictEqual(externalFileCommands, [

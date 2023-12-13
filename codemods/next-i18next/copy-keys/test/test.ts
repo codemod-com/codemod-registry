@@ -1,5 +1,5 @@
-import { Context } from 'mocha';
 import { DirectoryJSON, Volume, createFsFromVolume } from 'memfs';
+import { describe, it } from 'vitest';
 import {
 	FileSystemManager,
 	UnifiedFileSystem,
@@ -37,7 +37,7 @@ const transform = async (json: DirectoryJSON, options: Options) => {
 };
 
 describe('next-i18n copy keys', function () {
-	it('should copy a key into a new namespace', async function (this: Context) {
+	it('should copy a key into a new namespace', async function () {
 		const EN_COMMON_JSON = `
 			{
 				"copyKey": "copyKeyEnglish",
@@ -95,7 +95,7 @@ describe('next-i18n copy keys', function () {
 		}
 	});
 
-	it('should copy a key into an existing namespace', async function (this: Context) {
+	it('should copy a key into an existing namespace', async function () {
 		const EN_COMMON_JSON = `
 			{
 				"copyKey": "copyKeyEnglish",
