@@ -58,10 +58,12 @@ export const repomod: Filemod<Record<string, never>, Record<string, never>> = {
 				return { kind: 'noop' };
 			}
 
-			// Remove possible "mocha" key and its value
-			if (packageJson.mocha) {
-				delete packageJson.mocha;
+			// If package does not use mocha, skip
+			if (!packageJson.mocha) {
+				return { kind: 'noop' };
 			}
+
+			delete packageJson.mocha;
 
 			// Remove mocha from dependencies & devDependencies, add vitest devDep
 			if (packageJson.dependencies) {
