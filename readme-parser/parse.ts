@@ -38,7 +38,7 @@ export const parse = async (data: string) => {
 		Effect.flatMap((h) => Effect.fromNullable(getHeaderText(h))),
 	);
 
-	const descriptionEffect = pipe(
+	const descriptionPresentEffect = pipe(
 		Effect.fromNullable(children[1]),
 		Effect.flatMap((h) => Effect.fromNullable(getHeading(2)(h))),
 		Effect.flatMap((h) => Effect.fromNullable(getHeaderText(h))),
@@ -46,7 +46,7 @@ export const parse = async (data: string) => {
 
 	const name = Effect.runSync(nameEffect);
 	const descriptionPresent =
-		Effect.runSync(descriptionEffect) === 'Description';
+		Effect.runSync(descriptionPresentEffect) === 'Description';
 
 	const index = children
 		.slice(2)
@@ -54,11 +54,18 @@ export const parse = async (data: string) => {
 
 	const description = getText(data, children.slice(2, 2 + index));
 
-	console.log(description);
+	const examplePresentEffect = pipe(
+		Effect.fromNullable(children[2 + index]),
+		Effect.flatMap((h) => Effect.fromNullable(getHeading(2)(h))),
+		Effect.flatMap((h) => Effect.fromNullable(getHeaderText(h))),
+	);
+
+	const examplePresent = Effect.runSync(examplePresentEffect) === 'Example';
 
 	return {
 		name,
 		descriptionPresent,
 		description,
+		examplePresent,
 	};
 };

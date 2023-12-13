@@ -20,6 +20,8 @@ List:
 
 describe('parse', function () {
 	it('should parse', async function () {
-		await parse(DATA);
+		const obj = await parse(DATA);
+
+		console.log(obj);
 	});
 });
