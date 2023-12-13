@@ -132,7 +132,7 @@ export default function transform(
 		.find(j.CallExpression)
 		.filter(
 			(path) =>
-				path.node.callee.type === 'Identifier' &&
+				j.Identifier.check(path.node.callee) &&
 				mochaGlobalApis.includes(path.node.callee.name),
 		);
 
@@ -152,8 +152,8 @@ export default function transform(
 		return undefined;
 	}
 
-	const index = program.body.findIndex(
-		(value) => value.type === 'ImportDeclaration',
+	const index = program.body.findIndex((value) =>
+		j.ImportDeclaration.check(value),
 	);
 
 	if (namesToImport.size > 0) {
