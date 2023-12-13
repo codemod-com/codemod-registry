@@ -6,7 +6,7 @@ import {
 } from '@intuita-inc/filemod';
 import { DirectoryJSON, Volume, createFsFromVolume } from 'memfs';
 import { Context } from 'mocha';
-import { deepStrictEqual, ok } from 'node:assert';
+import { deepEqual, equal, ok } from 'node:assert';
 import { repomod } from '../src/index.js';
 
 const transform = async (json: DirectoryJSON) => {
@@ -88,6 +88,13 @@ describe('mocha config-files', function () {
     }
   `;
 
+	const gitIgnorePath = '/opt/project/.gitignore';
+	const gitIgnoreContent = `
+    build
+    dist
+    node_modules
+  `;
+
 	it('should contain correct file commands', async function (this: Context) {
 		const externalFileCommands = await transform({
 			[packageJsonPath]: packageJsonConfig,
@@ -95,9 +102,10 @@ describe('mocha config-files', function () {
 			[mochaRcPath]: mochaRcContent,
 			[mochaRcCjsPath]: mochaRcContent,
 			[mochaConfigPath]: mochaRcContent,
+			[gitIgnorePath]: gitIgnoreContent,
 		});
 
-		deepStrictEqual(externalFileCommands.length, 5);
+		deepEqual(externalFileCommands.length, 6);
 
 		ok(
 			externalFileCommands.filter(
@@ -111,7 +119,9 @@ describe('mocha config-files', function () {
 					(command.kind === 'deleteFile' &&
 						command.path === mochaRcCjsPath) ||
 					(command.kind === 'deleteFile' &&
-						command.path === mochaConfigPath),
+						command.path === mochaConfigPath) ||
+					(command.kind === 'upsertFile' &&
+						command.path === gitIgnorePath),
 			).length === externalFileCommands.length,
 		);
 	});
@@ -174,6 +184,29 @@ describe('mocha config-files', function () {
                   "./test/**/*.js"
                 ]
               }
+            `.replace(/\W/gm, ''),
+			),
+		);
+	});
+
+	it('should correctly transform the .gitignore file', async function (this: Context) {
+		const externalFileCommands = await transform({
+			[gitIgnorePath]: gitIgnoreContent,
+		});
+
+		equal(externalFileCommands.length, 1);
+
+		ok(
+			externalFileCommands.some(
+				(command) =>
+					command.kind === 'upsertFile' &&
+					command.path === gitIgnorePath &&
+					command.data.replace(/\W/gm, '') ===
+						`
+            build
+            dist
+            node_modules
+            coverage
             `.replace(/\W/gm, ''),
 			),
 		);
