@@ -27,10 +27,15 @@ export const repomod: Filemod<Record<string, never>, Record<string, never>> = {
 		'**/package.json',
 		'**/tsconfig.json',
 		'**/{,.}{mocharc,mocha.config}{,.js,.json,.cjs,.mjs,.yaml,.yml}',
+		'**/.gitignore',
 	],
 	excludePatterns: ['**/node_modules/**'],
 	handleFile: async (_, path, options) => {
-		if (path.endsWith('tsconfig.json') || path.endsWith('package.json')) {
+		if (
+			path.endsWith('tsconfig.json') ||
+			path.endsWith('package.json') ||
+			path.endsWith('.gitignore')
+		) {
 			return [{ kind: 'upsertFile', path, options }];
 		}
 
@@ -146,6 +151,26 @@ export const repomod: Filemod<Record<string, never>, Record<string, never>> = {
 				kind: 'upsertData',
 				path,
 				data: JSON.stringify(tsconfigJson, null, 2),
+			};
+		}
+
+		if (path.endsWith('.gitignore')) {
+			const expressions = data.split('\n');
+
+			if (
+				expressions.some(
+					(expression) => expression.trim() === 'coverage',
+				)
+			) {
+				return { kind: 'noop' };
+			}
+
+			expressions.push('coverage');
+
+			return {
+				kind: 'upsertData',
+				path,
+				data: expressions.join('\n'),
 			};
 		}
 
