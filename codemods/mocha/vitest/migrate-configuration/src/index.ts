@@ -158,8 +158,8 @@ export const repomod: Filemod<Record<string, never>, Record<string, never>> = {
 			const expressions = data.split('\n');
 
 			if (
-				expressions.some(
-					(expression) => expression.trim() === 'coverage',
+				expressions.some((expression) =>
+					expression.trimEnd().endsWith('coverage'),
 				)
 			) {
 				return { kind: 'noop' };
