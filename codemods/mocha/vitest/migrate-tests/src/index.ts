@@ -65,5 +65,34 @@ export default function transform(
 		}),
 	);
 
+	// Remove mocha imports and references
+	const toRemove: string[] = [];
+	const mochaImport = root.find(j.ImportDeclaration, {
+		source: { type: 'StringLiteral', value: 'mocha' },
+	});
+	if (mochaImport) {
+		mochaImport.forEach((declaration) => {
+			declaration.node.specifiers?.forEach((specifier) => {
+				if (
+					j.ImportSpecifier.check(specifier) &&
+					specifier.local?.name
+				) {
+					toRemove.push(specifier.local.name);
+				}
+			});
+		});
+	}
+
+	toRemove.forEach((spec) => {
+		root.find(j.Identifier, { name: spec }).forEach((identifier) => {
+			j(identifier).remove();
+		});
+		root.find(j.TypeAnnotation, { typeAnnotation: { name: spec } }).forEach(
+			(annotation) => {
+				j(annotation).remove();
+			},
+		);
+	});
+
 	return root.toSource();
 }
