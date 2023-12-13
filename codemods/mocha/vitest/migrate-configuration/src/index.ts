@@ -86,22 +86,26 @@ export const repomod: Filemod<Record<string, never>, Record<string, never>> = {
 
 			// Remove commands using mocha
 			if (packageJson.scripts) {
+				let replaced = true;
+
 				Object.entries(packageJson.scripts).forEach(
 					([name, script]) => {
 						if (script.includes('mocha')) {
+							replaced = true;
 							delete packageJson.scripts![name];
 						}
 					},
 				);
-			}
 
-			// Add vitest commands
-			if (packageJson.scripts) {
-				packageJson.scripts = {
-					...packageJson.scripts,
-					test: 'vitest run',
-					coverage: 'vitest run --coverage',
-				};
+				// Add vitest commands if current package.json contained any mocha ones
+				if (replaced) {
+					packageJson.scripts = {
+						...packageJson.scripts,
+						test: 'vitest run',
+						'test:watch': 'vitest watch',
+						coverage: 'vitest run --coverage',
+					};
+				}
 			}
 
 			return {
