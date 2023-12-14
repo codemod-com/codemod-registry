@@ -100,7 +100,7 @@ const getTextByHeader = (
 
 	for (const rc of contentParts) {
 		if ('children' in rc) {
-			const truncatedChildren = rc.children
+			rc.children
 				.map((child) => {
 					if (child.type === 'text') {
 						return `${child.value}${delimiter}`;
@@ -123,9 +123,11 @@ const getTextByHeader = (
 
 					return null;
 				})
-				.filter(Boolean) as string[];
-
-			textParts.push(...truncatedChildren);
+				.forEach((child) => {
+					if (child !== null) {
+						textParts.push(child);
+					}
+				});
 		}
 
 		if ('value' in rc) {
