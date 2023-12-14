@@ -2,10 +2,7 @@
 	"name": "@codemod-registry/readme-parser",
 	"type": "module",
 	"dependencies": {
-		"unified": "11.0.4",
-		"remark-parse": "11.0.0",
-		"mdast-util-from-markdown": "2.0.0",
-		"effect": "2.0.0-next.60"
+		"mdast-util-from-markdown": "2.0.0"
 	},
 	"devDependencies": {
 		"@codemod-registry/tsconfig": "workspace:*",
