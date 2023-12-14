@@ -1,12 +1,4 @@
-import type {
-	Heading,
-	Link,
-	List,
-	Paragraph,
-	PhrasingContent,
-	RootContent,
-	Strong,
-} from 'mdast';
+import type { Heading, PhrasingContent, RootContent } from 'mdast';
 import { fromMarkdown } from 'mdast-util-from-markdown';
 
 const noFirstLetterLowerCase = (str: string) =>
@@ -15,22 +7,6 @@ const noFirstLetterLowerCase = (str: string) =>
 const capitalize = (str: string) =>
 	str[0] ? str[0].toUpperCase() + str.slice(1) : str;
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-const isHeading = (rootContent: RootContent): rootContent is Heading =>
-	rootContent?.type === 'heading';
-
-const hasChildren = (
-	rootContent: any,
-): rootContent is Heading | Paragraph | Strong | Link | List =>
-	(rootContent as any)?.children;
-
-const hasValue = (rootContent: any): rootContent is { value: string } =>
-	typeof rootContent?.value === 'string';
-
-const hasUrl = (rootContent: any): rootContent is { url: string } =>
-	typeof rootContent?.url === 'string';
-/* eslint-enable @typescript-eslint/no-explicit-any */
-
 const getTextFromNode = (
 	node: RootContent | PhrasingContent | undefined,
 ): string | null => {
@@ -38,11 +14,11 @@ const getTextFromNode = (
 		return null;
 	}
 
-	if (hasValue(node)) {
+	if ('value' in node) {
 		return node.value;
 	}
 
-	if (hasChildren(node)) {
+	if ('children' in node) {
 		return getTextFromNode(node.children[0]);
 	}
 
@@ -56,11 +32,11 @@ const getUrlFromNode = (
 		return null;
 	}
 
-	if (hasUrl(node)) {
+	if ('url' in node) {
 		return node.url;
 	}
 
-	if (hasChildren(node)) {
+	if ('children' in node) {
 		return getUrlFromNode(node.children[0]);
 	}
 
@@ -73,7 +49,7 @@ const getHeading = (
 	name?: string,
 ) => {
 	const heading = rootContent.find((rc) => {
-		if (!isHeading(rc)) {
+		if (rc.type !== 'heading') {
 			return false;
 		}
 
@@ -106,7 +82,7 @@ const getTextByHeader = (
 	);
 	const nextHeaderIndex = rootContent.findIndex(
 		(rc) =>
-			isHeading(rc) &&
+			rc.type === 'heading' &&
 			rc.position?.start.line &&
 			heading.position?.start.line &&
 			rc.position?.start.line > heading.position?.start.line &&
@@ -121,7 +97,7 @@ const getTextByHeader = (
 	const textParts: string[] = [];
 
 	for (const rc of contentParts) {
-		if (hasChildren(rc)) {
+		if ('children' in rc) {
 			const truncatedChildren = rc.children
 				.map((child) => {
 					if (child.type === 'text') {
@@ -150,7 +126,7 @@ const getTextByHeader = (
 			textParts.push(...truncatedChildren);
 		}
 
-		if (hasValue(rc)) {
+		if ('value' in rc) {
 			if (rc.type === 'code') {
 				textParts.push(
 					`\`\`\`${rc.lang}\n${rc.value}\n\`\`\`${delimiter}`,
@@ -177,9 +153,11 @@ export const parse = (data: string) => {
 	const { children } = fromMarkdown(data);
 
 	const nameHeading = getHeading(children, 1);
-	const name = hasValue(nameHeading?.children[0])
-		? nameHeading.children[0].value
-		: null;
+	const name =
+		nameHeading?.children[0] && 'value' in nameHeading.children[0]
+			? nameHeading.children[0].value
+			: null;
+
 	if (!name) {
 		throw new Error('Name not found');
 	}
