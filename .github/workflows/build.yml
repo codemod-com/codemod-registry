@@ -7,9 +7,11 @@ jobs:
     Build:
         runs-on: ubuntu-latest
         steps:
+            - name: Setup Node.js
             - uses: actions/setup-node@v3
               with:
                   node-version: 16
+            - name: Checkout Repository
             - uses: actions/checkout@v2
             - name: Install modules
               uses: pnpm/action-setup@v2
@@ -19,6 +21,11 @@ jobs:
               run: pnpm install
             - name: Build the CJS files
               run: pnpm build
+            - name: Fetch top commit from website repository
+              run: |
+                git remote add website https://github.com/intuita-inc/website.git
+                git fetch website main
+                TOP_COMMIT_SHA=$(git rev-parse website/main)
             - name: Upload to S3
               uses: jakejarvis/s3-sync-action@master
               with:
