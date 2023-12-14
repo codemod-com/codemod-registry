@@ -51,14 +51,14 @@ const getUrlFromNode = (
 const getHeading = (
 	rootContents: ReadonlyArray<RootContent>,
 	depth: 1 | 2 | 3,
-	name?: string,
+	name: string | null,
 ): Heading | null => {
 	for (const rootContent of rootContents) {
 		if (rootContent.type !== 'heading') {
 			continue;
 		}
 
-		if (name) {
+		if (name !== null) {
 			const headerTitle = getTextFromNode(rootContent);
 
 			if (
@@ -82,7 +82,7 @@ const getHeading = (
 const getTextByHeader = (
 	rootContents: ReadonlyArray<RootContent>,
 	heading: Heading,
-	delimiter = '\n',
+	delimiter: string,
 ) => {
 	const headerIndex = rootContents.findIndex(
 		(rc) => rc.position?.start.line === heading.position?.start.line,
@@ -161,7 +161,7 @@ const getTextByHeader = (
 export const parse = (data: string) => {
 	const { children } = fromMarkdown(data);
 
-	const nameHeading = getHeading(children, 1);
+	const nameHeading = getHeading(children, 1, null);
 	const name =
 		nameHeading?.children[0] && 'value' in nameHeading.children[0]
 			? nameHeading.children[0].value
@@ -173,7 +173,7 @@ export const parse = (data: string) => {
 
 	const descHeading = getHeading(children, 2, 'Description');
 	const description = descHeading
-		? getTextByHeader(children, descHeading)
+		? getTextByHeader(children, descHeading, '\n')
 		: null;
 	if (!description) {
 		throw new Error('Description not found');
@@ -181,7 +181,7 @@ export const parse = (data: string) => {
 
 	const exampleHeading = getHeading(children, 2, 'Example');
 	const examples = exampleHeading
-		? getTextByHeader(children, exampleHeading)
+		? getTextByHeader(children, exampleHeading, '\n')
 		: null;
 	if (!examples) {
 		throw new Error('Examples not found');
@@ -189,7 +189,7 @@ export const parse = (data: string) => {
 
 	const applicabilityHeader = getHeading(children, 2, 'Applicability');
 	const applicability = applicabilityHeader
-		? getTextByHeader(children, applicabilityHeader)
+		? getTextByHeader(children, applicabilityHeader, '\n')
 		: null;
 	if (!applicability) {
 		throw new Error('Applicability criteria not found');
@@ -200,7 +200,7 @@ export const parse = (data: string) => {
 
 	const versionHeader = getHeading(children, 3, 'Codemod Version');
 	const version = versionHeader
-		? getTextByHeader(children, versionHeader)
+		? getTextByHeader(children, versionHeader, '\n')
 		: null;
 	if (!version) {
 		throw new Error('Codemod version not found');
@@ -209,7 +209,7 @@ export const parse = (data: string) => {
 
 	const changeModeHeader = getHeading(children, 3, 'Change Mode');
 	const changeModeText = changeModeHeader
-		? getTextByHeader(children, changeModeHeader).toLowerCase()
+		? getTextByHeader(children, changeModeHeader, '\n').toLowerCase()
 		: null;
 	if (!changeModeText) {
 		throw new Error('Change mode not found');
@@ -226,7 +226,7 @@ export const parse = (data: string) => {
 
 	const engineHeader = getHeading(children, 3, 'Codemod Engine');
 	const engineText = engineHeader
-		? getTextByHeader(children, engineHeader)
+		? getTextByHeader(children, engineHeader, '\n')
 		: null;
 	if (!engineText) {
 		throw new Error('Codemod engine not found');
@@ -243,7 +243,7 @@ export const parse = (data: string) => {
 
 	const timeSaveHeader = getHeading(children, 3, 'Estimated Time Saving');
 	const timeSave = timeSaveHeader
-		? getTextByHeader(children, timeSaveHeader).replace(' per ', '/')
+		? getTextByHeader(children, timeSaveHeader, '\n').replace(' per ', '/')
 		: null;
 	if (!timeSave) {
 		throw new Error('Estimated time saving not found');
@@ -251,7 +251,7 @@ export const parse = (data: string) => {
 
 	const ownerHeader = getHeading(children, 3, 'Owner');
 	const owner = ownerHeader
-		? getTextByHeader(children, ownerHeader) ?? 'Intuita'
+		? getTextByHeader(children, ownerHeader, '\n') ?? 'Intuita'
 		: null;
 
 	const linksHeader = getHeading(children, 3, 'Links');
