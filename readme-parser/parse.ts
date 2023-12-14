@@ -1,8 +1,13 @@
 import type { Heading, PhrasingContent, RootContent } from 'mdast';
 import { fromMarkdown } from 'mdast-util-from-markdown';
 
-const noFirstLetterLowerCase = (str: string) =>
-	str[0] + str.slice(1).toLowerCase();
+const noFirstLetterLowerCase = (str: string) => {
+	if (str.length < 3) {
+		return str;
+	}
+
+	return str[0] + str.slice(1).toLowerCase();
+};
 
 const capitalize = (str: string) =>
 	str[0] ? str[0].toUpperCase() + str.slice(1) : str;
@@ -26,7 +31,7 @@ const getTextFromNode = (
 };
 
 const getUrlFromNode = (
-	node: RootContent | PhrasingContent | undefined,
+	node: RootContent | PhrasingContent | null,
 ): string | null => {
 	if (!node) {
 		return null;
@@ -37,7 +42,7 @@ const getUrlFromNode = (
 	}
 
 	if ('children' in node) {
-		return getUrlFromNode(node.children[0]);
+		return getUrlFromNode(node.children[0] ?? null);
 	}
 
 	return null;
@@ -108,7 +113,7 @@ const getTextByHeader = (
 
 					if (child.type === 'listItem') {
 						return `${getUrlFromNode(
-							child.children[0],
+							child.children[0] ?? null,
 						)}${delimiter}`;
 					}
 
