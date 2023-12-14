@@ -24,6 +24,6 @@ jobs:
             - name: Fetch top commit from website repository
               run: |
                   git remote add website https://github.com/intuita-inc/website.git
-                  git fetch website main
-                  TOP_COMMIT_SHA=$(git rev-parse website/main)
+                  git fetch website master
+                  TOP_COMMIT_SHA=$(git rev-parse website/master)
                   echo "Top commit in website repository: $TOP_COMMIT_SHA"
