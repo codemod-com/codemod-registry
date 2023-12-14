@@ -42,5 +42,5 @@ jobs:
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                   AWS_REGION: 'us-west-1'
                   DEST_DIR: 'codemod-registry'
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GH_TOKEN: ${{ secrets.GH_TOKEN }}
                   SOURCE_DIR: 'builder/dist'
