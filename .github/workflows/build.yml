@@ -13,6 +13,8 @@ jobs:
                   node-version: 16
             - name: Checkout Repository
               uses: actions/checkout@v2
+              with:
+                  token: ${{ secrets.ACTIONS_GITHUB_TOKEN }}
             - name: Install modules
               uses: pnpm/action-setup@v2
               with:
@@ -31,9 +33,7 @@ jobs:
                   git config --local user.name "Intuita Team"
                   git checkout master
                   git commit --allow-empty -m "test commit from codemod-registry repo"
-                  git push https://$GH_TOKEN@github.com/intuita-inc/website.git HEAD:master
-              env:
-                  GH_TOKEN: ${{ secrets.GH_TOKEN }}
+                  git push website HEAD:master
             - name: Upload to S3
               uses: jakejarvis/s3-sync-action@master
               with:
