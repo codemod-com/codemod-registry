@@ -44,17 +44,17 @@ const getUrlFromNode = (
 };
 
 const getHeading = (
-	rootContent: RootContent[],
+	rootContents: ReadonlyArray<RootContent>,
 	depth: 1 | 2 | 3,
 	name?: string,
-) => {
-	const heading = rootContent.find((rc) => {
-		if (rc.type !== 'heading') {
-			return false;
+): Heading | null => {
+	for (const rootContent of rootContents) {
+		if (rootContent.type !== 'heading') {
+			continue;
 		}
 
 		if (name) {
-			const headerTitle = getTextFromNode(rc);
+			const headerTitle = getTextFromNode(rootContent);
 
 			if (
 				!headerTitle ||
@@ -62,25 +62,27 @@ const getHeading = (
 					noFirstLetterLowerCase(name),
 				)
 			) {
-				return false;
+				continue;
 			}
 		}
 
-		return rc.depth === depth;
-	}) as Heading | undefined;
+		if (rootContent.depth === depth) {
+			return rootContent;
+		}
+	}
 
-	return heading ?? null;
+	return null;
 };
 
 const getTextByHeader = (
-	rootContent: RootContent[],
+	rootContents: ReadonlyArray<RootContent>,
 	heading: Heading,
 	delimiter = '\n',
 ) => {
-	const headerIndex = rootContent.findIndex(
+	const headerIndex = rootContents.findIndex(
 		(rc) => rc.position?.start.line === heading.position?.start.line,
 	);
-	const nextHeaderIndex = rootContent.findIndex(
+	const nextHeaderIndex = rootContents.findIndex(
 		(rc) =>
 			rc.type === 'heading' &&
 			rc.position?.start.line &&
@@ -89,7 +91,7 @@ const getTextByHeader = (
 			rc.depth === heading.depth,
 	);
 
-	const contentParts = rootContent.slice(
+	const contentParts = rootContents.slice(
 		headerIndex + 1,
 		nextHeaderIndex > -1 ? nextHeaderIndex : undefined,
 	);
