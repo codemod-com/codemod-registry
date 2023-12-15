@@ -1,5 +1,14 @@
+import { readFileSync } from 'fs';
+import * as nodePath from 'node:path';
 import type { Heading, PhrasingContent, RootContent } from 'mdast';
 import { fromMarkdown } from 'mdast-util-from-markdown';
+import { is, object, string } from 'valibot';
+
+const configJsonSchema = object({
+	schemaVersion: string(),
+	name: string(),
+	engine: string(),
+});
 
 const UNESCAPED = ['inlineCode'];
 
@@ -284,7 +293,10 @@ export const parse = (data: string) => {
 	};
 };
 
-export const convertToYaml = (data: ReturnType<typeof parse>) => {
+export const convertToYaml = (
+	data: ReturnType<typeof parse>,
+	path?: string,
+) => {
 	const {
 		name,
 		description,
@@ -296,36 +308,60 @@ export const convertToYaml = (data: ReturnType<typeof parse>) => {
 		owner,
 	} = data;
 
-	// f_author - possible to find by .includes(<owner>) under cms/authors, like cms/authors/rajasegar-chandran.md
-	// f_slug_name - can infer from config by throwing away framework version?
-	// f_cli_command - intuita <infer_name_from_config>
-	// f_github_link - <should_be_available_in_push_metadata>
-	// create-on - <readme_file_create_time>
+	let slug: string | null = null;
+	let framework: string | null = null;
+	let cliCommand: string | null = null;
+	let cleanPath: string | null = null;
+	if (path) {
+		cleanPath = path.split('/').slice(0, -1).join('/');
+		const pathToCodemod = nodePath.join(__dirname, '..', cleanPath);
+
+		framework = path.split('/').at(1) ?? null;
+
+		try {
+			const config = readFileSync(
+				`${pathToCodemod}/config.json`,
+			).toString();
+			const json = JSON.parse(config);
+
+			if (is(configJsonSchema, json)) {
+				slug = json.name.replace(/\//g, '-');
+				cliCommand = `intuita ${json.name}`;
+			}
+		} catch (e) {
+			console.log(`No config found for ${path}`);
+		}
+	}
+
 	const res = `
 ---
-created-on: -
 f_long-description: |-
   ## Description
   ${description.replace(/\n/g, '\n  ')}
   ${examples.replace(/\n/g, '\n  ')}
-f_github-link: -
+f_github-link: ${
+		path
+			? `https://github.com/intuita-inc/codemod-registry/tree/main/${cleanPath}`
+			: '-'
+	}
 f_vs-code-link: -
 f_codemod-studio-link: -
-f_cli-command: -
-f_framework: -
+f_cli-command: ${cliCommand ?? '-'}
+f_framework: ${framework ? `cms/framework/${framework}.md` : '-'}
 f_applicability-criteria: ${applicability}
 f_verified-codemod: ${owner === 'Intuita' ? 'true' : 'false'}
-f_author: -
+f_author: ${owner === 'Intuita' ? 'cms/authors/intuita.md' : '-'}
 layout: "[automations].html"
-slug: -
+slug: ${slug ?? '-'}
 title: ${name}
-updated-on: -
-published-on: -
-f_slug-name: -
+f_slug-name: ${slug ?? '-'}
 f_codemod-engine: cms/codemod-engines/${engine}.md
 f_change-mode-2: ${capitalize(changeMode)}
 f_estimated-time-saving: ${timeSave}
 tags: automations
+created-on: -
+updated-on: ${new Date().toISOString()}
+published-on: -
 seo: -
 ---
 `.trim();

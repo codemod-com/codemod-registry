@@ -12,7 +12,7 @@ function accept() {
 
 	const data = readFileSync(path);
 
-	const result = convertToYaml(parse(data.toString()));
+	const result = convertToYaml(parse(data.toString()), path);
 
 	console.log(result);
 }

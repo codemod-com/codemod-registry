@@ -4146,6 +4146,9 @@ importers:
       mdast-util-from-markdown:
         specifier: 2.0.0
         version: 2.0.0
+      valibot:
+        specifier: ^0.24.1
+        version: 0.24.1
     devDependencies:
       '@codemod-registry/tsconfig':
         specifier: workspace:*
