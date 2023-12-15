@@ -42,6 +42,5 @@ v1.0.0
 
 ### Owner
 
-[trivikr](https://github.com/trivikr)
+[Intuita](https://github.com/intuita-inc)
 
-### Links for more info
