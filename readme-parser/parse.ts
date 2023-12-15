@@ -234,6 +234,8 @@ export const parse = (data: string) => {
 		engine = 'ts-morph';
 	} else if (engineText.includes('jscodeshift')) {
 		engine = 'jscodeshift';
+	} else if (engineText.toLowerCase().includes('file')) {
+		engine = 'filemod';
 	}
 	if (!engine) {
 		throw new Error('Codemod engine is of a wrong format');
