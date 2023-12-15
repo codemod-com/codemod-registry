@@ -1,6 +1,7 @@
-import { readFileSync } from 'fs';
 import type { Heading, PhrasingContent, RootContent } from 'mdast';
 import { fromMarkdown } from 'mdast-util-from-markdown';
+
+const UNESCAPED = ['inlineCode'];
 
 const noFirstLetterLowerCase = (str: string) =>
 	str.length ? str[0] + str.slice(1).toLowerCase() : str;
@@ -102,8 +103,13 @@ const getTextByHeader = (
 	for (const rc of contentParts) {
 		if ('children' in rc) {
 			rc.children
-				.map((child) => {
+				.map((child, idx, arr) => {
 					if (child.type === 'text') {
+						const nextEl = arr[idx + 1];
+						if (nextEl && UNESCAPED.includes(nextEl.type)) {
+							return child.value;
+						}
+
 						return `${child.value}${delimiter}`;
 					}
 
@@ -118,8 +124,8 @@ const getTextByHeader = (
 					}
 
 					// Do not add new line after certain blocks (treated as separate AST nodes)
-					if (child.type === 'inlineCode') {
-						return child.value;
+					if (UNESCAPED.includes(child.type)) {
+						return getTextFromNode(child);
 					}
 
 					return null;
@@ -149,16 +155,7 @@ const getTextByHeader = (
 	return textParts.join('');
 };
 
-// Accept argv
-export const parse = () => {
-	const path = process.argv.at(-1);
-
-	if (!path) {
-		throw new Error('No filepath passed');
-	}
-
-	const data = readFileSync(path);
-
+export const parse = (data: string) => {
 	const { children } = fromMarkdown(data);
 
 	const nameHeading = getHeading(children, 1, null);
@@ -194,7 +191,8 @@ export const parse = () => {
 	if (!applicability) {
 		throw new Error('Applicability criteria not found');
 	}
-	if (!applicability.match(/[\w]+ (>|>=) \d+\.\d+\.\d+/)) {
+	// if (!applicability.match(/[\w]+ (>|>=) \d+\.\d+\.\d+/)) {
+	if (!applicability.match(/[\w]+ \d+/)) {
 		throw new Error('Applicability criteria is of a wrong format');
 	}
 

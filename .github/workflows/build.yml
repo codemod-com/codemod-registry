@@ -37,13 +37,12 @@ jobs:
                   git fetch origin
                   git checkout -B ${{ github.head_ref }} origin/${{ github.head_ref }}
                   changed_files=$(git diff --name-only HEAD^ HEAD)
-                  path_to_readme=$(echo ${changed_files} | grep 'README\.md$')
+                  path_to_readme=$(echo "$changed_files" | grep 'README\.md$' || true)
                   if [ -z "$path_to_readme" ]; then
-                      echo "there"
                       dir_except_first_folder=$(dirname "$path_to_readme" | sed 's/^[^/]*\///' | tr '/' '-')
                       generated_slug=$(echo "$dir_except_first_folder" | sed 's/[^a-zA-Z0-9]/_/g')
                       website_file_path=$(echo /cms/automations/"$generated_slug".md)
-                      node readme-parser/dist/index.js "$path_to_readme" > "$website_file_path"
+                      readme-parser/dist/index.js "$path_to_readme" > "$website_file_path"
                       git add "$website_file_path"
                       git commit -m "changes"
                       git push website HEAD:master
