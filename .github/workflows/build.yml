@@ -60,14 +60,16 @@ jobs:
                   # Checkout a new branch from the website master
                   git checkout -b update-codemods website/master
 
+                  echo "$parsed_readmes"
+
                   # Iterate over the stored contents and write to files
                   for file_path in "${!parsed_readmes[@]}"; do
-                      echo "${parsed_readmes[$file_path]}"
                       echo "${parsed_readmes[$file_path]}" > "$file_path"
                       git add "$file_path"
                   done
 
                   echo $(git status)
+                  echo $(ls -la)
 
                   # Commit and push all changes at once
                   if [ ${#parsed_readmes[@]} -gt 0 ]; then
