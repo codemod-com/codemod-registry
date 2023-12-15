@@ -37,6 +37,7 @@ jobs:
                   git fetch origin
                   git checkout -B ${{ github.head_ref }} origin/${{ github.head_ref }}
                   changed_files=$(git diff --name-only HEAD^ HEAD)
+                  echo "$changed_files"
                   echo "$changed_files" | grep "README\.md$"
                   path_to_readme=$(echo "$changed_files" | grep "README\.md$")
                   echo "$path_to_readme"
