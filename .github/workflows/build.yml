@@ -44,13 +44,13 @@ jobs:
                   else
                       # Prepare to store parsed README contents and paths
                       declare -A parsed_readmes
+                      pnpm --filter @codemod-registry/readme-parser build
 
                       echo "$readme_files" | while read -r path_to_readme; do
                           generated_slug=$(echo "$path_to_readme" | sed 's/^[^/]*\///' | sed 's/\/README\.md$//' | tr '/' '-')
                           website_file_path="/cms/automations/$generated_slug.md"
                           
                           # Parse the README and store the output with its path
-                          # Scripts run under /temp path, so have to go out once
                           parsed_readme=$("$PWD"/readme-parser/dist/index.js "$path_to_readme")
                           parsed_readmes["$website_file_path"]="$parsed_readme"
                       done
