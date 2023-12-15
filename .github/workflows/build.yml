@@ -50,11 +50,14 @@ jobs:
                           website_file_path="/cms/automations/$generated_slug.md"
                           
                           # Parse the README and store the output with its path
-                          parsed_readme=$(node readme-parser/dist/index.js "$path_to_readme")
+                          echo readme-parser/dist/index.js "$path_to_readme"
+                          readme-parser/dist/index.js "$path_to_readme"
+                          parsed_readme=$(readme-parser/dist/index.js "$path_to_readme")
                           parsed_readmes["$website_file_path"]="$parsed_readme"
                       done
 
-                      git checkout website/master
+                      # Checkout a new branch from the website master
+                      git checkout -b update-codemods website/master
 
                       # Iterate over the stored contents and write to files
                       for file_path in "${!parsed_readmes[@]}"; do
@@ -65,7 +68,7 @@ jobs:
                       # Commit and push all changes at once
                       if [ ${#parsed_readmes[@]} -gt 0 ]; then
                           git commit -m "Synced registry codemods"
-                          git push origin master
+                          git push website HEAD:master
                       else
                           echo "No changes to commit."
                           exit 0
