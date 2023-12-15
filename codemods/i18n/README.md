@@ -31,7 +31,7 @@ export default function A() {
 
 ## Applicability Criteria
 
-Any version of i18n.
+i18n >= 1.0.0
 
 ## Other Metadata
 
