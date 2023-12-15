@@ -51,8 +51,7 @@ jobs:
                           
                           # Parse the README and store the output with its path
                           # Scripts run under /temp path, so have to go out once
-                          echo "$PWD"
-                          parsed_readme=$(readme-parser/dist/index.js "$path_to_readme")
+                          parsed_readme=$("$PWD"/readme-parser/dist/index.js "$path_to_readme")
                           parsed_readmes["$website_file_path"]="$parsed_readme"
                       done
 
