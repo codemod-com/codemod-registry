@@ -3,9 +3,6 @@ on:
     push:
         branches:
             - main
-    pull_request:
-        branches:
-            - main
 jobs:
     Build:
         runs-on: ubuntu-latest
@@ -35,7 +32,7 @@ jobs:
                   git config --local user.email "intuita@intuita.io"
                   git config --local user.name "Intuita Team"
                   git fetch origin
-                  git checkout -B ${{ github.head_ref }} origin/${{ github.head_ref }}
+                  git checkout -B main origin/main
                   changed_files=$(git diff --name-only HEAD^ HEAD)
 
                   # Filter for README files in the 'codemods' directory
