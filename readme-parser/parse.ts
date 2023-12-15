@@ -2,11 +2,11 @@ import { readFileSync } from 'fs';
 import * as nodePath from 'node:path';
 import type { Heading, PhrasingContent, RootContent } from 'mdast';
 import { fromMarkdown } from 'mdast-util-from-markdown';
-import { is, object, string } from 'valibot';
+import { is, object, optional, string } from 'valibot';
 
 const configJsonSchema = object({
-	schemaVersion: string(),
-	name: string(),
+	schemaVersion: optional(string()),
+	name: optional(string()),
 	engine: string(),
 });
 
@@ -299,7 +299,7 @@ export const convertToYaml = (
 	path?: string,
 ) => {
 	const {
-		name,
+		name: title,
 		description,
 		examples,
 		applicability,
@@ -324,10 +324,12 @@ export const convertToYaml = (
 				`${pathToCodemod}/config.json`,
 			).toString();
 			const json = JSON.parse(config);
+			const codemodName =
+				json.name ?? cleanPath.split('/').slice(1).join('/');
 
 			if (is(configJsonSchema, json)) {
-				slug = json.name.replace(/\//g, '-');
-				cliCommand = `intuita ${json.name}`;
+				slug = codemodName.replace(/\//g, '-');
+				cliCommand = `intuita ${codemodName}`;
 			}
 		} catch (e) {
 			console.log(`No config found for ${path}`);
@@ -354,7 +356,7 @@ f_verified-codemod: ${owner === 'Intuita' ? 'true' : 'false'}
 f_author: ${owner === 'Intuita' ? 'cms/authors/intuita.md' : '-'}
 layout: "[automations].html"
 slug: ${slug ?? '-'}
-title: ${name}
+title: ${title}
 f_slug-name: ${slug ?? '-'}
 f_codemod-engine: cms/codemod-engines/${engine}.md
 f_change-mode-2: ${capitalize(changeMode)}
