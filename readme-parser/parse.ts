@@ -105,6 +105,17 @@ const getTextByHeader = (
 			rc.children
 				.map((child, idx, arr) => {
 					if (child.type === 'text') {
+						// Preserve ### on higher-depth headings
+						if (
+							rc.type === 'heading' &&
+							rc.depth > heading.depth &&
+							idx === 0
+						) {
+							return `${'#'.repeat(rc.depth)} ${
+								child.value
+							}${delimiter}`;
+						}
+
 						const nextEl = arr[idx + 1];
 						if (nextEl && UNESCAPED.includes(nextEl.type)) {
 							return child.value;
@@ -295,8 +306,8 @@ export const convertToYaml = (data: ReturnType<typeof parse>) => {
 created-on: -
 f_long-description: |-
   ## Description
-  ${description}
-  ${examples}
+  ${description.replace(/\n/g, '\n  ')}
+  ${examples.replace(/\n/g, '\n  ')}
 f_github-link: -
 f_vs-code-link: -
 f_codemod-studio-link: -

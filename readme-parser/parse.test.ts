@@ -86,27 +86,27 @@ describe('parse/yaml', function () {
 		deepEqual(parseResult, {
 			name: 'Do the thing',
 			description:
-				'This is an amazing codemod\nWARNING\nThis codemod does the thing',
+				'This is an amazing codemod\n### WARNING\nThis codemod does the thing',
 			examples:
-				'Before\n' +
+				'### Before\n' +
 				'```ts\n' +
 				"http.get<ReqBodyType, PathParamsType>('/resource', (req, res, ctx) => {\n" +
 				"  return res(ctx.json({ firstName: 'John' }));\n" +
 				'});\n' +
 				'```\n' +
-				'After\n' +
+				'### After\n' +
 				'```ts\n' +
 				"http.get<PathParamsType, ReqBodyType>('/resource', (req, res, ctx) => {\n" +
 				"  return res(ctx.json({ firstName: 'John' }));\n" +
 				'});\n' +
 				'```\n' +
-				'Before\n' +
+				'### Before\n' +
 				'```ts\n' +
 				"http.get<ReqBodyType>('/resource', (req, res, ctx) => {\n" +
 				"  return res(ctx.json({ firstName: 'John' }));\n" +
 				'});\n' +
 				'```\n' +
-				'After\n' +
+				'### After\n' +
 				'```ts\n' +
 				"http.get<any, ReqBodyType>('/resource', (req, res, ctx) => {\n" +
 				"  return res(ctx.json({ firstName: 'John' }));\n" +
@@ -133,32 +133,32 @@ created-on: -
 f_long-description: |-
   ## Description
   This is an amazing codemod
-WARNING
-This codemod does the thing
-  Before
-\`\`\`ts
-http.get<ReqBodyType, PathParamsType>('/resource', (req, res, ctx) => {
-  return res(ctx.json({ firstName: 'John' }));
-});
-\`\`\`
-After
-\`\`\`ts
-http.get<PathParamsType, ReqBodyType>('/resource', (req, res, ctx) => {
-  return res(ctx.json({ firstName: 'John' }));
-});
-\`\`\`
-Before
-\`\`\`ts
-http.get<ReqBodyType>('/resource', (req, res, ctx) => {
-  return res(ctx.json({ firstName: 'John' }));
-});
-\`\`\`
-After
-\`\`\`ts
-http.get<any, ReqBodyType>('/resource', (req, res, ctx) => {
-  return res(ctx.json({ firstName: 'John' }));
-});
-\`\`\`
+  ### WARNING
+  This codemod does the thing
+  ### Before
+  \`\`\`ts
+  http.get<ReqBodyType, PathParamsType>('/resource', (req, res, ctx) => {
+    return res(ctx.json({ firstName: 'John' }));
+  });
+  \`\`\`
+  ### After
+  \`\`\`ts
+  http.get<PathParamsType, ReqBodyType>('/resource', (req, res, ctx) => {
+    return res(ctx.json({ firstName: 'John' }));
+  });
+  \`\`\`
+  ### Before
+  \`\`\`ts
+  http.get<ReqBodyType>('/resource', (req, res, ctx) => {
+    return res(ctx.json({ firstName: 'John' }));
+  });
+  \`\`\`
+  ### After
+  \`\`\`ts
+  http.get<any, ReqBodyType>('/resource', (req, res, ctx) => {
+    return res(ctx.json({ firstName: 'John' }));
+  });
+  \`\`\`
 f_github-link: -
 f_vs-code-link: -
 f_codemod-studio-link: -
