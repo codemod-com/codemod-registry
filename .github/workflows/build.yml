@@ -37,7 +37,7 @@ jobs:
                   git remote add origin git@github.com:intuita-inc/codemod-registry.git
                   git checkout glue-up-readme-pipeline
                   changed_files=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
-                  path_to_readme=$(echo "$changed_files” | grep '^README\.md$' | head -n 1)
+                  path_to_readme=$(echo "$changed_files" | grep '^README\.md$' | head -n 1)
                   if echo "$changed_files" | grep -q '^README\.md$'; then
                       dir_except_first_folder=$(dirname "$path_to_readme" | sed 's/^[^/]*\///' | tr '/' '-')
                       generated_slug=$(echo "$dir_except_first_folder" | sed 's/[^a-zA-Z0-9]/_/g')
