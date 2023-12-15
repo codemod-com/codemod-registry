@@ -34,7 +34,6 @@ jobs:
               run: |
                   git config --local user.email "intuita@intuita.io"
                   git config --local user.name "Intuita Team"
-                  git remote add origin git@github.com:intuita-inc/codemod-registry.git
                   git checkout glue-up-readme-pipeline
                   changed_files=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
                   path_to_readme=$(echo "$changed_files" | grep '^README\.md$' | head -n 1)
