@@ -111,7 +111,7 @@ const worker = new Worker("unknown-name", async function (job) {
 
 ## Applicability Criteria
 
-Application running `bull` queue jobs.
+`bull` >= 0.1.0
 
 ## Other Metadata
 

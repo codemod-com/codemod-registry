@@ -9,8 +9,8 @@ on:
             - main
 
 jobs:
-    test:
-        name: Run codemod unit tests
+    lint:
+        name: Run linting
         runs-on: ubuntu-latest
         steps:
             - name: Check out Git repository

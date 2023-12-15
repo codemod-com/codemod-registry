@@ -1,3 +1,4 @@
+import { readFileSync } from 'fs';
 import type { Heading, PhrasingContent, RootContent } from 'mdast';
 import { fromMarkdown } from 'mdast-util-from-markdown';
 
@@ -148,7 +149,16 @@ const getTextByHeader = (
 	return textParts.join('');
 };
 
-export const parse = (data: string) => {
+// Accept argv
+export const parse = () => {
+	const path = process.argv.at(-1);
+
+	if (!path) {
+		throw new Error('No filepath passed');
+	}
+
+	const data = readFileSync(path);
+
 	const { children } = fromMarkdown(data);
 
 	const nameHeading = getHeading(children, 1, null);

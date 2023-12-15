@@ -3,6 +3,9 @@ on:
     push:
         branches:
             - main
+    pull_request:
+        branches:
+            - main
 jobs:
     Build:
         runs-on: ubuntu-latest
@@ -31,9 +34,18 @@ jobs:
               run: |
                   git config --local user.email "intuita@intuita.io"
                   git config --local user.name "Intuita Team"
-                  git checkout master
-                  git commit --allow-empty -m "test commit from codemod-registry repo"
-                  git push website HEAD:master
+                  git checkout gpp/readme-parser
+                  changed_files=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+                  path_to_readme=$(echo "$changed_files” | grep '^README\.md$' | head -n 1)
+                  if echo "$changed_files" | grep -q '^README\.md$'; then
+                      dir_except_first_folder=$(dirname "$path_to_readme" | sed 's/^[^/]*\///' | tr '/' '-')
+                      generated_slug=$(echo "$dir_except_first_folder" | sed 's/[^a-zA-Z0-9]/_/g')
+                      website_file_path=$(echo /cms/automations/"$generated_slug".md)
+                      node readme-parser/dist/index.js "$path_to_readme" > "$website_file_path"
+                      git add "$website_file_path"
+                      git commit -m "changes"
+                      git push website HEAD:master
+                  fi
             - name: Upload to S3
               uses: jakejarvis/s3-sync-action@master
               with:
