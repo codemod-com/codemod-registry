@@ -191,10 +191,10 @@ export const parse = (data: string) => {
 	if (!applicability) {
 		throw new Error('Applicability criteria not found');
 	}
+	// This should be enforced for future codemods. For now, validation should be disabled.
 	// if (!applicability.match(/[\w]+ (>|>=) \d+\.\d+\.\d+/)) {
-	if (!applicability.match(/[\w]+ \d+/)) {
-		throw new Error('Applicability criteria is of a wrong format');
-	}
+	// 	throw new Error('Applicability criteria is of a wrong format');
+	// }
 
 	const versionHeader = getHeading(children, 3, 'Codemod Version');
 	const version = versionHeader
