@@ -111,7 +111,7 @@ const worker = new Worker("unknown-name", async function (job) {
 
 ## Applicability Criteria
 
-`bull` >= 0.1.0
+`bull` >= 1.0.0
 
 ## Other Metadata
 

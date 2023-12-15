@@ -42,17 +42,34 @@ jobs:
                       echo "No README.md file changed."
                       exit 0
                   else
-                      # Loop over each README.md file found
+                      # Prepare to store parsed README contents and paths
+                      declare -A parsed_readmes
+
                       echo "$readme_files" | while read -r path_to_readme; do
                           generated_slug=$(echo "$path_to_readme" | sed 's/^[^/]*\///' | sed 's/\/README\.md$//' | tr '/' '-')
-                          website_file_path="cms/automations/$generated_slug.md"
-                          parsed_readme=$(readme-parser/dist/index.js "$path_to_readme")
-                          git checkout website:master
-                          echo "$parsed_readme" > "$website_file_path"
-                          git add "$website_file_path"
-                          git commit -m "Synced registry codemod: $generated_slug"
-                          git push website HEAD:master
+                          website_file_path="/cms/automations/$generated_slug.md"
+                          
+                          # Parse the README and store the output with its path
+                          parsed_readme=$(node readme-parser/dist/index.js "$path_to_readme")
+                          parsed_readmes["$website_file_path"]="$parsed_readme"
                       done
+
+                      git checkout website/master
+
+                      # Iterate over the stored contents and write to files
+                      for file_path in "${!parsed_readmes[@]}"; do
+                          echo "${parsed_readmes[$file_path]}" > "$file_path"
+                          git add "$file_path"
+                      done
+
+                      # Commit and push all changes at once
+                      if [ ${#parsed_readmes[@]} -gt 0 ]; then
+                          git commit -m "Synced registry codemods"
+                          git push origin master
+                      else
+                          echo "No changes to commit."
+                          exit 0
+                      fi
                   fi
             - name: Upload to S3
               uses: jakejarvis/s3-sync-action@master
