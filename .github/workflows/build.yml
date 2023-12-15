@@ -39,10 +39,10 @@ jobs:
                   changed_files=$(git diff --name-only HEAD^ HEAD)
 
                   # Filter for README files in the 'codemods' directory
-                  readme_files=$(echo "$changed_files" | grep '^codemods/.*README\.md$' || true)
+                  readme_files=$(echo "$changed_files" | grep '^codemods/.*README\.md$')
 
                   if [ -z "$readme_files" ]; then
-                      echo "No README.md file changed."
+                      echo "No README.md file in 'codemods' directory changed."
                       exit 0
                   fi
 
@@ -50,38 +50,28 @@ jobs:
                   declare -A parsed_readmes
                   pnpm --filter @codemod-registry/readme-parser build
 
-                  # Convert string to array
-                  IFS=$'\n' read -r -d '' -a readme_array <<< "$readme_files"
-
-                  # Iterate over the array of README files
-                  for path_to_readme in "${readme_array[@]}"; do
+                  # Iterate over the filtered README files
+                  while IFS= read -r path_to_readme; do
                       generated_slug=$(echo "$path_to_readme" | sed 's/^[^/]*\///' | sed 's/\/README\.md$//' | tr '/' '-')
                       website_file_path="/cms/automations/$generated_slug.md"
                       
                       # Parse the README and store the output with its path
                       parsed_readme=$("$PWD"/readme-parser/dist/index.js "$path_to_readme")
                       parsed_readmes["$website_file_path"]="$parsed_readme"
-                  done
+                  done <<< "$readme_files"
 
                   # Checkout a new branch from the website master
                   git checkout -b update-codemods website/master
 
-                  # Iterate over the stored contents and write to files
-                  for file_path in "${!parsed_readmes[@]}"; do
-                      echo "${parsed_readmes[$file_path]}" > "$file_path"
-                      git add "$file_path"
+                  # Iterate over parsed_readmes and create files
+                  for website_file_path in "${!parsed_readmes[@]}"; do
+                      echo "${parsed_readmes[$website_file_path]}" > "$website_file_path"
+                      git add "$website_file_path"
                   done
 
-                  echo $(git status)
-
                   # Commit and push all changes at once
-                  if [ ${#parsed_readmes[@]} -gt 0 ]; then
-                      git commit -m "Synced registry codemods"
-                      git push website HEAD:master
-                  else
-                      echo "No changes to commit."
-                      exit 0
-                  fi
+                  git commit -m "Synced registry codemods"
+                  git push website HEAD:master
             - name: Upload to S3
               uses: jakejarvis/s3-sync-action@master
               with:
