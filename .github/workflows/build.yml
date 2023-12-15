@@ -65,6 +65,9 @@ jobs:
 
                   # Iterate over parsed_readmes and create files
                   for website_file_path in "${!parsed_readmes[@]}"; do
+                      echo "${parsed_readmes[$website_file_path]}"
+                      echo $(git status)
+                      echo $(ls -la)
                       echo "${parsed_readmes[$website_file_path]}" > "$website_file_path"
                       git add "$website_file_path"
                   done
