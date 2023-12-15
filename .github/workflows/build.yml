@@ -48,7 +48,9 @@ jobs:
                   declare -A parsed_readmes
                   pnpm --filter @codemod-registry/readme-parser build
 
-                  echo "$readme_files" | while read -r path_to_readme; do
+                  readarray -t readme_files < <(echo "$changed_files" | grep '^codemods/.*README\.md$' || true)
+
+                  for path_to_readme in "${readme_files[@]}"; do
                       generated_slug=$(echo "$path_to_readme" | sed 's/^[^/]*\///' | sed 's/\/README\.md$//' | tr '/' '-')
                       website_file_path="/cms/automations/$generated_slug.md"
                       
@@ -56,6 +58,15 @@ jobs:
                       parsed_readme=$("$PWD"/readme-parser/dist/index.js "$path_to_readme")
                       parsed_readmes["$website_file_path"]="$parsed_readme"
                   done
+
+                  # echo "$readme_files" | while read -r path_to_readme; do
+                  #     generated_slug=$(echo "$path_to_readme" | sed 's/^[^/]*\///' | sed 's/\/README\.md$//' | tr '/' '-')
+                  #     website_file_path="/cms/automations/$generated_slug.md"
+                      
+                  #     # Parse the README and store the output with its path
+                  #     parsed_readme=$("$PWD"/readme-parser/dist/index.js "$path_to_readme")
+                  #     parsed_readmes["$website_file_path"]="$parsed_readme"
+                  # done
 
                   # Checkout a new branch from the website master
                   git checkout -b update-codemods website/master
@@ -69,7 +80,6 @@ jobs:
                   done
 
                   echo $(git status)
-                  echo $(ls -la)
 
                   # Commit and push all changes at once
                   if [ ${#parsed_readmes[@]} -gt 0 ]; then
