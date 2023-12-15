@@ -15,6 +15,8 @@ This codemod does the thing
 
 ## Example
 
+### \`tsconfig.json\`
+
 ### Before
 
 \`\`\`ts
@@ -88,6 +90,7 @@ describe('parse/yaml', function () {
 			description:
 				'This is an amazing codemod\n### WARNING\nThis codemod does the thing',
 			examples:
+				'### tsconfig.json\n' +
 				'### Before\n' +
 				'```ts\n' +
 				"http.get<ReqBodyType, PathParamsType>('/resource', (req, res, ctx) => {\n" +
@@ -149,6 +152,7 @@ f_long-description: |-
   This is an amazing codemod
   ### WARNING
   This codemod does the thing
+  ### tsconfig.json
   ### Before
   \`\`\`ts
   http.get<ReqBodyType, PathParamsType>('/resource', (req, res, ctx) => {

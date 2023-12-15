@@ -113,18 +113,19 @@ const getTextByHeader = (
 		if ('children' in rc) {
 			rc.children
 				.map((child, idx, arr) => {
-					if (child.type === 'text') {
-						// Preserve ### on higher-depth headings
-						if (
-							rc.type === 'heading' &&
-							rc.depth > heading.depth &&
-							idx === 0
-						) {
-							return `${'#'.repeat(rc.depth)} ${
-								child.value
-							}${delimiter}`;
-						}
+					// Preserve ### on higher-depth headings
+					if (
+						rc.type === 'heading' &&
+						rc.depth > heading.depth &&
+						idx === 0 &&
+						(child.type === 'text' || child.type === 'inlineCode')
+					) {
+						return `${'#'.repeat(rc.depth)} ${
+							child.value
+						}${delimiter}`;
+					}
 
+					if (child.type === 'text') {
 						const nextEl = arr[idx + 1];
 						if (nextEl && UNESCAPED.includes(nextEl.type)) {
 							return child.value;
