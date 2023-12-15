@@ -1,13 +1,8 @@
 import type { Heading, PhrasingContent, RootContent } from 'mdast';
 import { fromMarkdown } from 'mdast-util-from-markdown';
 
-const noFirstLetterLowerCase = (str: string) => {
-	if (str.length < 3) {
-		return str;
-	}
-
-	return str[0] + str.slice(1).toLowerCase();
-};
+const noFirstLetterLowerCase = (str: string) =>
+	str.length ? str[0] + str.slice(1).toLowerCase() : str;
 
 const capitalize = (str: string) =>
 	str[0] ? str[0].toUpperCase() + str.slice(1) : str;
