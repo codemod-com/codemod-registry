@@ -36,11 +36,9 @@ jobs:
                   git config --local user.name "Intuita Team"
                   git fetch origin
                   git checkout -B ${{ github.head_ref }} origin/${{ github.head_ref }}
-                  echo $(git status)
-                  echo $(git diff --name-only HEAD^ HEAD)
                   changed_files=$(git diff --name-only HEAD^ HEAD)
-                  echo "$changed_files"
-                  path_to_readme=$(echo "$changed_files" | grep 'README\.md$')
+                  echo "$changed_files" | grep "README\.md$"
+                  path_to_readme=$(echo "$changed_files" | grep "README\.md$")
                   echo "$path_to_readme"
                   if echo "$changed_files" | grep -q 'README\.md$'; then
                       dir_except_first_folder=$(dirname "$path_to_readme" | sed 's/^[^/]*\///' | tr '/' '-')
