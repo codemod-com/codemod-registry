@@ -1,5 +1,17 @@
+import { readFileSync } from 'fs';
+import * as nodePath from 'node:path';
 import type { Heading, PhrasingContent, RootContent } from 'mdast';
 import { fromMarkdown } from 'mdast-util-from-markdown';
+import { is, object, optional, string } from 'valibot';
+import { createHash } from 'crypto';
+
+const configJsonSchema = object({
+	schemaVersion: optional(string()),
+	name: optional(string()),
+	engine: string(),
+});
+
+const UNESCAPED = ['inlineCode'];
 
 const noFirstLetterLowerCase = (str: string) =>
 	str.length ? str[0] + str.slice(1).toLowerCase() : str;
@@ -101,8 +113,25 @@ const getTextByHeader = (
 	for (const rc of contentParts) {
 		if ('children' in rc) {
 			rc.children
-				.map((child) => {
+				.map((child, idx, arr) => {
+					// Preserve ### on higher-depth headings
+					if (
+						rc.type === 'heading' &&
+						rc.depth > heading.depth &&
+						idx === 0 &&
+						(child.type === 'text' || child.type === 'inlineCode')
+					) {
+						return `${'#'.repeat(rc.depth)} ${
+							child.value
+						}${delimiter}`;
+					}
+
 					if (child.type === 'text') {
+						const nextEl = arr[idx + 1];
+						if (nextEl && UNESCAPED.includes(nextEl.type)) {
+							return child.value;
+						}
+
 						return `${child.value}${delimiter}`;
 					}
 
@@ -117,8 +146,8 @@ const getTextByHeader = (
 					}
 
 					// Do not add new line after certain blocks (treated as separate AST nodes)
-					if (child.type === 'inlineCode') {
-						return child.value;
+					if (UNESCAPED.includes(child.type)) {
+						return getTextFromNode(child);
 					}
 
 					return null;
@@ -184,9 +213,10 @@ export const parse = (data: string) => {
 	if (!applicability) {
 		throw new Error('Applicability criteria not found');
 	}
-	if (!applicability.match(/[\w]+ (>|>=) \d+\.\d+\.\d+/)) {
-		throw new Error('Applicability criteria is of a wrong format');
-	}
+	// This should be enforced for future codemods. For now, validation should be disabled.
+	// if (!applicability.match(/[\w]+ (>|>=) \d+\.\d+\.\d+/)) {
+	// 	throw new Error('Applicability criteria is of a wrong format');
+	// }
 
 	const versionHeader = getHeading(children, 3, 'Codemod Version');
 	const version = versionHeader
@@ -226,6 +256,8 @@ export const parse = (data: string) => {
 		engine = 'ts-morph';
 	} else if (engineText.includes('jscodeshift')) {
 		engine = 'jscodeshift';
+	} else if (engineText.toLowerCase().includes('file')) {
+		engine = 'filemod';
 	}
 	if (!engine) {
 		throw new Error('Codemod engine is of a wrong format');
@@ -263,9 +295,12 @@ export const parse = (data: string) => {
 	};
 };
 
-export const convertToYaml = (data: ReturnType<typeof parse>) => {
+export const convertToYaml = (
+	data: ReturnType<typeof parse>,
+	path?: string,
+) => {
 	const {
-		name,
+		name: title,
 		description,
 		examples,
 		applicability,
@@ -275,36 +310,73 @@ export const convertToYaml = (data: ReturnType<typeof parse>) => {
 		owner,
 	} = data;
 
-	// f_author - possible to find by .includes(<owner>) under cms/authors, like cms/authors/rajasegar-chandran.md
-	// f_slug_name - can infer from config by throwing away framework version?
-	// f_cli_command - intuita <infer_name_from_config>
-	// f_github_link - <should_be_available_in_push_metadata>
-	// create-on - <readme_file_create_time>
+	let slug: string | null = null;
+	let framework: string | null = null;
+	let cliCommand: string | null = null;
+	let cleanPath: string | null = null;
+	let codemodName: string | null = null;
+	if (path) {
+		cleanPath = path.split('/').slice(0, -1).join('/');
+		const pathToCodemod = nodePath.join(__dirname, '..', cleanPath);
+
+		framework = path.split('/').at(1) ?? null;
+
+		try {
+			const config = readFileSync(
+				`${pathToCodemod}/config.json`,
+			).toString();
+			const json = JSON.parse(config);
+			codemodName = json.name ?? cleanPath.split('/').slice(1).join('/');
+
+			if (is(configJsonSchema, json)) {
+				slug = codemodName!.replace(/\//g, '-');
+				cliCommand = `intuita ${codemodName}`;
+			}
+		} catch (e) {
+			console.log(`No config found for ${path}`);
+		}
+	}
+
+	let vscodeHashDigest: string | null = null;
+	if (codemodName) {
+		vscodeHashDigest = createHash('ripemd160')
+			.update(codemodName)
+			.digest('base64url');
+	}
+
 	const res = `
 ---
-created-on: -
 f_long-description: |-
   ## Description
-  ${description}
-  ${examples}
-f_github-link: -
-f_vs-code-link: -
+  ${description.replace(/\n/g, '\n  ')}
+  ${examples.replace(/\n/g, '\n  ')}
+f_github-link: ${
+		path
+			? `https://github.com/intuita-inc/codemod-registry/tree/main/${cleanPath}`
+			: '-'
+	}
+f_vs-code-link: ${
+		vscodeHashDigest
+			? `vscode://intuita.intuita-vscode-extension/cases/${vscodeHashDigest}`
+			: '-'
+	}
 f_codemod-studio-link: -
-f_cli-command: -
-f_framework: -
+f_cli-command: ${cliCommand ?? '-'}
+f_framework: ${framework ? `cms/framework/${framework}.md` : '-'}
 f_applicability-criteria: ${applicability}
 f_verified-codemod: ${owner === 'Intuita' ? 'true' : 'false'}
-f_author: -
+f_author: ${owner === 'Intuita' ? 'cms/authors/intuita.md' : '-'}
 layout: "[automations].html"
-slug: -
-title: ${name}
-updated-on: -
-published-on: -
-f_slug-name: -
+slug: ${slug ?? '-'}
+title: ${title}
+f_slug-name: ${slug ?? '-'}
 f_codemod-engine: cms/codemod-engines/${engine}.md
 f_change-mode-2: ${capitalize(changeMode)}
 f_estimated-time-saving: ${timeSave}
 tags: automations
+created-on: -
+updated-on: ${new Date().toISOString()}
+published-on: -
 seo: -
 ---
 `.trim();

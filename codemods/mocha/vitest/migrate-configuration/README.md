@@ -142,4 +142,3 @@ v1.0.0
 
 [Intuita](https://github.com/intuita-inc)
 
-### Links for more info

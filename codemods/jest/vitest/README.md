@@ -20,7 +20,7 @@ Run this codemod to upgrade your codebase from using jest to vitest.
 
 ## Applicability Criteria
 
-Codebase using `jest`
+`jest` >= `26.0.0`
 
 ## Other Metadata
 
@@ -42,6 +42,5 @@ v1.0.0
 
 ### Owner
 
-[trivikr](https://github.com/trivikr)
+[Intuita](https://github.com/intuita-inc)
 
-### Links for more info

@@ -1,6 +1,6 @@
 {
 	"extends": "@codemod-registry/tsconfig",
-	"include": ["./*.ts"],
+	"include": ["./*.ts", "parse.test.ts"],
 	"compilerOptions": {
 		"noUncheckedIndexedAccess": true
 	}

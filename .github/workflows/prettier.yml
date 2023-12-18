@@ -9,8 +9,8 @@ on:
             - main
 
 jobs:
-    test:
-        name: Run codemod unit tests
+    prettier:
+        name: Run prettier
         runs-on: ubuntu-latest
         steps:
             - name: Check out Git repository

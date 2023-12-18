@@ -4146,6 +4146,9 @@ importers:
       mdast-util-from-markdown:
         specifier: 2.0.0
         version: 2.0.0
+      valibot:
+        specifier: ^0.24.1
+        version: 0.24.1
     devDependencies:
       '@codemod-registry/tsconfig':
         specifier: workspace:*
@@ -4156,6 +4159,9 @@ importers:
       '@types/node':
         specifier: 20.10.4
         version: 20.10.4
+      esbuild:
+        specifier: ^0.19.7
+        version: 0.19.7
       typescript:
         specifier: 5.3.3
         version: 5.3.3
