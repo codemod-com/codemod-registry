@@ -24,6 +24,17 @@ export default function transform(
 	const j = api.jscodeshift;
 	const root = j(file.source);
 
+	const vitestImportDeclarations = root.find(j.ImportDeclaration, {
+		source: {
+			type: 'StringLiteral',
+			value: 'vitest',
+		},
+	});
+
+	if (vitestImportDeclarations.length > 0) {
+		return root.toSource();
+	}
+
 	const describeIdentifiers = root.find(j.Identifier, {
 		name: 'describe',
 	});
