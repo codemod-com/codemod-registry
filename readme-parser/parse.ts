@@ -142,13 +142,8 @@ const getTextByHeader = (
 	}
 
 	// Trim last el to remove delimiter
-	const lastElement = textParts[textParts.length - 1];
-	if (lastElement) {
-		const lastSymbol = lastElement[lastElement.length - 1];
-		if (lastSymbol && lastSymbol.match(/\W/)) {
-			textParts[textParts.length - 1] = lastElement.slice(0, -1);
-		}
-	}
+	textParts[textParts.length - 1] =
+		textParts.at(-1)?.replace(/(\W)$/, '') ?? '';
 
 	return textParts.join('');
 };
