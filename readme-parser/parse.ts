@@ -3,6 +3,7 @@ import * as nodePath from 'node:path';
 import type { Heading, PhrasingContent, RootContent } from 'mdast';
 import { fromMarkdown } from 'mdast-util-from-markdown';
 import { is, object, optional, string } from 'valibot';
+import { createHash } from 'crypto';
 
 const configJsonSchema = object({
 	schemaVersion: optional(string()),
@@ -313,6 +314,7 @@ export const convertToYaml = (
 	let framework: string | null = null;
 	let cliCommand: string | null = null;
 	let cleanPath: string | null = null;
+	let codemodName: string | null = null;
 	if (path) {
 		cleanPath = path.split('/').slice(0, -1).join('/');
 		const pathToCodemod = nodePath.join(__dirname, '..', cleanPath);
@@ -324,16 +326,22 @@ export const convertToYaml = (
 				`${pathToCodemod}/config.json`,
 			).toString();
 			const json = JSON.parse(config);
-			const codemodName =
-				json.name ?? cleanPath.split('/').slice(1).join('/');
+			codemodName = json.name ?? cleanPath.split('/').slice(1).join('/');
 
 			if (is(configJsonSchema, json)) {
-				slug = codemodName.replace(/\//g, '-');
+				slug = codemodName!.replace(/\//g, '-');
 				cliCommand = `intuita ${codemodName}`;
 			}
 		} catch (e) {
 			console.log(`No config found for ${path}`);
 		}
+	}
+
+	let vscodeHashDigest: string | null = null;
+	if (codemodName) {
+		vscodeHashDigest = createHash('ripemd160')
+			.update(codemodName)
+			.digest('base64url');
 	}
 
 	const res = `
@@ -347,7 +355,11 @@ f_github-link: ${
 			? `https://github.com/intuita-inc/codemod-registry/tree/main/${cleanPath}`
 			: '-'
 	}
-f_vs-code-link: -
+f_vs-code-link: ${
+		vscodeHashDigest
+			? `vscode://intuita.intuita-vscode-extension/cases/${vscodeHashDigest}`
+			: '-'
+	}
 f_codemod-studio-link: -
 f_cli-command: ${cliCommand ?? '-'}
 f_framework: ${framework ? `cms/framework/${framework}.md` : '-'}

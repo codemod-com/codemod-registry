@@ -1,6 +1,7 @@
 import { vi, afterEach, beforeEach, describe, it } from 'vitest';
 import { convertToYaml, parse } from './parse.js';
 import { deepEqual } from 'assert';
+import { createHash } from 'crypto';
 
 const DATA = `
 # Do the thing
@@ -143,6 +144,10 @@ describe('parse/yaml', function () {
 			'codemods/msw/2/imports/README.md',
 		);
 
+		const vscodeHashDigest = createHash('ripemd160')
+			.update('msw/2/imports')
+			.digest('base64url');
+
 		deepEqual(
 			yaml,
 			`
@@ -178,7 +183,7 @@ f_long-description: |-
   });
   \`\`\`
 f_github-link: https://github.com/intuita-inc/codemod-registry/tree/main/codemods/msw/2/imports
-f_vs-code-link: -
+f_vs-code-link: vscode://intuita.intuita-vscode-extension/cases/${vscodeHashDigest}
 f_codemod-studio-link: -
 f_cli-command: intuita msw/2/imports
 f_framework: cms/framework/msw.md
