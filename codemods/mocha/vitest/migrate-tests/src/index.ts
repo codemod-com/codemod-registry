@@ -1,11 +1,4 @@
-import {
-	FileInfo,
-	API,
-	ImportDeclaration,
-	ImportSpecifier,
-	ImportDefaultSpecifier,
-	ImportNamespaceSpecifier,
-} from 'jscodeshift';
+import { FileInfo, API, ImportDeclaration } from 'jscodeshift';
 
 const mochaGlobalApis = [
 	'afterAll',
