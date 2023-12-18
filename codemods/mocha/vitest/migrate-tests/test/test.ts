@@ -1,5 +1,4 @@
 import { describe, it } from 'vitest';
-import { describe, it } from 'vitest';
 import { FileInfo } from 'jscodeshift';
 import assert from 'node:assert';
 import transform from '../src/index.js';
@@ -229,5 +228,26 @@ describe('mocha/vitest test', function () {
 			actualOutput?.replace(/\W/gm, ''),
 			OUTPUT.replace(/\W/gm, ''),
 		);
+	});
+
+	it('when there are imports from vitest', function () {
+		const INPUT = `
+        import { describe, it } from 'vitest';
+
+        describe('Test Suite 1', () => {
+          it('addition', function (this: Context) {
+            assert(1 + 1 == 2);
+          });
+        });
+        `;
+
+		const fileInfo: FileInfo = {
+			path: 'index.ts',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, buildApi('tsx'));
+
+		assert.deepEqual(actualOutput, undefined);
 	});
 });
