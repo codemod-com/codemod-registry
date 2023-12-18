@@ -250,4 +250,37 @@ describe('mocha/vitest test', function () {
 
 		assert.deepEqual(actualOutput, undefined);
 	});
+
+	it('when there is a named import: test', function () {
+		const INPUT = `
+        import { test } from "../lib/fixtures";
+        describe('Test Suite 1', () => {
+          it('addition', function (this: Context) {
+            assert(1 + 1 == 2);
+          });
+        });
+        `;
+
+		const OUTPUT = `
+        import { test } from "../lib/fixtures";
+        import { describe, it } from 'vitest';
+        describe('Test Suite 1', () => {
+          it('addition', function (this: Context) {
+            assert(1 + 1 == 2);
+          });
+        });
+        `;
+
+		const fileInfo: FileInfo = {
+			path: 'index.ts',
+			source: INPUT,
+		};
+
+		const actualOutput = transform(fileInfo, buildApi('tsx'));
+
+		assert.deepEqual(
+			actualOutput?.replace(/\W/gm, ''),
+			OUTPUT.replace(/\W/gm, ''),
+		);
+	});
 });
