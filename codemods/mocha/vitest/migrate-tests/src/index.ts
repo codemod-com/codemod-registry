@@ -32,7 +32,7 @@ export default function transform(
 	});
 
 	if (vitestImportDeclarations.length > 0) {
-		return root.toSource();
+		return undefined;
 	}
 
 	const describeIdentifiers = root.find(j.Identifier, {

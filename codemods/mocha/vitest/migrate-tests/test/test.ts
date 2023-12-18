@@ -241,16 +241,6 @@ describe('mocha/vitest test', function () {
         });
         `;
 
-		const OUTPUT = `
-        import { describe, it } from 'vitest';
-
-        describe('Test Suite 1', () => {
-          it('addition', function (this: Context) {
-            assert(1 + 1 == 2);
-          });
-        });
-        `;
-
 		const fileInfo: FileInfo = {
 			path: 'index.ts',
 			source: INPUT,
@@ -258,9 +248,6 @@ describe('mocha/vitest test', function () {
 
 		const actualOutput = transform(fileInfo, buildApi('tsx'));
 
-		assert.deepEqual(
-			actualOutput?.replace(/\W/gm, ''),
-			OUTPUT.replace(/\W/gm, ''),
-		);
+		assert.deepEqual(actualOutput, undefined);
 	});
 });
