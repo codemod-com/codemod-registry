@@ -116,13 +116,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/Go/remove-unnecessary-nested-block: {}
 
@@ -150,7 +150,7 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
@@ -181,7 +181,7 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
@@ -273,13 +273,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/cal.com/app-directory-boilerplate-calcom:
     dependencies:
@@ -331,13 +331,13 @@ importers:
         version: 19.0.0
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/cal.com/generate-metadata-tests-calcom:
     devDependencies:
@@ -373,13 +373,13 @@ importers:
         version: 19.0.0
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/cal.com/generate-url-patterns:
     devDependencies:
@@ -415,13 +415,13 @@ importers:
         version: 19.0.0
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/ember/5/app-controller-router-props:
     devDependencies:
@@ -448,13 +448,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/ember/5/array-wrapper:
     devDependencies:
@@ -481,13 +481,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/ember/5/convert-module-for-to-setup-test:
     devDependencies:
@@ -514,13 +514,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/ember/5/cp-property:
     devDependencies:
@@ -547,13 +547,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/ember/5/cp-property-map:
     devDependencies:
@@ -580,13 +580,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/ember/5/cp-volatile:
     devDependencies:
@@ -613,13 +613,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/ember/5/deprecate-merge:
     devDependencies:
@@ -646,13 +646,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/ember/5/deprecate-router-events:
     devDependencies:
@@ -679,13 +679,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/ember/5/ember-jquery-legacy:
     devDependencies:
@@ -712,13 +712,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/ember/5/es5-getter-ember-codemod:
     devDependencies:
@@ -745,13 +745,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/ember/5/fpe-computed:
     devDependencies:
@@ -778,13 +778,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/ember/5/fpe-observes:
     devDependencies:
@@ -811,13 +811,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/ember/5/fpe-on:
     devDependencies:
@@ -844,13 +844,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/ember/5/jquery-apis:
     devDependencies:
@@ -877,13 +877,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/ember/5/jquery-event:
     devDependencies:
@@ -910,13 +910,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/ember/5/notify-property-change:
     devDependencies:
@@ -943,13 +943,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/ember/5/object-new-constructor:
     devDependencies:
@@ -976,13 +976,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/i18n:
     devDependencies:
@@ -1018,13 +1018,13 @@ importers:
         version: 19.0.0
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/immutable/0/add-deprecation-comment:
     devDependencies:
@@ -1051,13 +1051,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/immutable/0/nest-from-js:
     devDependencies:
@@ -1084,13 +1084,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/immutable/0/remove-from-js:
     devDependencies:
@@ -1117,13 +1117,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/immutable/0/remove-import:
     devDependencies:
@@ -1150,13 +1150,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/immutable/0/remove-to-js:
     devDependencies:
@@ -1183,13 +1183,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/immutable/0/replace-get:
     devDependencies:
@@ -1216,13 +1216,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/immutable/0/replace-get-in:
     devDependencies:
@@ -1249,13 +1249,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/immutable/0/replace-merge:
     devDependencies:
@@ -1282,13 +1282,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/immutable/0/replace-set:
     devDependencies:
@@ -1315,13 +1315,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/immutable/0/replace-set-in:
     devDependencies:
@@ -1348,13 +1348,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/immutable/4/isterable-to-iscollection:
     devDependencies:
@@ -1381,13 +1381,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/immutable/4/map-to-array:
     devDependencies:
@@ -1414,13 +1414,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/immutable/4/rename-to-seq:
     devDependencies:
@@ -1447,13 +1447,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/intuita/migrate-codemod-registry:
     devDependencies:
@@ -1489,13 +1489,13 @@ importers:
         version: 19.0.0
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/jest/vitest:
     devDependencies:
@@ -1522,13 +1522,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/mocha/vitest/migrate-configuration:
     dependencies:
@@ -1565,13 +1565,13 @@ importers:
         version: 4.6.0(quill-delta@5.1.0)(rxjs@7.8.1)(tslib@2.6.0)
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/mocha/vitest/migrate-tests:
     devDependencies:
@@ -1598,13 +1598,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/mocha/vitest/recipe: {}
 
@@ -1630,13 +1630,13 @@ importers:
         version: 19.0.0
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/msw/2/ctx-fetch:
     devDependencies:
@@ -1660,13 +1660,13 @@ importers:
         version: 19.0.0
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/msw/2/imports:
     devDependencies:
@@ -1690,13 +1690,13 @@ importers:
         version: 19.0.0
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/msw/2/lifecycle-events-signature:
     devDependencies:
@@ -1720,13 +1720,13 @@ importers:
         version: 19.0.0
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/msw/2/print-handler:
     devDependencies:
@@ -1750,13 +1750,13 @@ importers:
         version: 19.0.0
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/msw/2/req-passthrough:
     devDependencies:
@@ -1780,13 +1780,13 @@ importers:
         version: 19.0.0
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/msw/2/request-changes:
     devDependencies:
@@ -1810,13 +1810,13 @@ importers:
         version: 19.0.0
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/msw/2/response-usages:
     devDependencies:
@@ -1840,13 +1840,13 @@ importers:
         version: 19.0.0
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/msw/2/type-args:
     devDependencies:
@@ -1870,13 +1870,13 @@ importers:
         version: 19.0.0
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/msw/2/upgrade-recipe: {}
 
@@ -1905,13 +1905,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/netlify-sdk/0.8.1/addBuildEventHandler:
     devDependencies:
@@ -1938,13 +1938,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/netlify-sdk/0.8.1/disableBuildEventHandlers:
     devDependencies:
@@ -1971,13 +1971,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/netlify-sdk/0.8.1/enableBuildEventHandlers:
     devDependencies:
@@ -2004,13 +2004,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/netlify-sdk/0.8.1/exportZod:
     devDependencies:
@@ -2037,13 +2037,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/netlify-sdk/0.8.4/addApiHandler:
     devDependencies:
@@ -2070,13 +2070,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/netlify-sdk/0.8.5/createEnvironmentVariable:
     devDependencies:
@@ -2103,13 +2103,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/netlify-sdk/0.8.5/createOrUpdateVariable:
     devDependencies:
@@ -2136,13 +2136,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/netlify-sdk/0.8.5/createOrUpdateVariables:
     devDependencies:
@@ -2169,13 +2169,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/netlify-sdk/0.8.5/deleteEnvironmentVariable:
     devDependencies:
@@ -2202,13 +2202,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/netlify-sdk/0.8.5/deleteEnvironmentVariables:
     devDependencies:
@@ -2235,13 +2235,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/netlify-sdk/0.8.5/getEnvironmentVariables:
     devDependencies:
@@ -2268,13 +2268,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/netlify-sdk/0.8.5/netlify-sdk-0.8.5-recipe: {}
 
@@ -2303,13 +2303,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/netlify-sdk/0.8.5/updateEnvironmentVariable:
     devDependencies:
@@ -2336,13 +2336,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/next-i18next/copy-keys:
     devDependencies:
@@ -2378,13 +2378,13 @@ importers:
         version: 19.0.0
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/next/13/ab-test:
     devDependencies:
@@ -2420,13 +2420,13 @@ importers:
         version: 19.0.0
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/next/13/app-directory-boilerplate:
     dependencies:
@@ -2478,13 +2478,13 @@ importers:
         version: 19.0.0
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/next/13/app-router-recipe: {}
 
@@ -2513,13 +2513,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/next/13/comment-deletable-files:
     devDependencies:
@@ -2546,13 +2546,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/next/13/move-css-in-js-styles:
     dependencies:
@@ -2583,13 +2583,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/next/13/new-image-experimental:
     devDependencies:
@@ -2616,13 +2616,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/next/13/new-link:
     devDependencies:
@@ -2649,13 +2649,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/next/13/next-image-to-legacy-image:
     devDependencies:
@@ -2682,13 +2682,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/next/13/remove-get-static-props:
     devDependencies:
@@ -2724,13 +2724,13 @@ importers:
         version: 19.0.0
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/next/13/remove-next-export:
     devDependencies:
@@ -2766,13 +2766,13 @@ importers:
         version: 19.0.0
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/next/13/replace-api-routes:
     devDependencies:
@@ -2808,13 +2808,13 @@ importers:
         version: 19.0.0
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/next/13/replace-next-head:
     dependencies:
@@ -2869,13 +2869,13 @@ importers:
         version: 19.0.0
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/next/13/replace-next-router:
     devDependencies:
@@ -2899,13 +2899,13 @@ importers:
         version: 19.0.0
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/next/13/replace-use-search-params:
     devDependencies:
@@ -2941,13 +2941,13 @@ importers:
         version: 19.0.0
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/next/13/upsert-use-client-directive:
     devDependencies:
@@ -2971,13 +2971,13 @@ importers:
         version: 19.0.0
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/next/14/metadata-to-viewport-export:
     devDependencies:
@@ -3004,13 +3004,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/next/14/next-og-import:
     devDependencies:
@@ -3037,13 +3037,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/react-redux/0/add-state-type:
     devDependencies:
@@ -3070,13 +3070,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/react-router/4/add-exact-prop:
     devDependencies:
@@ -3103,13 +3103,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/react-router/4/create-hash-history:
     devDependencies:
@@ -3136,13 +3136,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/react-router/4/hash-router:
     devDependencies:
@@ -3169,13 +3169,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/react-router/4/index-route:
     devDependencies:
@@ -3202,13 +3202,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/react-router/4/remove-with-props:
     devDependencies:
@@ -3235,13 +3235,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/react-router/4/rename-imports:
     devDependencies:
@@ -3268,13 +3268,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/react-router/4/wrap-with-switch:
     devDependencies:
@@ -3301,13 +3301,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/react-router/6/compat-route:
     devDependencies:
@@ -3334,13 +3334,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/react-router/6/compat-router:
     devDependencies:
@@ -3367,13 +3367,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/react-router/6/link-to-props:
     devDependencies:
@@ -3400,13 +3400,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/react-router/6/match-path-arguments:
     devDependencies:
@@ -3433,13 +3433,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/react-router/6/navlink-exact-end:
     devDependencies:
@@ -3466,13 +3466,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/react-router/6/redirect-to-navigate:
     devDependencies:
@@ -3499,13 +3499,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/react-router/6/remove-active-classname:
     devDependencies:
@@ -3532,13 +3532,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/react-router/6/remove-active-style:
     devDependencies:
@@ -3565,13 +3565,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/react-router/6/remove-compat-router:
     devDependencies:
@@ -3598,13 +3598,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/react-router/6/remove-go-hooks:
     devDependencies:
@@ -3631,13 +3631,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/react-router/6/remove-redirect-inside-switch:
     devDependencies:
@@ -3664,13 +3664,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/react-router/6/rename-compat-imports:
     devDependencies:
@@ -3697,13 +3697,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/react-router/6/static-router-imports:
     devDependencies:
@@ -3730,13 +3730,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/react-router/6/use-location:
     devDependencies:
@@ -3763,13 +3763,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/react-router/6/use-navigate:
     devDependencies:
@@ -3796,13 +3796,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/react-router/6/use-params:
     devDependencies:
@@ -3829,13 +3829,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/react-router/6/use-route-match:
     devDependencies:
@@ -3862,13 +3862,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/react/prop-types-typescript:
     devDependencies:
@@ -3895,13 +3895,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/react/replace-react-fc-typescript:
     devDependencies:
@@ -3928,13 +3928,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/redwoodjs/core/4/auth-decoder:
     devDependencies:
@@ -3961,13 +3961,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/redwoodjs/core/4/redwood-apollo-provider:
     devDependencies:
@@ -3994,13 +3994,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/redwoodjs/core/4/router-use-auth:
     devDependencies:
@@ -4027,13 +4027,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/redwoodjs/core/4/use-armor:
     devDependencies:
@@ -4060,13 +4060,13 @@ importers:
         version: 0.15.1
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/remove-unused-feature-flags-2:
     devDependencies:
@@ -4102,13 +4102,13 @@ importers:
         version: 19.0.0
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.10.0)(typescript@5.2.2)
+        version: 10.9.1(@types/node@20.10.4)(typescript@5.2.2)
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
       vitest:
         specifier: ^1.0.1
-        version: 1.0.4(@types/node@20.10.0)
+        version: 1.0.4(@types/node@20.10.4)
 
   creator:
     dependencies:
@@ -4140,6 +4140,28 @@ importers:
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+
+  readme-parser:
+    dependencies:
+      mdast-util-from-markdown:
+        specifier: 2.0.0
+        version: 2.0.0
+    devDependencies:
+      '@codemod-registry/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
+      '@types/mdast':
+        specifier: 4.0.3
+        version: 4.0.3
+      '@types/node':
+        specifier: 20.10.4
+        version: 20.10.4
+      typescript:
+        specifier: 5.3.3
+        version: 5.3.3
+      vitest:
+        specifier: 1.0.4
+        version: 1.0.4(@types/node@20.10.4)
 
   tsconfig: {}
 
@@ -6221,7 +6243,6 @@ packages:
     resolution: {integrity: sha512-LsjtqsyF+d2/yFOYaN22dHZI1Cpwkrj+g06G8+qtUKlhovPW89YhqSnfKtMbkgmEtYpH2gydRNULd6y8mciAFg==}
     dependencies:
       '@types/unist': 3.0.2
-    dev: false
 
   /@types/ms@0.7.34:
     resolution: {integrity: sha512-nG96G3Wp6acyAgJqGasjODb+acrI7KltPiRxzHPXnP3NgI28bpQDRv53olbqGXbfcgF5aiiHmO3xpwEpS5Ld9g==}
@@ -6229,6 +6250,12 @@ packages:
 
   /@types/node@20.10.0:
     resolution: {integrity: sha512-D0WfRmU9TQ8I9PFx9Yc+EBHw+vSpIub4IDvQivcp26PtPrdMGAq5SDcpXEo/epqa/DXotVpekHiLNTg3iaKXBQ==}
+    dependencies:
+      undici-types: 5.26.5
+    dev: true
+
+  /@types/node@20.10.4:
+    resolution: {integrity: sha512-D08YG6rr8X90YB56tSIuBaddy/UXAA9RKJoFvrsnogAum/0pmjkgi4+2nx96A330FmioegBWmEYQ+syqCFaveg==}
     dependencies:
       undici-types: 5.26.5
     dev: true
@@ -6262,7 +6289,6 @@ packages:
 
   /@types/unist@3.0.2:
     resolution: {integrity: sha512-dqId9J8K/vGi5Zr7oo212BGii5m3q5Hxlkwy3WpYuKPklmBEvsbMYYyLxAQpSffdLl/gdW0XUpKWFvYmyoWCoQ==}
-    dev: false
 
   /@types/yargs-parser@21.0.3:
     resolution: {integrity: sha512-I4q9QU9MQv4oEOz4tAHJtNz1cwuLxn2F3xcc2iV5WdqLPpUnj30aUuxt1mAxYTG+oe8CZMV/+6rU4S4gRDzqtQ==}
@@ -9715,6 +9741,37 @@ packages:
       yn: 3.1.1
     dev: true
 
+  /ts-node@10.9.1(@types/node@20.10.4)(typescript@5.2.2):
+    resolution: {integrity: sha512-NtVysVPkxxrwFGUUxGYhfux8k78pQB3JqYBXlLRZgdGUqTO5wU/UyHop5p70iEbGhB7q5KmiZiU0Y3KlJrScEw==}
+    hasBin: true
+    peerDependencies:
+      '@swc/core': '>=1.2.50'
+      '@swc/wasm': '>=1.2.50'
+      '@types/node': '*'
+      typescript: '>=2.7'
+    peerDependenciesMeta:
+      '@swc/core':
+        optional: true
+      '@swc/wasm':
+        optional: true
+    dependencies:
+      '@cspotcode/source-map-support': 0.8.1
+      '@tsconfig/node10': 1.0.9
+      '@tsconfig/node12': 1.0.11
+      '@tsconfig/node14': 1.0.3
+      '@tsconfig/node16': 1.0.4
+      '@types/node': 20.10.4
+      acorn: 8.10.0
+      acorn-walk: 8.2.0
+      arg: 4.1.3
+      create-require: 1.1.1
+      diff: 4.0.2
+      make-error: 1.3.6
+      typescript: 5.2.2
+      v8-compile-cache-lib: 3.0.1
+      yn: 3.1.1
+    dev: true
+
   /ts-node@10.9.1(@types/node@20.9.3)(typescript@5.2.2):
     resolution: {integrity: sha512-NtVysVPkxxrwFGUUxGYhfux8k78pQB3JqYBXlLRZgdGUqTO5wU/UyHop5p70iEbGhB7q5KmiZiU0Y3KlJrScEw==}
     hasBin: true
@@ -9874,6 +9931,12 @@ packages:
     hasBin: true
     dev: true
 
+  /typescript@5.3.3:
+    resolution: {integrity: sha512-pXWcraxM0uxAS+tN0AG/BF2TyqmHO014Z070UsJ+pFvYuRSq8KH8DmWpnbXe0pEPDHXZV3FcAbJkijJ5oNEnWw==}
+    engines: {node: '>=14.17'}
+    hasBin: true
+    dev: true
+
   /ufo@1.3.2:
     resolution: {integrity: sha512-o+ORpgGwaYQXgqGDwd+hkS4PuZ3QnmqMMxRuajK/a38L6fTpcE5GPIfrf+L/KemFzfUpeUQc1rRS1iDBozvnFA==}
     dev: true
@@ -10016,7 +10079,7 @@ packages:
       unist-util-stringify-position: 4.0.0
     dev: false
 
-  /vite-node@1.0.4(@types/node@20.10.0):
+  /vite-node@1.0.4(@types/node@20.10.4):
     resolution: {integrity: sha512-9xQQtHdsz5Qn8hqbV7UKqkm8YkJhzT/zr41Dmt5N7AlD8hJXw/Z7y0QiD5I8lnTthV9Rvcvi0QW7PI0Fq83ZPg==}
     engines: {node: ^18.0.0 || >=20.0.0}
     hasBin: true
@@ -10025,7 +10088,7 @@ packages:
       debug: 4.3.4
       pathe: 1.1.1
       picocolors: 1.0.0
-      vite: 5.0.8(@types/node@20.10.0)
+      vite: 5.0.8(@types/node@20.10.4)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -10058,7 +10121,7 @@ packages:
       - terser
     dev: true
 
-  /vite@5.0.8(@types/node@20.10.0):
+  /vite@5.0.8(@types/node@20.10.4):
     resolution: {integrity: sha512-jYMALd8aeqR3yS9xlHd0OzQJndS9fH5ylVgWdB+pxTwxLKdO1pgC5Dlb398BUxpfaBxa4M9oT7j1g503Gaj5IQ==}
     engines: {node: ^18.0.0 || >=20.0.0}
     hasBin: true
@@ -10086,7 +10149,7 @@ packages:
       terser:
         optional: true
     dependencies:
-      '@types/node': 20.10.0
+      '@types/node': 20.10.4
       esbuild: 0.19.7
       postcss: 8.4.32
       rollup: 4.9.0
@@ -10130,7 +10193,7 @@ packages:
       fsevents: 2.3.3
     dev: true
 
-  /vitest@1.0.4(@types/node@20.10.0):
+  /vitest@1.0.4(@types/node@20.10.4):
     resolution: {integrity: sha512-s1GQHp/UOeWEo4+aXDOeFBJwFzL6mjycbQwwKWX2QcYfh/7tIerS59hWQ20mxzupTJluA2SdwiBuWwQHH67ckg==}
     engines: {node: ^18.0.0 || >=20.0.0}
     hasBin: true
@@ -10155,7 +10218,7 @@ packages:
       jsdom:
         optional: true
     dependencies:
-      '@types/node': 20.10.0
+      '@types/node': 20.10.4
       '@vitest/expect': 1.0.4
       '@vitest/runner': 1.0.4
       '@vitest/snapshot': 1.0.4
@@ -10174,8 +10237,8 @@ packages:
       strip-literal: 1.3.0
       tinybench: 2.5.1
       tinypool: 0.8.1
-      vite: 5.0.8(@types/node@20.10.0)
-      vite-node: 1.0.4(@types/node@20.10.0)
+      vite: 5.0.8(@types/node@20.10.4)
+      vite-node: 1.0.4(@types/node@20.10.4)
       why-is-node-running: 2.2.2
     transitivePeerDependencies:
       - less
