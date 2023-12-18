@@ -1,4 +1,5 @@
-import { FileInfo, API, ImportDeclaration } from 'jscodeshift';
+import type { FileInfo, API, ImportDeclaration } from 'jscodeshift';
+import { resolve } from 'path';
 
 const mochaGlobalApis = [
 	'afterAll',
@@ -18,10 +19,16 @@ const mochaGlobalApiProps = {
 };
 const mochaGlobalApiKeys = Object.keys(mochaGlobalApiProps);
 
+const checkIfMochaExists = () => !!resolve('mocha');
+
 export default function transform(
 	file: FileInfo,
 	api: API,
 ): string | undefined {
+	if (!checkIfMochaExists()) {
+		return;
+	}
+
 	const j = api.jscodeshift;
 	const root = j(file.source);
 

@@ -1,4 +1,5 @@
 import type { Filemod } from '@intuita-inc/filemod';
+import { resolve } from 'path';
 import {
 	array,
 	is,
@@ -22,6 +23,8 @@ const tsconfigSchema = object({
 	include: optional(array(string())),
 });
 
+const checkIfMochaExists = () => !!resolve('mocha');
+
 export const repomod: Filemod<Record<string, never>, Record<string, never>> = {
 	includePatterns: [
 		'**/package.json',
@@ -31,6 +34,10 @@ export const repomod: Filemod<Record<string, never>, Record<string, never>> = {
 	],
 	excludePatterns: ['**/node_modules/**'],
 	handleFile: async (_, path, options) => {
+		if (!checkIfMochaExists()) {
+			return [];
+		}
+
 		if (
 			path.endsWith('tsconfig.json') ||
 			path.endsWith('package.json') ||
