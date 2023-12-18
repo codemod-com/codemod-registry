@@ -60,29 +60,22 @@ export default function transform(
 	});
 
 	root.find(j.ImportDeclaration).forEach((importDeclaration) => {
-		importDeclaration.node.specifiers?.forEach(
-			(
-				specifier:
-					| ImportSpecifier
-					| ImportDefaultSpecifier
-					| ImportNamespaceSpecifier,
-			) => {
-				if (specifier.type !== 'ImportSpecifier') {
-					return;
-				}
-				const importName = specifier.imported.name;
+		importDeclaration.node.specifiers?.forEach((specifier) => {
+			if (specifier.type !== 'ImportSpecifier') {
+				return;
+			}
+			const importName = specifier.imported.name;
 
-				if (!mochaGlobalApiKeys.includes(importName)) {
-					return;
-				}
-				const castedImportName =
-					importName as keyof typeof mochaGlobalApiProps;
-				if (!mochaGlobalApiProps[castedImportName]) {
-					return;
-				}
-				delete mochaGlobalApiProps[castedImportName];
-			},
-		);
+			if (!mochaGlobalApiKeys.includes(importName)) {
+				return;
+			}
+			const castedImportName =
+				importName as keyof typeof mochaGlobalApiProps;
+			if (!mochaGlobalApiProps[castedImportName]) {
+				return;
+			}
+			delete mochaGlobalApiProps[castedImportName];
+		});
 	});
 
 	const comments: NonNullable<ImportDeclaration['comments']> = [];
