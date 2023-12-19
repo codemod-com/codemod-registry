@@ -18,7 +18,7 @@ export default function transformer(
 
 	let adaptV4Called = false;
 
-	function isNotadaptV4ThemeArg(node:any) {
+	function isNotadaptV4ThemeArg(node: any) {
 		return (
 			node.arguments.length &&
 			(node.arguments[0].type !== 'CallExpression' ||
@@ -27,7 +27,7 @@ export default function transformer(
 		);
 	}
 
-	function hasAdaptV4(node:any) {
+	function hasAdaptV4(node: any) {
 		return (
 			node.arguments.length &&
 			node.arguments[0].type === 'CallExpression' &&
@@ -85,7 +85,8 @@ export default function transformer(
 				({ node }) =>
 					node.source.value?.match(
 						/^@material-ui\/core\/?(styles)?$/,
-					) || node.source.value?.match(/^@mui\/material\/?(styles)$/),
+					) ||
+					node.source.value?.match(/^@mui\/material\/?(styles)$/),
 			)
 			.at(0)
 			.forEach(({ node }) => {
