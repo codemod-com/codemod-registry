@@ -6,7 +6,7 @@
 		"valibot": "^0.24.1"
 	},
 	"bin": {
-		"readme-parser": "./dist/index.js"
+		"readme-parser": "./dist/index.cjs"
 	},
 	"devDependencies": {
 		"@codemod-registry/tsconfig": "workspace:*",
