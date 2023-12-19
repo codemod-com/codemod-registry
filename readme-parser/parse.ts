@@ -359,30 +359,30 @@ f_long-description: >-
 f_github-link: ${
 		path
 			? `https://github.com/intuita-inc/codemod-registry/tree/main/${cleanPath}`
-			: '-'
+			: 'n/a'
 	}
 f_vs-code-link: ${
 		vscodeHashDigest
 			? `vscode://intuita.intuita-vscode-extension/cases/${vscodeHashDigest}`
-			: '-'
+			: 'n/a'
 	}
-f_codemod-studio-link: -
-f_cli-command: ${cliCommand ?? '-'}
-f_framework: ${framework ? `cms/framework/${framework}.md` : '-'}
+f_codemod-studio-link: n/a
+f_cli-command: ${cliCommand ?? 'n/a'}
+f_framework: ${framework ? `cms/framework/${framework}.md` : 'n/a'}
 f_applicability-criteria: ${applicability}
 f_verified-codemod: ${owner === 'Intuita' ? 'true' : 'false'}
-f_author: ${owner === 'Intuita' ? 'cms/authors/intuita.md' : '-'}
+f_author: ${owner === 'Intuita' ? 'cms/authors/intuita.md' : 'n/a'}
 layout: "[automations].html"
-slug: ${slug ?? '-'}
+slug: ${slug ?? 'n/a'}
 title: ${title}
-f_slug-name: ${slug ?? '-'}
+f_slug-name: ${slug ?? 'n/a'}
 f_codemod-engine: cms/codemod-engines/${engine}.md
 f_change-mode-2: ${capitalize(changeMode)}
 f_estimated-time-saving: ${timeSave}
 tags: automations
 updated-on: ${new Date().toISOString()}
 published-on: ${new Date().toISOString()}
-seo: -
+seo: n/a
 ---
 `.trim();
 

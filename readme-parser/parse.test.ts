@@ -185,7 +185,7 @@ f_long-description: >-
   \`\`\`
 f_github-link: https://github.com/intuita-inc/codemod-registry/tree/main/codemods/msw/2/imports
 f_vs-code-link: vscode://intuita.intuita-vscode-extension/cases/${vscodeHashDigest}
-f_codemod-studio-link: -
+f_codemod-studio-link: n/a
 f_cli-command: intuita msw/2/imports
 f_framework: cms/framework/msw.md
 f_applicability-criteria: MSW >= 1.0.0
@@ -201,7 +201,7 @@ f_estimated-time-saving: 5 minutes/occurrence
 tags: automations
 updated-on: ${date.toISOString()}
 published-on: ${date.toISOString()}
-seo: -
+seo: n/a
 ---
 `.trim(),
 		);
