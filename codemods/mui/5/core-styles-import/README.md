@@ -8,7 +8,7 @@ Renames private import from `core/styles/*` to `core/styles`
 
 ### Before
 
-```typescript
+```tsx
 import { darken, lighten } from '@material-ui/core/styles/colorManipulator';
 import { Overrides } from '@material-ui/core/styles/overrides';
 import makeStyles from '@material-ui/core/styles/makeStyles';
@@ -17,7 +17,7 @@ import { createTheme } from '@material-ui/core/styles';
 
 ### After
 
-```typescript
+```tsx
 import { createTheme, darken, lighten, Overrides, makeStyles } from '@material-ui/core/styles';
 ```
 
