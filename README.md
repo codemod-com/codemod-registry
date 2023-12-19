@@ -28,6 +28,27 @@ Adding or using codemods in Codemod Registry allows for:
 
 🌍 Making codemods more accessible to many developers around the world.
 
+## Supported frameworks & libraries
+
+- [Go](/codemods/Go)
+- [Java](/codemods/Java)
+- [antd](/codemods/antd)
+- [bull](/codemods/bull)
+- [ember](/codemods/ember)
+- [i18n](/codemods/i18n)
+- [immutable](/codemods/immutable)
+- [jest](/codemods/jest)
+- [mocha](/codemods/mocha)
+- [msw](/codemods/msw)
+- [mui](/codemods/mui)
+- [netlify-sdk](/codemods/netlify-sdk)
+- [next-i18next](/codemods/next-i18next)
+- [next](/codemods/next)
+- [react-redux](/codemods/react-redux)
+- [react-router](/codemods/react-router)
+- [react](/codemods/react)
+- [redwoodjs](/codemods/redwoodjs)
+
 ## Running codemods in the registry
 
 All codemods in the registry are automatically distributed to Intuita's CLI and IDE extension.
