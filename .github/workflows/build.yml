@@ -34,23 +34,28 @@ jobs:
               run: |
                   git config --local user.email "intuita@intuita.io"
                   git config --local user.name "Intuita Team"
-                  current_branch=$(git rev-parse --abbrev-ref HEAD)
-
+                  # Get the current branch name
+                  current_branch=$(git rev-parse --abbrev-ref HEAD)  
                   # Fetch changes from origin main
-                  git fetch origin main
+                  git fetch origin main  
                   # Specify a common commit as the merge base
-                  merge_base_commit=$(git merge-base origin/main HEAD)
-
+                  merge_base_commit=$(git merge-base origin/main HEAD)  
+                  # Print some debugging information
+                  echo "Current Branch: $current_branch"
+                  echo "Merge Base Commit: $merge_base_commit"  
                   # Merge with the allow-unrelated-histories option
-                  git merge --allow-unrelated-histories $merge_base_commit
-
+                  git merge --allow-unrelated-histories $merge_base_commit  
+                  # Print the output and error messages of the merge command
+                  merge_exit_code=$?
+                  echo "Merge Exit Code: $merge_exit_code"
+                  git show -s --pretty=format:"%s" HEAD  
                   # Get the diff between the merge base and the current branch
                   changed_files=$(git diff --name-only $merge_base_commit HEAD)
-
+                  echo "Changed Files:"
                   echo "$changed_files"
+
                   # Filter for README files in the 'codemods' directory
                   readme_files=$(echo "$changed_files" | grep '^codemods/.*README\.md$')
-                  echo "$readme_files"
 
                   if [ -z "$readme_files" ]; then
                       echo "No README.md file in 'codemods' directory changed."
