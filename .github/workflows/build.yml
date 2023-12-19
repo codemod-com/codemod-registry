@@ -57,7 +57,7 @@ jobs:
                       website_file_path="cms/automations/$generated_slug.md"
                       
                       # Parse the README and store the output with its path
-                      parsed_readme=$("$PWD"/readme-parser/dist/index.mjs "$path_to_readme")
+                      parsed_readme=$("$PWD"/readme-parser/dist/index.js "$path_to_readme")
                       parsed_readmes["$website_file_path"]="$parsed_readme"
                   done <<< "$readme_files"
 
