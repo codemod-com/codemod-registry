@@ -156,37 +156,43 @@ created-on: ${date.toISOString()}
 f_long-description: >-
   ## Description
   \n
-  \n
   This is an amazing codemod
   ### WARNING
   This codemod does the thing
   \n
-  \n
   ### tsconfig.json
   ### Before
+  
   \`\`\`ts
   http.get<ReqBodyType, PathParamsType>('/resource', (req, res, ctx) => {
     return res(ctx.json({ firstName: 'John' }));
   });
   \`\`\`
+  
   ### After
+  
   \`\`\`ts
   http.get<PathParamsType, ReqBodyType>('/resource', (req, res, ctx) => {
     return res(ctx.json({ firstName: 'John' }));
   });
   \`\`\`
+  
   ### Before
+  
   \`\`\`ts
   http.get<ReqBodyType>('/resource', (req, res, ctx) => {
     return res(ctx.json({ firstName: 'John' }));
   });
   \`\`\`
+  
   ### After
+  
   \`\`\`ts
   http.get<any, ReqBodyType>('/resource', (req, res, ctx) => {
     return res(ctx.json({ firstName: 'John' }));
   });
   \`\`\`
+  
 f_github-link: https://github.com/intuita-inc/codemod-registry/tree/main/codemods/msw/2/imports
 f_vs-code-link: vscode://intuita.intuita-vscode-extension/cases/${vscodeHashDigest}
 f_codemod-studio-link: n/a

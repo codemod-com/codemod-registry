@@ -166,7 +166,7 @@ const getTextByHeader = (
 		if ('value' in rc) {
 			if (rc.type === 'code') {
 				textParts.push(
-					`\`\`\`${rc.lang}\n${rc.value}\n\`\`\`${delimiter}`,
+					`\n\`\`\`${rc.lang}\n${rc.value}\n\`\`\`${delimiter}\n`,
 				);
 			} else {
 				textParts.push(`${rc.value}${delimiter}`);
@@ -362,9 +362,7 @@ created-on: ${new Date().toISOString()}
 f_long-description: >-
   ## Description
   \n
-  \n
   ${description.replace(/\n/g, '\n  ')}
-  \n
   \n
   ${examples.replace(/\n/g, '\n  ')}
 f_github-link: ${
