@@ -324,7 +324,12 @@ export const convertToYaml = (
 
 		const __filename = fileURLToPath(import.meta.url);
 		const __dirname = dirname(__filename);
-		const pathToCodemod = nodePath.join(__dirname, '..', '..', cleanPath);
+		const parts = __dirname.split('/');
+		const pivot = parts.indexOf('readme-parser');
+		const pathToCodemod = nodePath.join(
+			parts.slice(0, pivot).join('/'),
+			cleanPath,
+		);
 
 		framework = path.split('/').at(1) ?? null;
 
@@ -376,7 +381,7 @@ f_verified-codemod: ${owner === 'Intuita' ? 'true' : 'false'}
 f_author: ${
 		owner === 'Intuita'
 			? 'cms/authors/intuita.md'
-			: codemodName?.split('/')?.[0] ?? ''
+			: `cms/authors/${codemodName?.split('/')?.[0] ?? ''}.md`
 	}
 layout: "[automations].html"
 slug: ${slug ?? 'n/a'}
