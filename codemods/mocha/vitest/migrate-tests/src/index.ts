@@ -1,4 +1,4 @@
-import type { FileInfo, API, ImportDeclaration } from 'jscodeshift';
+import { FileInfo, API, ImportDeclaration } from 'jscodeshift';
 
 const mochaGlobalApis = [
 	'afterAll',
@@ -16,6 +16,7 @@ const mochaGlobalApiProps = {
 	it: mochaApiProps,
 	test: mochaApiProps,
 };
+const mochaGlobalApiKeys = Object.keys(mochaGlobalApiProps);
 
 export default function transform(
 	file: FileInfo,
@@ -49,6 +50,25 @@ export default function transform(
 			type: 'StringLiteral',
 			value: 'chai',
 		},
+	});
+
+	root.find(j.ImportDeclaration).forEach((importDeclaration) => {
+		importDeclaration.node.specifiers?.forEach((specifier) => {
+			if (specifier.type !== 'ImportSpecifier') {
+				return;
+			}
+			const importName = specifier.imported.name;
+
+			if (!mochaGlobalApiKeys.includes(importName)) {
+				return;
+			}
+			const castedImportName =
+				importName as keyof typeof mochaGlobalApiProps;
+			if (!mochaGlobalApiProps[castedImportName]) {
+				return;
+			}
+			delete mochaGlobalApiProps[castedImportName];
+		});
 	});
 
 	const comments: NonNullable<ImportDeclaration['comments']> = [];
