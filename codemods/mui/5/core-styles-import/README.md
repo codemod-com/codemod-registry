@@ -2,7 +2,7 @@
 
 ## Description
 
-Renames private import from `core/styles/*` to `core/styles`.
+Renames private import from `core/styles/*` to `core/styles`..
 
 ## Example
 
