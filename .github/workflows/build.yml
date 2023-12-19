@@ -36,6 +36,7 @@ jobs:
                   git config --local user.name "Intuita Team"
                   # Get the current branch name
                   current_branch=$(git rev-parse --abbrev-ref HEAD)  
+                  echo "Current Branch: $current_branch"
                   # Fetch changes from origin main
                   git fetch origin main  
                   # Specify a common commit as the merge base
