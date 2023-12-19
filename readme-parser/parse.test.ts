@@ -152,39 +152,50 @@ describe('parse/yaml', function () {
 			yaml,
 			`
 ---
-f_long-description: |-
+created-on: ${date.toISOString()}
+f_long-description: >-
   ## Description
+  \n
   This is an amazing codemod
   ### WARNING
   This codemod does the thing
+  \n
   ### tsconfig.json
   ### Before
+  
   \`\`\`ts
   http.get<ReqBodyType, PathParamsType>('/resource', (req, res, ctx) => {
     return res(ctx.json({ firstName: 'John' }));
   });
   \`\`\`
+  
   ### After
+  
   \`\`\`ts
   http.get<PathParamsType, ReqBodyType>('/resource', (req, res, ctx) => {
     return res(ctx.json({ firstName: 'John' }));
   });
   \`\`\`
+  
   ### Before
+  
   \`\`\`ts
   http.get<ReqBodyType>('/resource', (req, res, ctx) => {
     return res(ctx.json({ firstName: 'John' }));
   });
   \`\`\`
+  
   ### After
+  
   \`\`\`ts
   http.get<any, ReqBodyType>('/resource', (req, res, ctx) => {
     return res(ctx.json({ firstName: 'John' }));
   });
   \`\`\`
+  
 f_github-link: https://github.com/intuita-inc/codemod-registry/tree/main/codemods/msw/2/imports
 f_vs-code-link: vscode://intuita.intuita-vscode-extension/cases/${vscodeHashDigest}
-f_codemod-studio-link: -
+f_codemod-studio-link: n/a
 f_cli-command: intuita msw/2/imports
 f_framework: cms/framework/msw.md
 f_applicability-criteria: MSW >= 1.0.0
@@ -198,10 +209,9 @@ f_codemod-engine: cms/codemod-engines/ts-morph.md
 f_change-mode-2: Assistive
 f_estimated-time-saving: 5 minutes/occurrence
 tags: automations
-created-on: -
 updated-on: ${date.toISOString()}
-published-on: -
-seo: -
+published-on: ${date.toISOString()}
+seo: n/a
 ---
 `.trim(),
 		);

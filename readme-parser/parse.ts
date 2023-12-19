@@ -1,3 +1,5 @@
+/* DO NOT LOG ANYTHING. IT WILL BE APPENDED TO THE TOP OF THE GENERATED STRING */
+
 import { readFileSync } from 'fs';
 import * as nodePath from 'node:path';
 import type { Heading, PhrasingContent, RootContent } from 'mdast';
@@ -164,7 +166,7 @@ const getTextByHeader = (
 		if ('value' in rc) {
 			if (rc.type === 'code') {
 				textParts.push(
-					`\`\`\`${rc.lang}\n${rc.value}\n\`\`\`${delimiter}`,
+					`\n\`\`\`${rc.lang}\n${rc.value}\n\`\`\`${delimiter}\n`,
 				);
 			} else {
 				textParts.push(`${rc.value}${delimiter}`);
@@ -322,7 +324,12 @@ export const convertToYaml = (
 
 		const __filename = fileURLToPath(import.meta.url);
 		const __dirname = dirname(__filename);
-		const pathToCodemod = nodePath.join(__dirname, '..', cleanPath);
+		const parts = __dirname.split('/');
+		const pivot = parts.indexOf('readme-parser');
+		const pathToCodemod = nodePath.join(
+			parts.slice(0, pivot).join('/'),
+			cleanPath,
+		);
 
 		framework = path.split('/').at(1) ?? null;
 
@@ -338,7 +345,7 @@ export const convertToYaml = (
 				cliCommand = `intuita ${codemodName}`;
 			}
 		} catch (e) {
-			console.log(`No config found for ${path}`);
+			/* empty */
 		}
 	}
 
@@ -351,38 +358,44 @@ export const convertToYaml = (
 
 	const res = `
 ---
-f_long-description: |-
+created-on: ${new Date().toISOString()}
+f_long-description: >-
   ## Description
+  \n
   ${description.replace(/\n/g, '\n  ')}
+  \n
   ${examples.replace(/\n/g, '\n  ')}
 f_github-link: ${
 		path
 			? `https://github.com/intuita-inc/codemod-registry/tree/main/${cleanPath}`
-			: '-'
+			: 'n/a'
 	}
 f_vs-code-link: ${
 		vscodeHashDigest
 			? `vscode://intuita.intuita-vscode-extension/cases/${vscodeHashDigest}`
-			: '-'
+			: 'n/a'
 	}
-f_codemod-studio-link: -
-f_cli-command: ${cliCommand ?? '-'}
-f_framework: ${framework ? `cms/framework/${framework}.md` : '-'}
+f_codemod-studio-link: n/a
+f_cli-command: ${cliCommand ?? 'n/a'}
+f_framework: ${framework ? `cms/framework/${framework}.md` : 'n/a'}
 f_applicability-criteria: ${applicability}
 f_verified-codemod: ${owner === 'Intuita' ? 'true' : 'false'}
-f_author: ${owner === 'Intuita' ? 'cms/authors/intuita.md' : '-'}
+f_author: ${
+		owner === 'Intuita'
+			? 'cms/authors/intuita.md'
+			: `cms/authors/${codemodName?.split('/')?.[0] ?? ''}.md`
+	}
 layout: "[automations].html"
-slug: ${slug ?? '-'}
+slug: ${slug ?? 'n/a'}
 title: ${title}
-f_slug-name: ${slug ?? '-'}
+f_slug-name: ${slug ?? 'n/a'}
 f_codemod-engine: cms/codemod-engines/${engine}.md
 f_change-mode-2: ${capitalize(changeMode)}
 f_estimated-time-saving: ${timeSave}
 tags: automations
-created-on: -
 updated-on: ${new Date().toISOString()}
-published-on: -
-seo: -
+published-on: ${new Date().toISOString()}
+seo: n/a
 ---
 `.trim();
 
