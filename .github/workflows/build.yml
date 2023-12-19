@@ -38,7 +38,7 @@ jobs:
 
                   # Fetch changes from origin main
                   git fetch origin main
-
+                  git merge origin/main
                   # Get the diff between the current branch and origin/main
                   changed_files=$(git diff --name-only origin/main...$current_branch)
 
