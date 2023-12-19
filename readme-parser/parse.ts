@@ -322,7 +322,10 @@ export const convertToYaml = (
 
 		const __filename = fileURLToPath(import.meta.url);
 		const __dirname = dirname(__filename);
+		console.log('FILE_NAME ', __filename);
+		console.log('DIR_NAME ', dirname(__filename), __dirname);
 		const pathToCodemod = nodePath.join(__dirname, '..', cleanPath);
+		console.log('pathToCodemod ', pathToCodemod);
 
 		framework = path.split('/').at(1) ?? null;
 
