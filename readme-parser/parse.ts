@@ -361,7 +361,11 @@ export const convertToYaml = (
 created-on: ${new Date().toISOString()}
 f_long-description: >-
   ## Description
+  \n
+  \n
   ${description.replace(/\n/g, '\n  ')}
+  \n
+  \n
   ${examples.replace(/\n/g, '\n  ')}
 f_github-link: ${
 		path

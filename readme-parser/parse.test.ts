@@ -155,9 +155,13 @@ describe('parse/yaml', function () {
 created-on: ${date.toISOString()}
 f_long-description: >-
   ## Description
+  \n
+  \n
   This is an amazing codemod
   ### WARNING
   This codemod does the thing
+  \n
+  \n
   ### tsconfig.json
   ### Before
   \`\`\`ts
