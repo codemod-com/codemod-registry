@@ -34,13 +34,17 @@ jobs:
               run: |
                   git config --local user.email "intuita@intuita.io"
                   git config --local user.name "Intuita Team"
-                  git fetch origin main
-                  git checkout -B main origin/main
-                  changed_files=$(git diff --name-only HEAD^ HEAD)
+                  current_branch=$(git rev-parse --abbrev-ref HEAD)
 
+                  # Fetch changes from origin main
+                  git fetch origin main
+
+                  # Get the diff between the current branch and origin/main
+                  changed_files=$(git diff --name-only origin/main...$current_branch)
+
+                  echo "$changed_files"
                   # Filter for README files in the 'codemods' directory
                   readme_files=$(echo "$changed_files" | grep '^codemods/.*README\.md$')
-                  echo "$changed_files"
                   echo "$readme_files"
 
                   if [ -z "$readme_files" ]; then
