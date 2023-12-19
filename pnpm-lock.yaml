@@ -1880,7 +1880,7 @@ importers:
 
   codemods/msw/2/upgrade-recipe: {}
 
-  codemods/mui/4/adapter-v4:
+  codemods/mui/5/core-styles-import:
     devDependencies:
       '@codemod-registry/cjs-builder':
         specifier: workspace:*
@@ -1894,6 +1894,9 @@ importers:
       '@types/jscodeshift':
         specifier: ^0.11.10
         version: 0.11.10
+      '@vitest/coverage-v8':
+        specifier: ^1.0.1
+        version: 1.0.4(vitest@1.0.4)
       esbuild:
         specifier: 0.19.5
         version: 0.19.5
@@ -1906,6 +1909,9 @@ importers:
       typescript:
         specifier: ^5.2.2
         version: 5.2.2
+      vitest:
+        specifier: ^1.0.1
+        version: 1.0.4(@types/node@20.10.4)
 
   codemods/netlify-sdk/0.8.1/addBuildEventContext:
     devDependencies:
