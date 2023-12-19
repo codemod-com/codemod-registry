@@ -1,12 +1,12 @@
 {
 	"name": "@codemod-registry/readme-parser",
-	"type": "module",
+	"type": "commonjs",
 	"dependencies": {
 		"mdast-util-from-markdown": "2.0.0",
 		"valibot": "^0.24.1"
 	},
 	"bin": {
-		"readme-parser": "./dist/index.cjs"
+		"readme-parser": "./dist/index.js"
 	},
 	"devDependencies": {
 		"@codemod-registry/tsconfig": "workspace:*",
