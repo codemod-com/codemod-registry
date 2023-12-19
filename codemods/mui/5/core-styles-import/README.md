@@ -45,4 +45,4 @@ v1.0.0
 
 ### Owner
 
-[MUI](https://github.com/mui/material-ui)
+[MUI](https://github.com/mui)
