@@ -1,5 +1,9 @@
 # Core Styles Import
 
+## Description
+
+Renames private import from `core/styles/*` to `core/styles`
+
 ## Example
 
 ### Before
