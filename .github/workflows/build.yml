@@ -3,6 +3,9 @@ on:
     push:
         branches:
             - main
+    pull_request:
+        branches:
+            - main
 jobs:
     Build:
         runs-on: ubuntu-latest
@@ -31,14 +34,14 @@ jobs:
               run: |
                   git config --local user.email "intuita@intuita.io"
                   git config --local user.name "Intuita Team"
-                  git fetch origin
-                  git checkout -B main origin/main
-                  changed_files=$(git diff --name-only HEAD^ HEAD)
+                  git fetch origin main
+                  # Get the list of changed files between the current commit and origin/main
+                  changed_files=$(git diff --name-only origin/main)
 
                   # Filter for README files in the 'codemods' directory
-                  readme_files=$(echo "$changed_files" | grep '^codemods/.*README\.md$')
+                  readme_file=$(echo "$changed_files" | grep '^codemods/.*README\.md$')
 
-                  if [ -z "$readme_files" ]; then
+                  if [ -z "$readme_file" ]; then
                       echo "No README.md file in 'codemods' directory changed."
                       exit 0
                   fi
@@ -55,7 +58,7 @@ jobs:
                       # Parse the README and store the output with its path
                       parsed_readme=$("$PWD"/readme-parser/dist/index.js "$path_to_readme")
                       parsed_readmes["$website_file_path"]="$parsed_readme"
-                  done <<< "$readme_files"
+                  done <<< "$readme_file"
 
                   # Checkout a new branch from the website master
                   git checkout -b update-codemods website/master
@@ -70,7 +73,9 @@ jobs:
                   done
 
                   # Commit and push all changes at once
-                  git commit -m "Synced registry codemods"
+                  path_without_first_dir="${readme_file#*/}"
+                  final_path="${path_without_first_dir%/*}"
+                  git commit -m "$final_path"
                   git push website HEAD:master
             - name: Upload to S3
               uses: jakejarvis/s3-sync-action@master
