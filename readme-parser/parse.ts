@@ -338,7 +338,7 @@ export const convertToYaml = (
 				cliCommand = `intuita ${codemodName}`;
 			}
 		} catch (e) {
-			console.log(`No config found for ${path}`);
+			/* empty */
 		}
 	}
 
@@ -351,7 +351,8 @@ export const convertToYaml = (
 
 	const res = `
 ---
-f_long-description: |-
+created-on: ${new Date().toISOString()}
+f_long-description: >-
   ## Description
   ${description.replace(/\n/g, '\n  ')}
   ${examples.replace(/\n/g, '\n  ')}
@@ -379,9 +380,8 @@ f_codemod-engine: cms/codemod-engines/${engine}.md
 f_change-mode-2: ${capitalize(changeMode)}
 f_estimated-time-saving: ${timeSave}
 tags: automations
-created-on: -
 updated-on: ${new Date().toISOString()}
-published-on: -
+published-on: ${new Date().toISOString()}
 seo: -
 ---
 `.trim();

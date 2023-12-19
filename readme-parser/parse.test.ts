@@ -152,7 +152,8 @@ describe('parse/yaml', function () {
 			yaml,
 			`
 ---
-f_long-description: |-
+created-on: ${date.toISOString()}
+f_long-description: >-
   ## Description
   This is an amazing codemod
   ### WARNING
@@ -198,9 +199,8 @@ f_codemod-engine: cms/codemod-engines/ts-morph.md
 f_change-mode-2: Assistive
 f_estimated-time-saving: 5 minutes/occurrence
 tags: automations
-created-on: -
 updated-on: ${date.toISOString()}
-published-on: -
+published-on: ${date.toISOString()}
 seo: -
 ---
 `.trim(),
