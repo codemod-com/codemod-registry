@@ -33,7 +33,7 @@ v1.0.0
 
 ### Change Mode
 
-**Assistive**: The automation partially completes changes. Human involvement is needed to make changes ready to be pushed and merged.
+**Autonomous**: Changes can safely be pushed and merged without further human involvement.
 
 ### **Codemod Engine**
 
@@ -41,7 +41,7 @@ v1.0.0
 
 ### Estimated Time Saving
 
-Up to 10 minutes per occurrence
+~5 minutes per occurrence
 
 ### Owner
 
