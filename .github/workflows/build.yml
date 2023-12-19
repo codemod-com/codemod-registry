@@ -40,6 +40,8 @@ jobs:
 
                   # Filter for README files in the 'codemods' directory
                   readme_files=$(echo "$changed_files" | grep '^codemods/.*README\.md$')
+                  echo "$changed_files"
+                  echo "$readme_files"
 
                   if [ -z "$readme_files" ]; then
                       echo "No README.md file in 'codemods' directory changed."
