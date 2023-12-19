@@ -38,9 +38,14 @@ jobs:
 
                   # Fetch changes from origin main
                   git fetch origin main
-                  git rebase origin/main
-                  # Get the diff between the current branch and origin/main
-                  changed_files=$(git diff --name-only origin/main...$current_branch)
+                  # Specify a common commit as the merge base
+                  merge_base_commit=$(git merge-base origin/main HEAD)
+
+                  # Merge with the allow-unrelated-histories option
+                  git merge --allow-unrelated-histories $merge_base_commit
+
+                  # Get the diff between the merge base and the current branch
+                  changed_files=$(git diff --name-only $merge_base_commit HEAD)
 
                   echo "$changed_files"
                   # Filter for README files in the 'codemods' directory
