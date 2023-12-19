@@ -1,12 +1,12 @@
 {
 	"name": "@codemod-registry/readme-parser",
-	"type": "commonjs",
+	"type": "module",
 	"dependencies": {
 		"mdast-util-from-markdown": "2.0.0",
 		"valibot": "^0.24.1"
 	},
 	"bin": {
-		"readme-parser": "./dist/index.js"
+		"readme-parser": "./dist/index.cjs"
 	},
 	"devDependencies": {
 		"@codemod-registry/tsconfig": "workspace:*",
@@ -17,7 +17,7 @@
 		"vitest": "1.0.4"
 	},
 	"scripts": {
-		"build": "esbuild index.ts --bundle --platform=node --format=esm --outfile=dist/index.js",
+		"build": "esbuild index.ts --bundle --platform=node --format=esm --outfile=dist/index.cjs",
 		"test": "vitest"
 	}
 }
