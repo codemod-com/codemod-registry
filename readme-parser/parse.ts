@@ -1,3 +1,5 @@
+/* DO NOT LOG ANYTHING. IT WILL BE APPENDED TO THE TOP OF THE GENERATED STRING */
+
 import { readFileSync } from 'fs';
 import * as nodePath from 'node:path';
 import type { Heading, PhrasingContent, RootContent } from 'mdast';
