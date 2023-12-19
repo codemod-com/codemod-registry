@@ -373,7 +373,11 @@ f_cli-command: ${cliCommand ?? 'n/a'}
 f_framework: ${framework ? `cms/framework/${framework}.md` : 'n/a'}
 f_applicability-criteria: ${applicability}
 f_verified-codemod: ${owner === 'Intuita' ? 'true' : 'false'}
-f_author: ${owner === 'Intuita' ? 'cms/authors/intuita.md' : 'n/a'}
+f_author: ${
+		owner === 'Intuita'
+			? 'cms/authors/intuita.md'
+			: codemodName?.split('/')?.[0] ?? ''
+	}
 layout: "[automations].html"
 slug: ${slug ?? 'n/a'}
 title: ${title}
