@@ -1,11 +1,10 @@
 #!/usr/bin/env node
 
-import { mkdir, writeFile } from 'fs/promises';
+import { writeFile } from 'fs/promises';
 import * as yaml from 'js-yaml';
 import { simpleGit } from 'simple-git';
 import { any, record, parse as valibotParse } from 'valibot';
 import { convertToYaml, parse } from './parse.js';
-import { dirname } from 'path';
 
 export const sync = async () => {
 	const git = simpleGit();
@@ -143,10 +142,9 @@ export const sync = async () => {
 		process.exit(0);
 	}
 
-	git.checkout(['-b', 'update-codemods', 'website/master']);
+	await git.checkout(['-b', 'update-codemods', 'website/master']);
 
 	for (const [websitePath, newContent] of Object.entries(staged)) {
-		await mkdir(dirname(websitePath), { recursive: true });
 		await writeFile(websitePath, newContent);
 		await git.add(websitePath);
 		await git.commit(`Syncs ${websitePath} from codemod-registry`);
