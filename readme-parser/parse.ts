@@ -357,7 +357,6 @@ export const convertToYaml = (
 	}
 
 	const res = `
----
 created-on: ${new Date().toISOString()}
 f_long-description: >-
   ## Description
@@ -396,7 +395,6 @@ tags: automations
 updated-on: ${new Date().toISOString()}
 published-on: ${new Date().toISOString()}
 seo: n/a
----
 `.trim();
 
 	return res;

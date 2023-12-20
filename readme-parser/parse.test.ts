@@ -151,7 +151,6 @@ describe('parse/yaml', function () {
 		deepEqual(
 			yaml,
 			`
----
 created-on: ${date.toISOString()}
 f_long-description: >-
   ## Description
@@ -212,7 +211,6 @@ tags: automations
 updated-on: ${date.toISOString()}
 published-on: ${date.toISOString()}
 seo: n/a
----
 `.trim(),
 		);
 	});
