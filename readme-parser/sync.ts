@@ -173,7 +173,7 @@ export const sync = async () => {
 			}
 
 			const [websiteStartIndex, websiteEndIndex] = websiteRange;
-			const [newFileStartIndex, newFileEndIndex] = websiteRange;
+			const [newFileStartIndex, newFileEndIndex] = newFileRange;
 
 			const websiteLines = websiteYamlContent.split('\n');
 			const newFileLines = newReadmeYamlContent.split('\n');
