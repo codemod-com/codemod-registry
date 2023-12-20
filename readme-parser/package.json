@@ -18,8 +18,8 @@
 	},
 	"scripts": {
 		"build": "npm run build:parser && npm run build:sync",
-		"build:parser": "esbuild parse.ts --bundle --platform=node --format=esm --outfile=dist/parser.js",
-		"build:sync": "esbuild sync.ts --bundle --platform=node --format=esm --outfile=dist/sync.js",
+		"build:parser": "esbuild parse.ts --bundle --platform=node --format=cjs --outfile=dist/parser.js",
+		"build:sync": "esbuild sync.ts --bundle --platform=node --format=cjs --outfile=dist/sync.js",
 		"test": "vitest"
 	}
 }
