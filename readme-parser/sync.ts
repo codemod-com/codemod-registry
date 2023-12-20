@@ -16,7 +16,7 @@ export const sync = async () => {
 	await git.addConfig('user.email', 'intuita@intuita.io', false, 'local');
 	await git.addConfig('user.name', 'Intuita Team', false, 'local');
 
-	await git.fetch(['website', 'main']);
+	await git.fetch(['website', 'master']);
 	await git.fetch(['origin', 'main']);
 
 	const diff = await git.diff(['--name-only', 'origin/main']);
@@ -130,7 +130,7 @@ export const sync = async () => {
 		process.exit(0);
 	}
 
-	git.push('website', 'HEAD:main');
+	git.push('website', 'HEAD:master');
 
 	process.exit(0);
 };
