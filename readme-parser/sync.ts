@@ -128,7 +128,13 @@ export const sync = async () => {
 			continue;
 		}
 
-		let updatedYaml = `---\n${yaml.dump(updatedContent)}\n---`;
+		let updatedYaml = `---\n${yaml.dump(updatedContent, {
+			quotingType: '"',
+			lineWidth: 120,
+			condenseFlow: true,
+			noArrayIndent: true,
+			noCompatMode: true,
+		})}---`;
 		const websiteLeftoverDescription = websiteContentSplit.at(2)?.trim();
 		if (websiteLeftoverDescription) {
 			updatedYaml += `\n${websiteLeftoverDescription}`;
