@@ -37,7 +37,7 @@ export const sync = async () => {
 
 		const websiteFile = await git.catFile([
 			'-e',
-			`website/main:${websitePath}`,
+			`website/master:${websitePath}`,
 		]);
 		const oldFile = await git.catFile(['-e', `origin/main:${path}`]);
 		const newFile = await git.catFile(['-e', `HEAD:${path}`]);
