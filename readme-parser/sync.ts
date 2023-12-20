@@ -158,7 +158,7 @@ export const sync = async () => {
 
 		let updatedYaml = websiteYamlContent;
 		for (const key of changedKeys) {
-			const websiteRange = findKeyLineRange(websiteYamlContent, key);
+			const websiteRange = findKeyLineRange(updatedYaml, key);
 			if (!websiteRange) {
 				console.error(
 					`Could not find ${key} in website file ${websitePath}`,
