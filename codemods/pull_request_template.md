@@ -55,17 +55,17 @@ Insert codemod version [e.g. v1.0.0]
 
 Can be:
 
-- **Assistive**: The automation partially completes changes. Human involvement is needed to make changes ready to be pushed and merged.
-- **Autonomous**: Changes can safely be pushed and merged without further human involvement.
+-   **Assistive**: The automation partially completes changes. Human involvement is needed to make changes ready to be pushed and merged.
+-   **Autonomous**: Changes can safely be pushed and merged without further human involvement.
 
 ### **Codemod Engine**
 
 Can be:
 
-- [jscodeshift](https://github.com/facebook/jscodeshift)
-- [ts-morph](https://github.com/dsherret/ts-morph)
-- [filemod](https://github.com/intuita-inc/filemod/)
-- [Uber Piranha](https://github.com/uber/piranha)
+-   [jscodeshift](https://github.com/facebook/jscodeshift)
+-   [ts-morph](https://github.com/dsherret/ts-morph)
+-   [filemod](https://github.com/intuita-inc/filemod/)
+-   [Uber Piranha](https://github.com/uber/piranha)
 
 ### Estimated Time Saving
 

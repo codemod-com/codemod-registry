@@ -12,4 +12,4 @@ The Intuita team may send a response indicating the next steps in handling your 
 
 | Version | Supported          |
 | ------- | ------------------ |
-| >=1.0.0   | :white_check_mark: |
+| >=1.0.0 | :white_check_mark: |
