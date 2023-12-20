@@ -29,6 +29,7 @@ export const sync = async () => {
 		process.exit(0);
 	}
 
+	let commitCount = 0;
 	for (const path of readmesChanged) {
 		console.log(`Syncing ${path}`);
 		const generatedSlug = path.split('/').slice(1, -1).join('-');
@@ -94,6 +95,7 @@ export const sync = async () => {
 
 		const updatedContent = { ...websiteContent };
 
+		let changed = false;
 		// 1. Perform a diff between old file and new file, decide what do we need to filter
 		for (const key of Object.keys(newContent)) {
 			// Field did not change
@@ -107,6 +109,11 @@ export const sync = async () => {
 			}
 
 			updatedContent[key] = newContent[key];
+			changed = true;
+		}
+
+		if (!changed) {
+			continue;
 		}
 
 		let updatedYaml = `---\n${yaml.dump(updatedContent)}\n---`;
@@ -116,6 +123,11 @@ export const sync = async () => {
 		}
 
 		await commitNewReadme(updatedYaml);
+		commitCount += 1;
+	}
+
+	if (commitCount === 0) {
+		process.exit(0);
 	}
 
 	git.push('website', 'HEAD:main');

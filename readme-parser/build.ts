@@ -10,7 +10,7 @@ const getOptions = (fileName: string): Parameters<typeof esbuild.build>[0] => {
         const __filename = (await import("node:url")).fileURLToPath(import.meta.url);
         const __dirname = (await import("node:path")).dirname(__filename);
         // BANNER END
-      `.replace(/\W/gm, ''),
+      `,
 		},
 		bundle: true,
 		platform: 'node',
