@@ -15,7 +15,7 @@ const findKeyLineRange = (yaml: string, key: string) => {
 
 	for (const [index, line] of splitYaml.entries()) {
 		if (startFound && line.match(/^\w+:\s/)) {
-			fieldEndLine = index - 1;
+			fieldEndLine = index;
 			break;
 		}
 
@@ -181,7 +181,7 @@ export const sync = async () => {
 			updatedYaml = [
 				'---',
 				...websiteLines.slice(0, websiteStartIndex),
-				...newFileLines.slice(newFileStartIndex, newFileEndIndex + 1),
+				...newFileLines.slice(newFileStartIndex, newFileEndIndex),
 				...websiteLines.slice(websiteEndIndex),
 				'---',
 			].join('\n');

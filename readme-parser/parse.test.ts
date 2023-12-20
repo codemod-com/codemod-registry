@@ -14,84 +14,11 @@ This is an amazing codemod
 
 This codemod does the thing
 
-## Example
+Following the original msw [upgrade guide](https://mswjs.io/docs/migrations/1.x-to-2.x/#imports), there are certain imports that changed their location and/or naming. This codemod will adjust your imports to the new location and naming.
 
-### \`tsconfig.json\`
-
-### Before
-
-\`\`\`ts
-http.get<ReqBodyType, PathParamsType>('/resource', (req, res, ctx) => {
-  return res(ctx.json({ firstName: 'John' }));
-});
-\`\`\`
-
-### After
-
-\`\`\`ts
-http.get<PathParamsType, ReqBodyType>('/resource', (req, res, ctx) => {
-  return res(ctx.json({ firstName: 'John' }));
-});
-\`\`\`
-
-### Before
-
-\`\`\`ts
-http.get<ReqBodyType>('/resource', (req, res, ctx) => {
-  return res(ctx.json({ firstName: 'John' }));
-});
-\`\`\`
-
-### After
-
-\`\`\`ts
-http.get<any, ReqBodyType>('/resource', (req, res, ctx) => {
-  return res(ctx.json({ firstName: 'John' }));
-});
-\`\`\`
-
-## Applicability Criteria
-
-\`MSW\` >= 1.0.0
-
-## Other Metadata
-
-### Codemod Version
-
-v1.0.0
-
-### Change Mode
-
-**Assistive**: The automation partially completes changes. Human involvement is needed to make changes ready to be pushed and merged.
-
-### **Codemod Engine**
-
-[ts-morph](https://github.com/dsherret/ts-morph)
-
-### Estimated Time Saving
-
-5 minutes per occurrence
-
-### Owner
-
-[Intuita](https://github.com/intuita-inc)
-
-### Links for more info
-
-- [Link1](https://example.com/)
-- [Link2](https://example1.com/)
-`;
-
-const DATA_MULTI_LINE_TIMESAVE = `
-# Do the thing
-
-## Description
-
-This is an amazing codemod
-
-### WARNING
-
-This codemod does the thing
+-   \`setupWorker\` is now imported from \`msw/browser\`
+-   \`rest\` from \`msw\` is now named \`http\`
+-   \`RestHandler\` from \`msw\` is now named \`HttpHandler\`
 
 ## Example
 
@@ -169,7 +96,12 @@ describe('parse/yaml', function () {
 		deepEqual(parseResult, {
 			name: 'Do the thing',
 			description:
-				'This is an amazing codemod\n### WARNING\nThis codemod does the thing',
+				'This is an amazing codemod\n### WARNING\nThis codemod does the thing\n' +
+				'Following the original msw [upgrade guide](https://mswjs.io/docs/migrations/1.x-to-2.x/#imports), ' +
+				'there are certain imports that changed their location and/or naming. This codemod will adjust your imports to the new location and naming.\n' +
+				'-   `setupWorker` is now imported from `msw/browser`\n' +
+				'-   `rest` from `msw` is now named `http`\n' +
+				'-   `RestHandler` from `msw` is now named `HttpHandler`',
 			examples:
 				'### tsconfig.json\n' +
 				'### Before\n\n' +
@@ -200,7 +132,7 @@ describe('parse/yaml', function () {
 			version: '1.0.0',
 			changeMode: 'assistive',
 			engine: 'ts-morph',
-			timeSave: '5 minutes/occurrence',
+			timeSave: '5 minutes/occurrence\nMaybe more...',
 			owner: 'Intuita',
 			links: 'https://example.com/,https://example1.com/',
 		});
@@ -238,98 +170,12 @@ f_long-description: >-
   This is an amazing codemod
   ### WARNING
   This codemod does the thing
-  \n
-  ### tsconfig.json
-  ### Before
+  Following the original msw [upgrade guide](https://mswjs.io/docs/migrations/1.x-to-2.x/#imports), there are certain imports that changed their location and/or naming. This codemod will adjust your imports to the new location and naming.
+  -   \`setupWorker\` is now imported from \`msw/browser\`
+  -   \`rest\` from \`msw\` is now named \`http\`
+  -   \`RestHandler\` from \`msw\` is now named \`HttpHandler\`
   
-  \`\`\`ts
-  http.get<ReqBodyType, PathParamsType>('/resource', (req, res, ctx) => {
-    return res(ctx.json({ firstName: 'John' }));
-  });
-  \`\`\`
-  
-  ### After
-  
-  \`\`\`ts
-  http.get<PathParamsType, ReqBodyType>('/resource', (req, res, ctx) => {
-    return res(ctx.json({ firstName: 'John' }));
-  });
-  \`\`\`
-  
-  ### Before
-  
-  \`\`\`ts
-  http.get<ReqBodyType>('/resource', (req, res, ctx) => {
-    return res(ctx.json({ firstName: 'John' }));
-  });
-  \`\`\`
-  
-  ### After
-  
-  \`\`\`ts
-  http.get<any, ReqBodyType>('/resource', (req, res, ctx) => {
-    return res(ctx.json({ firstName: 'John' }));
-  });
-  \`\`\`
-  
-f_github-link: https://github.com/intuita-inc/codemod-registry/tree/main/codemods/msw/2/imports
-f_vs-code-link: vscode://intuita.intuita-vscode-extension/showCodemod?chd=${vscodeHashDigest}
-f_codemod-studio-link: n/a
-f_cli-command: intuita msw/2/imports
-f_framework: cms/framework/msw.md
-f_applicability-criteria: MSW >= 1.0.0
-f_verified-codemod: true
-f_author: cms/authors/intuita.md
-layout: "[automations].html"
-slug: msw-2-imports
-title: Do the thing
-f_slug-name: msw-2-imports
-f_codemod-engine: cms/codemod-engines/ts-morph.md
-f_change-mode-2: Assistive
-f_estimated-time-saving: 5 minutes/occurrence
-tags: automations
-updated-on: ${date.toISOString()}
-published-on: ${date.toISOString()}
-seo: n/a
-`.trim(),
-		);
-	});
 
-	it('when time save is a multi-line string', async function () {
-		beforeEach(() => {
-			vi.useFakeTimers();
-		});
-
-		afterEach(() => {
-			vi.useRealTimers();
-		});
-
-		// 5th Dec 2023
-		const date = new Date(2023, 11, 5);
-		vi.setSystemTime(date);
-
-		const parseResultMultiline = parse(DATA_MULTI_LINE_TIMESAVE);
-
-		const yaml = convertToYaml(
-			parseResultMultiline,
-			'codemods/msw/2/imports/README.md',
-		);
-
-		const vscodeHashDigest = createHash('ripemd160')
-			.update('msw/2/imports')
-			.digest('base64url');
-
-		deepEqual(
-			yaml,
-			`
-created-on: ${date.toISOString()}
-f_long-description: >-
-  ## Description
-  \n
-  This is an amazing codemod
-  ### WARNING
-  This codemod does the thing
-  \n
   ### tsconfig.json
   ### Before
   
@@ -384,7 +230,7 @@ tags: automations
 updated-on: ${date.toISOString()}
 published-on: ${date.toISOString()}
 seo: n/a
-`.trim(),
+	`.trim(),
 		);
 	});
 });
