@@ -35,11 +35,24 @@ export const sync = async () => {
 		const generatedSlug = path.split('/').slice(1, -1).join('-');
 		const websitePath = `cms/automations/${generatedSlug}.md`;
 
-		const websiteFile = await git.catFile([
-			'-e',
-			`website/master:${websitePath}`,
-		]);
-		const oldFile = await git.catFile(['-e', `origin/main:${path}`]);
+		let websiteFile: string | null;
+		let oldFile: string | null;
+		try {
+			websiteFile = await git.catFile([
+				'-e',
+				`website/master:${websitePath}`,
+			]);
+		} catch (err) {
+			websiteFile = null;
+		}
+
+		try {
+			oldFile = await git.catFile(['-e', `origin/main:${path}`]);
+		} catch (err) {
+			oldFile = null;
+		}
+
+		// Always exists
 		const newFile = await git.catFile(['-e', `HEAD:${path}`]);
 
 		const newReadmeYamlContent = convertToYaml(parse(newFile), path);
