@@ -372,7 +372,7 @@ f_github-link: ${
 	}
 f_vs-code-link: ${
 		vscodeHashDigest
-			? `vscode://intuita.intuita-vscode-extension/cases/${vscodeHashDigest}`
+			? `vscode://intuita.intuita-vscode-extension/showCodemod?chd=${vscodeHashDigest}`
 			: 'n/a'
 	}
 f_codemod-studio-link: n/a
