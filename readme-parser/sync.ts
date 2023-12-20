@@ -39,7 +39,7 @@ export const sync = async () => {
 		let oldFile: string | null;
 		try {
 			websiteFile = await git.catFile([
-				'-e',
+				'-p',
 				`website/master:${websitePath}`,
 			]);
 		} catch (err) {
@@ -47,13 +47,13 @@ export const sync = async () => {
 		}
 
 		try {
-			oldFile = await git.catFile(['-e', `origin/main:${path}`]);
+			oldFile = await git.catFile(['-p', `origin/main:${path}`]);
 		} catch (err) {
 			oldFile = null;
 		}
 
 		// Always exists
-		const newFile = await git.catFile(['-e', `HEAD:${path}`]);
+		const newFile = await git.catFile(['-p', `HEAD:${path}`]);
 
 		const newReadmeYamlContent = convertToYaml(parse(newFile), path);
 
@@ -92,7 +92,8 @@ export const sync = async () => {
 		// Our content's source of truth is yaml from the beginning, plus it has a lot of multi-line strings,
 		// which would be a pain to handle in json. We are converting to json, just to be able to operate
 		// the fields just like any other JS object, to perform the comparison.
-		// Not using valibot's safeParse, because we can just error if that's not an object.
+		// Not using valibot's safeParse, because we can just error if that's not an object and we don't care
+		// about the fields to be of a specific type.
 		const oldContent = valibotParse(
 			record(any()),
 			yaml.load(convertToYaml(parse(oldFile), path)),
@@ -107,9 +108,7 @@ export const sync = async () => {
 		);
 
 		const updatedContent = { ...websiteContent };
-
 		let changed = false;
-		// 1. Perform a diff between old file and new file, decide what do we need to filter
 		for (const key of Object.keys(newContent)) {
 			// Field did not change
 			if (oldContent[key] === newContent[key]) {
