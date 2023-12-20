@@ -30,7 +30,7 @@ export const sync = async () => {
 		process.exit(0);
 	}
 
-	let commitCount = 0;
+	const staged: Record<string, string> = {};
 	for (const path of readmesChanged) {
 		console.log(`Syncing ${path}`);
 		const generatedSlug = path.split('/').slice(1, -1).join('-');
@@ -55,16 +55,7 @@ export const sync = async () => {
 
 		// Always exists
 		const newFile = await git.catFile(['-p', `HEAD:${path}`]);
-
 		const newReadmeYamlContent = convertToYaml(parse(newFile), path);
-
-		const commitNewReadme = async (newContent: string) => {
-			await mkdir(dirname(websitePath), { recursive: true });
-			await writeFile(websitePath, newContent);
-			await git.add(websitePath);
-			await git.commit(`Syncs ${websitePath} from codemod-registry`);
-			console.log(`Created commit for ${websitePath}`);
-		};
 
 		// If !websiteFile, we just add the file
 		// If websiteFile is present, but oldFile is not, this means that
@@ -72,7 +63,7 @@ export const sync = async () => {
 		// which technically should not be possible.
 		// In that case we just update the entire file with the new one anyways.
 		if (!websiteFile || !oldFile) {
-			await commitNewReadme(`---\n${newReadmeYamlContent}\n---`);
+			staged[websitePath] = `---\n${newReadmeYamlContent}\n---`;
 			return;
 		}
 
@@ -123,6 +114,11 @@ export const sync = async () => {
 				continue;
 			}
 
+			// Field is already the same as in the new README version
+			if (newContent[key] === websiteContent[key]) {
+				continue;
+			}
+
 			updatedContent[key] = newContent[key];
 			changed = true;
 		}
@@ -138,16 +134,24 @@ export const sync = async () => {
 			updatedYaml += `\n${websiteLeftoverDescription}`;
 		}
 
-		await commitNewReadme(updatedYaml);
-		commitCount += 1;
+		staged[websitePath] = updatedYaml;
 	}
 
-	if (commitCount === 0) {
+	if (Object.keys(staged).length === 0) {
 		console.log('No commits were created. Skipping push...');
 		process.exit(0);
 	}
 
-	console.log(`Created ${commitCount} commits to be synced to website repo.`);
+	git.checkout(['-b', 'update-codemods', 'website/master']);
+
+	for (const [websitePath, newContent] of Object.entries(staged)) {
+		await mkdir(dirname(websitePath), { recursive: true });
+		await writeFile(websitePath, newContent);
+		await git.add(websitePath);
+		await git.commit(`Syncs ${websitePath} from codemod-registry`);
+		console.log(`Created commit for ${websitePath}`);
+	}
+
 	console.log('Current status:');
 	console.log(await git.status());
 	await git.push('website', 'HEAD:master');
