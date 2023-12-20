@@ -63,6 +63,7 @@ export const sync = async () => {
 			await writeFile(websitePath, newContent);
 			await git.add(websitePath);
 			await git.commit(`Syncs ${websitePath} from codemod-registry`);
+			console.log(`Created commit for ${websitePath}`);
 		};
 
 		// If !websiteFile, we just add the file
@@ -127,6 +128,7 @@ export const sync = async () => {
 		}
 
 		if (!changed) {
+			console.log(`Nothing to update in path ${path}`);
 			continue;
 		}
 
@@ -141,10 +143,15 @@ export const sync = async () => {
 	}
 
 	if (commitCount === 0) {
+		console.log('No commits were created. Skipping push...');
 		process.exit(0);
 	}
 
-	git.push('website', 'HEAD:master');
+	console.log(`Created ${commitCount} commits to be synced to website repo.`);
+	console.log('Current status:');
+	console.log(await git.status());
+	await git.push('website', 'HEAD:master');
+	console.log('Successfully pushed to website repo.');
 
 	process.exit(0);
 };
