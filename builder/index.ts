@@ -147,6 +147,7 @@ const build = async () => {
 
 	await removeDirectoryContents(buildDirectoryPath);
 
+	// this is a deprecated feature
 	await writeFile(
 		join(buildDirectoryPath, 'names.json'),
 		JSON.stringify(names),
@@ -170,9 +171,14 @@ const build = async () => {
 		});
 
 		{
+			const configWithName = {
+				...config,
+				name,
+			};
+
 			const buildConfigPath = join(codemodDirectoryPath, 'config.json');
 
-			writeFile(buildConfigPath, JSON.stringify(config));
+			writeFile(buildConfigPath, JSON.stringify(configWithName));
 		}
 
 		if (
