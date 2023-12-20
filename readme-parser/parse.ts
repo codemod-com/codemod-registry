@@ -6,8 +6,6 @@ import type { Heading, PhrasingContent, RootContent } from 'mdast';
 import { fromMarkdown } from 'mdast-util-from-markdown';
 import { is, object, optional, string } from 'valibot';
 import { createHash } from 'crypto';
-// import { fileURLToPath } from 'url';
-// import { dirname } from 'path';
 
 const configJsonSchema = object({
 	schemaVersion: optional(string()),
@@ -322,8 +320,6 @@ export const convertToYaml = (
 	if (path) {
 		cleanPath = path.split('/').slice(0, -1).join('/');
 
-		// const __filename = fileURLToPath(import.meta.url);
-		// const __dirname = dirname(__filename);
 		const parts = __dirname.split('/');
 		const pivot = parts.indexOf('readme-parser');
 		const pathToCodemod = nodePath.join(
