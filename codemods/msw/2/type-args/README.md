@@ -112,7 +112,7 @@ v1.0.0
 
 ### Estimated Time Saving
 
-Up to 15 minutes per occurrence
+~15 minutes per occurrence
 
 ### Owner
 
