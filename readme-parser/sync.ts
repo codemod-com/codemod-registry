@@ -179,9 +179,11 @@ export const sync = async () => {
 			const newFileLines = newReadmeYamlContent.split('\n');
 
 			updatedYaml = [
+				'---',
 				...websiteLines.slice(0, websiteStartIndex),
 				...newFileLines.slice(newFileStartIndex, newFileEndIndex + 1),
 				...websiteLines.slice(websiteEndIndex),
+				'---',
 			].join('\n');
 		}
 
