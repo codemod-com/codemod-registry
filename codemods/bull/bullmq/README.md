@@ -129,8 +129,7 @@ v1.0.0
 
 ### Estimated Time Saving
 
-Up to 5 minutes per queue with one single job.
-Another 5 minutes for changing the job startup in bullmq.
+Up to 10 minutes per occurence
 
 ### Owner
 

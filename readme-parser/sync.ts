@@ -151,8 +151,6 @@ export const sync = async () => {
 		console.log(`Created commit for ${websitePath}`);
 	}
 
-	console.log('Current status:');
-	console.log(await git.status());
 	await git.push('website', 'HEAD:master');
 	console.log('Successfully pushed to website repo.');
 
