@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 
-import { writeFile } from 'fs/promises';
+import { mkdir, writeFile } from 'fs/promises';
 import * as yaml from 'js-yaml';
 import { simpleGit } from 'simple-git';
 import { any, record, parse as valibotParse } from 'valibot';
 import { convertToYaml, parse } from './parse.js';
+import { dirname } from 'path';
 
 export const sync = async () => {
 	const git = simpleGit();
@@ -58,6 +59,7 @@ export const sync = async () => {
 		const newReadmeYamlContent = convertToYaml(parse(newFile), path);
 
 		const commitNewReadme = async (newContent: string) => {
+			await mkdir(dirname(websitePath), { recursive: true });
 			await writeFile(websitePath, newContent);
 			await git.add(websitePath);
 			await git.commit(`Syncs ${websitePath} from codemod-registry`);
