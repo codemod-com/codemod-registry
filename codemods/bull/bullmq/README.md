@@ -136,6 +136,3 @@ Another 5 minutes for changing the job startup in bullmq.
 
 [Intuita](https://github.com/intuita-inc)
 
-### Links for more info
-
-
