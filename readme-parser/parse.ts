@@ -386,7 +386,11 @@ title: ${title}
 f_slug-name: ${slug ?? 'n/a'}
 f_codemod-engine: cms/codemod-engines/${engine}.md
 f_change-mode-2: ${capitalize(changeMode)}
-f_estimated-time-saving: ${timeSave}
+f_estimated-time-saving: ${
+		timeSave.includes('\n')
+			? `>-\n  ${timeSave.replace(/\n/, '\n  ')}`
+			: timeSave
+	}
 tags: automations
 updated-on: ${new Date().toISOString()}
 published-on: ${new Date().toISOString()}
