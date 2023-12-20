@@ -6,6 +6,36 @@ import { simpleGit } from 'simple-git';
 import { any, record, parse as valibotParse } from 'valibot';
 import { convertToYaml, parse } from './parse.js';
 
+const findKeyLineRange = (yaml: string, key: string) => {
+	const splitYaml = yaml.split('\n');
+
+	let fieldStartLine: number | null = null;
+	let fieldEndLine: number | null = null;
+	let startFound = false;
+
+	for (const [index, line] of splitYaml.entries()) {
+		if (startFound && line.match(/^\w+:\s/)) {
+			fieldEndLine = index - 1;
+			break;
+		}
+
+		if (line.match(`^${key}:\\s`)) {
+			fieldStartLine = index;
+			startFound = true;
+		}
+	}
+
+	if (fieldStartLine === null) {
+		return null;
+	}
+
+	if (fieldEndLine === null) {
+		fieldEndLine = splitYaml.length - 1;
+	}
+
+	return [fieldStartLine, fieldEndLine] as const;
+};
+
 export const sync = async () => {
 	const git = simpleGit();
 
@@ -101,8 +131,7 @@ export const sync = async () => {
 			yaml.load(websiteYamlContent),
 		);
 
-		const updatedContent = { ...websiteContent };
-		let changed = false;
+		const changedKeys: string[] = [];
 		for (const key of Object.keys(newContent)) {
 			// Field did not change
 			if (oldContent[key] === newContent[key]) {
@@ -119,22 +148,43 @@ export const sync = async () => {
 				continue;
 			}
 
-			updatedContent[key] = newContent[key];
-			changed = true;
+			changedKeys.push(key);
 		}
 
-		if (!changed) {
+		if (!changedKeys.length) {
 			console.log(`Nothing to update in path ${path}`);
 			continue;
 		}
 
-		let updatedYaml = `---\n${yaml.dump(updatedContent, {
-			quotingType: '"',
-			lineWidth: 120,
-			condenseFlow: true,
-			noArrayIndent: true,
-			noCompatMode: true,
-		})}---`;
+		let updatedYaml = websiteYamlContent;
+		for (const key of changedKeys) {
+			const websiteRange = findKeyLineRange(websiteYamlContent, key);
+			if (!websiteRange) {
+				console.error(
+					`Could not find ${key} in website file ${websitePath}`,
+				);
+				process.exit(1);
+			}
+
+			const newFileRange = findKeyLineRange(newReadmeYamlContent, key);
+			if (!newFileRange) {
+				console.error(`Could not find ${key} in new file ${path}`);
+				process.exit(1);
+			}
+
+			const [websiteStartIndex, websiteEndIndex] = websiteRange;
+			const [newFileStartIndex, newFileEndIndex] = websiteRange;
+
+			const websiteLines = websiteYamlContent.split('\n');
+			const newFileLines = newReadmeYamlContent.split('\n');
+
+			updatedYaml = [
+				...websiteLines.slice(0, websiteStartIndex),
+				...newFileLines.slice(newFileStartIndex, newFileEndIndex + 1),
+				...websiteLines.slice(websiteEndIndex),
+			].join('\n');
+		}
+
 		const websiteLeftoverDescription = websiteContentSplit.at(2)?.trim();
 		if (websiteLeftoverDescription) {
 			updatedYaml += `\n${websiteLeftoverDescription}`;
