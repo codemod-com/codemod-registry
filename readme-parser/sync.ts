@@ -64,7 +64,7 @@ export const sync = async () => {
 		// In that case we just update the entire file with the new one anyways.
 		if (!websiteFile || !oldFile) {
 			staged[websitePath] = `---\n${newReadmeYamlContent}\n---`;
-			return;
+			continue;
 		}
 
 		// Otherwise:
@@ -79,7 +79,8 @@ export const sync = async () => {
 		const websiteYamlContent = websiteContentSplit.at(1)?.trim();
 
 		if (!websiteYamlContent) {
-			throw new Error(`Could not parse website file ${websitePath}`);
+			console.error(`Could not parse website file ${websitePath}`);
+			process.exit(1);
 		}
 
 		// Here, we are actually doing double-convert, json->yaml->json, but it's meant to be that way.
