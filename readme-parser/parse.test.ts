@@ -92,30 +92,30 @@ describe('parse/yaml', function () {
 				'This is an amazing codemod\n### WARNING\nThis codemod does the thing',
 			examples:
 				'### tsconfig.json\n' +
-				'### Before\n' +
+				'### Before\n\n' +
 				'```ts\n' +
 				"http.get<ReqBodyType, PathParamsType>('/resource', (req, res, ctx) => {\n" +
 				"  return res(ctx.json({ firstName: 'John' }));\n" +
 				'});\n' +
-				'```\n' +
-				'### After\n' +
+				'```\n\n' +
+				'### After\n\n' +
 				'```ts\n' +
 				"http.get<PathParamsType, ReqBodyType>('/resource', (req, res, ctx) => {\n" +
 				"  return res(ctx.json({ firstName: 'John' }));\n" +
 				'});\n' +
-				'```\n' +
-				'### Before\n' +
+				'```\n\n' +
+				'### Before\n\n' +
 				'```ts\n' +
 				"http.get<ReqBodyType>('/resource', (req, res, ctx) => {\n" +
 				"  return res(ctx.json({ firstName: 'John' }));\n" +
 				'});\n' +
-				'```\n' +
-				'### After\n' +
+				'```\n\n' +
+				'### After\n\n' +
 				'```ts\n' +
 				"http.get<any, ReqBodyType>('/resource', (req, res, ctx) => {\n" +
 				"  return res(ctx.json({ firstName: 'John' }));\n" +
 				'});\n' +
-				'```',
+				'```\n',
 			applicability: 'MSW >= 1.0.0',
 			version: '1.0.0',
 			changeMode: 'assistive',
@@ -194,7 +194,7 @@ f_long-description: >-
   \`\`\`
   
 f_github-link: https://github.com/intuita-inc/codemod-registry/tree/main/codemods/msw/2/imports
-f_vs-code-link: vscode://intuita.intuita-vscode-extension/cases/${vscodeHashDigest}
+f_vs-code-link: vscode://intuita.intuita-vscode-extension/showCodemod?chd=${vscodeHashDigest}
 f_codemod-studio-link: n/a
 f_cli-command: intuita msw/2/imports
 f_framework: cms/framework/msw.md
