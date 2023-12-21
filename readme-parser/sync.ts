@@ -135,16 +135,19 @@ export const sync = async () => {
 		for (const key of Object.keys(newContent)) {
 			// Field did not change
 			if (oldContent[key] === newContent[key]) {
+				console.log(`${key} is stale`);
 				continue;
 			}
 
 			// Field was changed in the CMS, no update
 			if (oldContent[key] !== websiteContent[key]) {
+				console.log(`${key} changed in CMS`);
 				continue;
 			}
 
 			// Field is already the same as in the new README version
 			if (newContent[key] === websiteContent[key]) {
+				console.log(`${key} is already up to date`);
 				continue;
 			}
 
