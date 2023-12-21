@@ -8,7 +8,7 @@ This codemod for RedwoodJS v4 automatically inserts an `authDecoder` property in
 
 ### Before
 
-```TypeScript
+```ts
 import { createGraphQLHandler } from '@redwoodjs/graphql-server';
 
 import directives from 'src/directives/**/*.{js,ts}';
@@ -32,7 +32,7 @@ export const handler = createGraphQLHandler({
 
 ### After
 
-```TypeScript
+```ts
 import { authDecoder } from '@redwoodjs/auth-auth0-api';
 import { createGraphQLHandler } from '@redwoodjs/graphql-server';
 
