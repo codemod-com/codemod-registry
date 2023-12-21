@@ -37,7 +37,7 @@ const handlers: HttpHandler[] = [
 
 ## Applicability Criteria
 
-MSW version >= 1.0.1
+MSW version >= 1.0.0
 
 ## Other Metadata
 
