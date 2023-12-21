@@ -156,6 +156,7 @@ export const sync = async () => {
 			continue;
 		}
 
+		changedKeys.push('updated-on');
 		let updatedYaml = websiteYamlContent;
 		for (const key of changedKeys) {
 			const websiteRange = findKeyLineRange(updatedYaml, key);
