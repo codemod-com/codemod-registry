@@ -2,7 +2,7 @@
 
 ## Description
 
-There is a change to generic type interface of rest.method() calls. This codemod puts the generic arguments in the correct order to keep type safety.
+There is a change to generic type interface of `rest.method()` calls. This codemod puts the generic arguments in the correct order to keep type safety.
 
 ### WARNING
 
