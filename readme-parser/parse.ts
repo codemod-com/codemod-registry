@@ -443,7 +443,7 @@ f_author: ${
 	}
 layout: "[automations].html"
 slug: ${slug ?? 'n/a'}
-title: ${titleWithVersion}
+title: ${capitalize(titleWithVersion)}
 f_slug-name: ${slug ?? 'n/a'}
 f_codemod-engine: cms/codemod-engines/${engine}.md
 f_change-mode-2: ${capitalize(changeMode)}
