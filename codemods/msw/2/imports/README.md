@@ -37,13 +37,13 @@ const handlers: HttpHandler[] = [
 
 ## Applicability Criteria
 
-MSW version >= 1.0.0
+MSW version >= 1.0.1
 
 ## Other Metadata
 
 ### Codemod Version
 
-v1.0.1
+v1.0.0
 
 ### Change Mode
 
