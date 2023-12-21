@@ -145,9 +145,12 @@ const getTextByHeader = (
 						idx === 0 &&
 						(child.type === 'text' || child.type === 'inlineCode')
 					) {
-						return `${delimiter}${'#'.repeat(rc.depth)} ${
-							child.value
-						}${delimiter}`;
+						const conditionalDelimiter = delimiter.repeat(
+							isDescription ? 2 : 1,
+						);
+						return `${conditionalDelimiter}${'#'.repeat(
+							rc.depth,
+						)} ${child.value}${conditionalDelimiter}`;
 					}
 
 					if (child.type === 'inlineCode') {
@@ -414,6 +417,7 @@ export const convertToYaml = (
 			titleWithVersion = `${framework} - ${title}`;
 		}
 	}
+	titleWithVersion = capitalize(titleWithVersion);
 
 	const res = `
 created-on: ${new Date().toISOString()}
@@ -452,6 +456,12 @@ f_estimated-time-saving: ${
 tags: automations
 updated-on: ${new Date().toISOString()}
 published-on: ${new Date().toISOString()}
+seo:
+  title: ${titleWithVersion} | Intuita Automations
+  og:title: ${titleWithVersion} | Intuita Automations
+  twitter:title: ${titleWithVersion} | Intuita Automations
+  description: ${description.split('\n').at(0)}
+  twitter:card: ${description.split('\n').at(0)}
 `.trim();
 
 	return res;

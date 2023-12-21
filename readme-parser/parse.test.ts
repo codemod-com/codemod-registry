@@ -183,7 +183,7 @@ describe('parse/yaml', function () {
 		deepEqual(parseResult, {
 			name: 'Do the thing',
 			description:
-				'This is an amazing codemod which does `the thing`\n### WARNING\nThis codemod does the thing\n' +
+				'This is an amazing codemod which does `the thing`\n\n### WARNING\n\nThis codemod does the thing\n' +
 				'Following the original msw [upgrade guide](https://mswjs.io/docs/migrations/1.x-to-2.x/#imports), ' +
 				'there are certain imports that changed their location and/or naming. This codemod will adjust your imports to the new location and naming.\n' +
 				'-   `setupWorker` is now imported from `msw/browser`\n' +
@@ -253,9 +253,12 @@ describe('parse/yaml', function () {
 created-on: ${date.toISOString()}
 f_long-description: >-
   ## Description
-  \n
+  
+
   This is an amazing codemod which does \`the thing\`
+  
   ### WARNING
+  
   This codemod does the thing
   Following the original msw [upgrade guide](https://mswjs.io/docs/migrations/1.x-to-2.x/#imports), there are certain imports that changed their location and/or naming. This codemod will adjust your imports to the new location and naming.
   -   \`setupWorker\` is now imported from \`msw/browser\`
@@ -324,6 +327,12 @@ f_estimated-time-saving: >-
 tags: automations
 updated-on: ${date.toISOString()}
 published-on: ${date.toISOString()}
+seo:
+  title: Msw V2 - Do the thing | Intuita Automations
+  og:title: Msw V2 - Do the thing | Intuita Automations
+  twitter:title: Msw V2 - Do the thing | Intuita Automations
+  description: This is an amazing codemod which does \`the thing\`
+  twitter:card: This is an amazing codemod which does \`the thing\`
 	`.trim(),
 		);
 	});
