@@ -176,7 +176,7 @@ export const sync = async () => {
 			const [websiteStartIndex, websiteEndIndex] = websiteRange;
 			const [newFileStartIndex, newFileEndIndex] = newFileRange;
 
-			const websiteLines = websiteYamlContent.split('\n');
+			const websiteLines = updatedYaml.split('\n');
 			const newFileLines = newReadmeYamlContent.split('\n');
 
 			updatedYaml = [
