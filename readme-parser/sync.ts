@@ -156,8 +156,12 @@ export const sync = async () => {
 			continue;
 		}
 
+		// Also update the updated-on field
 		changedKeys.push('updated-on');
+		// Yaml to be updated on each iteration serving as a target to make replacements in
 		let updatedYaml = websiteYamlContent;
+		const newFileLines = newReadmeYamlContent.split('\n');
+
 		for (const key of changedKeys) {
 			const websiteRange = findKeyLineRange(updatedYaml, key);
 			if (!websiteRange) {
@@ -176,8 +180,8 @@ export const sync = async () => {
 			const [websiteStartIndex, websiteEndIndex] = websiteRange;
 			const [newFileStartIndex, newFileEndIndex] = newFileRange;
 
+			// Use the latest version of yaml that's being updated
 			const websiteLines = updatedYaml.split('\n');
-			const newFileLines = newReadmeYamlContent.split('\n');
 
 			updatedYaml = [
 				'---',
