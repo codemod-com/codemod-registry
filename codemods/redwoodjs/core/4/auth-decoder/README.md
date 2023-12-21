@@ -15,8 +15,8 @@ import directives from 'src/directives/**/*.{js,ts}';
 import sdls from 'src/graphql/**/*.sdl.{js,ts}';
 import services from 'src/services/**/*.{js,ts}';
 
-import { db } from 'src/lib/db';
 import { logger } from 'src/lib/logger';
+import { db } from 'src/lib/db';
 
 export const handler = createGraphQLHandler({
   loggerConfig: { logger, options: {} },
@@ -40,8 +40,8 @@ import directives from 'src/directives/**/*.{js,ts}';
 import sdls from 'src/graphql/**/*.sdl.{js,ts}';
 import services from 'src/services/**/*.{js,ts}';
 
-import { db } from 'src/lib/db';
 import { logger } from 'src/lib/logger';
+import { db } from 'src/lib/db';
 
 export const handler = createGraphQLHandler({
   authDecoder: authDecoder,
@@ -65,7 +65,7 @@ RedwoodJS < v4.0.0
 
 ### Codemod Version
 
-v1.0.0
+v1.0.1
 
 ### Change Mode
 
