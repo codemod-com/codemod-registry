@@ -77,7 +77,7 @@ export const sync = async () => {
 		}
 
 		try {
-			oldFile = await git.catFile(['-p', `origin/main:${path}`]);
+			oldFile = await git.catFile(['-p', `HEAD~1:${path}`]);
 		} catch (err) {
 			oldFile = null;
 		}

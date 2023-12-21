@@ -363,11 +363,13 @@ export const convertToYaml = (
 
 	let slug: string | null = null;
 	let framework: string | null = null;
+	let frameworkVersion: string | null = null;
 	let cliCommand: string | null = null;
 	let cleanPath: string | null = null;
 	let codemodName: string | null = null;
 	if (path) {
-		cleanPath = path.split('/').slice(0, -1).join('/');
+		const splitPath = path.split('/');
+		cleanPath = splitPath.slice(0, -1).join('/');
 
 		const parts = __dirname.split('/');
 		const pivot = parts.indexOf('readme-parser');
@@ -376,7 +378,8 @@ export const convertToYaml = (
 			cleanPath,
 		);
 
-		framework = path.split('/').at(1) ?? null;
+		framework = splitPath.at(1) ?? null;
+		frameworkVersion = splitPath.at(2) ?? null;
 
 		try {
 			const config = readFileSync(
@@ -399,6 +402,15 @@ export const convertToYaml = (
 		vscodeHashDigest = createHash('ripemd160')
 			.update(codemodName)
 			.digest('base64url');
+	}
+
+	let titleWithVersion = title;
+	if (framework) {
+		if (frameworkVersion) {
+			titleWithVersion = `${framework} V${frameworkVersion} - ${title}`;
+		} else {
+			titleWithVersion = `${framework} - ${title}`;
+		}
 	}
 
 	const res = `
@@ -431,7 +443,7 @@ f_author: ${
 	}
 layout: "[automations].html"
 slug: ${slug ?? 'n/a'}
-title: ${title}
+title: ${titleWithVersion}
 f_slug-name: ${slug ?? 'n/a'}
 f_codemod-engine: cms/codemod-engines/${engine}.md
 f_change-mode-2: ${capitalize(changeMode)}
