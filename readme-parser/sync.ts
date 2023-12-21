@@ -142,6 +142,8 @@ export const sync = async () => {
 			// Field was changed in the CMS, no update
 			if (oldContent[key] !== websiteContent[key]) {
 				console.log(`${key} changed in CMS`);
+				console.log(oldContent[key]);
+				console.log(websiteContent[key]);
 				continue;
 			}
 
