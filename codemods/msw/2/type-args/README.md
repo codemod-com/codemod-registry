@@ -6,7 +6,7 @@ There is a change to generic type interface of `rest.method()` calls. This codem
 
 ### WARNING
 
-This codemod runs `.fixUnusedIdentifiers()` on a source file you are running it on. This would remove any unused declarations in the file. This is due to atomicity of this mod, which blindly inserts the callback structure into each msw handler callback and then cleans up the variables that are not used.
+This codemod runs `.fixUnusedIdentifiers()` on a target source file. This would remove any unused declarations in the file. This is due to atomicity of this mod, which blindly inserts the callback structure into each msw handler callback and then cleans up the variables that are not used.
 
 ## Example
 
