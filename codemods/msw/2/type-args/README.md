@@ -117,5 +117,3 @@ v1.0.0
 ### Owner
 
 [Intuita](https://github.com/intuita-inc)
-
-### Links for more info
