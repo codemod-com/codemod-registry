@@ -14,6 +14,12 @@ This is an amazing codemod
 
 This codemod does the thing
 
+Following the original msw [upgrade guide](https://mswjs.io/docs/migrations/1.x-to-2.x/#imports), there are certain imports that changed their location and/or naming. This codemod will adjust your imports to the new location and naming.
+
+-   \`setupWorker\` is now imported from \`msw/browser\`
+-   \`rest\` from \`msw\` is now named \`http\`
+-   \`RestHandler\` from \`msw\` is now named \`HttpHandler\`
+
 ## Example
 
 ### \`tsconfig.json\`
@@ -71,6 +77,7 @@ v1.0.0
 ### Estimated Time Saving
 
 5 minutes per occurrence
+Maybe more...
 
 ### Owner
 
@@ -89,7 +96,12 @@ describe('parse/yaml', function () {
 		deepEqual(parseResult, {
 			name: 'Do the thing',
 			description:
-				'This is an amazing codemod\n### WARNING\nThis codemod does the thing',
+				'This is an amazing codemod\n### WARNING\nThis codemod does the thing\n' +
+				'Following the original msw [upgrade guide](https://mswjs.io/docs/migrations/1.x-to-2.x/#imports), ' +
+				'there are certain imports that changed their location and/or naming. This codemod will adjust your imports to the new location and naming.\n' +
+				'-   `setupWorker` is now imported from `msw/browser`\n' +
+				'-   `rest` from `msw` is now named `http`\n' +
+				'-   `RestHandler` from `msw` is now named `HttpHandler`',
 			examples:
 				'### tsconfig.json\n' +
 				'### Before\n\n' +
@@ -120,7 +132,7 @@ describe('parse/yaml', function () {
 			version: '1.0.0',
 			changeMode: 'assistive',
 			engine: 'ts-morph',
-			timeSave: '5 minutes/occurrence',
+			timeSave: '5 minutes/occurrence\nMaybe more...',
 			owner: 'Intuita',
 			links: 'https://example.com/,https://example1.com/',
 		});
@@ -151,7 +163,6 @@ describe('parse/yaml', function () {
 		deepEqual(
 			yaml,
 			`
----
 created-on: ${date.toISOString()}
 f_long-description: >-
   ## Description
@@ -159,7 +170,12 @@ f_long-description: >-
   This is an amazing codemod
   ### WARNING
   This codemod does the thing
-  \n
+  Following the original msw [upgrade guide](https://mswjs.io/docs/migrations/1.x-to-2.x/#imports), there are certain imports that changed their location and/or naming. This codemod will adjust your imports to the new location and naming.
+  -   \`setupWorker\` is now imported from \`msw/browser\`
+  -   \`rest\` from \`msw\` is now named \`http\`
+  -   \`RestHandler\` from \`msw\` is now named \`HttpHandler\`
+  
+
   ### tsconfig.json
   ### Before
   
@@ -207,13 +223,14 @@ title: Do the thing
 f_slug-name: msw-2-imports
 f_codemod-engine: cms/codemod-engines/ts-morph.md
 f_change-mode-2: Assistive
-f_estimated-time-saving: 5 minutes/occurrence
+f_estimated-time-saving: >-
+  5 minutes/occurrence
+  Maybe more...
 tags: automations
 updated-on: ${date.toISOString()}
 published-on: ${date.toISOString()}
 seo: n/a
----
-`.trim(),
+	`.trim(),
 		);
 	});
 });

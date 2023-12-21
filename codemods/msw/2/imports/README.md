@@ -2,7 +2,7 @@
 
 ## Description
 
-Following the original msw [upgrade guide](https://mswjs.io/docs/migrations/1.x-to-2.x/#imports), there are certain imports that changed their location and/or naming. This codemod will import correct objects from appropriate paths to start your msw migration path.
+Following the original msw [upgrade guide](https://mswjs.io/docs/migrations/1.x-to-2.x/#imports), there are certain imports that changed their location and/or naming. This codemod will adjust your imports to the new location and naming.
 
 -   `setupWorker` is now imported from `msw/browser`
 -   `rest` from `msw` is now named `http`
@@ -55,7 +55,7 @@ v1.0.0
 
 ### Estimated Time Saving
 
-Up to 10 minutes per occurrence
+~10 minutes per occurrence
 
 ### Owner
 

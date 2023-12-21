@@ -6,8 +6,6 @@ import type { Heading, PhrasingContent, RootContent } from 'mdast';
 import { fromMarkdown } from 'mdast-util-from-markdown';
 import { is, object, optional, string } from 'valibot';
 import { createHash } from 'crypto';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
 
 const configJsonSchema = object({
 	schemaVersion: optional(string()),
@@ -15,7 +13,7 @@ const configJsonSchema = object({
 	engine: string(),
 });
 
-const UNESCAPED = ['inlineCode'];
+const UNESCAPED = ['inlineCode', 'link'];
 
 const noFirstLetterLowerCase = (str: string) =>
 	str.length ? str[0] + str.slice(1).toLowerCase() : str;
@@ -24,7 +22,8 @@ const capitalize = (str: string) =>
 	str[0] ? str[0].toUpperCase() + str.slice(1) : str;
 
 const getTextFromNode = (
-	node: RootContent | PhrasingContent | undefined,
+	node: RootContent | PhrasingContent | null,
+	style?: boolean,
 ): string | null => {
 	if (!node) {
 		return null;
@@ -35,7 +34,23 @@ const getTextFromNode = (
 	}
 
 	if ('children' in node) {
-		return getTextFromNode(node.children[0]);
+		let textContent = '';
+		for (const child of node.children) {
+			if (!style) {
+				textContent += getTextFromNode(child);
+				continue;
+			}
+
+			if (child.type === 'listItem') {
+				textContent += `${getTextFromNode(child, style)}`;
+			} else if (child.type === 'inlineCode') {
+				textContent += `\`${getTextFromNode(child, style)}\``;
+			} else {
+				textContent += getTextFromNode(child);
+			}
+		}
+
+		return textContent;
 	}
 
 	return null;
@@ -118,6 +133,11 @@ const getTextByHeader = (
 		if ('children' in rc) {
 			rc.children
 				.map((child, idx, arr) => {
+					const isDescription =
+						getTextFromNode(heading)?.includes('Description');
+
+					const isLinks = getTextFromNode(heading)?.includes('Links');
+
 					// Preserve ### on higher-depth headings
 					if (
 						rc.type === 'heading' &&
@@ -140,13 +160,40 @@ const getTextByHeader = (
 					}
 
 					if (child.type === 'listItem') {
-						return `${getUrlFromNode(
+						if (isDescription) {
+							return `-   ${getTextFromNode(
+								child.children[0] ?? null,
+								true,
+							)}${delimiter}`;
+						}
+
+						if (isLinks) {
+							return `${getUrlFromNode(
+								child.children[0] ?? null,
+							)}${delimiter}`;
+						}
+
+						return `${getTextFromNode(
 							child.children[0] ?? null,
 						)}${delimiter}`;
 					}
 
-					if (child.type === 'link' || child.type === 'strong') {
-						return getTextFromNode(child.children[0]);
+					if (child.type === 'link') {
+						if (isDescription) {
+							return `[${getTextFromNode(
+								child.children[0] ?? null,
+								true,
+							)}](${getUrlFromNode(child ?? null)})`;
+						}
+
+						return getTextFromNode(
+							child.children[0] ?? null,
+							isDescription,
+						);
+					}
+
+					if (child.type === 'strong') {
+						return getTextFromNode(child.children[0] ?? null);
 					}
 
 					// Do not add new line after certain blocks (treated as separate AST nodes)
@@ -322,8 +369,6 @@ export const convertToYaml = (
 	if (path) {
 		cleanPath = path.split('/').slice(0, -1).join('/');
 
-		const __filename = fileURLToPath(import.meta.url);
-		const __dirname = dirname(__filename);
 		const parts = __dirname.split('/');
 		const pivot = parts.indexOf('readme-parser');
 		const pathToCodemod = nodePath.join(
@@ -357,7 +402,6 @@ export const convertToYaml = (
 	}
 
 	const res = `
----
 created-on: ${new Date().toISOString()}
 f_long-description: >-
   ## Description
@@ -391,12 +435,15 @@ title: ${title}
 f_slug-name: ${slug ?? 'n/a'}
 f_codemod-engine: cms/codemod-engines/${engine}.md
 f_change-mode-2: ${capitalize(changeMode)}
-f_estimated-time-saving: ${timeSave}
+f_estimated-time-saving: ${
+		timeSave.includes('\n')
+			? `>-\n  ${timeSave.replace(/\n/, '\n  ')}`
+			: timeSave
+	}
 tags: automations
 updated-on: ${new Date().toISOString()}
 published-on: ${new Date().toISOString()}
 seo: n/a
----
 `.trim();
 
 	return res;

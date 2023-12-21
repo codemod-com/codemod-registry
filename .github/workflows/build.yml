@@ -23,54 +23,9 @@ jobs:
               run: pnpm install
             - name: Build the CJS files
               run: pnpm build
-            - name: Fetch top commit from website repository
+            - name: Add new READMEs to website
               run: |
-                  git remote add website https://github.com/intuita-inc/website.git
-                  git fetch website master
-            - name: Push commit to master in website repository
-              run: |
-                  git config --local user.email "intuita@intuita.io"
-                  git config --local user.name "Intuita Team"
-                  git fetch origin main
-                  # Get the list of changed files between the current commit and origin/main
-                  changed_files=$(git diff --name-only origin/main)
-
-                  # Filter for README files in the 'codemods' directory
-                  readme_files=$(echo "$changed_files" | grep '^codemods/.*README\.md$' || true)
-
-                  if [ -z "$readme_files" ]; then
-                      echo "No README.md file in 'codemods' directory changed."
-                      exit 0
-                  fi
-
-                  # Prepare to store parsed README contents and paths
-                  declare -A parsed_readmes
-                  pnpm --filter @codemod-registry/readme-parser build
-
-                  # Iterate over the filtered README files
-                  while IFS= read -r path_to_readme; do
-                      generated_slug=$(echo "$path_to_readme" | sed 's/^[^/]*\///' | sed 's/\/README\.md$//' | tr '/' '-')
-                      website_file_path="cms/automations/$generated_slug.md"
-                      
-                      # Parse the README and store the output with its path
-                      parsed_readme=$("$PWD"/readme-parser/dist/index.js "$path_to_readme")
-                      parsed_readmes["$website_file_path"]="$parsed_readme"
-                  done <<< "$readme_files"
-
-                  # Checkout a new branch from the website master
-                  git checkout -b update-codemods website/master
-
-                  # Iterate over parsed_readmes and create files
-                  for website_file_path in "${!parsed_readmes[@]}"; do
-                      echo "${parsed_readmes[$website_file_path]}"
-                      echo $(git status)
-                      echo "${parsed_readmes[$website_file_path]}" > "$website_file_path"
-                      git add "$website_file_path"
-                      git commit -m "$website_file_path"
-                      echo $(ls "$website_file_path" -la)
-                  done
-
-                  git push website HEAD:master
+                  "$PWD"/readme-parser/dist/sync.js
             - name: Upload to S3
               uses: jakejarvis/s3-sync-action@master
               with:
