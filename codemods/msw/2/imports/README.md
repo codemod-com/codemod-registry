@@ -43,7 +43,7 @@ MSW version >= 1.0.0
 
 ### Codemod Version
 
-v1.0.0
+v1.0.1
 
 ### Change Mode
 
@@ -55,7 +55,7 @@ v1.0.0
 
 ### Estimated Time Saving
 
-~6 minutes per occurrence
+~10 minutes per occurrence
 
 ### Owner
 
