@@ -55,7 +55,7 @@ v1.0.0
 
 ### Estimated Time Saving
 
-~9 minutes per occurrence
+~8 minutes per occurrence
 
 ### Owner
 

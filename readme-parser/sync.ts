@@ -210,7 +210,7 @@ export const sync = async () => {
 	}
 
 	await git.push('website', 'HEAD:master');
-	console.log('Successfully pushed to website repo');
+	console.log('Successfully pushed to website repo.');
 
 	process.exit(0);
 };
