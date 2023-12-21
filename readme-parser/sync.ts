@@ -14,12 +14,12 @@ const findKeyLineRange = (yaml: string, key: string) => {
 	let startFound = false;
 
 	for (const [index, line] of splitYaml.entries()) {
-		if (startFound && line.match(/^\w+:\s/)) {
+		if (startFound && line.match(/^[A-Za-z0-9_-]+:\s/)) {
 			fieldEndLine = index;
 			break;
 		}
 
-		if (line.match(`^${key}:\\s`)) {
+		if (line.match(`^${key}:\s`)) {
 			fieldStartLine = index;
 			startFound = true;
 		}
