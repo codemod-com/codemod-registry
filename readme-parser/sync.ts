@@ -83,7 +83,7 @@ export const sync = async () => {
 		}
 
 		// Always exists
-		const newFile = await git.catFile(['-p', `HEAD:${path}`]);
+		const newFile = await git.catFile(['-p', `origin/main:${path}`]);
 		const newReadmeYamlContent = convertToYaml(parse(newFile), path);
 
 		// If !websiteFile, we just add the file
