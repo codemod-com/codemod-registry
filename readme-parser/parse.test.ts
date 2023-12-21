@@ -219,7 +219,7 @@ f_verified-codemod: true
 f_author: cms/authors/intuita.md
 layout: "[automations].html"
 slug: msw-2-imports
-title: Do the thing
+title: msw V2 - Do the thing
 f_slug-name: msw-2-imports
 f_codemod-engine: cms/codemod-engines/ts-morph.md
 f_change-mode-2: Assistive
