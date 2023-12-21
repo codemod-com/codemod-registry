@@ -49,7 +49,7 @@ export const sync = async () => {
 	await git.fetch(['website', 'master']);
 	await git.fetch(['origin', 'main']);
 
-	const diff = await git.diff(['--name-only', 'origin/main']);
+	const diff = await git.diff(['--name-only', 'HEAD~1']);
 	const readmesChanged = diff
 		.split('\n')
 		.filter((path) => path.match(/^codemods\/.*README\.md$/));
