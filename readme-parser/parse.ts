@@ -145,9 +145,13 @@ const getTextByHeader = (
 						idx === 0 &&
 						(child.type === 'text' || child.type === 'inlineCode')
 					) {
-						return `${'#'.repeat(rc.depth)} ${
+						return `${delimiter}${'#'.repeat(rc.depth)} ${
 							child.value
 						}${delimiter}`;
+					}
+
+					if (child.type === 'inlineCode') {
+						return `\`${child.value}\``;
 					}
 
 					if (child.type === 'text') {
@@ -212,9 +216,7 @@ const getTextByHeader = (
 
 		if ('value' in rc) {
 			if (rc.type === 'code') {
-				textParts.push(
-					`\n\`\`\`${rc.lang}\n${rc.value}\n\`\`\`${delimiter}\n`,
-				);
+				textParts.push(`\n\`\`\`${rc.lang}\n\n${rc.value}\n\n\`\`\`\n`);
 			} else {
 				textParts.push(`${rc.value}${delimiter}`);
 			}
@@ -420,31 +422,26 @@ f_long-description: >-
   \n
   ${description.replace(/\n/g, '\n  ')}
   \n
-  ${examples.replace(/\n/g, '\n  ')}
-f_github-link: ${
+  ${examples.replace(/\n/g, '\n  ')}${
 		path
-			? `https://github.com/intuita-inc/codemod-registry/tree/main/${cleanPath}`
-			: 'n/a'
-	}
-f_vs-code-link: ${
+			? `\nf_github-link: https://github.com/intuita-inc/codemod-registry/tree/main/${cleanPath}`
+			: ''
+  }${
 		vscodeHashDigest
-			? `vscode://intuita.intuita-vscode-extension/showCodemod?chd=${vscodeHashDigest}`
-			: 'n/a'
-	}
-f_codemod-studio-link: n/a
-f_cli-command: ${cliCommand ?? 'n/a'}
-f_framework: ${framework ? `cms/framework/${framework}.md` : 'n/a'}
+			? `\nf_vs-code-link: vscode://intuita.intuita-vscode-extension/showCodemod?chd=${vscodeHashDigest}`
+			: ''
+  }${cliCommand ? `\nf_cli-command: ${cliCommand}` : ''}${
+		framework ? `\nf_framework: cms/framework/${framework}.md` : ''
+  }
 f_applicability-criteria: ${applicability}
 f_verified-codemod: ${owner === 'Intuita' ? 'true' : 'false'}
 f_author: ${
 		owner === 'Intuita'
 			? 'cms/authors/intuita.md'
-			: `cms/authors/${codemodName?.split('/')?.[0] ?? ''}.md`
+			: `cms/authors/${owner?.toLowerCase().replace(/ /g, '-') ?? ''}.md`
 	}
-layout: "[automations].html"
-slug: ${slug ?? 'n/a'}
-title: ${capitalize(titleWithVersion)}
-f_slug-name: ${slug ?? 'n/a'}
+layout: "[automations].html"${slug ? `\nslug: ${slug}` : ''}
+title: ${capitalize(titleWithVersion)}${slug ? `\nf_slug-name: ${slug}` : ''}
 f_codemod-engine: cms/codemod-engines/${engine}.md
 f_change-mode-2: ${capitalize(changeMode)}
 f_estimated-time-saving: ${
@@ -455,7 +452,6 @@ f_estimated-time-saving: ${
 tags: automations
 updated-on: ${new Date().toISOString()}
 published-on: ${new Date().toISOString()}
-seo: n/a
 `.trim();
 
 	return res;

@@ -67,6 +67,7 @@ export const sync = async () => {
 
 		let websiteFile: string | null;
 		let oldFile: string | null;
+		let newFile: string | null;
 		try {
 			websiteFile = await git.catFile([
 				'-p',
@@ -82,8 +83,17 @@ export const sync = async () => {
 			oldFile = null;
 		}
 
-		// Always exists
-		const newFile = await git.catFile(['-p', `origin/main:${path}`]);
+		try {
+			newFile = await git.catFile(['-p', `origin/main:${path}`]);
+		} catch (err) {
+			newFile = null;
+		}
+
+		if (!newFile) {
+			console.error(`File was deleted in HEAD: ${path}`);
+			continue;
+		}
+
 		const newReadmeYamlContent = convertToYaml(parse(newFile), path);
 
 		// If !websiteFile, we just add the file
