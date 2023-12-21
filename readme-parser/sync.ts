@@ -47,7 +47,7 @@ export const sync = async () => {
 	await git.addConfig('user.name', 'Intuita Team', false, 'local');
 
 	await git.fetch(['website', 'master']);
-	await git.fetch(['origin', 'main']);
+	await git.fetch(['origin', 'main', '--depth=2']);
 
 	const diff = await git.diff(['--name-only', 'origin/main~1']);
 	const readmesChanged = diff
