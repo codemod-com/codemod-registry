@@ -14,12 +14,12 @@ const findKeyLineRange = (yaml: string, key: string) => {
 	let startFound = false;
 
 	for (const [index, line] of splitYaml.entries()) {
-		if (startFound && line.match(/^\w+:\s/)) {
+		if (startFound && new RegExp(`^[A-Za-z0-9_-]+:\\s`).test(line)) {
 			fieldEndLine = index;
 			break;
 		}
 
-		if (line.match(`^${key}:\\s`)) {
+		if (new RegExp(`^${key}:\\s`).test(line)) {
 			fieldStartLine = index;
 			startFound = true;
 		}
@@ -47,9 +47,9 @@ export const sync = async () => {
 	await git.addConfig('user.name', 'Intuita Team', false, 'local');
 
 	await git.fetch(['website', 'master']);
-	await git.fetch(['origin', 'main']);
+	await git.fetch(['origin', 'main', '--depth=2']);
 
-	const diff = await git.diff(['--name-only', 'origin/main']);
+	const diff = await git.diff(['--name-only', 'origin/main~1']);
 	const readmesChanged = diff
 		.split('\n')
 		.filter((path) => path.match(/^codemods\/.*README\.md$/));
@@ -67,6 +67,7 @@ export const sync = async () => {
 
 		let websiteFile: string | null;
 		let oldFile: string | null;
+		let newFile: string | null;
 		try {
 			websiteFile = await git.catFile([
 				'-p',
@@ -77,14 +78,27 @@ export const sync = async () => {
 		}
 
 		try {
-			oldFile = await git.catFile(['-p', `origin/main:${path}`]);
+			oldFile = await git.catFile(['-p', `origin/main~1:${path}`]);
 		} catch (err) {
 			oldFile = null;
 		}
 
-		// Always exists
-		const newFile = await git.catFile(['-p', `HEAD:${path}`]);
-		const newReadmeYamlContent = convertToYaml(parse(newFile), path);
+		try {
+			newFile = await git.catFile(['-p', `origin/main:${path}`]);
+		} catch (err) {
+			newFile = null;
+		}
+
+		if (!newFile) {
+			console.error(`File was deleted in HEAD: ${path}`);
+			continue;
+		}
+
+		const parsedNewFile = parse(newFile);
+		const newFileShortDescription = parsedNewFile.description
+			.split('\n')
+			.at(0);
+		const newReadmeYamlContent = convertToYaml(parsedNewFile, path);
 
 		// If !websiteFile, we just add the file
 		// If websiteFile is present, but oldFile is not, this means that
@@ -92,7 +106,8 @@ export const sync = async () => {
 		// which technically should not be possible.
 		// In that case we just update the entire file with the new one anyways.
 		if (!websiteFile || !oldFile) {
-			staged[websitePath] = `---\n${newReadmeYamlContent}\n---`;
+			staged[websitePath] =
+				`---\n${newReadmeYamlContent}\n---\n${newFileShortDescription}`;
 			continue;
 		}
 
@@ -156,7 +171,12 @@ export const sync = async () => {
 			continue;
 		}
 
+		// Also update the updated-on field
+		changedKeys.push('updated-on');
+		// Yaml to be updated on each iteration serving as a target to make replacements in
 		let updatedYaml = websiteYamlContent;
+		const newFileLines = newReadmeYamlContent.split('\n');
+
 		for (const key of changedKeys) {
 			const websiteRange = findKeyLineRange(updatedYaml, key);
 			if (!websiteRange) {
@@ -175,22 +195,20 @@ export const sync = async () => {
 			const [websiteStartIndex, websiteEndIndex] = websiteRange;
 			const [newFileStartIndex, newFileEndIndex] = newFileRange;
 
-			const websiteLines = websiteYamlContent.split('\n');
-			const newFileLines = newReadmeYamlContent.split('\n');
+			// Use the latest version of yaml that's being updated
+			const websiteLines = updatedYaml.split('\n');
 
 			updatedYaml = [
-				'---',
 				...websiteLines.slice(0, websiteStartIndex),
 				...newFileLines.slice(newFileStartIndex, newFileEndIndex),
 				...websiteLines.slice(websiteEndIndex),
-				'---',
 			].join('\n');
 		}
 
 		const websiteLeftoverDescription = websiteContentSplit.at(2)?.trim();
-		if (websiteLeftoverDescription) {
-			updatedYaml += `\n${websiteLeftoverDescription}`;
-		}
+		updatedYaml = `---\n${updatedYaml}\n---\n${
+			websiteLeftoverDescription ?? newFileShortDescription
+		}`;
 
 		staged[websitePath] = updatedYaml;
 	}

@@ -21,15 +21,22 @@ const noFirstLetterLowerCase = (str: string) =>
 const capitalize = (str: string) =>
 	str[0] ? str[0].toUpperCase() + str.slice(1) : str;
 
+// TODO:
+// const getStyledValue = (node) => {};
+
 const getTextFromNode = (
 	node: RootContent | PhrasingContent | null,
-	style?: boolean,
+	style = false,
 ): string | null => {
 	if (!node) {
 		return null;
 	}
 
 	if ('value' in node) {
+		if (node.type === 'inlineCode') {
+			return `\`${node.value}\``;
+		}
+
 		return node.value;
 	}
 
@@ -37,16 +44,14 @@ const getTextFromNode = (
 		let textContent = '';
 		for (const child of node.children) {
 			if (!style) {
-				textContent += getTextFromNode(child);
+				textContent += getTextFromNode(child, style);
 				continue;
 			}
 
-			if (child.type === 'listItem') {
-				textContent += `${getTextFromNode(child, style)}`;
-			} else if (child.type === 'inlineCode') {
-				textContent += `\`${getTextFromNode(child, style)}\``;
+			if (node.type === 'strong') {
+				textContent += `**${getTextFromNode(child, style)}**`;
 			} else {
-				textContent += getTextFromNode(child);
+				textContent += getTextFromNode(child, style);
 			}
 		}
 
@@ -143,11 +148,23 @@ const getTextByHeader = (
 						rc.type === 'heading' &&
 						rc.depth > heading.depth &&
 						idx === 0 &&
-						(child.type === 'text' || child.type === 'inlineCode')
+						(child.type === 'text' ||
+							child.type === 'inlineCode' ||
+							child.type === 'strong')
 					) {
-						return `${'#'.repeat(rc.depth)} ${
-							child.value
-						}${delimiter}`;
+						const conditionalDelimiter = delimiter.repeat(
+							isDescription ? 2 : 1,
+						);
+						return `${conditionalDelimiter}${'#'.repeat(
+							rc.depth,
+						)} ${getTextFromNode(
+							child,
+							true,
+						)}${conditionalDelimiter}`;
+					}
+
+					if (child.type === 'inlineCode') {
+						return `\`${child.value}\``;
 					}
 
 					if (child.type === 'text') {
@@ -161,7 +178,7 @@ const getTextByHeader = (
 
 					if (child.type === 'listItem') {
 						if (isDescription) {
-							return `-   ${getTextFromNode(
+							return `  -   ${getTextFromNode(
 								child.children[0] ?? null,
 								true,
 							)}${delimiter}`;
@@ -212,9 +229,7 @@ const getTextByHeader = (
 
 		if ('value' in rc) {
 			if (rc.type === 'code') {
-				textParts.push(
-					`\n\`\`\`${rc.lang}\n${rc.value}\n\`\`\`${delimiter}\n`,
-				);
+				textParts.push(`\n\`\`\`${rc.lang}\n\n${rc.value}\n\n\`\`\`\n`);
 			} else {
 				textParts.push(`${rc.value}${delimiter}`);
 			}
@@ -223,7 +238,7 @@ const getTextByHeader = (
 
 	// Trim last el to remove delimiter
 	textParts[textParts.length - 1] =
-		textParts.at(-1)?.replace(/(\W)$/, '') ?? '';
+		textParts.at(-1)?.replace(new RegExp(`${delimiter}$`), '') ?? '';
 
 	return textParts.join('');
 };
@@ -363,11 +378,13 @@ export const convertToYaml = (
 
 	let slug: string | null = null;
 	let framework: string | null = null;
+	let frameworkVersion: string | null = null;
 	let cliCommand: string | null = null;
 	let cleanPath: string | null = null;
 	let codemodName: string | null = null;
 	if (path) {
-		cleanPath = path.split('/').slice(0, -1).join('/');
+		const splitPath = path.split('/');
+		cleanPath = splitPath.slice(0, -1).join('/');
 
 		const parts = __dirname.split('/');
 		const pivot = parts.indexOf('readme-parser');
@@ -376,7 +393,8 @@ export const convertToYaml = (
 			cleanPath,
 		);
 
-		framework = path.split('/').at(1) ?? null;
+		framework = splitPath.at(1) ?? null;
+		frameworkVersion = splitPath.at(2) ?? null;
 
 		try {
 			const config = readFileSync(
@@ -401,6 +419,18 @@ export const convertToYaml = (
 			.digest('base64url');
 	}
 
+	let titleWithVersion = title;
+	if (framework) {
+		if (frameworkVersion) {
+			titleWithVersion = `${framework} V${frameworkVersion} - ${title}`;
+		} else {
+			titleWithVersion = `${framework} - ${title}`;
+		}
+	}
+	titleWithVersion = capitalize(titleWithVersion);
+
+	const shortDescription = description.split('\n').at(0);
+
 	const res = `
 created-on: ${new Date().toISOString()}
 f_long-description: >-
@@ -408,42 +438,42 @@ f_long-description: >-
   \n
   ${description.replace(/\n/g, '\n  ')}
   \n
-  ${examples.replace(/\n/g, '\n  ')}
-f_github-link: ${
+  ${examples.replace(/\n/g, '\n  ')}${
 		path
-			? `https://github.com/intuita-inc/codemod-registry/tree/main/${cleanPath}`
-			: 'n/a'
-	}
-f_vs-code-link: ${
+			? `\nf_github-link: https://github.com/intuita-inc/codemod-registry/tree/main/${cleanPath}`
+			: ''
+  }${
 		vscodeHashDigest
-			? `vscode://intuita.intuita-vscode-extension/showCodemod?chd=${vscodeHashDigest}`
-			: 'n/a'
-	}
-f_codemod-studio-link: n/a
-f_cli-command: ${cliCommand ?? 'n/a'}
-f_framework: ${framework ? `cms/framework/${framework}.md` : 'n/a'}
-f_applicability-criteria: ${applicability}
+			? `\nf_vs-code-link: vscode://intuita.intuita-vscode-extension/showCodemod?chd=${vscodeHashDigest}`
+			: ''
+  }${cliCommand ? `\nf_cli-command: ${cliCommand}` : ''}${
+		framework ? `\nf_framework: cms/framework/${framework}.md` : ''
+  }
+f_applicability-criteria: "${applicability}"
 f_verified-codemod: ${owner === 'Intuita' ? 'true' : 'false'}
 f_author: ${
 		owner === 'Intuita'
 			? 'cms/authors/intuita.md'
-			: `cms/authors/${codemodName?.split('/')?.[0] ?? ''}.md`
+			: `cms/authors/${owner?.toLowerCase().replace(/ /g, '-') ?? ''}.md`
 	}
-layout: "[automations].html"
-slug: ${slug ?? 'n/a'}
-title: ${title}
-f_slug-name: ${slug ?? 'n/a'}
+layout: "[automations].html"${slug ? `\nslug: ${slug}` : ''}
+title: ${capitalize(titleWithVersion)}${slug ? `\nf_slug-name: ${slug}` : ''}
 f_codemod-engine: cms/codemod-engines/${engine}.md
 f_change-mode-2: ${capitalize(changeMode)}
 f_estimated-time-saving: ${
 		timeSave.includes('\n')
 			? `>-\n  ${timeSave.replace(/\n/, '\n  ')}`
-			: timeSave
+			: `"${timeSave}"`
 	}
 tags: automations
 updated-on: ${new Date().toISOString()}
 published-on: ${new Date().toISOString()}
-seo: n/a
+seo:
+  title: ${titleWithVersion} | Intuita Automations
+  og:title: ${titleWithVersion} | Intuita Automations
+  twitter:title: ${titleWithVersion} | Intuita Automations
+  description: ${shortDescription}
+  twitter:card: ${shortDescription}
 `.trim();
 
 	return res;
