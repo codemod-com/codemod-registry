@@ -8,7 +8,7 @@ Replace notification.close with notification.destroy.
 
 ### Before
 
-```ts
+```TypeScript
 import { message, notification } from 'antd';
 
 const App = () => {
@@ -36,7 +36,7 @@ const App = () => {
 
 ### After
 
-```ts
+```TypeScript
 import { message, notification } from 'antd';
 
 const App = () => {

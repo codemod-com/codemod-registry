@@ -7,7 +7,7 @@ This codemod changes the way the component props are applied.
 
 ### Before
 
-```ts
+```TypeScript
 import { Tag } from 'antd';
 
 const Component = () => {
@@ -19,7 +19,7 @@ const Component = () => {
 
 ### After
 
-```ts
+```TypeScript
 import { Tag } from 'antd';
 
 const Component = () => {

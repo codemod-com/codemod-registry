@@ -7,7 +7,7 @@ Comment out the style file import from antd (in js file).
 
 ### Before
 
-```ts
+```TypeScript
 import 'antd/es/auto-complete/style';
 import 'antd/lib/button/style/index.less';
 import 'antd/dist/antd.compact.min.css';
@@ -16,7 +16,7 @@ import 'antd/dist/antd.compact.min.css';
 
 ### After
 
-```ts
+```TypeScript
 // import 'antd/es/auto-complete/style';
 // import 'antd/lib/button/style/index.less';
 // import 'antd/dist/antd.compact.min.css';
