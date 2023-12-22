@@ -8,7 +8,7 @@ Replace notification.close with notification.destroy.
 
 ### Before
 
-```ts
+```TypeScript
 import { message, notification } from 'antd';
 
 const App = () => {
@@ -36,7 +36,7 @@ const App = () => {
 
 ### After
 
-```ts
+```TypeScript
 import { message, notification } from 'antd';
 
 const App = () => {
@@ -84,7 +84,7 @@ Up to 1 minutes per occurrence
 
 ### Owner
 
-[Intuita](https://github.com/intuita-inc)
+[Ant Design](https://github.com/ant-design)
 
 ### Links for more info
 

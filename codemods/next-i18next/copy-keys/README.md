@@ -1,4 +1,4 @@
-# next-i18next Copy Keys
+# Next-i18next Copy Keys
 
 ## Description
 
@@ -10,7 +10,7 @@ The codemod expects the following arguments:
 -   `newNamespace` is the name of the namespace to which the keys are copied,
 -   `keys` is a comma-separated list of keys.
 
-You need to pass these arguments using the Codemod Arguments' settings or [Intuita CLI](https://www.npmjs.com/package/@intuita-inc/intuita).
+You need to pass these arguments using the [Codemod Arguments' settings](https://docs.intuita.io/docs/vs-code-extension/advanced-usage#set-codemod-arguments) in Intuita VS Code extension or [Intuita CLI](https://docs.intuita.io/docs/cli/quickstart).
 
 ## Example:
 
@@ -69,7 +69,7 @@ v1.0.0
 
 ### **Codemod Engine**
 
-Intuita File Transformation Engine
+Filemod
 
 ### Estimated Time Saving
 

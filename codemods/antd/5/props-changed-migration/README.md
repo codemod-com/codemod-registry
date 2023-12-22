@@ -7,7 +7,7 @@ This codemod changes the way the component props are applied.
 
 ### Before
 
-```ts
+```TypeScript
 import { Tag } from 'antd';
 
 const Component = () => {
@@ -19,7 +19,7 @@ const Component = () => {
 
 ### After
 
-```ts
+```TypeScript
 import { Tag } from 'antd';
 
 const Component = () => {
@@ -53,7 +53,7 @@ Up to 1 minutes per occurrence
 
 ### Owner
 
-[Intuita](https://github.com/intuita-inc)
+[Ant Design](https://github.com/ant-design)
 
 ### Links for more info
 

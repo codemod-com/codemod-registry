@@ -7,14 +7,14 @@ Replace import for removed component in v5.
 
 ### Before
 
-```ts
+```TypeScript
 import { Avatar, BackTop, Comment, PageHeader } from 'antd';
 
 ```
 
 ### After
 
-```ts
+```TypeScript
 import { Comment } from '@ant-design/compatible';
 import { PageHeader } from '@ant-design/pro-layout';
 import { Avatar, FloatButton } from 'antd';
@@ -44,7 +44,7 @@ Up to 1 minutes per occurrence
 
 ### Owner
 
-[Intuita](https://github.com/intuita-inc)
+[Ant Design](https://github.com/ant-design)
 
 ### Links for more info
 

@@ -7,7 +7,7 @@ Comment out the style file import from antd (in js file).
 
 ### Before
 
-```ts
+```TypeScript
 import 'antd/es/auto-complete/style';
 import 'antd/lib/button/style/index.less';
 import 'antd/dist/antd.compact.min.css';
@@ -16,7 +16,7 @@ import 'antd/dist/antd.compact.min.css';
 
 ### After
 
-```ts
+```TypeScript
 // import 'antd/es/auto-complete/style';
 // import 'antd/lib/button/style/index.less';
 // import 'antd/dist/antd.compact.min.css';
@@ -46,7 +46,7 @@ Up to 1 minutes per occurrence
 
 ### Owner
 
-[Intuita](https://github.com/intuita-inc)
+[Ant Design](https://github.com/ant-design)
 
 ### Links for more info
 
