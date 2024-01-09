@@ -88,7 +88,7 @@ Up to 10 minutes per occurrence
 
 ### Owner
 
-[Intuita](https://github.com/intuita-inc)
+[Intuita](https://github.com/codemod-com)
 
 ### Links for more info
 -   https://mswjs.io/docs/migrations/1.x-to-2.x/#request-changes

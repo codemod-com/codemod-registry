@@ -62,7 +62,7 @@ v1.0.0
 
 ### Owner
 
-[Intuita](https://github.com/intuita-inc)
+[Intuita](https://github.com/codemod-com)
 
 ### Links for more info
 

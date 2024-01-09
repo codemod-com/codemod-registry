@@ -1,6 +1,6 @@
 **Please check if the PR fulfills these requirements**:
 
--   [ ] The commit message follows [our code of conduct](https://github.com/intuita-inc/codemod-registry/blob/main/CODE_OF_CONDUCT.md) and [contributing guidelines](https://github.com/intuita-inc/codemod-registry/blob/main/CONTRIBUTING.md)
+-   [ ] The commit message follows [our code of conduct](https://github.com/codemod-com/codemod-registry/blob/main/CODE_OF_CONDUCT.md) and [contributing guidelines](https://github.com/codemod-com/codemod-registry/blob/main/CONTRIBUTING.md)
 -   [ ] Tests for the changes have been added (for bug fixes/features)
 -   [ ] Docs have been added / updated (for bug fixes / features)
 

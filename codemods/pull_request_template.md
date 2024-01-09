@@ -64,7 +64,7 @@ Can be:
 
 -   [jscodeshift](https://github.com/facebook/jscodeshift)
 -   [ts-morph](https://github.com/dsherret/ts-morph)
--   [filemod](https://github.com/intuita-inc/filemod/)
+-   [filemod](https://github.com/codemod-com/filemod/)
 -   [Uber Piranha](https://github.com/uber/piranha)
 
 ### Estimated Time Saving

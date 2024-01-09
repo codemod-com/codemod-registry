@@ -226,7 +226,7 @@ f_long-description: >-
   });
   
   \`\`\`
-f_github-link: https://github.com/intuita-inc/codemod-registry/tree/main/codemods/msw/2/imports
+f_github-link: https://github.com/codemod-com/codemod-registry/tree/main/codemods/msw/2/imports
 f_vs-code-link: vscode://intuita.intuita-vscode-extension/showCodemod?chd=${vscodeHashDigest}
 f_cli-command: intuita msw/2/imports
 f_framework: cms/framework/msw.md

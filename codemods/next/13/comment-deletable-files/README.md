@@ -69,4 +69,4 @@ The purpose of this codemod is to guide the user into the files that should be m
 
 ### Owner
 
-[Intuita](https://github.com/intuita-inc)
+[Intuita](https://github.com/codemod-com)

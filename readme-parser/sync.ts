@@ -41,7 +41,7 @@ export const sync = async () => {
 
 	await git.addRemote(
 		'website',
-		'https://github.com/intuita-inc/website.git',
+		'https://github.com/codemod-com/website.git',
 	);
 	await git.addConfig('user.email', 'intuita@intuita.io', false, 'local');
 	await git.addConfig('user.name', 'Intuita Team', false, 'local');
