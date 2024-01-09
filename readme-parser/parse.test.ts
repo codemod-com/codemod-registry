@@ -246,9 +246,9 @@ tags: automations
 updated-on: ${date.toISOString()}
 published-on: ${date.toISOString()}
 seo:
-  title: Msw V2 - Do the thing | Intuita Automations
-  og:title: Msw V2 - Do the thing | Intuita Automations
-  twitter:title: Msw V2 - Do the thing | Intuita Automations
+  title: Msw V2 - Do the thing | Codemod.com Automations
+  og:title: Msw V2 - Do the thing | Codemod.com Automations
+  twitter:title: Msw V2 - Do the thing | Codemod.com Automations
   description: This is an amazing codemod which does \`the thing\`
   twitter:card: This is an amazing codemod which does \`the thing\`
 	`.trim(),
