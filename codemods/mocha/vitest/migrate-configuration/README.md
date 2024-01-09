@@ -132,7 +132,7 @@ v1.0.0
 
 ### **Codemod Engine**
 
-[filemod](https://github.com/intuita-inc/filemod/)
+[filemod](https://github.com/codemod-com/filemod/)
 
 ### Estimated Time Saving
 
@@ -140,5 +140,5 @@ v1.0.0
 
 ### Owner
 
-[Intuita](https://github.com/intuita-inc)
+[Intuita](https://github.com/codemod-com)
 

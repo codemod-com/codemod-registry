@@ -53,4 +53,4 @@ Intuita File Transformation Engine
 
 ### Owner
 
-[Intuita](https://github.com/intuita-inc)
+[Intuita](https://github.com/codemod-com)

@@ -45,7 +45,7 @@ jscodeshift
 
 ### Owner
 
-[Intuita](https://github.com/intuita-inc)
+[Intuita](https://github.com/codemod-com)
 
 ### Links for more info
 

@@ -440,7 +440,7 @@ f_long-description: >-
   \n
   ${examples.replace(/\n/g, '\n  ')}${
 		path
-			? `\nf_github-link: https://github.com/intuita-inc/codemod-registry/tree/main/${cleanPath}`
+			? `\nf_github-link: https://github.com/codemod-com/codemod-registry/tree/main/${cleanPath}`
 			: ''
   }${
 		vscodeHashDigest
