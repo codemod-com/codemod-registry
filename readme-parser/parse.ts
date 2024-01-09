@@ -268,9 +268,9 @@ export const parse = (data: string) => {
 	const examples = exampleHeading
 		? getTextByHeader(children, exampleHeading, '\n')
 		: null;
-	if (!examples) {
-		throw new Error('Examples not found');
-	}
+	// if (!examples) {
+	// 	throw new Error('Examples not found');
+	// }
 
 	const applicabilityHeader = getHeading(children, 2, 'Applicability');
 	const applicability = applicabilityHeader
@@ -339,7 +339,7 @@ export const parse = (data: string) => {
 
 	const ownerHeader = getHeading(children, 3, 'Owner');
 	const owner = ownerHeader
-		? getTextByHeader(children, ownerHeader, '\n') ?? 'Intuita'
+		? getTextByHeader(children, ownerHeader, '\n') ?? 'Codemod.com'
 		: null;
 
 	const linksHeader = getHeading(children, 3, 'Links');
@@ -437,8 +437,7 @@ f_long-description: >-
   ## Description
   \n
   ${description.replace(/\n/g, '\n  ')}
-  \n
-  ${examples.replace(/\n/g, '\n  ')}${
+  ${examples ? '\n\n  ' + examples.replace(/\n/g, '\n  ') : ''}${
 		path
 			? `\nf_github-link: https://github.com/codemod-com/codemod-registry/tree/main/${cleanPath}`
 			: ''
@@ -450,10 +449,10 @@ f_long-description: >-
 		framework ? `\nf_framework: cms/framework/${framework}.md` : ''
   }
 f_applicability-criteria: "${applicability}"
-f_verified-codemod: ${owner === 'Intuita' ? 'true' : 'false'}
+f_verified-codemod: ${owner === 'Codemod.com' ? 'true' : 'false'}
 f_author: ${
-		owner === 'Intuita'
-			? 'cms/authors/intuita.md'
+		owner === 'Codemod.com'
+			? 'cms/authors/codemodcom.md'
 			: `cms/authors/${owner?.toLowerCase().replace(/ /g, '-') ?? ''}.md`
 	}
 layout: "[automations].html"${slug ? `\nslug: ${slug}` : ''}
@@ -469,9 +468,9 @@ tags: automations
 updated-on: ${new Date().toISOString()}
 published-on: ${new Date().toISOString()}
 seo:
-  title: ${titleWithVersion} | Intuita Automations
-  og:title: ${titleWithVersion} | Intuita Automations
-  twitter:title: ${titleWithVersion} | Intuita Automations
+  title: ${titleWithVersion} | Codemod.com Automations
+  og:title: ${titleWithVersion} | Codemod.com Automations
+  twitter:title: ${titleWithVersion} | Codemod.com Automations
   description: ${shortDescription}
   twitter:card: ${shortDescription}
 `.trim();
