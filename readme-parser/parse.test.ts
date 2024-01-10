@@ -226,7 +226,7 @@ f_long-description: >-
   });
   
   \`\`\`
-f_github-link: https://github.com/intuita-inc/codemod-registry/tree/main/codemods/msw/2/imports
+f_github-link: https://github.com/codemod-com/codemod-registry/tree/main/codemods/msw/2/imports
 f_vs-code-link: vscode://intuita.intuita-vscode-extension/showCodemod?chd=${vscodeHashDigest}
 f_cli-command: intuita msw/2/imports
 f_framework: cms/framework/msw.md
@@ -246,9 +246,9 @@ tags: automations
 updated-on: ${date.toISOString()}
 published-on: ${date.toISOString()}
 seo:
-  title: Msw V2 - Do the thing | Intuita Automations
-  og:title: Msw V2 - Do the thing | Intuita Automations
-  twitter:title: Msw V2 - Do the thing | Intuita Automations
+  title: Msw V2 - Do the thing | Codemod.com Automations
+  og:title: Msw V2 - Do the thing | Codemod.com Automations
+  twitter:title: Msw V2 - Do the thing | Codemod.com Automations
   description: This is an amazing codemod which does \`the thing\`
   twitter:card: This is an amazing codemod which does \`the thing\`
 	`.trim(),

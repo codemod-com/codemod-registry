@@ -41,10 +41,10 @@ export const sync = async () => {
 
 	await git.addRemote(
 		'website',
-		'https://github.com/intuita-inc/website.git',
+		'https://github.com/codemod-com/website.git',
 	);
-	await git.addConfig('user.email', 'intuita@intuita.io', false, 'local');
-	await git.addConfig('user.name', 'Intuita Team', false, 'local');
+	await git.addConfig('user.email', 'auto@codemod.com', false, 'local');
+	await git.addConfig('user.name', 'codemod.com', false, 'local');
 
 	await git.fetch(['website', 'master']);
 	await git.fetch(['origin', 'main', '--depth=2']);
@@ -94,7 +94,13 @@ export const sync = async () => {
 			continue;
 		}
 
-		const parsedNewFile = parse(newFile);
+		let parsedNewFile: ReturnType<typeof parse>;
+		try {
+			parsedNewFile = parse(newFile);
+		} catch (err) {
+			console.error(`Could not parse new README file under ${path}`);
+			continue;
+		}
 		const newFileShortDescription = parsedNewFile.description
 			.split('\n')
 			.at(0);
@@ -133,10 +139,14 @@ export const sync = async () => {
 		// the fields just like any other JS object, to perform the comparison.
 		// Not using valibot's safeParse, because we can just error if that's not an object and we don't care
 		// about the fields to be of a specific type.
-		const oldContent = valibotParse(
-			record(any()),
-			yaml.load(convertToYaml(parse(oldFile), path)),
-		);
+		let oldFileParsedYaml: unknown;
+		try {
+			oldFileParsedYaml = yaml.load(convertToYaml(parse(oldFile), path));
+		} catch (err) {
+			console.error(`Could not parse old README file under ${path}`);
+			continue;
+		}
+		const oldContent = valibotParse(record(any()), oldFileParsedYaml);
 		const newContent = valibotParse(
 			record(any()),
 			yaml.load(newReadmeYamlContent),
