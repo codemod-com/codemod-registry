@@ -452,7 +452,7 @@ f_applicability-criteria: "${applicability}"
 f_verified-codemod: ${owner === 'Codemod.com' ? 'true' : 'false'}
 f_author: ${
 		owner === 'Codemod.com'
-			? 'cms/authors/codemodcom.md'
+			? 'cms/authors/codemod-com.md'
 			: `cms/authors/${owner?.toLowerCase().replace(/ /g, '-') ?? ''}.md`
 	}
 layout: "[automations].html"${slug ? `\nslug: ${slug}` : ''}
