@@ -8,7 +8,7 @@ const DATA = `
 
 ## Description
 
-This is an amazing codemod which does \`the thing\`
+This is an amazing codemod which does \`the thing\`. Changes:
 
 ### WARNING
 
@@ -98,7 +98,7 @@ describe('parse/yaml', function () {
 		deepEqual(parseResult, {
 			name: 'Do the thing',
 			description:
-				'This is an amazing codemod which does `the thing`\n\n### WARNING\n\nThis codemod does the thing\n' +
+				'This is an amazing codemod which does `the thing`. Changes:\n\n\n### WARNING\n\nThis codemod does the thing\n' +
 				'Following the original msw [upgrade guide](https://mswjs.io/docs/migrations/1.x-to-2.x/#imports), ' +
 				'there are certain imports that changed their location and/or naming. This codemod will adjust your imports to the new location and naming.\n' +
 				'  -   `setupWorker` is now imported from `msw/browser`\n' +
@@ -171,7 +171,8 @@ f_long-description: >-
   ## Description
   
 
-  This is an amazing codemod which does \`the thing\`
+  This is an amazing codemod which does \`the thing\`. Changes:
+  
   
   ### WARNING
   
@@ -249,8 +250,8 @@ seo:
   title: Msw V2 - Do the thing | Codemod.com Automations
   og:title: Msw V2 - Do the thing | Codemod.com Automations
   twitter:title: Msw V2 - Do the thing | Codemod.com Automations
-  description: This is an amazing codemod which does \`the thing\`
-  twitter:card: This is an amazing codemod which does \`the thing\`
+  description: This is an amazing codemod which does the thing
+  twitter:card: This is an amazing codemod which does the thing
 	`.trim(),
 		);
 	});
