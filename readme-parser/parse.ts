@@ -429,7 +429,13 @@ export const convertToYaml = (
 	}
 	titleWithVersion = capitalize(titleWithVersion);
 
-	const shortDescription = description.split('\n').at(0);
+	const shortDescription = description
+		.split('\n')
+		.at(0)
+		?.split('.')
+		.at(0)
+		?.replace('`', '')
+		.replace(/\W$/g, '');
 
 	const res = `
 created-on: ${new Date().toISOString()}
