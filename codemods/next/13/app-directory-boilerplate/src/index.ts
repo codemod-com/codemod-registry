@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { join, posix } from 'node:path';
+import { parse, sep, join, format } from 'node:path';
+
 import tsmorph, {
 	ArrowFunction,
 	FunctionDeclaration,
@@ -744,8 +744,8 @@ const handleFile: Filemod<
 	Dependencies,
 	Record<string, never>
 >['handleFile'] = async (api, path, options) => {
-	const parsedPath = posix.parse(path);
-	const directoryNames = parsedPath.dir.split(posix.sep);
+	const parsedPath = parse(path);
+	const directoryNames = parsedPath.dir.split(sep);
 	const endsWithPages =
 		directoryNames.length > 0 &&
 		directoryNames.lastIndexOf('pages') === directoryNames.length - 1;
@@ -753,33 +753,30 @@ const handleFile: Filemod<
 	const nameIsIndex = parsedPath.name === 'index';
 
 	if (endsWithPages && nameIsIndex) {
-		const newDir = directoryNames
-			.slice(0, -1)
-			.concat('app')
-			.join(posix.sep);
+		const newDir = directoryNames.slice(0, -1).concat('app').join(sep);
 
-		const rootErrorPath = posix.format({
+		const rootErrorPath = format({
 			root: parsedPath.root,
 			dir: newDir,
 			ext: EXTENSION,
 			name: 'error',
 		});
 
-		const rootNotFoundPath = posix.format({
+		const rootNotFoundPath = format({
 			root: parsedPath.root,
 			dir: newDir,
 			ext: EXTENSION,
 			name: 'not-found',
 		});
 
-		const jsxErrorPath = posix.format({
+		const jsxErrorPath = format({
 			...parsedPath,
 			name: '_error',
 			ext: '.jsx',
 			base: undefined,
 		});
 
-		const tsxErrorPath = posix.format({
+		const tsxErrorPath = format({
 			...parsedPath,
 			name: '_error',
 			ext: '.tsx',
@@ -789,14 +786,14 @@ const handleFile: Filemod<
 		const rootErrorPathIncluded =
 			api.exists(jsxErrorPath) || api.exists(tsxErrorPath);
 
-		const jsxNotFoundPath = posix.format({
+		const jsxNotFoundPath = format({
 			...parsedPath,
 			name: '_404',
 			ext: '.jsx',
 			base: undefined,
 		});
 
-		const tsxNotFoundPath = posix.format({
+		const tsxNotFoundPath = format({
 			...parsedPath,
 			name: '_404',
 			ext: '.tsx',
@@ -811,7 +808,7 @@ const handleFile: Filemod<
 		const commands: FileCommand[] = [
 			{
 				kind: 'upsertFile' as const,
-				path: posix.format({
+				path: format({
 					root: parsedPath.root,
 					dir: newDir,
 					ext: EXTENSION,
@@ -826,7 +823,7 @@ const handleFile: Filemod<
 			},
 			{
 				kind: 'upsertFile' as const,
-				path: posix.format({
+				path: format({
 					root: parsedPath.root,
 					dir: newDir,
 					ext: EXTENSION,
@@ -866,7 +863,7 @@ const handleFile: Filemod<
 
 			commands.unshift({
 				kind: 'upsertFile' as const,
-				path: posix.format({
+				path: format({
 					root: parsedPath.root,
 					dir: newDir,
 					ext: EXTENSION,
@@ -889,7 +886,7 @@ const handleFile: Filemod<
 
 		commands.unshift({
 			kind: 'upsertFile' as const,
-			path: posix.format({
+			path: format({
 				root: parsedPath.root,
 				dir: newDir,
 				ext: EXTENSION,
@@ -940,14 +937,14 @@ const handleFile: Filemod<
 			newDirArr.push(parsedPath.name);
 		}
 
-		const newDir = newDirArr.join(posix.sep);
+		const newDir = newDirArr.join(sep);
 
 		const oldData = await api.readFile(path);
 
 		const commands: FileCommand[] = [
 			{
 				kind: 'upsertFile',
-				path: posix.format({
+				path: format({
 					root: parsedPath.root,
 					dir: newDir,
 					ext: parsedPath.ext === '.mdx' ? '.mdx' : '.tsx',
@@ -962,7 +959,7 @@ const handleFile: Filemod<
 			},
 			{
 				kind: 'upsertFile',
-				path: posix.format({
+				path: format({
 					root: parsedPath.root,
 					dir: newDir,
 					ext: parsedPath.ext === '.mdx' ? '.mdx' : '.tsx',

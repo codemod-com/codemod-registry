@@ -11,8 +11,8 @@ import tsmorph, {
 
 import type { Filemod, UnifiedFileSystem } from '@intuita-inc/filemod';
 
-import { posix } from 'node:path';
-import { ParsedPath } from 'path/posix';
+import { parse, format, sep } from 'node:path';
+import type { ParsedPath } from 'path';
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 type Dependencies = Readonly<{
@@ -23,7 +23,7 @@ type Dependencies = Readonly<{
 type Handler = ArrowFunction | FunctionExpression | FunctionDeclaration;
 
 const getNewDirectoryName = ({ dir, name }: ParsedPath) => {
-	const directoryNameSegments = dir.split(posix.sep);
+	const directoryNameSegments = dir.split(sep);
 
 	const newDirectoryNameSegments = directoryNameSegments.map((segment) =>
 		segment === 'pages' ? 'app' : segment,
@@ -33,7 +33,7 @@ const getNewDirectoryName = ({ dir, name }: ParsedPath) => {
 		newDirectoryNameSegments.push(name);
 	}
 
-	return newDirectoryNameSegments.join(posix.sep);
+	return newDirectoryNameSegments.join(sep);
 };
 
 const findAPIRouteHandler = (sourceFile: SourceFile): Handler | null => {
@@ -350,14 +350,14 @@ export const repomod: Filemod<Dependencies, Record<string, unknown>> = {
 	includePatterns: ['**/pages/api/**/*.{js,ts,cjs,ejs}'],
 	excludePatterns: ['**/node_modules/**'],
 	handleFile: async (api, path) => {
-		const parsedPath = posix.parse(path);
+		const parsedPath = parse(path);
 
 		const oldData = await api.readFile(path);
 
 		return [
 			{
 				kind: 'upsertFile',
-				path: posix.format({
+				path: format({
 					root: parsedPath.root,
 					dir: getNewDirectoryName(parsedPath),
 					ext: '.ts',
