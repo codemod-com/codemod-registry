@@ -34,7 +34,6 @@ jobs:
               run: pnpm install
 
             - name: Run codemod unit tests
-              run: pnpm test
               run: |
                   if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
                     pnpm test:win
