@@ -11,6 +11,7 @@
 		"lint:eslint": "eslint --fix .",
 		"lint:prettier": "prettier --write .",
 		"test": "vitest run",
+		"test:win": "vitest run test.win.ts",
 		"coverage": "vitest run --coverage"
 	},
 	"devDependencies": {

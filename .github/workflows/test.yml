@@ -14,7 +14,7 @@ jobs:
         runs-on: ${{ matrix.os }}
         strategy:
             matrix:
-                os: [macos-latest, ubuntu-latest]
+                os: [macos-latest, ubuntu-latest, windows-latest]
 
         steps:
             - name: Check out Git repository
@@ -34,4 +34,9 @@ jobs:
               run: pnpm install
 
             - name: Run codemod unit tests
-              run: pnpm test
+              run: |
+                  if [ "${{ matrix.os }}" == "windows-latest" ]; then
+                    pnpm test:win
+                  else
+                    pnpm test
+                  fi
