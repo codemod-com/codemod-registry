@@ -21,7 +21,7 @@ import type { Filemod, UnifiedFileSystem } from '@intuita-inc/filemod';
 import type { fromMarkdown } from 'mdast-util-from-markdown';
 import type { visit } from 'unist-util-visit';
 import type { filter } from 'unist-util-filter';
-import { posix, relative, isAbsolute, join } from 'node:path';
+import { parse, relative, isAbsolute, join } from 'node:path';
 /**
  * Copied from "../replace-next-head"
  */
@@ -1726,7 +1726,7 @@ export const repomod: Filemod<Dependencies, Record<string, unknown>> = {
 	excludePatterns: ['**/node_modules/**', '**/pages/api/**'],
 	handleFile: async (api, path, options) => {
 		const { unifiedFileSystem } = api.getDependencies();
-		const parsedPath = posix.parse(path);
+		const parsedPath = parse(path);
 
 		const baseUrl = parsedPath.dir.split('pages')[0] ?? null;
 

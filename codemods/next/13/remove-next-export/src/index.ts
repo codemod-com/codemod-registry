@@ -1,4 +1,4 @@
-import { posix } from 'node:path';
+import { extname, basename } from 'node:path';
 import tsmorph from 'ts-morph';
 import type { Filemod } from '@intuita-inc/filemod';
 
@@ -11,10 +11,10 @@ export const repomod: Filemod<Dependencies, Record<string, unknown>> = {
 	includePatterns: ['**/package.json', '**/next.config.js', '**/*.{md,sh}'],
 	excludePatterns: ['**/node_modules/**'],
 	handleData: async (api, path, data) => {
-		const extension = posix.extname(path);
-		const basename = posix.basename(path);
+		const extension = extname(path);
+		const theBasename = basename(path);
 
-		if (basename === 'next.config.js') {
+		if (theBasename === 'next.config.js') {
 			const { tsmorph } = api.getDependencies();
 
 			const project = new tsmorph.Project({

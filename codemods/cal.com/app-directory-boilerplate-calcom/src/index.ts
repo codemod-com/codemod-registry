@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { posix } from 'node:path';
+import { sep, parse, format } from 'node:path';
 import tsmorph, { Identifier, Node, SourceFile, SyntaxKind } from 'ts-morph';
 import type { HandleData, HandleFile, Filemod } from '@intuita-inc/filemod';
 
@@ -527,15 +526,15 @@ const getNewPagePath = (
 		newDirArr.push(fileName);
 	}
 
-	return newDirArr.join(posix.sep);
+	return newDirArr.join(sep);
 };
 
 const handleFile: Filemod<
 	Dependencies,
 	Record<string, never>
 >['handleFile'] = async (api, path, options) => {
-	const parsedPath = posix.parse(path);
-	const directoryNames = parsedPath.dir.split(posix.sep);
+	const parsedPath = parse(path);
+	const directoryNames = parsedPath.dir.split(sep);
 	const endsWithPages =
 		directoryNames.length > 0 &&
 		directoryNames.lastIndexOf('pages') === directoryNames.length - 1;
@@ -581,7 +580,7 @@ const handleFile: Filemod<
 		const commands: FileCommand[] = [
 			{
 				kind: 'upsertFile',
-				path: posix.format({
+				path: format({
 					root: parsedPath.root,
 					dir: newPagePath,
 					ext: parsedPath.ext,
@@ -597,7 +596,7 @@ const handleFile: Filemod<
 			},
 			{
 				kind: 'upsertFile',
-				path: posix.format({
+				path: format({
 					root: parsedPath.root,
 					dir: parsedPath.dir,
 					ext: parsedPath.ext,
