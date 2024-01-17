@@ -10,7 +10,7 @@
 		"create": "turbo run create",
 		"lint:eslint": "eslint --fix .",
 		"lint:prettier": "prettier --write .",
-		"test": "vitest run",
+		"test": "vitest run test.ts",
 		"test:win": "vitest run test.win.ts",
 		"coverage": "vitest run --coverage"
 	},

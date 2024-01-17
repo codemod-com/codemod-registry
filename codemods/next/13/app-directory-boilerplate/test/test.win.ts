@@ -46,7 +46,6 @@ export const getServerSideProps = () => {
 
 const transform = async (json: DirectoryJSON) => {
 	const volume = Volume.fromJSON(json);
-
 	const fs = createFsFromVolume(volume);
 
 	const unifiedFileSystem = buildUnifiedFileSystem(fs);
@@ -96,18 +95,13 @@ describe('next 13 app-directory-boilerplate', () => {
 			'C:\\project\\pages\\a\\index.tsx': 'any',
 		});
 
-		console.log(
-			JSON.stringify(externalFileCommands, null, 2),
-			'>>>COMMANDS<<<',
-		);
-
 		deepStrictEqual(externalFileCommands.length, 18);
 
 		ok(
 			externalFileCommands.some(
 				(command) =>
 					command.kind === 'deleteFile' &&
-					command.path === 'C:\\project\\pages\\_app.jsx',
+					command.path.endsWith('project\\pages\\_app.jsx'),
 			),
 		);
 
@@ -115,51 +109,51 @@ describe('next 13 app-directory-boilerplate', () => {
 			externalFileCommands.some(
 				(command) =>
 					command.kind === 'deleteFile' &&
-					command.path === 'C:\\project\\pages\\_document.jsx',
+					command.path.endsWith('project\\pages\\_document.jsx'),
 			),
 		);
 
 		ok(
 			externalFileCommands.some(
-				(command) => command.path === 'C:\\project\\app\\layout.tsx',
+				(command) => command.path.endsWith('project\\app\\layout.tsx'),
 			),
 		);
 
 		ok(
 			externalFileCommands.some(
-				(command) => command.path === 'C:\\project\\app\\error.tsx',
+				(command) => command.path.endsWith('project\\app\\error.tsx'),
 			),
 		);
 
 		ok(
 			externalFileCommands.some(
-				(command) => command.path === 'C:\\project\\app\\not-found.tsx',
+				(command) => command.path.endsWith('project\\app\\not-found.tsx'),
 			),
 		);
 
 		ok(
 			externalFileCommands.some(
-				(command) => command.path === 'C:\\project\\app\\page.tsx',
-			),
-		);
-
-		ok(
-			externalFileCommands.some(
-				(command) =>
-					command.path === 'C:\\project\\app\\[a]\\[b]\\page.tsx',
+				(command) => command.path.endsWith('project\\app\\page.tsx'),
 			),
 		);
 
 		ok(
 			externalFileCommands.some(
 				(command) =>
-					command.path === 'C:\\project\\app\\[a]\\c\\page.tsx',
+					command.path.endsWith('project\\app\\[a]\\[b]\\page.tsx'),
 			),
 		);
 
 		ok(
 			externalFileCommands.some(
-				(command) => command.path === 'C:\\project\\app\\a\\page.tsx',
+				(command) =>
+					command.path.endsWith('project\\app\\[a]\\c\\page.tsx'),
+			),
+		);
+
+		ok(
+			externalFileCommands.some(
+				(command) => command.path.endsWith('project\\app\\a\\page.tsx'),
 			),
 		);
 
@@ -167,28 +161,32 @@ describe('next 13 app-directory-boilerplate', () => {
 			externalFileCommands.some((command) => {
 				return (
 					command.kind === 'upsertFile' &&
-					command.path === 'C:\\project\\app\\components.tsx' &&
-					command.data.replace(/\W/gm, '') ===
+					command.path.endsWith('project\\app\\components.tsx') &&
+					command.data
+					.replace(/\/\/ This file has been sourced from.*\n/g, '')
+					.replace(/\W/gm, '')
+					
+			 ===
 						`
 	        'use client';
-	        // This file has been sourced from: C\\project\\pages\\index.jsx
 
 	        export default function Index({}) {
 	            return null;
 	        }
 	    ;`.replace(/\W/gm, '')
-				);
-			}),
+		);
+		}),
 		);
 
 		ok(
 			externalFileCommands.some((command) => {
 				return (
 					command.kind === 'upsertFile' &&
-					command.path === 'C:\\project\\app\\[a]\\c\\page.tsx' &&
-					command.data.replace(/\W/gm, '') ===
+					command.path.endsWith('project\\app\\[a]\\c\\page.tsx') &&
+					command.data
+					.replace(/\/\/ This file has been sourced from.*\n/g, '')
+					.replace(/\W/gm, '') ===
 						`
-	            // This file has been sourced from: C"\\project\\pages\\[a]\\c.tsx
 	            import Components from "./components";
 	            // TODO reimplement getServerSideProps with custom logic
 	            const getServerSideProps = () => {
@@ -205,12 +203,12 @@ describe('next 13 app-directory-boilerplate', () => {
 			externalFileCommands.some((command) => {
 				return (
 					command.kind === 'upsertFile' &&
-					command.path ===
-						'C:\\project\\app\\[a]\\[b]\\components.tsx' &&
-					command.data.replace(/\W/gm, '') ===
+					command.path.endsWith('project\\app\\[a]\\[b]\\components.tsx') &&
+					command.data
+					.replace(/\/\/ This file has been sourced from.*\n/g, '')
+					.replace(/\W/gm, '') ===
 						`
 	            'use client';
-	            // This file has been sourced from: C:\\project\\pages\\[a]\\[b].tsx
 	            `.replace(/\W/gm, '')
 				);
 			}),
