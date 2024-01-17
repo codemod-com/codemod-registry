@@ -1,7 +1,6 @@
 import { DirectoryJSON, Volume, createFsFromVolume } from 'memfs';
 import { describe, it } from 'vitest';
 import {
-	FileSystemManager,
 	UnifiedFileSystem,
 	buildApi,
 	executeFilemod,
@@ -9,22 +8,18 @@ import {
 import { repomod } from '../src/index.js';
 import tsmorph from 'ts-morph';
 import { deepStrictEqual } from 'node:assert';
+import {
+	buildUnifiedFileSystem,
+	buildPathAPI,
+} from '@codemod-registry/utilities';
 
 const transform = async (json: DirectoryJSON) => {
 	const volume = Volume.fromJSON(json);
 
-	const fileSystemManager = new FileSystemManager(
-		volume.promises.readdir as any,
-		volume.promises.readFile as any,
-		volume.promises.stat as any,
-	);
+	const fs = createFsFromVolume(volume);
 
-	const fileSystem = createFsFromVolume(volume) as any;
-
-	const unifiedFileSystem = new UnifiedFileSystem(
-		fileSystem,
-		fileSystemManager,
-	);
+	const unifiedFileSystem = buildUnifiedFileSystem(fs);
+	const pathApi = buildPathAPI('/');
 
 	const api = buildApi<{
 		tsmorph: typeof tsmorph;
@@ -35,7 +30,7 @@ const transform = async (json: DirectoryJSON) => {
 			tsmorph,
 			unifiedFileSystem,
 		}),
-		'/',
+		pathApi,
 	);
 
 	return executeFilemod(api, repomod, '/', {}, {});

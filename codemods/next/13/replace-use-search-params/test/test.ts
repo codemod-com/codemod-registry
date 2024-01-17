@@ -1,14 +1,13 @@
-import {
-	FileSystemManager,
-	UnifiedFileSystem,
-	buildApi,
-	executeFilemod,
-} from '@intuita-inc/filemod';
+import { buildApi, executeFilemod } from '@intuita-inc/filemod';
 import { describe, it } from 'vitest';
 import jscodeshift from 'jscodeshift';
 import { DirectoryJSON, Volume, createFsFromVolume } from 'memfs';
 import { repomod } from '../src/index.js';
 import { deepStrictEqual } from 'node:assert';
+import {
+	buildPathAPI,
+	buildUnifiedFileSystem,
+} from '@codemod-registry/utilities';
 
 type Options = Readonly<{
 	hookModuleCreation?: boolean;
@@ -16,20 +15,10 @@ type Options = Readonly<{
 
 const transform = async (json: DirectoryJSON, options: Options) => {
 	const volume = Volume.fromJSON(json);
+	const fs = createFsFromVolume(volume);
 
-	const fileSystemManager = new FileSystemManager(
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		volume.promises.readdir as any,
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		volume.promises.readFile as any,
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		volume.promises.stat as any,
-	);
-	const unifiedFileSystem = new UnifiedFileSystem(
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		createFsFromVolume(volume) as any,
-		fileSystemManager,
-	);
+	const unifiedFileSystem = buildUnifiedFileSystem(fs);
+	const pathApi = buildPathAPI('/opt/project');
 
 	const api = buildApi<{
 		jscodeshift: typeof jscodeshift;
@@ -38,7 +27,7 @@ const transform = async (json: DirectoryJSON, options: Options) => {
 		() => ({
 			jscodeshift,
 		}),
-		'/opt/project',
+		pathApi,
 	);
 
 	return executeFilemod(

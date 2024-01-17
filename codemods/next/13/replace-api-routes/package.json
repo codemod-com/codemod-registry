@@ -8,7 +8,7 @@
 		"typescript": "^5.2.2",
 		"esbuild": "0.19.5",
 		"ts-node": "^10.9.1",
-		"@intuita-inc/filemod": "1.1.0",
+		"@intuita-inc/filemod": "2.0.0",
 		"memfs": "^4.6.0",
 		"ts-morph": "^19.0.0",
 		"jscodeshift": "^0.15.1",

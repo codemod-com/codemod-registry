@@ -1,14 +1,13 @@
-import {
-	FileSystemManager,
-	UnifiedFileSystem,
-	buildApi,
-	executeFilemod,
-} from '@intuita-inc/filemod';
+import { buildApi, executeFilemod } from '@intuita-inc/filemod';
 import { describe, it } from 'vitest';
 import { Volume, createFsFromVolume } from 'memfs';
 import tsmorph from 'ts-morph';
 import { repomod } from '../src/index.js';
 import { deepStrictEqual } from 'node:assert';
+import {
+	buildUnifiedFileSystem,
+	buildPathAPI,
+} from '@codemod-registry/utilities';
 
 const PACKAGE_JSON = JSON.stringify({
 	scripts: {
@@ -52,15 +51,10 @@ const transform = async () => {
 		'/opt/project/pages/next.config.js': NEXT_CONFIG_JSON,
 	});
 
-	const fileSystemManager = new FileSystemManager(
-		volume.promises.readdir as any,
-		volume.promises.readFile as any,
-		volume.promises.stat as any,
-	);
-	const unifiedFileSystem = new UnifiedFileSystem(
-		createFsFromVolume(volume) as any,
-		fileSystemManager,
-	);
+	const fs = createFsFromVolume(volume);
+
+	const unifiedFileSystem = buildUnifiedFileSystem(fs);
+	const pathApi = buildPathAPI('/');
 
 	const api = buildApi<{
 		tsmorph: typeof tsmorph;
@@ -69,7 +63,7 @@ const transform = async () => {
 		() => ({
 			tsmorph,
 		}),
-		'/',
+		pathApi,
 	);
 
 	return executeFilemod(api, repomod, '/', {}, {});
