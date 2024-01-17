@@ -40,3 +40,4 @@ jobs:
                   else
                     pnpm test
                   fi
+              shell: bash
