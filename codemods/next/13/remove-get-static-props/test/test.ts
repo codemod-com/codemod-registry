@@ -1,15 +1,14 @@
-import {
-	FileSystemManager,
-	UnifiedFileSystem,
-	buildApi,
-	executeFilemod,
-} from '@intuita-inc/filemod';
+import { buildApi, executeFilemod } from '@intuita-inc/filemod';
 import { describe, it } from 'vitest';
 import jscodeshift from 'jscodeshift';
 import { DirectoryJSON, Volume, createFsFromVolume } from 'memfs';
 import { repomod } from '../src/index.js';
 import assert, { deepStrictEqual } from 'node:assert';
 import { transform as jscodeshiftTransform } from '../src/index.js';
+import {
+	buildUnifiedFileSystem,
+	buildPathAPI,
+} from '@codemod-registry/utilities';
 
 const globalOptions = {
 	buildLegacyCtxUtilAbsolutePath: '/opt/project/hooks/buildLegacyCtx.tsx',
@@ -18,25 +17,20 @@ const globalOptions = {
 const transform = async (json: DirectoryJSON) => {
 	const volume = Volume.fromJSON(json);
 
-	const fileSystemManager = new FileSystemManager(
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		volume.promises.readdir as any,
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		volume.promises.readFile as any,
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		volume.promises.stat as any,
-	);
-	const unifiedFileSystem = new UnifiedFileSystem(
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		createFsFromVolume(volume) as any,
-		fileSystemManager,
-	);
+	const fs = createFsFromVolume(volume);
+
+	const unifiedFileSystem = buildUnifiedFileSystem(fs);
+	const pathApi = buildPathAPI('/');
 
 	const api = buildApi<{
 		jscodeshift: typeof jscodeshift;
-	}>(unifiedFileSystem, () => ({
-		jscodeshift,
-	}));
+	}>(
+		unifiedFileSystem,
+		() => ({
+			jscodeshift,
+		}),
+		pathApi,
+	);
 
 	return executeFilemod(api, repomod, '/', globalOptions, {});
 };
@@ -55,12 +49,9 @@ describe('next 13 remove-get-static-props', function () {
 		`;
 
 		const [upsertBuildLegacyCtxUtilCommand, upsertFileCommand] =
-			await transform(
-				{
-					'/opt/project/pages/a.tsx': A_CONTENT,
-				},
-				{},
-			);
+			await transform({
+				'/opt/project/pages/a.tsx': A_CONTENT,
+			});
 
 		const expectedResult = `
 		import { buildLegacyCtx } from "/opt/project/hooks/buildLegacyCtx.tsx";

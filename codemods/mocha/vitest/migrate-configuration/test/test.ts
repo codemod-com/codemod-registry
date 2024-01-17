@@ -1,30 +1,22 @@
-import {
-	FileSystemManager,
-	UnifiedFileSystem,
-	buildApi,
-	executeFilemod,
-} from '@intuita-inc/filemod';
+import { buildApi, executeFilemod } from '@intuita-inc/filemod';
 import { describe, it } from 'vitest';
 import { DirectoryJSON, Volume, createFsFromVolume } from 'memfs';
 import { deepEqual, equal, ok } from 'node:assert';
 import { repomod } from '../src/index.js';
+import {
+	buildUnifiedFileSystem,
+	buildPathAPI,
+} from '@codemod-registry/utilities';
 
 const transform = async (json: DirectoryJSON) => {
 	const volume = Volume.fromJSON(json);
 
-	const fileSystemManager = new FileSystemManager(
-		// @ts-expect-error type convergence
-		volume.promises.readdir,
-		volume.promises.readFile,
-		volume.promises.stat,
-	);
-	const unifiedFileSystem = new UnifiedFileSystem(
-		// @ts-expect-error type convergence
-		createFsFromVolume(volume),
-		fileSystemManager,
-	);
+	const fs = createFsFromVolume(volume);
 
-	const api = buildApi(unifiedFileSystem, () => ({}), '/');
+	const unifiedFileSystem = buildUnifiedFileSystem(fs);
+	const pathApi = buildPathAPI('/');
+
+	const api = buildApi(unifiedFileSystem, () => ({}), pathApi);
 
 	return executeFilemod(api, repomod, '/', {}, {});
 };

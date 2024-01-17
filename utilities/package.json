@@ -3,9 +3,12 @@
 	"type": "module",
 	"devDependencies": {
 		"@codemod-registry/tsconfig": "workspace:*",
-		"@types/jscodeshift": "^0.11.10"
+		"@types/jscodeshift": "^0.11.10",
+		"memfs": "4.6.0"
 	},
 	"dependencies": {
-		"jscodeshift": "^0.15.1"
+		"jscodeshift": "^0.15.1",
+		"@intuita-inc/filemod": "2.0.0",
+		"glob": "10.3.10"
 	}
 }

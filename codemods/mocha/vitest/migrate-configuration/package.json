@@ -7,7 +7,7 @@
 		"@codemod-registry/cjs-builder": "workspace:*",
 		"@codemod-registry/tsconfig": "workspace:*",
 		"@codemod-registry/utilities": "workspace:*",
-		"@intuita-inc/filemod": "1.1.0",
+		"@intuita-inc/filemod": "2.0.0",
 		"@types/jscodeshift": "^0.11.10",
 		"esbuild": "0.19.5",
 		"jscodeshift": "^0.15.1",

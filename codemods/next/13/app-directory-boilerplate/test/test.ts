@@ -1,12 +1,7 @@
 import { deepStrictEqual, ok } from 'node:assert';
 import { describe, it } from 'vitest';
 import { DirectoryJSON, Volume, createFsFromVolume } from 'memfs';
-import {
-	FileSystemManager,
-	UnifiedFileSystem,
-	buildApi,
-	executeFilemod,
-} from '@intuita-inc/filemod';
+import { buildApi, executeFilemod } from '@intuita-inc/filemod';
 import { repomod } from '../src/index.js';
 import tsmorph from 'ts-morph';
 import { fromMarkdown } from 'mdast-util-from-markdown';
@@ -14,6 +9,10 @@ import { toMarkdown } from 'mdast-util-to-markdown';
 import { mdxjs } from 'micromark-extension-mdxjs';
 import { mdxFromMarkdown, mdxToMarkdown } from 'mdast-util-mdx';
 import { visit } from 'unist-util-visit';
+import {
+	buildUnifiedFileSystem,
+	buildPathAPI,
+} from '@codemod-registry/utilities';
 
 const INDEX_CONTENT = `
 import A from './testQWE';
@@ -48,15 +47,10 @@ export const getServerSideProps = () => {
 const transform = async (json: DirectoryJSON) => {
 	const volume = Volume.fromJSON(json);
 
-	const fileSystemManager = new FileSystemManager(
-		volume.promises.readdir as any,
-		volume.promises.readFile as any,
-		volume.promises.stat as any,
-	);
-	const unifiedFileSystem = new UnifiedFileSystem(
-		createFsFromVolume(volume) as any,
-		fileSystemManager,
-	);
+	const fs = createFsFromVolume(volume);
+
+	const unifiedFileSystem = buildUnifiedFileSystem(fs);
+	const pathApi = buildPathAPI('/');
 
 	const parseMdx = (data: string) =>
 		fromMarkdown(data, {
@@ -82,7 +76,7 @@ const transform = async (json: DirectoryJSON) => {
 			stringifyMdx,
 			visitMdxAst: visit,
 		}),
-		'/',
+		pathApi,
 	);
 
 	return executeFilemod(api, repomod, '/', {}, {});
