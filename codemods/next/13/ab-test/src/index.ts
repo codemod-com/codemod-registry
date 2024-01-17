@@ -1,6 +1,6 @@
 import type { Filemod, HandleData, HandleFile } from '@intuita-inc/filemod';
 import type { JSCodeshift } from 'jscodeshift';
-import { posix } from 'node:path';
+import { parse, sep } from 'node:path';
 
 // zero dependency ab test middleware factory
 const MIDDLEWARE_FACTORY_CONTENT = `
@@ -108,7 +108,7 @@ const handleFile: HandleFile<Dependencies, State> = async (
 	path,
 	options,
 ) => {
-	const parsedPath = posix.parse(path);
+	const parsedPath = parse(path);
 	if (parsedPath.name === 'middleware') {
 		return [
 			{
@@ -118,9 +118,7 @@ const handleFile: HandleFile<Dependencies, State> = async (
 			},
 			{
 				kind: 'upsertFile',
-				path: [parsedPath.dir, 'abTestMiddlewareFactory.ts'].join(
-					posix.sep,
-				),
+				path: [parsedPath.dir, 'abTestMiddlewareFactory.ts'].join(sep),
 				options,
 			},
 		];
@@ -130,7 +128,7 @@ const handleFile: HandleFile<Dependencies, State> = async (
 };
 
 const handleData: HandleData<Dependencies, State> = async (api, path, data) => {
-	const parsedPath = posix.parse(path);
+	const parsedPath = parse(path);
 	if (parsedPath.name === 'middleware') {
 		const { jscodeshift } = api.getDependencies();
 		const j = jscodeshift.withParser('tsx');

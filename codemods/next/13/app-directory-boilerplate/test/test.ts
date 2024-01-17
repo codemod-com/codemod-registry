@@ -256,6 +256,7 @@ describe('next 13 app-directory-boilerplate', function () {
 			'/opt/project/pages/index.jsx': INDEX_CONTENT,
 			'/opt/project/pages/_app.jsx': '',
 		});
+
 		ok(
 			!externalFileCommands.some(
 				(command) =>

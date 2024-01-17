@@ -5,7 +5,7 @@ import type {
 	HandleFinish,
 	InitializeState,
 } from '@intuita-inc/filemod';
-import { posix } from 'node:path';
+import { parse, sep } from 'node:path';
 import type { JSCodeshift } from 'jscodeshift';
 import type { TSAsExpressionKind } from 'ast-types/gen/kinds.js';
 
@@ -109,8 +109,8 @@ const handleFile: HandleFile<Dependencies, State> = async (
 	}
 
 	if (state.step === 'READING') {
-		const parsedPath = posix.parse(path);
-		const directoryNames = parsedPath.dir.split(posix.sep);
+		const parsedPath = parse(path);
+		const directoryNames = parsedPath.dir.split(sep);
 
 		if (!directoryNames.includes('app') || parsedPath.name !== 'page') {
 			return [];

@@ -1,5 +1,5 @@
 import type { Filemod, HandleData, HandleFile } from '@intuita-inc/filemod';
-import { posix } from 'node:path';
+import { parse, sep } from 'node:path';
 
 export const buildData = (appPath: string) => `
 	import { expect } from "@playwright/test";
@@ -95,8 +95,8 @@ const handleFile: HandleFile<Dependencies, State> = async (
 		return [];
 	}
 
-	const parsedPath = posix.parse(path);
-	const directoryNames = parsedPath.dir.split(posix.sep);
+	const parsedPath = parse(path);
+	const directoryNames = parsedPath.dir.split(sep);
 	const endsWithPages =
 		directoryNames.length > 0 &&
 		directoryNames.lastIndexOf('pages') === directoryNames.length - 1;

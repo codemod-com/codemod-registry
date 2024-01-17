@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { join, posix } from 'node:path';
+import { parse, sep, join, format } from 'node:path';
+
 import tsmorph, {
 	ArrowFunction,
 	FunctionDeclaration,
@@ -92,7 +92,12 @@ const map = new Map([
 
 const EXTENSION = '.tsx';
 
-type State = Record<string, never>;
+type State = {
+	underscoreAppPath: string | null;
+	underscoreAppData: string | null;
+	underscoreDocumentPath: string | null;
+	underscoreDocumentData: string | null;
+};
 
 type FileAPI = Parameters<HandleFile<Dependencies, State>>[0];
 type DataAPI = Parameters<HandleData<Dependencies, State>>[0];
@@ -740,46 +745,81 @@ const injectLayoutClientComponent = (sourceFile: SourceFile) => {
 	);
 };
 
-const handleFile: Filemod<
-	Dependencies,
-	Record<string, never>
->['handleFile'] = async (api, path, options) => {
-	const parsedPath = posix.parse(path);
-	const directoryNames = parsedPath.dir.split(posix.sep);
+const handleFile: Filemod<Dependencies, State>['handleFile'] = async (
+	api,
+	path,
+	options,
+	state,
+) => {
+	const parsedPath = parse(path);
+	const directoryNames = parsedPath.dir.split(sep);
 	const endsWithPages =
 		directoryNames.length > 0 &&
 		directoryNames.lastIndexOf('pages') === directoryNames.length - 1;
 
 	const nameIsIndex = parsedPath.name === 'index';
 
-	if (endsWithPages && nameIsIndex) {
-		const newDir = directoryNames
-			.slice(0, -1)
-			.concat('app')
-			.join(posix.sep);
+	// reads underscoreAppData & underscoreDocumentData files and stores the data to the state, because files can be deleted during codemod execution
+	if (
+		state !== null &&
+		state.underscoreAppData === null &&
+		state.underscoreDocumentData === null
+	) {
+		const extensiolessUnderscoreDocumentPath = join(
+			parsedPath.dir,
+			'_document',
+		);
 
-		const rootErrorPath = posix.format({
+		const underscoreDocumentPath = resolveExtensionlessFilePath(
+			extensiolessUnderscoreDocumentPath,
+			api,
+		);
+
+		const extensionlessUnderscoreAppPath = join(parsedPath.dir, '_app');
+
+		const underscoreAppPath = resolveExtensionlessFilePath(
+			extensionlessUnderscoreAppPath,
+			api,
+		);
+
+		if (underscoreAppPath !== null && state !== null) {
+			state.underscoreAppData = await api.readFile(underscoreAppPath);
+			state.underscoreAppPath = underscoreAppPath;
+		}
+
+		if (underscoreDocumentPath !== null && state !== null) {
+			state.underscoreDocumentData = await api.readFile(
+				underscoreDocumentPath,
+			);
+			state.underscoreDocumentPath = underscoreDocumentPath;
+		}
+	}
+
+	if (endsWithPages && nameIsIndex) {
+		const newDir = directoryNames.slice(0, -1).concat('app').join(sep);
+
+		const rootErrorPath = format({
 			root: parsedPath.root,
 			dir: newDir,
 			ext: EXTENSION,
 			name: 'error',
 		});
 
-		const rootNotFoundPath = posix.format({
+		const rootNotFoundPath = format({
 			root: parsedPath.root,
 			dir: newDir,
 			ext: EXTENSION,
 			name: 'not-found',
 		});
 
-		const jsxErrorPath = posix.format({
+		const jsxErrorPath = format({
 			...parsedPath,
 			name: '_error',
 			ext: '.jsx',
 			base: undefined,
 		});
 
-		const tsxErrorPath = posix.format({
+		const tsxErrorPath = format({
 			...parsedPath,
 			name: '_error',
 			ext: '.tsx',
@@ -789,14 +829,14 @@ const handleFile: Filemod<
 		const rootErrorPathIncluded =
 			api.exists(jsxErrorPath) || api.exists(tsxErrorPath);
 
-		const jsxNotFoundPath = posix.format({
+		const jsxNotFoundPath = format({
 			...parsedPath,
 			name: '_404',
 			ext: '.jsx',
 			base: undefined,
 		});
 
-		const tsxNotFoundPath = posix.format({
+		const tsxNotFoundPath = format({
 			...parsedPath,
 			name: '_404',
 			ext: '.tsx',
@@ -807,11 +847,10 @@ const handleFile: Filemod<
 			api.exists(jsxNotFoundPath) || api.exists(tsxNotFoundPath);
 
 		const oldData = await api.readFile(path);
-
 		const commands: FileCommand[] = [
 			{
 				kind: 'upsertFile' as const,
-				path: posix.format({
+				path: format({
 					root: parsedPath.root,
 					dir: newDir,
 					ext: EXTENSION,
@@ -826,7 +865,7 @@ const handleFile: Filemod<
 			},
 			{
 				kind: 'upsertFile' as const,
-				path: posix.format({
+				path: format({
 					root: parsedPath.root,
 					dir: newDir,
 					ext: EXTENSION,
@@ -845,28 +884,14 @@ const handleFile: Filemod<
 			},
 		];
 
-		const extensiolessUnderscoreDocumentPath = join(
-			parsedPath.dir,
-			'_document',
-		);
-		const underscoreDocumentPath = resolveExtensionlessFilePath(
-			extensiolessUnderscoreDocumentPath,
-			api,
-		);
-
-		const extensionlessUnderscoreAppPath = join(parsedPath.dir, '_app');
-
-		const underscoreAppPath = resolveExtensionlessFilePath(
-			extensionlessUnderscoreAppPath,
-			api,
-		);
-
-		if (underscoreAppPath !== null && underscoreDocumentPath !== null) {
-			const underscoreAppData = await api.readFile(underscoreAppPath);
-
+		if (
+			state !== null &&
+			state.underscoreAppPath !== null &&
+			state.underscoreDocumentPath !== null
+		) {
 			commands.unshift({
 				kind: 'upsertFile' as const,
-				path: posix.format({
+				path: format({
 					root: parsedPath.root,
 					dir: newDir,
 					ext: EXTENSION,
@@ -874,22 +899,16 @@ const handleFile: Filemod<
 				}),
 				options: {
 					...options,
-					underscoreAppPath,
-					underscoreAppData,
+					underscoreAppPath: state.underscoreAppPath,
+					underscoreAppData: state.underscoreAppData,
 					filePurpose: FilePurpose.ROOT_LAYOUT_COMPONENT,
 				},
 			});
 		}
 
-		let underscoreDocumentData: string | undefined;
-
-		if (underscoreDocumentPath !== null) {
-			underscoreDocumentData = await api.readFile(underscoreDocumentPath);
-		}
-
 		commands.unshift({
 			kind: 'upsertFile' as const,
-			path: posix.format({
+			path: format({
 				root: parsedPath.root,
 				dir: newDir,
 				ext: EXTENSION,
@@ -897,10 +916,11 @@ const handleFile: Filemod<
 			}),
 			options: {
 				...options,
-				...(underscoreDocumentPath &&
-					underscoreDocumentData && {
-						underscoreDocumentPath,
-						underscoreDocumentData,
+				...(state !== null &&
+					state.underscoreDocumentPath !== null &&
+					state.underscoreDocumentData !== null && {
+						underscoreDocumentPath: state.underscoreDocumentPath,
+						underscoreDocumentData: state.underscoreDocumentData,
 					}),
 				filePurpose: FilePurpose.ROOT_LAYOUT,
 			},
@@ -940,14 +960,14 @@ const handleFile: Filemod<
 			newDirArr.push(parsedPath.name);
 		}
 
-		const newDir = newDirArr.join(posix.sep);
+		const newDir = newDirArr.join(sep);
 
 		const oldData = await api.readFile(path);
 
 		const commands: FileCommand[] = [
 			{
 				kind: 'upsertFile',
-				path: posix.format({
+				path: format({
 					root: parsedPath.root,
 					dir: newDir,
 					ext: parsedPath.ext === '.mdx' ? '.mdx' : '.tsx',
@@ -962,7 +982,7 @@ const handleFile: Filemod<
 			},
 			{
 				kind: 'upsertFile',
-				path: posix.format({
+				path: format({
 					root: parsedPath.root,
 					dir: newDir,
 					ext: parsedPath.ext === '.mdx' ? '.mdx' : '.tsx',
@@ -1112,9 +1132,22 @@ const handleData: HandleData<Dependencies, State> = async (
 	}
 };
 
+const initializeState: Filemod<
+	Dependencies,
+	State
+>['initializeState'] = async () => {
+	return {
+		underscoreAppData: null,
+		underscoreAppPath: null,
+		underscoreDocumentData: null,
+		underscoreDocumentPath: null,
+	};
+};
+
 export const repomod: Filemod<Dependencies, State> = {
 	includePatterns: ['**/pages/**/*.{js,jsx,ts,tsx,cjs,mjs,mdx}'],
 	excludePatterns: ['**/node_modules/**', '**/pages/api/**'],
+	initializeState,
 	handleFile,
 	handleData,
 };
