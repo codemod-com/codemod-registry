@@ -96,6 +96,11 @@ describe('next 13 app-directory-boilerplate', () => {
 			'C:\\project\\pages\\a\\index.tsx': 'any',
 		});
 
+		console.log(
+			JSON.stringify(externalFileCommands, null, 2),
+			'>>>COMMANDS<<<',
+		);
+
 		deepStrictEqual(externalFileCommands.length, 18);
 
 		ok(
