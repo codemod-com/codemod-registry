@@ -114,46 +114,44 @@ describe('next 13 app-directory-boilerplate', () => {
 		);
 
 		ok(
-			externalFileCommands.some(
-				(command) => command.path.endsWith('project\\app\\layout.tsx'),
+			externalFileCommands.some((command) =>
+				command.path.endsWith('project\\app\\layout.tsx'),
 			),
 		);
 
 		ok(
-			externalFileCommands.some(
-				(command) => command.path.endsWith('project\\app\\error.tsx'),
+			externalFileCommands.some((command) =>
+				command.path.endsWith('project\\app\\error.tsx'),
 			),
 		);
 
 		ok(
-			externalFileCommands.some(
-				(command) => command.path.endsWith('project\\app\\not-found.tsx'),
+			externalFileCommands.some((command) =>
+				command.path.endsWith('project\\app\\not-found.tsx'),
 			),
 		);
 
 		ok(
-			externalFileCommands.some(
-				(command) => command.path.endsWith('project\\app\\page.tsx'),
+			externalFileCommands.some((command) =>
+				command.path.endsWith('project\\app\\page.tsx'),
 			),
 		);
 
 		ok(
-			externalFileCommands.some(
-				(command) =>
-					command.path.endsWith('project\\app\\[a]\\[b]\\page.tsx'),
+			externalFileCommands.some((command) =>
+				command.path.endsWith('project\\app\\[a]\\[b]\\page.tsx'),
 			),
 		);
 
 		ok(
-			externalFileCommands.some(
-				(command) =>
-					command.path.endsWith('project\\app\\[a]\\c\\page.tsx'),
+			externalFileCommands.some((command) =>
+				command.path.endsWith('project\\app\\[a]\\c\\page.tsx'),
 			),
 		);
 
 		ok(
-			externalFileCommands.some(
-				(command) => command.path.endsWith('project\\app\\a\\page.tsx'),
+			externalFileCommands.some((command) =>
+				command.path.endsWith('project\\app\\a\\page.tsx'),
 			),
 		);
 
@@ -163,10 +161,11 @@ describe('next 13 app-directory-boilerplate', () => {
 					command.kind === 'upsertFile' &&
 					command.path.endsWith('project\\app\\components.tsx') &&
 					command.data
-					.replace(/\/\/ This file has been sourced from.*\n/g, '')
-					.replace(/\W/gm, '')
-					
-			 ===
+						.replace(
+							/\/\/ This file has been sourced from.*\n/g,
+							'',
+						)
+						.replace(/\W/gm, '') ===
 						`
 	        'use client';
 
@@ -174,8 +173,8 @@ describe('next 13 app-directory-boilerplate', () => {
 	            return null;
 	        }
 	    ;`.replace(/\W/gm, '')
-		);
-		}),
+				);
+			}),
 		);
 
 		ok(
@@ -184,8 +183,11 @@ describe('next 13 app-directory-boilerplate', () => {
 					command.kind === 'upsertFile' &&
 					command.path.endsWith('project\\app\\[a]\\c\\page.tsx') &&
 					command.data
-					.replace(/\/\/ This file has been sourced from.*\n/g, '')
-					.replace(/\W/gm, '') ===
+						.replace(
+							/\/\/ This file has been sourced from.*\n/g,
+							'',
+						)
+						.replace(/\W/gm, '') ===
 						`
 	            import Components from "./components";
 	            // TODO reimplement getServerSideProps with custom logic
@@ -203,10 +205,15 @@ describe('next 13 app-directory-boilerplate', () => {
 			externalFileCommands.some((command) => {
 				return (
 					command.kind === 'upsertFile' &&
-					command.path.endsWith('project\\app\\[a]\\[b]\\components.tsx') &&
+					command.path.endsWith(
+						'project\\app\\[a]\\[b]\\components.tsx',
+					) &&
 					command.data
-					.replace(/\/\/ This file has been sourced from.*\n/g, '')
-					.replace(/\W/gm, '') ===
+						.replace(
+							/\/\/ This file has been sourced from.*\n/g,
+							'',
+						)
+						.replace(/\W/gm, '') ===
 						`
 	            'use client';
 	            `.replace(/\W/gm, '')
