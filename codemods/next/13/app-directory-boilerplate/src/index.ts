@@ -92,7 +92,12 @@ const map = new Map([
 
 const EXTENSION = '.tsx';
 
-type State = Record<string, never>;
+type State = {
+	underscoreAppPath: string | null;
+	underscoreAppData: string | null;
+	underscoreDocumentPath: string | null;
+	underscoreDocumentData: string | null
+}
 
 type FileAPI = Parameters<HandleFile<Dependencies, State>>[0];
 type DataAPI = Parameters<HandleData<Dependencies, State>>[0];
@@ -742,8 +747,9 @@ const injectLayoutClientComponent = (sourceFile: SourceFile) => {
 
 const handleFile: Filemod<
 	Dependencies,
-	Record<string, never>
->['handleFile'] = async (api, path, options) => {
+	State
+>['handleFile'] = async (api, path, options, state) => {
+	
 	const parsedPath = parse(path);
 	const directoryNames = parsedPath.dir.split(sep);
 	const endsWithPages =
@@ -751,6 +757,36 @@ const handleFile: Filemod<
 		directoryNames.lastIndexOf('pages') === directoryNames.length - 1;
 
 	const nameIsIndex = parsedPath.name === 'index';
+
+	// reads underscoreAppData & underscoreDocumentData files and stores the data to the state, because files can be deleted during codemod execution
+	if(state !== null && state.underscoreAppData === null && state.underscoreDocumentData === null) {
+		const extensiolessUnderscoreDocumentPath = join(
+			parsedPath.dir,
+			'_document',
+		);
+	
+		const underscoreDocumentPath = resolveExtensionlessFilePath(
+			extensiolessUnderscoreDocumentPath,
+			api,
+		);
+	
+		const extensionlessUnderscoreAppPath = join(parsedPath.dir, '_app');
+	
+		const underscoreAppPath = resolveExtensionlessFilePath(
+			extensionlessUnderscoreAppPath,
+			api,
+		);
+	
+		if (underscoreAppPath !== null && state !== null) {
+			state.underscoreAppData = await api.readFile(underscoreAppPath);
+			state.underscoreAppPath = underscoreAppPath;
+		}
+	
+		if(underscoreDocumentPath !== null && state !== null) {
+			state.underscoreDocumentData = await api.readFile(underscoreDocumentPath);
+			state.underscoreAppPath = underscoreDocumentPath;
+		}
+	}
 
 	if (endsWithPages && nameIsIndex) {
 		const newDir = directoryNames.slice(0, -1).concat('app').join(sep);
@@ -802,9 +838,9 @@ const handleFile: Filemod<
 
 		const rootNotFoundPathIncluded =
 			api.exists(jsxNotFoundPath) || api.exists(tsxNotFoundPath);
+		
 
 		const oldData = await api.readFile(path);
-
 		const commands: FileCommand[] = [
 			{
 				kind: 'upsertFile' as const,
@@ -841,25 +877,8 @@ const handleFile: Filemod<
 				path,
 			},
 		];
-
-		const extensiolessUnderscoreDocumentPath = join(
-			parsedPath.dir,
-			'_document',
-		);
-		const underscoreDocumentPath = resolveExtensionlessFilePath(
-			extensiolessUnderscoreDocumentPath,
-			api,
-		);
-
-		const extensionlessUnderscoreAppPath = join(parsedPath.dir, '_app');
-
-		const underscoreAppPath = resolveExtensionlessFilePath(
-			extensionlessUnderscoreAppPath,
-			api,
-		);
-
-		if (underscoreAppPath !== null && underscoreDocumentPath !== null) {
-			const underscoreAppData = await api.readFile(underscoreAppPath);
+	
+		if (state !== null && state.underscoreAppPath !== null && state.underscoreAppData !== null) {
 
 			commands.unshift({
 				kind: 'upsertFile' as const,
@@ -871,17 +890,11 @@ const handleFile: Filemod<
 				}),
 				options: {
 					...options,
-					underscoreAppPath,
-					underscoreAppData,
+					underscoreAppPath: state.underscoreAppPath,
+					underscoreAppData: state.underscoreAppData,
 					filePurpose: FilePurpose.ROOT_LAYOUT_COMPONENT,
 				},
 			});
-		}
-
-		let underscoreDocumentData: string | undefined;
-
-		if (underscoreDocumentPath !== null) {
-			underscoreDocumentData = await api.readFile(underscoreDocumentPath);
 		}
 
 		commands.unshift({
@@ -894,10 +907,10 @@ const handleFile: Filemod<
 			}),
 			options: {
 				...options,
-				...(underscoreDocumentPath &&
-					underscoreDocumentData && {
-						underscoreDocumentPath,
-						underscoreDocumentData,
+				...(state !== null && state.underscoreDocumentPath !== null &&
+					state.underscoreDocumentData !== null && {
+						underscoreDocumentPath: state.underscoreDocumentPath,
+						underscoreDocumentData: state.underscoreDocumentData,
 					}),
 				filePurpose: FilePurpose.ROOT_LAYOUT,
 			},
@@ -1109,9 +1122,15 @@ const handleData: HandleData<Dependencies, State> = async (
 	}
 };
 
+const initializeState: Filemod<Dependencies, State>['initializeState'] = async (
+) => {
+	return { underscoreAppData: null, underscoreAppPath: null, underscoreDocumentData: null, underscoreDocumentPath: null }
+};
+
 export const repomod: Filemod<Dependencies, State> = {
 	includePatterns: ['**/pages/**/*.{js,jsx,ts,tsx,cjs,mjs,mdx}'],
 	excludePatterns: ['**/node_modules/**', '**/pages/api/**'],
+	initializeState,
 	handleFile,
 	handleData,
 };

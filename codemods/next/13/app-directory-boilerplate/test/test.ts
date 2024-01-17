@@ -46,8 +46,8 @@ export const getServerSideProps = () => {
 `;
 
 const transform = async (json: DirectoryJSON) => {
-	const volume = Volume.fromJSON(json);
-
+	const volume = Volume.fromJSON(json, 'C:\\');
+	console.log(volume.toJSON(), "???")
 	const fileSystemManager = new FileSystemManager(
 		volume.promises.readdir as any,
 		volume.promises.readFile as any,
@@ -169,13 +169,13 @@ describe('next 13 app-directory-boilerplate', function () {
 					command.path === '/opt/project/app/components.tsx' &&
 					command.data.replace(/\W/gm, '') ===
 						`
-                'use client';
-                // This file has been sourced from: /opt/project/pages/index.jsx
-                
-                export default function Index({}) {
-                    return null;
-                }
-            ;`.replace(/\W/gm, '')
+            'use client';
+            // This file has been sourced from: /opt/project/pages/index.jsx
+            
+            export default function Index({}) {
+                return null;
+            }
+        ;`.replace(/\W/gm, '')
 				);
 			}),
 		);
@@ -187,15 +187,15 @@ describe('next 13 app-directory-boilerplate', function () {
 					command.path === '/opt/project/app/[a]/c/page.tsx' &&
 					command.data.replace(/\W/gm, '') ===
 						`
-                    // This file has been sourced from: /opt/project/pages/[a]/c.tsx
-                    import Components from "./components";
-                    // TODO reimplement getServerSideProps with custom logic
-                    const getServerSideProps = () => {
-                    };
-                    export default async function Page(props: any) {
-                        return <Components {...props}/>;
-                    }
-                `.replace(/\W/gm, '')
+                // This file has been sourced from: /opt/project/pages/[a]/c.tsx
+                import Components from "./components";
+                // TODO reimplement getServerSideProps with custom logic
+                const getServerSideProps = () => {
+                };
+                export default async function Page(props: any) {
+                    return <Components {...props}/>;
+                }
+            `.replace(/\W/gm, '')
 				);
 			}),
 		);
@@ -208,15 +208,145 @@ describe('next 13 app-directory-boilerplate', function () {
 						'/opt/project/app/[a]/[b]/components.tsx' &&
 					command.data.replace(/\W/gm, '') ===
 						`
-                    'use client';
-                    // This file has been sourced from: /opt/project/pages/[a]/[b].tsx
-                    `.replace(/\W/gm, '')
+                'use client';
+                // This file has been sourced from: /opt/project/pages/[a]/[b].tsx
+                `.replace(/\W/gm, '')
 				);
 			}),
 		);
 	});
 
-	it('migrated page should keep only data-fetching hooks and wrapped client component', async function (this: Context) {
+	// Windows
+	// it.only('should build correct files', async function () {
+	// 	const externalFileCommands = await transform({
+	// 		'C:\\project\\pages\\index.jsx': INDEX_CONTENT,
+	// 		'C:\\project\\pages\\_app.jsx': 'any',
+	// 		'C:\\project\\pages\\app.jsx': 'any',
+	// 		'C:\\project\\pages\\_document.jsx': 'any',
+	// 		'C:\\project\\pages\\_error.jsx': 'any',
+	// 		'C:\\project\\pages\\_404.jsx': 'any',
+	// 		'C:\\project\\pages\\[a]\\[b].tsx': A_B_CONTENT,
+	// 		'C:\\project\\pages\\[a]\\c.tsx': A_C_CONTENT,
+	// 		'C:\\project\\pages\\a\\index.tsx': 'any',
+	// 	});
+
+	// 	console.log(JSON.stringify(externalFileCommands, null, 2), '???commands')
+	// 	deepStrictEqual(externalFileCommands.length, 18);
+
+	// 	ok(
+	// 		externalFileCommands.some(
+	// 			(command) =>
+	// 				command.kind === 'deleteFile' &&
+	// 				command.path === 'C:\\project\\pages\\_app.jsx',
+	// 		),
+	// 	);
+
+	// 	ok(
+	// 		externalFileCommands.some(
+	// 			(command) =>
+	// 				command.kind === 'deleteFile' &&
+	// 				command.path === 'C:\\project\\pages\\_document.jsx',
+	// 		),
+	// 	);
+
+	// 	ok(
+	// 		externalFileCommands.some(
+	// 			(command) => command.path === 'C:\\project\\app\\layout.tsx',
+	// 		),
+	// 	);
+
+	// 	ok(
+	// 		externalFileCommands.some(
+	// 			(command) => command.path === 'C:\\project\\app\\error.tsx',
+	// 		),
+	// 	);
+
+	// 	ok(
+	// 		externalFileCommands.some(
+	// 			(command) => command.path === 'C:\\project\\app\\not-found.tsx',
+	// 		),
+	// 	);
+
+	// 	ok(
+	// 		externalFileCommands.some(
+	// 			(command) => command.path === 'C:\\project\\app\\page.tsx',
+	// 		),
+	// 	);
+
+	// 	ok(
+	// 		externalFileCommands.some(
+	// 			(command) =>
+	// 				command.path === 'C:\\project\\app\\[a]\\[b]\\page.tsx',
+	// 		),
+	// 	);
+
+	// 	ok(
+	// 		externalFileCommands.some(
+	// 			(command) => command.path === 'C:\\project\\app\\[a]\\c\\page.tsx',
+	// 		),
+	// 	);
+
+	// 	ok(
+	// 		externalFileCommands.some(
+	// 			(command) => command.path === 'C:\\project\\app\\a\\page.tsx',
+	// 		),
+	// 	);
+
+	// 	ok(
+	// 		externalFileCommands.some((command) => {
+	// 			return (
+	// 				command.kind === 'upsertFile' &&
+	// 				command.path === 'C:\\project\\app\\components.tsx' &&
+	// 				command.data.replace(/\W/gm, '') ===
+	// 					`
+    //         'use client';
+    //         // This file has been sourced from: C\\project\\pages\\index.jsx
+            
+    //         export default function Index({}) {
+    //             return null;
+    //         }
+    //     ;`.replace(/\W/gm, '')
+	// 			);
+	// 		}),
+	// 	);
+
+	// 	ok(
+	// 		externalFileCommands.some((command) => {
+	// 			return (
+	// 				command.kind === 'upsertFile' &&
+	// 				command.path === 'C:\\project\\app\\[a]\\c\\page.tsx' &&
+	// 				command.data.replace(/\W/gm, '') ===
+	// 					`
+    //             // This file has been sourced from: C"\\project\\pages\\[a]\\c.tsx
+    //             import Components from "./components";
+    //             // TODO reimplement getServerSideProps with custom logic
+    //             const getServerSideProps = () => {
+    //             };
+    //             export default async function Page(props: any) {
+    //                 return <Components {...props}/>;
+    //             }
+    //         `.replace(/\W/gm, '')
+	// 			);
+	// 		}),
+	// 	);
+
+	// 	ok(
+	// 		externalFileCommands.some((command) => {
+	// 			return (
+	// 				command.kind === 'upsertFile' &&
+	// 				command.path ===
+	// 					'C:\\project\\app\\[a]\\[b]\\components.tsx' &&
+	// 				command.data.replace(/\W/gm, '') ===
+	// 					`
+    //             'use client';
+    //             // This file has been sourced from: C:\\project\\pages\\[a]\\[b].tsx
+    //             `.replace(/\W/gm, '')
+	// 			);
+	// 		}),
+	// 	);
+	// });
+
+	it('migrated page should keep only data-fetching hooks and wrapped client component', async function () {
 		const INDEX_CONTENT = `'
 		const Index = () => '';
 		
