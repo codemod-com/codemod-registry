@@ -10,11 +10,11 @@
 		"@codemod-registry/tsconfig": "workspace:*",
 		"@types/node": "^20.9.2",
 		"@types/tar": "^6.1.9",
-		"ts-node": "^10.9.1",
+		"tsx": "^4.7.0",
 		"typescript": "^5.2.2"
 	},
 	"scripts": {
-		"build": "ts-node --esm ./index.ts",
-		"build:homedir": "ts-node --esm ./index.ts --homedir"
+		"build": "tsx ./index.ts",
+		"build:homedir": "tsx --esm ./index.ts --homedir"
 	}
 }
