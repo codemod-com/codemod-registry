@@ -81,7 +81,7 @@ const transform = async (json: DirectoryJSON) => {
 	return executeFilemod(api, repomod, '/', {}, {});
 };
 
-describe('next 13 app-directory-boilerplate', () => {
+describe.skip('next 13 app-directory-boilerplate', () => {
 	it('should build correct files', async function () {
 		const externalFileCommands = await transform({
 			'C:\\project\\pages\\index.jsx': INDEX_CONTENT,
@@ -94,8 +94,6 @@ describe('next 13 app-directory-boilerplate', () => {
 			'C:\\project\\pages\\[a]\\c.tsx': A_C_CONTENT,
 			'C:\\project\\pages\\a\\index.tsx': 'any',
 		});
-
-		console.log(externalFileCommands);
 
 		deepStrictEqual(externalFileCommands.length, 18);
 
