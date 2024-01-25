@@ -6,7 +6,7 @@ import {
 	PathAPI,
 	UnifiedFileSystem,
 } from '@intuita-inc/filemod';
-import { FSOption, GlobOptionsWithFileTypesUnset, glob } from 'glob';
+import { FileSystemAdapter, glob } from 'fast-glob';
 import jscodeshift, { API } from 'jscodeshift';
 import { createHash } from 'node:crypto';
 import { basename, dirname, join } from 'node:path';
@@ -57,8 +57,9 @@ export const buildGlobWrapper =
 			absolute: true,
 			cwd: globArguments.currentWorkingDirectory,
 			ignore: globArguments.excludePatterns.slice(),
-			fs: fileSystem as unknown as FSOption,
-		} satisfies GlobOptionsWithFileTypesUnset);
+			fs: fileSystem as Partial<FileSystemAdapter>,
+			onlyFiles: true,
+		});
 	};
 
 export const buildReadDirectory =

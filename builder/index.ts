@@ -12,7 +12,7 @@ import {
 	writeFile,
 } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
-import { globSync } from 'glob';
+import glob from 'fast-glob';
 import * as S from '@effect/schema/Schema';
 import { constants } from 'node:fs';
 import { deflate } from 'node:zlib';
@@ -128,7 +128,7 @@ const build = async () => {
 
 	const codemodsDirectoryPath = join(cwd, './codemods');
 
-	const configFilePaths = globSync('./**/config.json', {
+	const configFilePaths = await glob('./**/config.json', {
 		cwd: codemodsDirectoryPath,
 		dot: false,
 		ignore: ['**/node_modules/**', '**/build/**'],
