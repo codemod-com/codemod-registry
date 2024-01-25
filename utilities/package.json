@@ -9,6 +9,6 @@
 	"dependencies": {
 		"jscodeshift": "^0.15.1",
 		"@intuita-inc/filemod": "2.0.0",
-		"glob": "10.3.10"
+		"fast-glob": "3.3.2"
 	}
 }
