@@ -60,7 +60,7 @@ Intuita File Transformation Engine
 
 ### Owner
 
-[Intuita](https://github.com/codemod-com)
+[Codemod.com](https://github.com/codemod-com)
 
 ### Links for more info
 
