@@ -4,6 +4,10 @@
   <img alt="Codemod Registry Header" src="/assets/images/header-light.png">
 </picture>
 
+**⚠️ This repository is deprecated and no longer maintained.**
+
+**Please Note:** This repository was migrated to a monorepo called [codemod](https://github.com/codemod-com/codemod/tree/main/apps/registry).
+
 # Codemod Registry
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
